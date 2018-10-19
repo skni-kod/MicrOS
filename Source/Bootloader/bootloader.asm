@@ -25,6 +25,13 @@ PartitionVolumeLabel            db 'PARTITION 1'    ; 11 chars
 FileSystemType                  db 'FAT12   '       ; 8 chars
 
 main:
+; Set stack pointer to be directly under bootloader
+; About 30 KiB of memory is free here
+; https://wiki.osdev.org/Memory_Map_(x86)
+mov esp, 0x7C00
+mov ax, 0
+mov ss, ax
+
 JMP $
 
 times 510 - ($ - $$) db 0
