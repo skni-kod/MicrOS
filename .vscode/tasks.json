@@ -1,0 +1,41 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build bootloader",
+            "type": "shell",
+            "command": "Tools\\nasm.exe Source\\Bootloader\\bootloader.asm -f bin -o Build\\bootloader.bin",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Upload bootloader",
+            "type": "shell",
+            "command": "Tools\\dd.exe if=Build\\bootloader.bin bs=512 of=Build\\floppy.img",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": [
+                "Build bootloader"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Run QEMU",
+            "type": "shell",
+            "command": "qemu-system-x86_64.exe -drive file=Build\\floppy.img,format=raw",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": [
+                "Upload bootloader"
+            ],
+            "problemMatcher": []
+        }
+    ]
+}
