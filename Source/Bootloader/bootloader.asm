@@ -35,7 +35,15 @@ main:
 
     call reset_floppy
 
-    mov al, 1       ; Number of sectors to read
+    ; Save dx register - dl contains boot drive number which will be necessary later
+    push dx
+
+    call calculate_number_of_sectors_to_load
+
+    ; Restore dx register
+    pop dx
+
+    mov al, cl      ; Number of sectors to read
     mov cl, 2       ; Sector number
     mov bx, 0
     mov es, bx      ; Segment
@@ -75,6 +83,31 @@ load_floppy_to_memory:
     mov dh, 0
 
     int 0x13
+    ret
+
+; Input: nothing
+; Output:
+;   cx - numbers of floppy sectors (without reserved) which should be loaded to the memory
+calculate_number_of_sectors_to_load:
+    ; Reserved sector (1)
+    xor cx, cx
+    mov cx, 0
+
+    ; FAT sectors (number of FATs * sectors per FAT)
+    mov al, [FileAllocationTables]
+    mov dx, [LogicalSectorsPerFAT]
+    mul dx
+    add cx, ax
+
+    ; Root directory sectors (number of root entries * 32 / bytes per sector)
+    mov ax, [MaxRootDirectoryEntries]
+    mov dx, 32
+    mul dx
+    xor dx, dx
+    mov bx, [BytesPerLogicalSector]
+    div bx
+    add cx, ax
+
     ret
 
 times 510 - ($ - $$) db 0
