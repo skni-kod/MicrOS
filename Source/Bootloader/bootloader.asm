@@ -35,7 +35,8 @@ VolumeID                        dd 0x12345678
 PartitionVolumeLabel            db 'PARTITION 1'    ; 11 chars
 FileSystemType                  db 'FAT12   '       ; 8 chars
 
-KernelFileName                  db 'KERNEL  BIN'
+KernelFileName                  db 'KERNEL  BIN'    ; 11 chars
+ReservedSectorsCount            db 0x00
 
 ; Entry point of bootloader
 main:
@@ -49,17 +50,23 @@ main:
     ; Save device number (DL register) to memory
     mov [INT13Scratchpad], dl
 
-    call reset_floppy
-    call calculate_number_of_sectors_to_load
+    ; Save reserved sectors count to memory
+    call calculate_reserved_fat_area
+    mov [ReservedSectorsCount], cx
 
-    mov al, cl      ; Number of sectors to read
-    mov cl, 2       ; Sector number
+    call reset_floppy
+
+    mov al, [ReservedSectorsCount]  ; Number of sectors to read
+    sub al, 1
+
+    mov cl, 2                       ; Sector number
     mov bx, 0
-    mov es, bx      ; Segment
-    mov bx, 0x7E00  ; Offset
+    mov es, bx                      ; Segment
+    mov bx, 0x7E00                  ; Offset
     call load_floppy_to_memory
 
     call find_kernel_first_sector
+    call load_kernel
 
     JMP $
 
@@ -101,9 +108,10 @@ load_floppy_to_memory:
 
 ; Input: nothing
 ; Output:
-;   cx - numbers of floppy sectors (without reserved) which should be loaded to the memory
-calculate_number_of_sectors_to_load:
-    xor cx, cx
+;   cx - numbers of floppy sectors with metadata
+calculate_reserved_fat_area:
+    ; Boot sector
+    mov cx, 1
 
     ; FAT sectors (number of FATs * sectors per FAT)
     mov al, [FileAllocationTables]
@@ -180,6 +188,37 @@ find_kernel_first_sector:
     mov bx, cx
     add bx, 0x1A
     mov ax, [bx]
+
+    ret
+
+; Input:
+;   ax - first kernel sector number
+; Output: nothing
+load_kernel:
+    ; Add kernel sector to base sector offset
+    mov cx, [ReservedSectorsCount]
+    add cx, ax
+
+    mov al, 1       ; Number of sectors to read
+    mov bx, 0x1000
+    mov es, bx      ; Segment
+    mov bx, 0x0000  ; Offset
+    call load_floppy_to_memory
+
+    ; Set initial FAT offset
+    mov bx, 0x7E00
+
+    ; Store first sector number in ax register
+    ; mov ah, [bx + 1]
+    ; mov al, [bx]
+    ; and ax, 0x0FFF
+
+    ; Store second sector number in cx register
+    ; mov ch, [bx + 2]
+    ; mov cl, [bx + 1]
+    ; shr cx, 4
+
+    ; TODO: Read rest of the kernel sectors
 
     ret
 
