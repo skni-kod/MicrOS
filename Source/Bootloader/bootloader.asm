@@ -35,6 +35,8 @@ VolumeID                        dd 0x12345678
 PartitionVolumeLabel            db 'PARTITION 1'    ; 11 chars
 FileSystemType                  db 'FAT12   '       ; 8 chars
 
+KernelFileName                  db 'KERNEL  BIN'
+
 ; Entry point of bootloader
 main:
     ; Set stack pointer to be directly under bootloader
@@ -56,6 +58,8 @@ main:
     mov es, bx      ; Segment
     mov bx, 0x7E00  ; Offset
     call load_floppy_to_memory
+
+    call find_kernel_first_sector
 
     JMP $
 
@@ -99,9 +103,7 @@ load_floppy_to_memory:
 ; Output:
 ;   cx - numbers of floppy sectors (without reserved) which should be loaded to the memory
 calculate_number_of_sectors_to_load:
-    ; Reserved sector (1)
     xor cx, cx
-    mov cx, 0
 
     ; FAT sectors (number of FATs * sectors per FAT)
     mov al, [FileAllocationTables]
@@ -117,6 +119,67 @@ calculate_number_of_sectors_to_load:
     mov bx, [BytesPerLogicalSector]
     div bx
     add cx, ax
+
+    ret
+
+; Input: nothing
+; Output:
+;   ax - first kernel sector number
+find_kernel_first_sector:
+    ; Set initial offset of floppy data
+    mov ecx, 0x7E00
+
+    ; Add size of both File Allocations Tables to get root directory offset
+    mov al, [FileAllocationTables]
+    mov dx, [LogicalSectorsPerFAT]
+    mul dx
+
+    mov dx, [BytesPerLogicalSector]
+    mul dx
+
+    ; Now cx contains offset of root directory
+    add cx, ax
+
+    begin_compare_loop:
+    ; Load name of entry and expected kernel name offsets
+    mov si, cx
+    mov di, KernelFileName
+
+    ; Current string index will be stored in dx register
+    mov dx, 0
+
+    compare_loop:
+    ; Check if whole string has been compared
+    cmp dx, 10
+    je kernel_found
+
+    ; Compare chars from both strings
+    mov ax, [si]
+    mov bx, [di]
+    cmp ax, bx
+
+    ; If chars aren't equal, go to next entry
+    jne filename_not_equal
+
+    ; Increment index and char addresses
+    inc dx
+    inc si
+    inc di
+
+    ; Go to next iteration
+    jmp compare_loop
+
+    filename_not_equal:
+    ; Go to next entry
+    add cx, 0x20
+    jmp begin_compare_loop
+
+    kernel_found:
+    ; Move address if sector number to bx due to Intel limitations and then move sector number to ax register
+    ; https://stackoverflow.com/questions/1797765/assembly-invalid-effective-address
+    mov bx, cx
+    add bx, 0x1A
+    mov ax, [bx]
 
     ret
 
