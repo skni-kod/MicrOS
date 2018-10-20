@@ -1,7 +1,7 @@
 ;                                    MicrOS memory layout
 ;
 ; |------------|---------|----------|------------|------------|---------|---------|------------|
-; |   1 KiB    |  256 b  |  29 KiB  |   512 b    |   32 KiB   | 574 KiB |  1 KiB  |  383 KiB   |
+; |   1 KiB    |  256 B  |  29 KiB  |   512 B    |   32 KiB   | 574 KiB |  1 KiB  |  383 KiB   |
 ; | Interrupts |   BDA   |  Stack   | Bootloader | FAT12 data |  Kernel |  EBDA   | Video, ROM |
 ; |            |         |          |            |            |         |         |            |
 ; |  0x00000   | 0x00400 |  0x00500 |  0x07C00   |  0x07E00   | 0x10000 | 0x9FC00 |  0xA0000   |
