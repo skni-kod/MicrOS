@@ -12,6 +12,7 @@
 [BITS 16]
 [ORG 0x7C00]
 
+; Jump to main and align to 3 bytes, we don't want to execute FAT12 header
 jmp main
 nop
 
@@ -25,8 +26,8 @@ TotalLogicalSectors             dw 0x0B40
 MediaDescriptor                 db 0xF0
 LogicalSectorsPerFAT            dw 0x0009
 PhysicalSectorsPerTrack         dw 0x0012
-HeadsCount                      dw 0x0002
-HiddenSectorsCount              dd 0x00000000
+Heads                           dw 0x0002
+HiddenSectors                   dd 0x00000000
 TotalLogicalAndHiddenSectors    dd 0x00000000
 PhysicalDriveNumber             db 0x00
 INT13Scratchpad                 db 0x00
@@ -36,7 +37,7 @@ PartitionVolumeLabel            db 'PARTITION 1'    ; 11 chars
 FileSystemType                  db 'FAT12   '       ; 8 chars
 
 KernelFileName                  db 'KERNEL  BIN'    ; 11 chars
-ReservedSectorsCount            db 0x00
+ReservedSectors                 db 0x00
 
 ; Entry point of bootloader
 main:
@@ -44,6 +45,7 @@ main:
     ; About 30 KiB of memory is free here
     ; https://wiki.osdev.org/Memory_Map_(x86)
     mov esp, 0x7C00
+    mov ebp, esp
     mov ax, 0
     mov ss, ax
 
@@ -52,11 +54,12 @@ main:
 
     ; Save reserved sectors count to memory
     call calculate_reserved_fat_area
-    mov [ReservedSectorsCount], cx
+    mov [ReservedSectors], cx
 
     call reset_floppy
 
-    mov al, [ReservedSectorsCount]  ; Number of sectors to read
+    ; Load FAT12 tables and root directory to memory
+    mov al, [ReservedSectors]       ; Number of sectors to read
     sub al, 1
 
     mov cl, 2                       ; Sector number
@@ -108,7 +111,7 @@ load_floppy_to_memory:
 
 ; Input: nothing
 ; Output:
-;   cx - numbers of floppy sectors with metadata
+;   cx - number of floppy sectors with metadata
 calculate_reserved_fat_area:
     ; Boot sector
     mov cx, 1
@@ -183,7 +186,7 @@ find_kernel_first_sector:
     jmp begin_compare_loop
 
     kernel_found:
-    ; Move address if sector number to bx due to Intel limitations and then move sector number to ax register
+    ; Move address with sector number to bx register due to Intel limitations and then move sector number to ax register
     ; https://stackoverflow.com/questions/1797765/assembly-invalid-effective-address
     mov bx, cx
     add bx, 0x1A
@@ -196,8 +199,9 @@ find_kernel_first_sector:
 ; Output: nothing
 load_kernel:
     ; Add kernel sector to base sector offset
-    mov cx, [ReservedSectorsCount]
+    mov cx, [ReservedSectors]
     add cx, ax
+    sub cx, 1
 
     mov al, 1       ; Number of sectors to read
     mov bx, 0x1000
