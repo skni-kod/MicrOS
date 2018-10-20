@@ -27,7 +27,7 @@
         {
             "label": "Run QEMU",
             "type": "shell",
-            "command": "qemu-system-i386.exe -drive file=Build\\floppy.img,format=raw",
+            "command": "qemu-system-i386.exe -m 1M -drive file=Build\\floppy.img,format=raw",
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -40,7 +40,7 @@
         {
             "label": "Run QEMU with debugger",
             "type": "shell",
-            "command": "qemu-system-i386.exe -drive file=Build\\floppy.img,format=raw -S -s",
+            "command": "qemu-system-i386.exe -m 1M -drive file=Build\\floppy.img,format=raw -S -s",
             "group": {
                 "kind": "build",
                 "isDefault": true
