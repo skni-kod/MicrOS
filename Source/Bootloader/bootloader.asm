@@ -44,15 +44,11 @@ main:
     mov ax, 0
     mov ss, ax
 
+    ; Save device number (DL register) to memory
+    mov [INT13Scratchpad], dl
+
     call reset_floppy
-
-    ; Save dx register - dl contains boot drive number which will be necessary later
-    push dx
-
     call calculate_number_of_sectors_to_load
-
-    ; Restore dx register
-    pop dx
 
     mov al, cl      ; Number of sectors to read
     mov cl, 2       ; Sector number
@@ -92,6 +88,9 @@ load_floppy_to_memory:
 
     ; Head number
     mov dh, 0
+
+    ; Drive number
+    mov dl, [INT13Scratchpad]
 
     int 0x13
     ret
