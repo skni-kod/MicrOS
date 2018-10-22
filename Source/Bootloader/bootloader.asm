@@ -66,7 +66,7 @@ main:
     mov bx, 0
     mov es, bx                      ; Segment
     mov bx, 0x7E00                  ; Offset
-    call load_floppy_to_memory
+    call load_floppy_data
 
     call find_kernel_first_sector
     call load_kernel
@@ -93,7 +93,7 @@ reset_floppy:
 ;   - ah - status (http://stanislavs.org/helppc/int_13-1.html)
 ;   - al - number of sectors read
 ;   - cf - 1 if successful, 0 if error
-load_floppy_to_memory:
+load_floppy_data:
     ; Function name: Read Disk Sectors
     mov ah, 0x02
 
@@ -207,7 +207,7 @@ load_kernel:
     mov bx, 0x1000
     mov es, bx      ; Segment
     mov bx, 0x0000  ; Offset
-    call load_floppy_to_memory
+    call load_floppy_data
 
     ; Set initial FAT offset
     mov bx, 0x7E00
