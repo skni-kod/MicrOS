@@ -61,7 +61,32 @@ Main:
 
     ; Save non data sectors count to memory
     call GetNonDataSectorsCount
-    mov [NonDataSectors], cx
+    mov [NonDataSectors], cl
+
+    ; Reset floppy before read
+    call ResetFloppy
+
+    ; Load FAT12 non data sectors
+    ; Number of sectors to read
+    mov al, [NonDataSectors]
+
+    ; We don't want load first sector with bootloader again
+    sub al, 1
+
+    ; Sector number
+    mov cl, 2
+
+    ; Segment
+    mov bx, 0
+
+    ; Offset
+    mov es, bx
+    mov bx, 0x7E00
+
+    call LoadFloppyData
+
+    ; Get kernel first sector and store it in ax register
+    call GetFirstKernelSector
 
     JMP $
 
@@ -74,7 +99,6 @@ ResetFloppy:
     mov ah, 0
 
     int 0x13
-
     ret
 
 ; Input:
@@ -100,18 +124,17 @@ LoadFloppyData:
     mov dl, [INT13Scratchpad]
 
     int 0x13
-
     ret
 
 ; Input: nothing
 ; Output:
 ;   cx - number of floppy sectors with metadata
 GetNonDataSectorsCount:
-
     ; Boot sector
     mov cx, 1
 
     ; FAT sectors (number of FATs * sectors per FAT)
+    xor ax, ax
     mov al, [FileAllocationTables]
     mov dx, [LogicalSectorsPerFAT]
     mul dx
@@ -129,6 +152,67 @@ GetNonDataSectorsCount:
     ret
 
 ; Input: nothing
+; Output:
+;   ax - kernel first sector number
+GetFirstKernelSector:
+    ; Set initial offset of non data sectors loaded into memory
+    mov ecx, 0x7E00
+
+    ; Add size of both File Allocations Tables to get root directory offset
+    mov al, [FileAllocationTables]
+    mov dx, [LogicalSectorsPerFAT]
+    mul dx
+
+    mov dx, [BytesPerLogicalSector]
+    mul dx
+
+    ; Now cx contains offset of root directory
+    add cx, ax
+
+    GetFirstKernelSector_BeginCompareLoop:
+    ; Load name of entry and expected kernel name offsets
+    mov si, cx
+    mov di, KernelFileName
+
+    ; Current string index will be stored in dx register
+    mov dx, 0
+
+    GetFirstKernelSector_CompareLoop:
+    ; Check if whole string has been compared
+    cmp dx, 10
+    je GetFirstKernelSector_KernelFound
+
+    ; Compare chars from both strings
+    mov ax, [si]
+    mov bx, [di]
+    cmp ax, bx
+
+    ; If chars aren't equal, go to next entry
+    jne GetFirstKernelSector_FilenameNotEqual
+
+    ; Increment index and char addresses
+    inc dx
+    inc si
+    inc di
+
+    ; Go to next iteration
+    jmp GetFirstKernelSector_CompareLoop
+
+    GetFirstKernelSector_FilenameNotEqual:
+    ; Go to next entry
+    add cx, 0x20
+    jmp GetFirstKernelSector_BeginCompareLoop
+
+    GetFirstKernelSector_KernelFound:
+    ; Move address with sector number to bx register due to Intel limitations and then move sector number to ax register
+    ; https://stackoverflow.com/questions/1797765/assembly-invalid-effective-address
+    mov bx, cx
+    add bx, 0x1A
+    mov ax, [bx]
+
+    ret
+
+; Input:
 ;   si - address of the string ended with null char
 ; Output: nothing
 PrintString:
