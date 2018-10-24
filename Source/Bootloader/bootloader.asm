@@ -42,7 +42,10 @@ FileSystemType                  db 'FAT12   '       ; 8 chars
 KernelFileName                  db 'KERNEL  BIN'    ; 11 chars
 NonDataSectors                  db 0x00
 
-BootloaderInitString            db 'MicrOS Bootloader', 0x0D, 0x0A, 0
+BootloaderInitString            db 'MicrOS Bootloader', 0
+NonDataSectorsString            db 'Non data sectors: ', 0
+FirstKernelSectorString         db 'First kernel sector: ', 0
+NewLineString                   db 0x0D, 0x0A, 0
 
 ; Entry point of bootloader
 Main:
@@ -56,12 +59,23 @@ Main:
     mov si, BootloaderInitString
     call PrintString
 
+    mov si, NewLineString
+    call PrintString
+
     ; Save device number (DL register) to memory
     mov [INT13Scratchpad], dl
 
     ; Save non data sectors count to memory
     call GetNonDataSectorsCount
     mov [NonDataSectors], cl
+
+    ; Print non data sectors count. Number is already in cx
+    mov si, NonDataSectorsString
+    call PrintString
+    call PrintNumber
+    
+    mov si, NewLineString
+    call PrintString
 
     ; Reset floppy before read
     call ResetFloppy
@@ -87,6 +101,13 @@ Main:
 
     ; Get kernel first sector and store it in ax register
     call GetFirstKernelSector
+
+    ; Print first kernel sector number
+    mov cx, ax
+
+    mov si, FirstKernelSectorString
+    call PrintString
+    call PrintNumber
 
     JMP $
 
@@ -223,14 +244,56 @@ PrintString:
     
     ; Function name: Teletype Output
     mov ah, 0x0E
-    int 0x10
 
     ; Page number and color to 0
     mov bx, 0
+
+    int 0x10
     
     jmp PrintString
 
     PrintString_End:
+    ret
+
+; Input:
+;   cx - number to print
+; Output: nothing
+PrintNumber:
+    xor si, si
+
+    PrintNumber_GetDigit:
+    ; Get last digit of number and store it on stack
+    mov ax, cx
+    mov bx, 10
+    xor dx, dx
+    div bx
+
+    push dx
+    xor cx, cx
+    mov cl, al
+
+    inc si
+
+    ; Exit loop if result of div is zero
+    or cl, cl
+    jnz PrintNumber_GetDigit
+
+    PrintNumber_PrintDigit:
+    pop ax
+    add ax, 48
+
+    ; Function name: Teletype Output
+    mov ah, 0x0E
+
+    ; Page number and color to 0
+    mov bx, 0
+
+    int 0x10
+
+    dec si
+    or si, si
+    jnz PrintNumber_PrintDigit
+
     ret
 
 times 510 - ($ - $$) db 0
