@@ -43,8 +43,9 @@ KernelFileName                  db 'KERNEL  BIN'    ; 11 chars
 NonDataSectors                  db 0x00
 
 BootloaderInitString            db 'MicrOS Bootloader', 0
-NonDataSectorsString            db 'Non data sectors: ', 0
-FirstKernelSectorString         db 'First kernel sector: ', 0
+DeviceNumberString              db 'DN: ', 0
+NonDataSectorsString            db ', NDS: ', 0
+FirstKernelSectorString         db ', FKS: ', 0
 NewLineString                   db 0x0D, 0x0A, 0
 
 ; Entry point of bootloader
@@ -65,6 +66,13 @@ Main:
     ; Save device number (DL register) to memory
     mov [INT13Scratchpad], dl
 
+    ; Print non data sectors count
+    mov cx, [INT13Scratchpad]
+
+    mov si, DeviceNumberString
+    call PrintString
+    call PrintNumber
+
     ; Save non data sectors count to memory
     call GetNonDataSectorsCount
     mov [NonDataSectors], cl
@@ -73,9 +81,6 @@ Main:
     mov si, NonDataSectorsString
     call PrintString
     call PrintNumber
-    
-    mov si, NewLineString
-    call PrintString
 
     ; Reset floppy before read
     call ResetFloppy
