@@ -277,6 +277,7 @@ PrintNumber:
     xor cx, cx
     mov cl, al
 
+    ; Increment counter
     inc si
 
     ; Exit loop if result of div is zero
@@ -284,6 +285,7 @@ PrintNumber:
     jnz PrintNumber_GetDigit
 
     PrintNumber_PrintDigit:
+    ; Pop digit to ax and add 48 to get char
     pop ax
     add ax, 48
 
@@ -295,7 +297,10 @@ PrintNumber:
 
     int 0x10
 
+    ; Decrement counter
     dec si
+
+    ; Go next iteration if there is any number to print
     or si, si
     jnz PrintNumber_PrintDigit
 
