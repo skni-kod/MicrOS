@@ -274,8 +274,7 @@ PrintNumber:
     div bx
 
     push dx
-    xor cx, cx
-    mov cl, al
+    mov cx, ax
 
     ; Increment counter
     inc si
@@ -304,6 +303,41 @@ PrintNumber:
     or si, si
     jnz PrintNumber_PrintDigit
 
+    ret
+
+; Input:
+;   ax - sector index
+; Output:
+;   ax - sector value
+GetSectorValue:
+    mov bx, 3
+    mul bx
+
+    mov bx, 2
+    xor dx, dx
+    div bx
+
+    ; Set initial FAT offset
+    mov bx, 0x7E00
+    add bx, ax
+
+    cmp dx, 0
+    je GetSectorValue_EvenIndex
+    jne GetSectorValue_OddIndex
+
+    GetSectorValue_EvenIndex:
+    mov ah, [bx + 1]
+    mov al, [bx]
+    and ax, 0x0FFF
+    jmp GetSectorValue_End
+
+    GetSectorValue_OddIndex:
+    sub bx, 1
+    mov ah, [bx + 2]
+    mov al, [bx + 1]
+    shr ax, 4
+
+    GetSectorValue_End:
     ret
 
 times 510 - ($ - $$) db 0
