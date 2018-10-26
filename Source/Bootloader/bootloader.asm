@@ -46,6 +46,7 @@ BootloaderInitString            db 'MicrOS Bootloader', 0
 DeviceNumberString              db 'DN: ', 0
 NonDataSectorsString            db ', NDS: ', 0
 FirstKernelSectorString         db ', FKS: ', 0
+KernelSectorsCountString        db ', KSC: ', 0
 NewLineString                   db 0x0D, 0x0A, 0
 
 ; Entry point of bootloader
@@ -56,15 +57,15 @@ Main:
     mov esp, 0x7C00
     mov ebp, esp
 
+    ; Save device number (DL register) to memory
+    mov [INT13Scratchpad], dl
+
     ; Display bootloader startup message
     mov si, BootloaderInitString
     call PrintString
 
     mov si, NewLineString
     call PrintString
-
-    ; Save device number (DL register) to memory
-    mov [INT13Scratchpad], dl
 
     ; Print non data sectors count
     mov cx, [INT13Scratchpad]
@@ -106,12 +107,22 @@ Main:
 
     ; Get kernel first sector and store it in ax register
     call GetFirstKernelSector
+    push ax
 
     ; Print first kernel sector number
     mov cx, ax
 
     mov si, FirstKernelSectorString
     call PrintString
+    call PrintNumber
+
+    mov si, KernelSectorsCountString
+    call PrintString
+
+    pop ax
+    call LoadKernel
+
+    mov cx, bx
     call PrintNumber
 
     JMP $
@@ -239,6 +250,87 @@ GetFirstKernelSector:
     ret
 
 ; Input:
+;   ax - sector index
+; Output:
+;   ax - sector value
+GetSectorValue:
+    ; Multiple sector index by 3/2 to get physical byte address
+    mov bx, 3
+    mul bx
+
+    mov bx, 2
+    xor dx, dx
+    div bx
+
+    ; Set initial FAT offset
+    mov bx, 0x7E00
+
+    ; Add FAT offset to the calculated byte address
+    add bx, ax
+
+    ; If remainder is equal to 0, then index is even, otherwise it's odd
+    cmp dx, 0
+    je GetSectorValue_EvenIndex
+    jne GetSectorValue_OddIndex
+
+    GetSectorValue_EvenIndex:
+    ; Even sector has pattern LL _H __
+    mov ah, [bx + 1]
+    mov al, [bx]
+    and ax, 0x0FFF
+    jmp GetSectorValue_End
+
+    GetSectorValue_OddIndex:
+    ; Odd sector has pattern __ L_ HH
+    sub bx, 1
+    mov ah, [bx + 2]
+    mov al, [bx + 1]
+    shr ax, 4
+
+    GetSectorValue_End:
+    ret
+
+; Input:
+;   ax - initial kernel sector
+; Output:
+;   bx - loaded kernel sectors count
+LoadKernel:
+    push ebp
+    mov  ebp, esp
+
+    nop
+
+    push ax
+    xor bx, bx
+    push bx
+
+    LoadKernel_LoadNextSector: 
+    ; Segment
+    mov bx, 0x1000
+    mov es, bx
+
+    ; Offset
+    mov ax, [ebp - 4]
+    mov dx, 0x200
+    mul dx
+    mov bx, ax
+
+    ; Number of sectors to read
+    mov al, 1
+
+    ; Sector number
+    mov cx, [ebp - 2]
+    add cl, [NonDataSectors]
+    sub cl, 1
+
+    call LoadFloppyData
+
+    mov esp, ebp
+    pop ebp
+
+    ret
+
+; Input:
 ;   si - address of the string ended with null char
 ; Output: nothing
 PrintString:
@@ -303,41 +395,6 @@ PrintNumber:
     or si, si
     jnz PrintNumber_PrintDigit
 
-    ret
-
-; Input:
-;   ax - sector index
-; Output:
-;   ax - sector value
-GetSectorValue:
-    mov bx, 3
-    mul bx
-
-    mov bx, 2
-    xor dx, dx
-    div bx
-
-    ; Set initial FAT offset
-    mov bx, 0x7E00
-    add bx, ax
-
-    cmp dx, 0
-    je GetSectorValue_EvenIndex
-    jne GetSectorValue_OddIndex
-
-    GetSectorValue_EvenIndex:
-    mov ah, [bx + 1]
-    mov al, [bx]
-    and ax, 0x0FFF
-    jmp GetSectorValue_End
-
-    GetSectorValue_OddIndex:
-    sub bx, 1
-    mov ah, [bx + 2]
-    mov al, [bx + 1]
-    shr ax, 4
-
-    GetSectorValue_End:
     ret
 
 times 510 - ($ - $$) db 0
