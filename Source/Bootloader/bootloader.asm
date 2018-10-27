@@ -81,9 +81,8 @@ Main:
 
     ; Get kernel first sector and store it in ax register
     call GetFirstKernelSector
-    push ax
 
-    pop ax
+    ; Load all kernel sectors
     call LoadKernel
 
     JMP $
@@ -259,7 +258,10 @@ LoadKernel:
     push ebp
     mov  ebp, esp
 
+    ; Push initial kernel sector
     push ax
+
+    ; Push initial loaded sectors count
     xor bx, bx
     push bx
 
@@ -268,7 +270,7 @@ LoadKernel:
     mov bx, 0x1000
     mov es, bx
 
-    ; Offset
+    ; Offset (current sector index * 512 bytes)
     mov ax, [ebp - 4]
     mov dx, 0x200
     mul dx
@@ -282,18 +284,25 @@ LoadKernel:
     add cl, [NonDataSectors]
     sub cl, 1
 
+    ; Load kernel sector
     call LoadFloppyData
 
+    ; Increment loaded sectors count
     mov ax, [ebp - 4]
     add ax, 1
     mov [ebp - 4], ax
 
+    ; Get next sector number
     mov ax, [ebp - 2]
     call GetSectorValue
     mov [ebp - 2], ax
 
+    ; Check if the current sector was the last (end-of-chain marker)
     cmp ax, 0x0FF0
     jl LoadKernel_LoadNextSector
+
+    ; Return loaded kernel sectors count in bx
+    mov bx, [ebp - 4]
 
     mov esp, ebp
     pop ebp
