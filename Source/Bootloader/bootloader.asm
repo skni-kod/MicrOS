@@ -42,13 +42,6 @@ FileSystemType                  db 'FAT12   '       ; 8 chars
 KernelFileName                  db 'KERNEL  BIN'    ; 11 chars
 NonDataSectors                  db 0x00
 
-BootloaderInitString            db 'MicrOS Bootloader', 0
-DeviceNumberString              db 'DN: ', 0
-NonDataSectorsString            db ', NDS: ', 0
-FirstKernelSectorString         db ', FKS: ', 0
-KernelSectorsCountString        db ', KSC: ', 0
-NewLineString                   db 0x0D, 0x0A, 0
-
 ; Entry point of bootloader
 Main:
     ; Set stack pointer to be directly under bootloader
@@ -60,28 +53,9 @@ Main:
     ; Save device number (DL register) to memory
     mov [INT13Scratchpad], dl
 
-    ; Display bootloader startup message
-    mov si, BootloaderInitString
-    call PrintString
-
-    mov si, NewLineString
-    call PrintString
-
-    ; Print non data sectors count
-    mov cx, [INT13Scratchpad]
-
-    mov si, DeviceNumberString
-    call PrintString
-    call PrintNumber
-
     ; Save non data sectors count to memory
     call GetNonDataSectorsCount
     mov [NonDataSectors], cl
-
-    ; Print non data sectors count. Number is already in cx
-    mov si, NonDataSectorsString
-    call PrintString
-    call PrintNumber
 
     ; Reset floppy before read
     call ResetFloppy
@@ -109,21 +83,8 @@ Main:
     call GetFirstKernelSector
     push ax
 
-    ; Print first kernel sector number
-    mov cx, ax
-
-    mov si, FirstKernelSectorString
-    call PrintString
-    call PrintNumber
-
-    mov si, KernelSectorsCountString
-    call PrintString
-
     pop ax
     call LoadKernel
-
-    mov cx, bx
-    call PrintNumber
 
     JMP $
 
@@ -298,8 +259,6 @@ LoadKernel:
     push ebp
     mov  ebp, esp
 
-    nop
-
     push ax
     xor bx, bx
     push bx
@@ -325,75 +284,19 @@ LoadKernel:
 
     call LoadFloppyData
 
+    mov ax, [ebp - 4]
+    add ax, 1
+    mov [ebp - 4], ax
+
+    mov ax, [ebp - 2]
+    call GetSectorValue
+    mov [ebp - 2], ax
+
+    cmp ax, 0x0FF0
+    jl LoadKernel_LoadNextSector
+
     mov esp, ebp
     pop ebp
-
-    ret
-
-; Input:
-;   si - address of the string ended with null char
-; Output: nothing
-PrintString:
-    lodsb
-    
-    or al, al
-    jz PrintString_End
-    
-    ; Function name: Teletype Output
-    mov ah, 0x0E
-
-    ; Page number and color to 0
-    mov bx, 0
-
-    int 0x10
-    
-    jmp PrintString
-
-    PrintString_End:
-    ret
-
-; Input:
-;   cx - number to print
-; Output: nothing
-PrintNumber:
-    xor si, si
-
-    PrintNumber_GetDigit:
-    ; Get last digit of number and store it on stack
-    mov ax, cx
-    mov bx, 10
-    xor dx, dx
-    div bx
-
-    push dx
-    mov cx, ax
-
-    ; Increment counter
-    inc si
-
-    ; Exit loop if result of div is zero
-    or cl, cl
-    jnz PrintNumber_GetDigit
-
-    PrintNumber_PrintDigit:
-    ; Pop digit to ax and add 48 to get char
-    pop ax
-    add ax, 48
-
-    ; Function name: Teletype Output
-    mov ah, 0x0E
-
-    ; Page number and color to 0
-    mov bx, 0
-
-    int 0x10
-
-    ; Decrement counter
-    dec si
-
-    ; Go next iteration if there is any number to print
-    or si, si
-    jnz PrintNumber_PrintDigit
 
     ret
 
