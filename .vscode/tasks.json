@@ -12,6 +12,19 @@
             "problemMatcher": []
         },
         {
+            "label": "Build kernel",
+            "type": "shell",
+            "command": "Tools\\nasm.exe Source\\Kernel\\kernel.asm -f bin -o Build\\kernel.bin",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": [
+                "Build bootloader"
+            ],
+            "problemMatcher": []
+        },
+        {
             "label": "Upload bootloader",
             "type": "shell",
             "command": "Tools\\dd.exe if=Build\\bootloader.bin bs=512 of=Build\\floppy.img",
@@ -33,7 +46,7 @@
                 "isDefault": true
             },
             "dependsOn": [
-                "Build bootloader"
+                "Build kernel"
             ],
             "problemMatcher": []
         },
@@ -46,6 +59,7 @@
                 "isDefault": true
             },
             "dependsOn": [
+                "Upload bootloader",
                 "Upload kernel"
             ],
             "problemMatcher": []
@@ -59,6 +73,7 @@
                 "isDefault": true
             },
             "dependsOn": [
+                "Upload bootloader",
                 "Upload kernel"
             ],
             "problemMatcher": []
