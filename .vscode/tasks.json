@@ -19,9 +19,6 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "dependsOn": [
-                "Build bootloader"
-            ],
             "problemMatcher": []
         },
         {
