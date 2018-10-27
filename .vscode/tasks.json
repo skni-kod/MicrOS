@@ -25,6 +25,19 @@
             "problemMatcher": []
         },
         {
+            "label": "Upload kernel",
+            "type": "shell",
+            "command": "Scripts\\upload_kernel.bat",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": [
+                "Build bootloader"
+            ],
+            "problemMatcher": []
+        },
+        {
             "label": "Run QEMU",
             "type": "shell",
             "command": "qemu-system-i386.exe -m 64M -drive file=Build\\floppy.img,format=raw",
@@ -33,7 +46,7 @@
                 "isDefault": true
             },
             "dependsOn": [
-                "Upload bootloader"
+                "Upload kernel"
             ],
             "problemMatcher": []
         },
@@ -46,7 +59,7 @@
                 "isDefault": true
             },
             "dependsOn": [
-                "Upload bootloader"
+                "Upload kernel"
             ],
             "problemMatcher": []
         }
