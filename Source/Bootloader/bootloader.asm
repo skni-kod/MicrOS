@@ -85,6 +85,9 @@ Main:
     ; Load all kernel sectors
     call LoadKernel
 
+    ; Say goodbye to bootloader!
+    call JumpToKernel
+
     JMP $
 
 ; Input: nothing
@@ -306,6 +309,16 @@ LoadKernel:
 
     mov esp, ebp
     pop ebp
+
+    ret
+
+; Input: nothing
+; Output: nothing
+JumpToKernel:
+    mov bx, 0x1000
+    mov ds, bx
+    
+    jmp 0x1000:0x0000
 
     ret
 
