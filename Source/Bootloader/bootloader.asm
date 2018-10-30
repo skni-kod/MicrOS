@@ -42,6 +42,75 @@ FileSystemType                  db 'FAT12   '       ; 8 chars
 KernelFileName                  db 'KERNEL  BIN'    ; 11 chars
 NonDataSectors                  db 0x00
 
+; Entry frame: https://wiki.osdev.org/GDT
+GDT:
+; Null segment, reserved by CPU
+GDT_Null:
+    dd 0x00000000
+    dd 0x00000000
+
+; Code segment
+GDT_Code:
+    ; Segment limit (4 GiB)
+    dw 0xFFFF
+
+    ; Segment base address (16 bits)
+    dw 0x0000
+
+    ; Segment base address (8 bits)
+    db 0x00
+
+    ; 1 - present bit (1 for all valid sectors)
+    ; 00 - privilege (ring level), 00 is the higest
+    ; 1 - reserved
+    ; 1 - excebutable bit, code can be excecuted here
+    ; 0 - conforming bit, only kernel can execute code
+    ; 1 - segment can be read
+    ; 0 - access bit, default is zero
+    db 10011010b
+
+    ; 1 - granularity (0 = 1B block, 1 = 4 KiB block)
+    ; 1 - size bit (0 = 16b protected mode, 1 = 32b protected mode)
+    ; 00 - reserved
+    ; 1111 - segment base address (4 bits)
+    db 11001111b
+
+    ; Segment base address (8 bits)
+    db 0x00
+
+; Data segment
+GDT_Data:
+    ; Segment limit (4 GiB)
+    dw 0xFFFF
+
+    ; Segment base address (16 bits)
+    dw 0x0000
+
+    ; Segment base address (8 bits)
+    db 0x00
+
+    ; 1 - present bit (1 for all valid sectors)
+    ; 00 - privilege (ring level), 00 is the higest
+    ; 1 - reserved
+    ; 0 - excebutable bit, code can't be excecuted here (because it's just data)
+    ; 0 - conforming bit, only kernel can execute code
+    ; 1 - segment can be read
+    ; 0 - access bit, default is zero
+    db 10010010b
+
+    ; 1 - granularity (0 = 1B block, 1 = 4 KiB block)
+    ; 1 - size bit (0 = 16b protected mode, 1 = 32b protected mode)
+    ; 00 - reserved
+    ; 1111 - segment base address (4 bits)
+    db 11001111b
+
+    ; Segment base address (8 bits)
+    db 0x00
+GDT_End:
+GDT_Desc:
+    dw GDT_End - GDT - 1
+    dd GDT
+
 ; Entry point of bootloader
 Main:
     ; Set stack pointer to be directly under bootloader
@@ -85,9 +154,10 @@ Main:
     ; Load all kernel sectors
     call LoadKernel
 
-    ; Say goodbye to bootloader!
+    ; Enter protected mode and jump to the loaded kernel
     call JumpToKernel
 
+    ; We don't expect to be here ever
     JMP $
 
 ; Input: nothing
@@ -315,11 +385,30 @@ LoadKernel:
 ; Input: nothing
 ; Output: nothing
 JumpToKernel:
-    mov bx, 0x1000
-    mov ds, bx
-    
-    jmp 0x1000:0x0000
+    ; Disable interrupts
+    cli
 
+    ; Load GDT table
+    lgdt [GDT_Desc]
+
+    ; Set protected mode flag
+    mov eax, cr0
+    or eax, 1
+    mov cr0, eax
+
+    ; Jump to protected area 
+    jmp 0x08:JumpToKernel_ProtectedArea
+    
+    [BITS 32]
+    JumpToKernel_ProtectedArea:
+
+    ; Set data and stack segments to the third GDI descriptor
+    mov ax, 0x10
+    mov ds, ax
+    mov ss, ax
+    
+    ; Jump to kernel, goodbye bootloader!
+    jmp 0x08:0x10000
     ret
 
 times 510 - ($ - $$) db 0
