@@ -1,13 +1,9 @@
 STARTUP(Build\Kernel\startup.o)
 OUTPUT_FORMAT(binary)
 
-/* Tell where the various sections of the object files will be put in the final
-   kernel image. */
 SECTIONS
 {
-	/* Begin putting sections at 1 MiB, a conventional place for kernels to be
-	   loaded at by the bootloader. */
-	. = 1M;
+	. = 0x10000;
  
 	.text BLOCK(4K) : ALIGN(4K)
 	{
@@ -26,7 +22,6 @@ SECTIONS
  
 	.bss BLOCK(4K) : ALIGN(4K)
 	{
-		*(COMMON)
 		*(.bss)
 	}
 }
