@@ -23,7 +23,7 @@ cd Build/Kernel
 SourceFiles=`find ../.. -name '*.c'`
 
 # Compile kernel
-i386-elf-gcc -c $SourceFiles -ffreestanding -Wall -Wextra
+~/opt/cross/bin/i386-elf-gcc -c $SourceFiles -ffreestanding -Wall -Wextra
 
 if [ $? -ne 0 ]; then
     echo "Kernel build error!"
@@ -37,7 +37,7 @@ cd ../..
 OutputFiles=`find . -name '*.o'`
 
 # Link kernel output files
-i386-elf-gcc -T Source/linker.ld -o Build/kernel.bin -ffreestanding -O2 -nostdlib $OutputFiles -lgcc
+~/opt/cross/bin/i386-elf-gcc -T Source/linker.ld -o Build/kernel.bin -ffreestanding -O2 -nostdlib $OutputFiles -lgcc
 
 if [ $? -ne 0 ]; then
     echo "Linker error!"
