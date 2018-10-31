@@ -2,9 +2,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build OS",
+            "label": "Build",
             "type": "shell",
-            "command": "Scripts\\build.bat",
+            "command": "C:\\msys64\\msys2_shell.cmd -defterm -mingw64 -no-start -here -c Scripts/build.sh",
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -20,7 +20,7 @@
                 "isDefault": true
             },
             "dependsOn": [
-                "Build OS"
+                "Build"
             ],
             "problemMatcher": []
         },
@@ -33,7 +33,7 @@
                 "isDefault": true
             },
             "dependsOn": [
-                "Build OS"
+                "Build"
             ],
             "problemMatcher": []
         }
