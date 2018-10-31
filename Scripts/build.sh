@@ -45,7 +45,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Upload bootloader to the floppy
-Tools/dd.exe if=Build/bootloaderr.bin bs=512 of=Build/floppy.img
+Tools/dd.exe if=Build/bootloader.bin bs=512 of=Build/floppy.img
 
 # Mount floppy
 imdisk -a -f Build/floppy.img -m F:
