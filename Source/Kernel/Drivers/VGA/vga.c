@@ -146,7 +146,7 @@ void vga_clear_screen()
             int pos = j + i * VGA_SCREEN_COLUMNS;
             // Clear 
             video[pos].c.code = 0;
-            video[pos].c.color.vga_color_without_blink = col;
+            video[pos].c.color.color_without_blink = col;
         }
     }
 
@@ -180,7 +180,7 @@ void vga_newline()
             int pos = i + cursor_pos.y * VGA_SCREEN_COLUMNS; 
             // Clear 
             video[pos].c.code = 0;
-            video[pos].c.color.vga_color_without_blink = col;
+            video[pos].c.color.color_without_blink = col;
         }
     }
 }

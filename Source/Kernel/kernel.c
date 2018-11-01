@@ -3,7 +3,8 @@
 void startup()
 {
     vga_color col;
-    col.vga_color_without_blink.letter = VGA_COLOR_GREEN;
+    col.color_without_blink.letter = VGA_COLOR_GREEN;
+    col.color_without_blink.background = VGA_COLOR_BLACK;
     vga_clear_screen();
     vga_printstring("MicrOS is starting...\n");
     vga_printstring("[ ");

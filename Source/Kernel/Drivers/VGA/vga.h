@@ -48,7 +48,7 @@ typedef struct vga_color_without_blink
 typedef union vga_color
 {
     vga_color_with_blink color_with_blink;
-    vga_color_without_blink vga_color_without_blink;
+    vga_color_without_blink color_without_blink;
 } vga_color;
 
 // Character
