@@ -10,11 +10,15 @@ void startup()
     vga_printstring_color("OK", &col);
     vga_printstring(" ] VGA driver\n");
     vga_printstring("MicrOS ready\n");
+    vga_printstring("Created by Application Section of SKNI KOD\n");
+    vga_printstring("Version ... no version\n");
 }
 
 int kmain()
 {
     startup();
-    vga_printstring("Hello, World!");
+    vga_printstring("Hello, World!\n");
+
+    vga_printstring("\nREADY.");
     return 0;
 }
