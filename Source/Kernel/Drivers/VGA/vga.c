@@ -11,7 +11,7 @@ void vga_printchar(char c)
 
 void vga_printchar_color(char c, vga_color * color)
 {
-    int pos = cursor_pos.x + cursor_pos.y * VGA_SCREEN_COLUMNS;
+    uint16_t pos = cursor_pos.x + cursor_pos.y * VGA_SCREEN_COLUMNS;
 
     if(c != '\n')
     {
@@ -52,9 +52,9 @@ void vga_printstring_color(char * str, vga_color * color)
     }
 }
 
-void vga_set_char(int x, int y, char c)
+void vga_set_char(uint16_t x, uint16_t y, char c)
 {
-    int pos = x + y * VGA_SCREEN_COLUMNS;
+    uint16_t pos = x + y * VGA_SCREEN_COLUMNS;
     video[pos].c.code = c;
 }
 
@@ -63,9 +63,9 @@ void vga_set_char_struct(screen_pos spos, char c)
     vga_set_char(spos.x, spos.y, c);
 }
 
-char vga_get_char(int x, int y)
+char vga_get_char(uint16_t x, uint16_t y)
 {
-    int pos = x + y * VGA_SCREEN_COLUMNS;
+    uint16_t pos = x + y * VGA_SCREEN_COLUMNS;
     return video[pos].c.code;
 }
 
@@ -74,9 +74,9 @@ char vga_get_char_struct(screen_pos spos)
     return vga_get_char(spos.x, spos.y);
 }
 
-void vga_set_color(int x, int y, vga_color col)
+void vga_set_color(uint16_t x, uint16_t y, vga_color col)
 {
-    int pos = x + y * VGA_SCREEN_COLUMNS;
+    uint16_t pos = x + y * VGA_SCREEN_COLUMNS;
     video[pos].c.color = col;
 }
 
@@ -85,9 +85,9 @@ void vga_set_color_struct(screen_pos spos, vga_color col)
     vga_set_color(spos.x, spos.y, col);
 }
 
-vga_color vga_get_color(int x, int y)
+vga_color vga_get_color(uint16_t x, uint16_t y)
 {
-    int pos = x + y * VGA_SCREEN_COLUMNS;
+    uint16_t pos = x + y * VGA_SCREEN_COLUMNS;
     return video[pos].c.color;
 }
 
@@ -96,9 +96,9 @@ vga_color vga_get_color_struct(screen_pos spos)
     return vga_get_color(spos.x, spos.y);
 }
 
-void vga_set_character(int x, int y, vga_character c)
+void vga_set_character(uint16_t x, uint16_t y, vga_character c)
 {
-    int pos = x + y * VGA_SCREEN_COLUMNS;
+    uint16_t pos = x + y * VGA_SCREEN_COLUMNS;
     video[pos].c = c;
 }
 
@@ -107,9 +107,9 @@ void vga_set_character_struct(screen_pos spos, vga_character c)
     vga_set_character(spos.x, spos.y, c);
 }
 
-vga_character vga_get_character(int x, int y)
+vga_character vga_get_character(uint16_t x, uint16_t y)
 {
-    int pos = x + y * VGA_SCREEN_COLUMNS;
+    uint16_t pos = x + y * VGA_SCREEN_COLUMNS;
     return video[pos].c;
 }
 
@@ -118,7 +118,7 @@ vga_character vga_get_character_struct(screen_pos spos)
     return vga_get_character(spos.x, spos.y);
 }
 
-void vga_set_cursor_pos(int x, int y)
+void vga_set_cursor_pos(uint16_t x, uint16_t y)
 {
     cursor_pos.x = x;
     cursor_pos.y = y;
@@ -138,12 +138,12 @@ void vga_clear_screen()
 {
     vga_color_without_blink col = { .background = VGA_COLOR_BLACK, .letter = VGA_COLOR_LIGHT_GRAY };
     // Clear all rows
-    for(int i = 0; i < VGA_SCREEN_ROWS; ++i)
+    for(uint16_t i = 0; i < VGA_SCREEN_ROWS; ++i)
     {
         // Clear all lines
-        for(int j = 0; j < VGA_SCREEN_COLUMNS; ++j)
+        for(uint16_t j = 0; j < VGA_SCREEN_COLUMNS; ++j)
         {
-            int pos = j + i * VGA_SCREEN_COLUMNS;
+            uint16_t pos = j + i * VGA_SCREEN_COLUMNS;
             // Clear 
             video[pos].c.code = 0;
             video[pos].c.color.color_without_blink = col;
@@ -162,11 +162,11 @@ void vga_newline()
     if(cursor_pos.y == VGA_SCREEN_ROWS)
     {
         // To current line we copy next line
-        for(int i = 0; i < VGA_SCREEN_ROWS - 1; ++i)
+        for(uint16_t i = 0; i < VGA_SCREEN_ROWS - 1; ++i)
         {
-            for(int j = 0; j < VGA_SCREEN_COLUMNS; ++j)
+            for(uint16_t j = 0; j < VGA_SCREEN_COLUMNS; ++j)
             {
-                int pos = j + i * VGA_SCREEN_COLUMNS;
+                uint16_t pos = j + i * VGA_SCREEN_COLUMNS;
                 // Copy byte from next line
                 video[pos] = video[pos + VGA_SCREEN_COLUMNS];
             }
@@ -175,9 +175,9 @@ void vga_newline()
 
         // Clear last line
         vga_color_without_blink col = { .background = VGA_COLOR_BLACK, .letter = VGA_COLOR_LIGHT_GRAY };
-        for(int i = 0; i < VGA_SCREEN_COLUMNS; ++i)
+        for(uint16_t i = 0; i < VGA_SCREEN_COLUMNS; ++i)
         {
-            int pos = i + cursor_pos.y * VGA_SCREEN_COLUMNS; 
+            uint16_t pos = i + cursor_pos.y * VGA_SCREEN_COLUMNS; 
             // Clear 
             video[pos].c.code = 0;
             video[pos].c.color.color_without_blink = col;
