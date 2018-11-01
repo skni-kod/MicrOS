@@ -60,8 +60,7 @@ void vga_set_char(int x, int y, char c)
 
 void vga_set_char_struct(struct screen_pos spos, char c)
 {
-    int pos = spos.x + spos.y * VGA_SCREEN_COLUMNS;
-    video[pos].c.code = c;
+    vga_set_char(spos.x, spos.y, c);
 }
 
 char vga_get_char(int x, int y)
@@ -72,8 +71,7 @@ char vga_get_char(int x, int y)
 
 char vga_get_char_struct(struct screen_pos spos)
 {
-    int pos = spos.x + spos.y * VGA_SCREEN_COLUMNS;
-    return video[pos].c.code;
+    return vga_get_char(spos.x, spos.y);
 }
 
 void vga_set_color(int x, int y, union vga_color col)
@@ -84,8 +82,7 @@ void vga_set_color(int x, int y, union vga_color col)
 
 void vga_set_color_struct(struct screen_pos spos, union vga_color col)
 {
-    int pos = spos.x + spos.y * VGA_SCREEN_COLUMNS;
-    video[pos].c.color = col;
+    vga_set_color(spos.x, spos.y, col);
 }
 
 union vga_color vga_get_color(int x, int y)
@@ -96,8 +93,7 @@ union vga_color vga_get_color(int x, int y)
 
 union vga_color vga_get_color_struct(struct screen_pos spos)
 {
-    int pos = spos.x + spos.y * VGA_SCREEN_COLUMNS;
-    return video[pos].c.color;
+    return vga_get_color(spos.x, spos.y);
 }
 
 void vga_set_character(int x, int y, struct vga_character c)
@@ -108,8 +104,7 @@ void vga_set_character(int x, int y, struct vga_character c)
 
 void vga_set_character_struct(struct screen_pos spos, struct vga_character c)
 {
-    int pos = spos.x + spos.y * VGA_SCREEN_COLUMNS;
-    video[pos].c = c;
+    vga_set_character(spos.x, spos.y, c);
 }
 
 struct vga_character vga_get_character(int x, int y)
@@ -120,8 +115,7 @@ struct vga_character vga_get_character(int x, int y)
 
 struct vga_character vga_get_character_struct(struct screen_pos spos)
 {
-    int pos = spos.x + spos.y * VGA_SCREEN_COLUMNS;
-    return video[pos].c;
+    return vga_get_character(spos.x, spos.y);
 }
 
 void vga_set_cursor_pos(int x, int y)
