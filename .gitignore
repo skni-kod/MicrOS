@@ -54,3 +54,5 @@ dkms.conf
 # Custom
 Tools
 Build
+Scripts
+.vscode
