@@ -23,7 +23,7 @@ cd Build/Kernel
 SourceFiles=`find ../.. -name '*.c'`
 
 # Compile kernel
-~/opt/cross/bin/i386-elf-gcc -c $SourceFiles -ffreestanding -Wall -Wextra
+~/opt/cross/bin/i386-elf-gcc -g -c $SourceFiles -ffreestanding -Wall -Wextra
 
 if [ $? -ne 0 ]; then
     echo "Kernel build error!"
@@ -37,7 +37,13 @@ cd ../..
 OutputFiles=`find . -name '*.o'`
 
 # Link kernel output files
-~/opt/cross/bin/i386-elf-gcc -T Source/linker.ld -o Build/kernel.bin -ffreestanding -O2 -nostdlib $OutputFiles -lgcc
+~/opt/cross/bin/i386-elf-gcc -g -T Source/linker.ld -o Build/kernel.elf -ffreestanding -O2 -nostdlib $OutputFiles -lgcc
+
+# Get debug symbols from elf and save them to the separate file
+objcopy --only-keep-debug Build/kernel.elf Build/kernel.sym
+
+# Get flat binary from elf file and save it as our real kernel file
+objcopy -O binary Build/kernel.elf Build/kernel.bin
 
 if [ $? -ne 0 ]; then
     echo "Linker error!"

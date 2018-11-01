@@ -1,5 +1,5 @@
 STARTUP(Build\Kernel\startup.o)
-OUTPUT_FORMAT(binary)
+OUTPUT_FORMAT(elf32-i386)
 
 SECTIONS
 {
