@@ -65,7 +65,27 @@ union screen
     struct vga_character c;
 };
 
+// Functions for users
 void vga_printchar(char c);
-void vga_printcharcolor(char c, union vga_color* color);
-void vga_printstring(char* str);
+void vga_printchar_color(char c, union vga_color * color);
+void vga_printstring(char * str);
+void vga_printstring_color(char * str, union vga_color * color);
+void vga_set_char(int x, int y, char c);
+void vga_set_char_struct(struct screen_pos spos, char c);
+char vga_get_char(int x, int y);
+char vga_get_char_struct(struct screen_pos spos);
+void vga_set_color(int x, int y, union vga_color col);
+void vga_set_color_struct(struct screen_pos spos, union vga_color col);
+union vga_color vga_get_color(int x, int y);
+union vga_color vga_get_color_struct(struct screen_pos spos);
+void vga_set_character(int x, int y, struct vga_character c);
+void vga_set_character_struct(struct screen_pos spos, struct vga_character c);
+struct vga_character vga_get_character(int x, int y);
+struct vga_character vga_get_character_struct(struct screen_pos spos);
+void vga_set_cursor_pos(int x, int y);
+void vga_set_cursor_pos_struct(struct screen_pos spos);
+struct screen_pos vga_get_cursor_pos();
+void vga_clear_screen();
+
+// Helpers
 void vga_newline();
