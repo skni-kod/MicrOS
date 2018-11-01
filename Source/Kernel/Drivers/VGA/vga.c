@@ -47,7 +47,7 @@ void vga_printstring_color(char * str, union vga_color * color)
     char* ptr = str;
     while(*ptr != 0)
     {
-        vga_printchar(*ptr, color);
+        vga_printchar_color(*ptr, color);
         ptr++;
     }
 }
