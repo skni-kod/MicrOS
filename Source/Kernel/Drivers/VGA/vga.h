@@ -1,4 +1,6 @@
-#pragma once
+#ifndef VGA_H
+#define VGA_H
+
 #define VGA_BASE_ADDR 0xB8000
 #define VGA_SCREEN_COLUMNS 80
 #define VGA_SCREEN_ROWS 25
@@ -89,3 +91,5 @@ void vga_clear_screen();
 
 // Helpers
 void vga_newline();
+
+#endif
