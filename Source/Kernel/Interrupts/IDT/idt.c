@@ -1,4 +1,5 @@
 #include "idt.h"
+#include "../../Drivers/Keyboard/keyboard.h"
 
 idt_entry idt_entries[IDT_INTERRUPTS_COUNT];
 idt_info idt_information;
@@ -67,6 +68,7 @@ void IRQ0_handler(void)
  
 void IRQ1_handler(void)
 {
+    keyboard_handler();
 	outb(0x20, 0x20);
 }
  

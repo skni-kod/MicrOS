@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IDT_H   /* Include guard */
+#define IDT_H
 #define IDT_INTERRUPTS_COUNT 64
 
 #include "idt_entry.h"
@@ -41,3 +42,5 @@ extern int IRQ28();
 extern int IRQ29();
 extern int IRQ30();
 extern int IRQ31();
+
+#endif
