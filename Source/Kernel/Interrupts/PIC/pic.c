@@ -51,10 +51,6 @@ void pic_enable_irq(uint8_t interrupt_number)
     uint16_t current_mask = (inb(SLAVE_PIC_DATA) << 8) | inb(MASTER_PIC_DATA);
 	current_mask &= ~(1 << interrupt_number);
 
-	uint8_t test1 = (uint8_t)current_mask & 0xFFFF;
-	uint8_t test2 = (current_mask >> 8) & 0xFFFF;
-
-
 	outb(MASTER_PIC_DATA, (uint8_t)current_mask & 0xFFFF);
 	outb(SLAVE_PIC_DATA, (current_mask >> 8) & 0xFFFF);
 }
@@ -66,4 +62,15 @@ void pic_disable_irq(uint8_t interrupt_number)
 
 	outb(MASTER_PIC_DATA, (uint8_t)current_mask);
 	outb(SLAVE_PIC_DATA, current_mask >> 8);
+}
+
+void pic_confirm_master()
+{
+    outb(MASTER_PIC_COMMAND, 0x20);
+}
+
+void pic_confirm_master_and_slave()
+{
+    outb(MASTER_PIC_COMMAND, 0x20);
+    outb(SLAVE_PIC_COMMAND, 0x20);
 }

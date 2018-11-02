@@ -11,3 +11,5 @@ void pic_init();
 void pic_remap(int master_offset, int slave_offset);
 void pic_enable_irq(uint8_t interrupt_number);
 void pic_disable_irq(uint8_t interrupt_number);
+void pic_confirm_master();
+void pic_confirm_master_and_slave();

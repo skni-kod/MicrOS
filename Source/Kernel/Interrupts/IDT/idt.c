@@ -54,99 +54,84 @@ void idt_unset(int index)
     idt_entries[index].present = 0;
 }
 
-void idt_confirm_master_pic()
-{
-    // Confirm interrupt in master PIC
-    outb(0x20, 0x20);
-}
-
-void idt_confirm_master_and_slave_pic()
-{
-    // Confirm interrupt in master PIC
-    outb(0x20, 0x20);
-
-    // Confirm interrupt in slave PIC
-    outb(0xA0, 0x20);
-}
-
 void int0_handler()
 {
-    idt_confirm_master_pic();
+    pic_confirm_master();
 }
  
 void int1_handler()
 {
-	idt_confirm_master_pic();
+	pic_confirm_master();
 }
  
 void int2_handler()
 {
-    idt_confirm_master_pic();
+    pic_confirm_master();
 }
  
 void int3_handler()
 {
-    idt_confirm_master_pic();
+    pic_confirm_master();
 }
  
 void int4_handler()
 {
-    idt_confirm_master_pic();
+    pic_confirm_master();
 }
  
 void int5_handler()
 {
-    idt_confirm_master_pic();
+    pic_confirm_master();
 }
  
 void int6_handler()
 {
-    idt_confirm_master_pic();
+    pic_confirm_master();
 }
  
 void int7_handler()
 {
-    idt_confirm_master_pic();
+    pic_confirm_master();
 }
 
 void int8_handler()
 {
-    idt_confirm_master_and_slave_pic();
+    pic_confirm_master_and_slave();
 }
 
 void int9_handler()
 {
-    idt_confirm_master_and_slave_pic();
+    pic_confirm_master_and_slave();
 }
 
 void int10_handler()
 {
-    idt_confirm_master_and_slave_pic();
+    pic_confirm_master_and_slave();
 }
 
 void int11_handler()
 {
-    idt_confirm_master_and_slave_pic();
+    pic_confirm_master_and_slave();
 }
 
 void int12_handler()
 {
-    idt_confirm_master_and_slave_pic();
+    pic_confirm_master_and_slave();
 }
 
 void int13_handler()
 {
-    idt_confirm_master_and_slave_pic();
+    pic_confirm_master_and_slave();
 }
 
 void int14_handler()
 {
-    idt_confirm_master_and_slave_pic();
+    pic_confirm_master_and_slave();
 }
 
 void int15_handler()
 {
-    idt_confirm_master_and_slave_pic();
+    pic_confirm_master_and_slave();
 }
 
 void int48_handler()

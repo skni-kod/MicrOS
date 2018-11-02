@@ -4,12 +4,11 @@
 #include "idt_entry.h"
 #include "idt_info.h"
 #include "../../Assembly/io.h"
+#include "../PIC/pic.h"
 
 void idt_init();
 void idt_set(uint8_t index, void (*handler)());
 void idt_unset(int index);
-void idt_confirm_master_pic();
-void idt_confirm_master_and_slave_pic();
 
 // Hardware interrupts
 extern int int0();
