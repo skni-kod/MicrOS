@@ -15,6 +15,5 @@ int kmain()
 
     vga_printstring("Hello, World!");
 
-    while(1) {}
     return 0;
 }

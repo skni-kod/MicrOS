@@ -1,5 +1,5 @@
 #pragma once
-#define IDT_INTERRUPTS_COUNT 64
+#define IDT_INTERRUPT_DESCRIPTOR_TABLE_LENGTH 64
 
 #include "idt_entry.h"
 #include "idt_info.h"
@@ -8,36 +8,22 @@
 void idt_init();
 void idt_set(uint8_t index, void (*handler)());
 void idt_unset(int index);
+void idt_confirm_hardware_interrupt();
+void idt_confirm_software_interrupt();
 
-extern int IRQ0();
-extern int IRQ1();
-extern int IRQ2();
-extern int IRQ3();
-extern int IRQ4();
-extern int IRQ5();
-extern int IRQ6();
-extern int IRQ7();
-extern int IRQ8();
-extern int IRQ9();
-extern int IRQ10();
-extern int IRQ11();
-extern int IRQ12();
-extern int IRQ13();
-extern int IRQ14();
-extern int IRQ15();
-extern int IRQ16();
-extern int IRQ17();
-extern int IRQ18();
-extern int IRQ19();
-extern int IRQ20();
-extern int IRQ21();
-extern int IRQ22();
-extern int IRQ23();
-extern int IRQ24();
-extern int IRQ25();
-extern int IRQ26();
-extern int IRQ27();
-extern int IRQ28();
-extern int IRQ29();
-extern int IRQ30();
-extern int IRQ31();
+// Hardware interrupts
+extern int int0();
+extern int int1();
+extern int int2();
+extern int int3();
+extern int int4();
+extern int int5();
+extern int int6();
+extern int int7();
+
+// Software interrupts
+extern int int48();
+extern int int49();
+extern int int50();
+extern int int51();
+extern int int52();
