@@ -5,5 +5,6 @@
 #include <stddef.h>
 
 void* memset(void* buffer, int value, size_t size);
+int memcmp(const void* buffer1, const void* buffer2, size_t size);
 
 #endif
