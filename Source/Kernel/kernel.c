@@ -1,4 +1,5 @@
 #include "Drivers/VGA/vga.h"
+#include "Drivers/RTC/RTC.h"
 #include "Interrupts/PIC/pic.h"
 #include "Interrupts/IDT/idt.h"
 
@@ -39,5 +40,11 @@ int kmain()
     vga_printstring("Hello, World!\n");
     vga_printstring("\nREADY.");
     
+    vga_printstring("\nHours: ");
+    while(1){
+        read_rtc();
+        vga_printchar(second + '0');
+        vga_printchar('\n');
+    }
     return 0;
 }
