@@ -7,5 +7,6 @@
 void* memset(void* buffer, int value, size_t size);
 int memcmp(const void* buffer1, const void* buffer2, size_t size);
 void* memcpy(void* destination, const void* source, size_t size);
+void* memmove(void* destination, const void* source, size_t size);
 
 #endif
