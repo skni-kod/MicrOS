@@ -81,8 +81,67 @@ unsigned char kbdusB[128] =
     0,	/* All other keys are undefined */
 };	
 
-volatile KeyboardStateFlags* kb_state = 0x0417;
-volatile KeyboardExtendedStateFlags* kb_estate = 0x0496;
+volatile KeyboardStateFlags* const kb_state = 0x0417;
+volatile KeyboardExtendedStateFlags* const kb_estate = 0x0496;
+volatile uint16_t* const buffer_start = 0x0480;
+volatile uint16_t* const buffer_end = 0x0482;
+volatile uint16_t* const buffer_write = 0x041C;
+volatile uint16_t* const buffer_read = 0x041A;
+
+unsigned char ableToWrite()
+{
+  if(((*buffer_end)==(*buffer_write)) && ((*buffer_start)==(*buffer_read)))
+    return 0;
+  if((*buffer_write) + 2 == (*buffer_read))
+    return 0;
+  return 1;
+}
+
+unsigned char isBufferEmpty()
+{
+  return (*buffer_write) == (*buffer_read);
+}
+
+void incrementBufferPointer(volatile uint16_t* const ptr)
+{
+  if(*ptr == (*buffer_end))
+    *ptr = (*buffer_start);
+  else
+    *ptr = *ptr + 2;
+}
+
+void put_key_to_buffor(unsigned char scancode, unsigned char ascii)
+{
+  if(!ableToWrite())
+  {
+    vga_printstring("\n _._     _,-'\"\"`-._       YEAH OKAY WE GET IT CRUMPY CAT IS FUNNY LOOKING\n");
+    vga_printstring("(,-.`._,'(       |\`-/|                                                  \n");
+    vga_printstring("    `-.-' \ )-`( , o o)                                                  \n");
+    vga_printstring("-bf-      `-    \`_`\"'-   WE FUCKING GET IT ALREADY. WE PLUG THE BUFFER  \n");
+    return;
+  }
+    
+  volatile ScanAsciiPair* character = (0x0040 * 0x10) + (*buffer_write);
+  character->ascii = ascii;
+  character->scancode = scancode;
+  incrementBufferPointer(buffer_write);
+}
+
+ScanAsciiPair get_key_from_buffer()
+{
+  ScanAsciiPair c;
+  if(isBufferEmpty())
+  {
+    c.ascii = 0;
+    c.scancode = 255;
+    return c;
+  }
+  ScanAsciiPair* tmp = (0x0040 * 0x10) + (*buffer_read);
+  c.ascii = tmp->ascii;
+  c.scancode = tmp->scancode;
+  incrementBufferPointer(buffer_read);
+  return c;
+}
 
 unsigned char get_scancode()
 {
@@ -173,24 +232,24 @@ void keyboard_handler()
             if((scancode >= 71) && (scancode <= 83))
             {
               if(kb_state->num_lock_active)
-                vga_printchar(kbdusB[scancode]);
+                put_key_to_buffor(scancode, kbdusB[scancode]);
               else
-                vga_printchar(kbdus[scancode]);
+                put_key_to_buffor(scancode, kbdus[scancode]);
               break;
             }
             if(kb_state->caps_lock_active)
             {
                 if((kb_state->left_shift_pressed) || (kb_state->right_shift_pressed))
-                  vga_printchar(kbdus[scancode]);
+                  put_key_to_buffor(scancode, kbdus[scancode]);
                 else
-                  vga_printchar(kbdusB[scancode]);
+                  put_key_to_buffor(scancode, kbdusB[scancode]);
             }
             else
             {
               if((kb_state->left_shift_pressed) || (kb_state->right_shift_pressed))
-                  vga_printchar(kbdusB[scancode]);
+                  put_key_to_buffor(scancode, kbdusB[scancode]);
                 else
-                  vga_printchar(kbdus[scancode]);
+                  put_key_to_buffor(scancode, kbdus[scancode]);
             }
           }
       }

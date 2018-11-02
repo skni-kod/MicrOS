@@ -1,6 +1,7 @@
 #include "Drivers/VGA/vga.h"
 #include "Interrupts/IDT/idt.h"
 #include "Interrupts/PIC/pic.h"
+#include "Drivers/Keyboard/keyboard.h"
 
 void startup()
 {
@@ -26,6 +27,16 @@ int kmain()
     startup();
     vga_printstring("Hello, World!\n");
 
-    vga_printstring("\nREADY.");
+    vga_printstring("\nREADY.\n");
+
+    while(1)
+    {
+        if(!isBufferEmpty())
+        {
+            ScanAsciiPair c = get_key_from_buffer();
+            vga_printchar(c.ascii);
+        }
+    }
+
     return 0;
 }

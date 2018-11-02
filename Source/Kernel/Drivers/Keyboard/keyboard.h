@@ -41,10 +41,20 @@ typedef struct KeyboardExtendedStateFlags{
     char data_error:1;
 } __attribute__((packed)) KeyboardExtendedStateFlags;
 
+typedef struct ScanAsciiPair{
+    unsigned char scancode;
+    unsigned char ascii;
+} ScanAsciiPair;
+
+unsigned char ableToWrite();
+void incrementBufferPointer(volatile uint16_t* const ptr);
+void put_key_to_buffor(unsigned char scancode, unsigned char ascii);
 unsigned char get_scancode();
 void keyboard_handler();
 unsigned char _between(unsigned char num, unsigned char l, unsigned char r);
 unsigned char _between_or_eq(unsigned char number, unsigned char l, unsigned char r);
+ScanAsciiPair get_key_from_buffer();
+unsigned char isBufferEmpty();
 
 
 
