@@ -8,7 +8,7 @@ void pic_init()
     pic_remap(0x20, 0x28);
 }
 
-void pic_remap(int master_offset, int slave_offset)
+void pic_remap(uint32_t master_offset, uint32_t slave_offset)
 {
 	// Send initialization sequence to the master PIC and slave PIC
 	outb(MASTER_PIC_COMMAND, 0x11);

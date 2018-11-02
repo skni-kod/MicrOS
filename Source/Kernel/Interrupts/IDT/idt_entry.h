@@ -1,4 +1,6 @@
-#pragma once
+#ifndef IDT_ENTRY_H
+#define IDT_ENTRY_H
+
 #include <stdint.h>
 
 /*
@@ -26,3 +28,5 @@ typedef struct idt_entry {
     uint8_t present : 1;
     uint16_t offset_16_31;
 } __attribute__((packed)) idt_entry;
+
+#endif

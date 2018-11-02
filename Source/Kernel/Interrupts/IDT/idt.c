@@ -7,7 +7,7 @@ void idt_init()
 {
     // Init Interrupt Descriptor Table descriptor
     idt_information.size = sizeof(idt_entry) * IDT_INTERRUPT_DESCRIPTOR_TABLE_LENGTH - 1;
-    idt_information.offset = &idt_entries;
+    idt_information.offset = (uint32_t)&idt_entries;
 
     // Hardware interrupts (IRQ)
     idt_set(32, int0);      // Programmable Interrupt Timer 
@@ -38,9 +38,9 @@ void idt_init()
     __asm__ ("lidt %0" :: "m"(idt_information));
 }
 
-void idt_set(uint8_t index, void (*handler)())
+void idt_set(uint8_t index, uint32_t (*handler)())
 {
-    int handler_address = handler;
+    uint32_t handler_address = (uint32_t)handler;
 
     idt_entries[index].offset_0_15 = handler_address & 0xFFFF;
     idt_entries[index].offset_16_31 = (handler_address >> 16) & 0xFFFF;
@@ -49,7 +49,7 @@ void idt_set(uint8_t index, void (*handler)())
     idt_entries[index].type = Interrupt_32Bit;
 }
 
-void idt_unset(int index)
+void idt_unset(uint32_t index)
 {
     idt_entries[index].present = 0;
 }
