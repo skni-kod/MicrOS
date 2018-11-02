@@ -88,6 +88,11 @@ volatile uint16_t* const buffer_end = 0x0482;
 volatile uint16_t* const buffer_write = 0x041C;
 volatile uint16_t* const buffer_read = 0x041A;
 
+void keyboard_init()
+{
+    pic_enable_irq(1);
+}
+
 unsigned char ableToWrite()
 {
   if(((*buffer_end)==(*buffer_write)) && ((*buffer_start)==(*buffer_read)))

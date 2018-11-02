@@ -2,6 +2,7 @@
 #define KEYBOARD_H
 
 #include "../../Interrupts/IDT/idt.h"
+#include "../../Interrupts/PIC/pic.h"
 
 typedef struct KeyboardStateFlags{
     char right_shift_pressed:1;
