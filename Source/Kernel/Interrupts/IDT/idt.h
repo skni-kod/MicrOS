@@ -1,46 +1,40 @@
-#ifndef IDT_H   /* Include guard */
+#ifndef IDT_H
 #define IDT_H
-#define IDT_INTERRUPTS_COUNT 64
+
+#define IDT_INTERRUPT_DESCRIPTOR_TABLE_LENGTH 64
 
 #include "idt_entry.h"
 #include "idt_info.h"
 #include "../../Assembly/io.h"
+#include "../PIC/pic.h"
 
 void idt_init();
-void idt_set(uint8_t index, void (*handler)());
-void idt_unset(int index);
+void idt_set(uint8_t index, uint32_t (*handler)());
+void idt_unset(uint8_t index);
 
-extern int IRQ0();
-extern int IRQ1();
-extern int IRQ2();
-extern int IRQ3();
-extern int IRQ4();
-extern int IRQ5();
-extern int IRQ6();
-extern int IRQ7();
-extern int IRQ8();
-extern int IRQ9();
-extern int IRQ10();
-extern int IRQ11();
-extern int IRQ12();
-extern int IRQ13();
-extern int IRQ14();
-extern int IRQ15();
-extern int IRQ16();
-extern int IRQ17();
-extern int IRQ18();
-extern int IRQ19();
-extern int IRQ20();
-extern int IRQ21();
-extern int IRQ22();
-extern int IRQ23();
-extern int IRQ24();
-extern int IRQ25();
-extern int IRQ26();
-extern int IRQ27();
-extern int IRQ28();
-extern int IRQ29();
-extern int IRQ30();
-extern int IRQ31();
+// Hardware interrupts
+extern uint32_t int0();
+extern uint32_t int1();
+extern uint32_t int2();
+extern uint32_t int3();
+extern uint32_t int4();
+extern uint32_t int5();
+extern uint32_t int6();
+extern uint32_t int7();
+extern uint32_t int8();
+extern uint32_t int9();
+extern uint32_t int10();
+extern uint32_t int11();
+extern uint32_t int12();
+extern uint32_t int13();
+extern uint32_t int14();
+extern uint32_t int15();
+
+// Software interrupts
+extern uint32_t int48();
+extern uint32_t int49();
+extern uint32_t int50();
+extern uint32_t int51();
+extern uint32_t int52();
 
 #endif
