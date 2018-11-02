@@ -6,6 +6,14 @@ global int4
 global int5
 global int6
 global int7
+global int8
+global int9
+global int10
+global int11
+global int12
+global int13
+global int14
+global int15
 global int48
 global int49
 global int50
@@ -20,6 +28,14 @@ global int4_handler
 global int5_handler
 global int6_handler
 global int7_handler
+global int8_handler
+global int9_handler
+global int10_handler
+global int11_handler
+global int12_handler
+global int13_handler
+global int14_handler
+global int15_handler
 global int48_handler
 global int49_handler
 global int50_handler
@@ -34,6 +50,14 @@ extern int4_handler
 extern int5_handler
 extern int6_handler
 extern int7_handler
+extern int8_handler
+extern int9_handler
+extern int10_handler
+extern int11_handler
+extern int12_handler
+extern int13_handler
+extern int14_handler
+extern int15_handler
 extern int48_handler
 extern int49_handler
 extern int50_handler
@@ -85,6 +109,54 @@ int6:
 int7:
   pusha
   call int7_handler
+  popa
+  iret
+  
+int8:
+  pusha
+  call int8_handler
+  popa
+  iret
+  
+int9:
+  pusha
+  call int9_handler
+  popa
+  iret
+  
+int10:
+  pusha
+  call int10_handler
+  popa
+  iret
+  
+int11:
+  pusha
+  call int11_handler
+  popa
+  iret
+  
+int12:
+  pusha
+  call int12_handler
+  popa
+  iret
+  
+int13:
+  pusha
+  call int13_handler
+  popa
+  iret
+  
+int14:
+  pusha
+  call int14_handler
+  popa
+  iret
+  
+int15:
+  pusha
+  call int15_handler
   popa
   iret
 

@@ -10,14 +10,22 @@ void idt_init()
     idt_information.offset = &idt_entries;
 
     // Hardware interrupts (IRQ)
-    idt_set(32, int0);
-    idt_set(33, int1);
-    idt_set(34, int2);
-    idt_set(35, int3);
-    idt_set(36, int4);
-    idt_set(37, int5);
-    idt_set(38, int6);
-    idt_set(39, int7);
+    idt_set(32, int0);      // Programmable Interrupt Timer 
+    idt_set(33, int1);      // Keyboard
+    idt_set(34, int2);      // Cascade
+    idt_set(35, int3);      // COM2
+    idt_set(36, int4);      // COM1
+    idt_set(37, int5);      // LPT2
+    idt_set(38, int6);      // Floppy
+    idt_set(39, int7);      // LPT1
+    idt_set(32, int8);      // CMOS
+    idt_set(33, int9);      // Free
+    idt_set(34, int10);     // Free
+    idt_set(35, int11);     // Free
+    idt_set(36, int12);     // Mouse
+    idt_set(37, int13);     // FPU
+    idt_set(38, int14);     // Primary ATA Hard Disk
+    idt_set(39, int15);     // Secondary ATA Hard Disk
 
     // Software interrupts
     idt_set(48, int48);
@@ -46,13 +54,13 @@ void idt_unset(int index)
     idt_entries[index].present = 0;
 }
 
-void idt_confirm_hardware_interrupt()
+void idt_confirm_master_pic()
 {
     // Confirm interrupt in master PIC
     outb(0x20, 0x20);
 }
 
-void idt_confirm_software_interrupt()
+void idt_confirm_master_and_slave_pic()
 {
     // Confirm interrupt in master PIC
     outb(0x20, 0x20);
@@ -63,65 +71,105 @@ void idt_confirm_software_interrupt()
 
 void int0_handler()
 {
-    idt_confirm_hardware_interrupt();
+    idt_confirm_master_pic();
 }
  
 void int1_handler()
 {
-	idt_confirm_hardware_interrupt();
+	idt_confirm_master_pic();
 }
  
 void int2_handler()
 {
-    idt_confirm_hardware_interrupt();
+    idt_confirm_master_pic();
 }
  
 void int3_handler()
 {
-    idt_confirm_hardware_interrupt();
+    idt_confirm_master_pic();
 }
  
 void int4_handler()
 {
-    idt_confirm_hardware_interrupt();
+    idt_confirm_master_pic();
 }
  
 void int5_handler()
 {
-    idt_confirm_hardware_interrupt();
+    idt_confirm_master_pic();
 }
  
 void int6_handler()
 {
-    idt_confirm_hardware_interrupt();
+    idt_confirm_master_pic();
 }
  
 void int7_handler()
 {
-    idt_confirm_hardware_interrupt();
+    idt_confirm_master_pic();
+}
+
+void int8_handler()
+{
+    idt_confirm_master_and_slave_pic();
+}
+
+void int9_handler()
+{
+    idt_confirm_master_and_slave_pic();
+}
+
+void int10_handler()
+{
+    idt_confirm_master_and_slave_pic();
+}
+
+void int11_handler()
+{
+    idt_confirm_master_and_slave_pic();
+}
+
+void int12_handler()
+{
+    idt_confirm_master_and_slave_pic();
+}
+
+void int13_handler()
+{
+    idt_confirm_master_and_slave_pic();
+}
+
+void int14_handler()
+{
+    idt_confirm_master_and_slave_pic();
+}
+
+void int15_handler()
+{
+    idt_confirm_master_and_slave_pic();
 }
 
 void int48_handler()
 {
-    idt_confirm_software_interrupt();
+    
 }
 
 void int49_handler()
 {
-    idt_confirm_software_interrupt();
+    
 }
 
 void int50_handler()
 {
-    idt_confirm_software_interrupt();
+    
 }
 
 void int51_handler()
 {
-    idt_confirm_software_interrupt();
+    
 }
 
 void int52_handler()
 {
-    idt_confirm_software_interrupt();
+    
 }

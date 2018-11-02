@@ -8,8 +8,8 @@
 void idt_init();
 void idt_set(uint8_t index, void (*handler)());
 void idt_unset(int index);
-void idt_confirm_hardware_interrupt();
-void idt_confirm_software_interrupt();
+void idt_confirm_master_pic();
+void idt_confirm_master_and_slave_pic();
 
 // Hardware interrupts
 extern int int0();
@@ -20,6 +20,14 @@ extern int int4();
 extern int int5();
 extern int int6();
 extern int int7();
+extern int int8();
+extern int int9();
+extern int int10();
+extern int int11();
+extern int int12();
+extern int int13();
+extern int int14();
+extern int int15();
 
 // Software interrupts
 extern int int48();
