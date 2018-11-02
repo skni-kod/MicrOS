@@ -22,10 +22,10 @@ void startup()
     print_ok_status("VGA Driver");
 
     pic_init();
-    print_ok_status("PIC Driver");
+    print_ok_status("Programmable Interrupt Controller");
 
     idt_init();
-    print_ok_status("IDT Driver");
+    print_ok_status("Interrupt Descriptor Table");
 
     vga_printstring("MicrOS ready\n");
     vga_printstring("Created by Application Section of SKNI KOD\n");
@@ -35,8 +35,9 @@ void startup()
 int kmain()
 {
     startup();
-    vga_printstring("Hello, World!\n");
 
+    vga_printstring("Hello, World!\n");
     vga_printstring("\nREADY.");
+    
     return 0;
 }
