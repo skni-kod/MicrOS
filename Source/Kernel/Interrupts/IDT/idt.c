@@ -18,14 +18,14 @@ void idt_init()
     idt_set(37, int5);      // LPT2
     idt_set(38, int6);      // Floppy
     idt_set(39, int7);      // LPT1
-    idt_set(32, int8);      // CMOS
-    idt_set(33, int9);      // Free
-    idt_set(34, int10);     // Free
-    idt_set(35, int11);     // Free
-    idt_set(36, int12);     // Mouse
-    idt_set(37, int13);     // FPU
-    idt_set(38, int14);     // Primary ATA Hard Disk
-    idt_set(39, int15);     // Secondary ATA Hard Disk
+    idt_set(40, int8);      // CMOS
+    idt_set(41, int9);      // Free
+    idt_set(42, int10);     // Free
+    idt_set(43, int11);     // Free
+    idt_set(44, int12);     // Mouse
+    idt_set(45, int13);     // FPU
+    idt_set(46, int14);     // Primary ATA Hard Disk
+    idt_set(47, int15);     // Secondary ATA Hard Disk
 
     // Software interrupts
     idt_set(48, int48);

@@ -10,10 +10,6 @@ void pic_init()
 
 void pic_remap(int master_offset, int slave_offset)
 {
-	// Save current masks because they will be destroyed during reinit
-	uint8_t master_mask = inb(MASTER_PIC_DATA);
-	uint8_t slave_mask = inb(SLAVE_PIC_DATA);
- 
 	// Send initialization sequence to the master PIC and slave PIC
 	outb(MASTER_PIC_COMMAND, 0x11);
 	io_wait();
@@ -42,7 +38,32 @@ void pic_remap(int master_offset, int slave_offset)
 	outb(SLAVE_PIC_DATA, 0x01);
 	io_wait();
  
-	// Restore masks for master PIC and slave PIC
-	outb(MASTER_PIC_DATA, master_mask);
-	outb(SLAVE_PIC_DATA, slave_mask);
+	// Reset masks to the default values
+	outb(MASTER_PIC_DATA, 0xFF);
+	outb(SLAVE_PIC_DATA, 0xFF);
+
+	// Enable interrupts
+	enable();
+}
+
+void pic_enable_irq(uint8_t interrupt_number)
+{
+    uint16_t current_mask = (inb(SLAVE_PIC_DATA) << 8) | inb(MASTER_PIC_DATA);
+	current_mask &= ~(1 << interrupt_number);
+
+	uint8_t test1 = (uint8_t)current_mask & 0xFFFF;
+	uint8_t test2 = (current_mask >> 8) & 0xFFFF;
+
+
+	outb(MASTER_PIC_DATA, (uint8_t)current_mask & 0xFFFF);
+	outb(SLAVE_PIC_DATA, (current_mask >> 8) & 0xFFFF);
+}
+
+void pic_disable_irq(uint8_t interrupt_number)
+{
+	uint16_t current_mask = (inb(SLAVE_PIC_DATA) << 8) | inb(MASTER_PIC_DATA);
+	current_mask |= 1 << interrupt_number;
+
+	outb(MASTER_PIC_DATA, (uint8_t)current_mask);
+	outb(SLAVE_PIC_DATA, current_mask >> 8);
 }

@@ -8,11 +8,7 @@ int kmain()
     pic_init();
     idt_init();
 
-    // Enable keyboard
-    outb(0x21,0xfd);
-    outb(0xa1,0xff);
-    enable();
-
+    pic_enable_irq(1);
     vga_printstring("Hello, World!");
 
     return 0;

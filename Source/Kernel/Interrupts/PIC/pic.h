@@ -8,4 +8,6 @@
 #include <stdint.h>
 
 void pic_init();
-void io_wait();
+void pic_remap(int master_offset, int slave_offset);
+void pic_enable_irq(uint8_t interrupt_number);
+void pic_disable_irq(uint8_t interrupt_number);
