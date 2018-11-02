@@ -49,7 +49,7 @@ void idt_set(uint8_t index, uint32_t (*handler)())
     idt_entries[index].type = Interrupt_32Bit;
 }
 
-void idt_unset(uint32_t index)
+void idt_unset(uint8_t index)
 {
     idt_entries[index].present = 0;
 }
