@@ -62,19 +62,19 @@ unsigned char kbdusB[128] =
     0,	/* < ... F10 */
     0,	/* 69 - Num lock*/
     0,	/* Scroll Lock */
-    0,	/* Home key */
-    0,	/* Up Arrow */
-    0,	/* Page Up */
+    '7',	/* Home key */
+    '8',	/* Up Arrow */
+    '9',	/* Page Up */
   '-',
-    0,	/* Left Arrow */
-    0,
-    0,	/* Right Arrow */
+    '4',	/* Left Arrow */
+    '5',
+    '6',	/* Right Arrow */
   '+',
-    0,	/* 79 - End key*/
-    0,	/* Down Arrow */
-    0,	/* Page Down */
-    0,	/* Insert Key */
-    0,	/* Delete Key */
+    '1',	/* 79 - End key*/
+    '2',	/* Down Arrow */
+    '3',	/* Page Down */
+    '0',	/* Insert Key */
+    ',',	/* Delete Key */
     0,   0,   0,
     0,	/* F11 Key */
     0,	/* F12 Key */
@@ -123,6 +123,21 @@ void keyboard_handler()
           else
             kb_state->left_alt_pressed = 1;
           break;
+        case 58:
+          kb_state->caps_lock_pressed = 1;
+          kb_state->caps_lock_active = !kb_state->caps_lock_active;
+          kb_estate->caps_lock_led = !kb_estate->caps_lock_led;
+          break;
+        case 69:
+          kb_state->num_lock_pressed = 1;
+          kb_state->num_lock_active = !kb_state->num_lock_active;
+          kb_estate->num_lock_led = !kb_estate->num_lock_led;
+          break;
+        case 60:
+          kb_state->scroll_lock_pressed = 1;
+          kb_state->scroll_lock_active = !kb_state->scroll_lock_active;
+          kb_estate->scroll_lock_led = !kb_estate->scroll_lock_led;
+          break;
         case 29 + 128:
           kb_state->ctrl_pressed = 0;
           if(kb_estate->last_E0h)    
@@ -143,13 +158,40 @@ void keyboard_handler()
           else
             kb_state->left_alt_pressed = 0;
           break;
+        case 58 + 128:
+          kb_state->caps_lock_pressed = 0;
+          break;
+        case 69 + 128:
+          kb_state->num_lock_pressed = 0;
+          break;
+        case 60 + 128:
+          kb_state->scroll_lock_pressed = 0;
+          break;
         default:
           if(scancode < 128)
           {
-            if((kb_state->left_shift_pressed) || (kb_state->right_shift_pressed))
-              vga_printchar(kbdusB[scancode]);
+            if((scancode >= 71) && (scancode <= 83))
+            {
+              if(kb_state->num_lock_active)
+                vga_printchar(kbdusB[scancode]);
+              else
+                vga_printchar(kbdus[scancode]);
+              break;
+            }
+            if(kb_state->caps_lock_active)
+            {
+                if((kb_state->left_shift_pressed) || (kb_state->right_shift_pressed))
+                  vga_printchar(kbdus[scancode]);
+                else
+                  vga_printchar(kbdusB[scancode]);
+            }
             else
-              vga_printchar(kbdus[scancode]);
+            {
+              if((kb_state->left_shift_pressed) || (kb_state->right_shift_pressed))
+                  vga_printchar(kbdusB[scancode]);
+                else
+                  vga_printchar(kbdus[scancode]);
+            }
           }
       }
       kb_estate->last_E0h = 0;
@@ -192,4 +234,14 @@ void keyboard_handler()
               vga_printchar(kbdus[scancode]); //Prints the character which was pressed         
          }     
      }*/
+}
+
+unsigned char _between(unsigned char number, unsigned char l, unsigned char r)
+{
+  return (number > l) && (number < r);
+}
+
+unsigned char _between_or_eq(unsigned char number, unsigned char l, unsigned char r)
+{
+  return (number >= l) && (number <= r);
 }

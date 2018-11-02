@@ -8,7 +8,7 @@ typedef struct KeyboardStateFlags{
     char left_shift_pressed:1;
     char ctrl_pressed:1;
     char alt_pressed:1;
-    char scroll_active:1;
+    char scroll_lock_active:1;
     char num_lock_active:1;
     char caps_lock_active:1;
     char insert_active:1;
@@ -43,6 +43,9 @@ typedef struct KeyboardExtendedStateFlags{
 
 unsigned char get_scancode();
 void keyboard_handler();
+unsigned char _between(unsigned char num, unsigned char l, unsigned char r);
+unsigned char _between_or_eq(unsigned char number, unsigned char l, unsigned char r);
+
 
 
 
