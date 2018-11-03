@@ -47,6 +47,7 @@ typedef struct ScanAsciiPair{
     unsigned char ascii;
 } ScanAsciiPair;
 
+void keyboard_init();
 unsigned char ableToWrite();
 void incrementBufferPointer(volatile uint16_t* const ptr);
 void put_key_to_buffor(unsigned char scancode, unsigned char ascii);
