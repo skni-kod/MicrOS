@@ -134,16 +134,16 @@ Main:
     mov al, [NonDataSectors]
 
     ; We don't want load first sector with bootloader again
-    sub al, 1
+    dec al
 
     ; Sector number
-    mov cl, 2
+    mov cl, 1
 
     ; Segment
-    mov bx, 0
+    xor bx, bx
+    mov es, bx
 
     ; Offset
-    mov es, bx
     mov bx, 0x7E00
 
     call LoadFloppyData
@@ -172,6 +172,51 @@ ResetFloppy:
     ret
 
 ; Input:
+;   - bx - original sector number
+; Output:
+;   - cl - calculated sector number
+;   - ch - calculated track number
+;   - dh - calculated head number
+GetCHS:
+    push ebp
+    mov  ebp, esp
+
+    ; [ebp - 2] = Temp = LBA / (Sectors per Track)
+    ; [ebp - 4] = Sector = (LBA % (Sectors per Track)) + 1
+    mov ax, bx
+    xor dx, dx
+    mov cx, [PhysicalSectorsPerTrack]
+    div cx
+    push ax
+    
+    inc dx
+    push dx
+
+    ; [ebp - 6] = Head = Temp % (Number of Heads)
+    ; [ebp - 8] = Track = Temp / (Number of Heads)
+    mov ax, [ebp - 2]
+    xor dx, dx
+    mov bx, [Heads]
+    div bx
+
+    push dx
+    push ax
+
+    ; Sector number
+    mov cl, [ebp - 4]
+
+    ; Track number
+    mov ch, [ebp - 8]
+
+    ; Head number
+    mov dh, [ebp - 6]
+
+    mov esp, ebp
+    pop ebp
+
+    ret
+
+; Input:
 ;   - al - sectors count
 ;   - cl - sector number
 ;   - es - segment
@@ -184,11 +229,13 @@ LoadFloppyData:
     ; Function name: Read Disk Sectors
     mov ah, 0x02
 
-    ; Track number
-    mov ch, 0
-
-    ; Head number
-    mov dh, 0
+    ; Get sector (cl), track (ch) and head (dh)
+    push ax
+    push bx
+    mov bx, cx
+    call GetCHS
+    pop bx
+    pop ax
 
     ; Drive number
     mov dl, [INT13Scratchpad]
@@ -245,7 +292,7 @@ GetFirstKernelSector:
     mov di, KernelFileName
 
     ; Current string index will be stored in dx register
-    mov dx, 0
+    xor dx, dx
 
     GetFirstKernelSector_CompareLoop:
     ; Check if whole string has been compared
@@ -315,7 +362,7 @@ GetSectorValue:
 
     GetSectorValue_OddIndex:
     ; Odd sector has pattern __ L_ HH
-    sub bx, 1
+    dec bx
     mov ah, [bx + 2]
     mov al, [bx + 1]
     shr ax, 4
@@ -355,14 +402,14 @@ LoadKernel:
     ; Sector number
     mov cx, [ebp - 2]
     add cl, [NonDataSectors]
-    sub cl, 1
+    sub cl, 2
 
     ; Load kernel sector
     call LoadFloppyData
 
     ; Increment loaded sectors count
     mov ax, [ebp - 4]
-    add ax, 1
+    inc ax
     mov [ebp - 4], ax
 
     ; Get next sector number
@@ -409,7 +456,6 @@ JumpToKernel:
     
     ; Jump to kernel, goodbye bootloader!
     jmp 0x08:0x10000
-    ret
 
 times 510 - ($ - $$) db 0
 dw 0xAA55

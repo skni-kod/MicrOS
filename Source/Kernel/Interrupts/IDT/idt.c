@@ -1,4 +1,5 @@
 #include "idt.h"
+#include "../../Drivers/Keyboard/keyboard.h"
 
 idt_entry idt_entries[IDT_INTERRUPT_DESCRIPTOR_TABLE_LENGTH];
 idt_info idt_information;
@@ -61,6 +62,7 @@ void int0_handler()
  
 void int1_handler()
 {
+    keyboard_handler();
 	pic_confirm_master();
 }
  
