@@ -1,6 +1,8 @@
 #include "Drivers/VGA/vga.h"
 #include "Interrupts/PIC/pic.h"
+#include "Drivers/Keyboard/keyboard.h"
 #include "Interrupts/IDT/idt.h"
+#include "Drivers/Keyboard/keyboard.h"
 
 void print_ok_status(char* message)
 {
@@ -26,6 +28,9 @@ void startup()
 
     idt_init();
     print_ok_status("Interrupt Descriptor Table");
+    
+    keyboard_init();
+    print_ok_status("Keyboard");
 
     vga_printstring("MicrOS ready\n");
     vga_printstring("Created by Application Section of SKNI KOD\n");
@@ -35,9 +40,17 @@ void startup()
 int kmain()
 {
     startup();
-
     vga_printstring("Hello, World!\n");
-    vga_printstring("\nREADY.");
-    
+    vga_printstring("\nREADY.\n");
+
+    while(1)
+    {
+        if(!isBufferEmpty())
+        {
+            ScanAsciiPair c = get_key_from_buffer();
+            vga_printchar(c.ascii);
+        }
+    }
+
     return 0;
 }
