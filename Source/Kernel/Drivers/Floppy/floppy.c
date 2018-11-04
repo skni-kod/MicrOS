@@ -1,6 +1,7 @@
 #include "floppy.h"
 
 floppy_header* floppy_header_data = 0x7c00;
+uint8_t* dma_buffer = 0x0500;
 
 void floppy_init()
 {
@@ -10,10 +11,10 @@ void floppy_init()
 void floppy_init_dma()
 {
     // Tell DMA that we want to configure floppy (channel 2)
-    outb(0x0a,0x06);
+    outb(0x0a, 0x06);
 
     // Reset Flip-Flop register
-	outb(0xd8,0xff);
+	outb(0xd8, 0xff);
 
     //address=0x1000 
 	outb(0x04, 0);
@@ -22,7 +23,7 @@ void floppy_init_dma()
     // Reset Flip-Flop register
 	outb(0xd8, 0xff);
 
-    //count to 0x23ff (number of bytes in a 3.5" floppy disk track)
+    // Count to 0x23ff (number of bytes in a 3.5" floppy disk track)
 	outb(0x05, 0xff);
 	outb(0x05, 0x23);
 
@@ -38,7 +39,6 @@ void floppy_dma_read() {
     // Tell DMA that we want to configure floppy (channel 2)
 	outb(0x0a, 0x06);
 
-    //single transfer, address increment, autoinit, read, channel 2
 	// | MOD1 | MOD0 | DOWN | AUTO | TRA1 | TRA0 | SEL1 | SEL0 |
     // |  0   |  1   |  0   |  1   |  0   |  1   |  1   |  0   | = 0x56
     // MOD0, MOD1 - mode
