@@ -242,6 +242,12 @@ void writeRegisterDataNext(uint16_t port, uint8_t index, uint8_t data)
     outb(port + 1, data);
 }
 
+uint8_t getRegisterDataNext(uint16_t port, uint8_t index)
+{
+    outb(port, index);
+    return inb(port + 1);
+}
+
 void writeRegisterDataSame(uint16_t port, uint8_t index, uint8_t data)
 {
     outb(port, index);
@@ -256,6 +262,15 @@ void writeSequenceRegisters(uint8_t* i)
     }
 }
 
+void getSequenceRegisters(uint8_t* i)
+{
+    for(int j=0; j<=0x5; j++)
+    {
+        i[j] = getRegisterDataNext(0x3C4, j);
+        //writeRegisterDataNext(0x3C4, j, i[j]);
+    }
+}
+
 void writeCRTCRegisters(uint8_t* i)
 {
     for(int j=0; j<=0x18; j++)
@@ -264,11 +279,29 @@ void writeCRTCRegisters(uint8_t* i)
     }
 }
 
+void getCRTCRegisters(uint8_t* i)
+{
+    for(int j=0; j<=0x18; j++)
+    {
+        i[j] = getRegisterDataNext(0x3D4, j);
+        //writeRegisterDataNext(0x3C4, j, i[j]);
+    }
+}
+
 void writeGraphicsContRegisters(uint8_t* i)
 {
     for(int j=0; j<=0x8; j++)
     {
-        writeRegisterDataNext(0x3B4, j, i[j]);
+        writeRegisterDataNext(0x3CE, j, i[j]);
+    }
+}
+
+void getGraphicsContRegisters(uint8_t* i)
+{
+    for(int j=0; j<=0x8; j++)
+    {
+        i[j] = getRegisterDataNext(0x3CE, j);
+        //writeRegisterDataNext(0x3C4, j, i[j]);
     }
 }
 
@@ -276,8 +309,23 @@ void writeAtributteContRegisters(uint8_t* i)
 {
     for(int j=0; j<=0x14; j++)
     {
+        inb(0x3BA);
         writeRegisterDataSame(0x3C0, j, i[j]);
     }
+}
+
+void getAtributteContRegisters(uint8_t* i)
+{
+    //inb(0x3C1);
+    disable();
+    for(int j=0x10; j<=0x14; j++)
+    {
+        uint8_t a = inb(0x3DA);
+        a++;
+        i[j] = getRegisterDataNext(0x3C0, j);
+        //writeRegisterDataNext(0x3C4, j, i[j]);
+    }
+    enable();
 }
 
 #define VGA_VRAM 0xA0000
@@ -288,22 +336,30 @@ void pixel_256 (unsigned char color, unsigned int x, unsigned int y) {
    fb [offset] = color;
 }
 
+void testRegisters()
+{
+    uint8_t misc = inb(0x3CC);
+    uint8_t sequencer[5];
+    uint8_t crtc[25];
+    uint8_t graphics[9];
+    uint8_t attribute[21];
+    getSequenceRegisters(sequencer);
+    getCRTCRegisters(crtc);
+    getGraphicsContRegisters(graphics);
+    getAtributteContRegisters(attribute);
+
+    int i = 0;
+
+}
+
 void enter_13H_mode()
 {
     outb(0x3C2, 0x63);
     uint8_t sequencer[5] = {0x3,0x1,0xF,0,0xE};
-    uint8_t crtc[] = {0x5F,0x3F,0x40,0x82,0x4E,
-    0x9A,0x23,0xB2,0x00,0x61,
-    0x00,0x00,0x00,0x00,0x00,
-    0x00,0x0A,0xAC,0xFF,0x20,
-    0x40,0x07,0x17,0xA3,0xFF};
-    uint8_t graphics[] = {0x00,0x00,0x00,0x00,0x00,
-    0x40,0x05,0x0F,0xFF};
-    uint8_t attribute[] = {0x00,0x01,0x02,0x03,0x04,
-    0x05,0x06,0x07,0x08,0x09,
-    0x0A,0x0B,0x0C,0x0D,0x0E,
-    0x0F,0x41,0x00,0x0F,0x00,
-    0x00};
+    uint8_t crtc[] = {0x5F,0x4F,0x50,0x82,0x24,0x80,0xBF,0x1F,0,0x41,
+   0,0,0,0,0,0x31,0x9C,0x8E,0x8F,0x28,0x40,0x96,0x89,0xA3,0xFF};
+    uint8_t graphics[] = {0,0,0,0,0,0x40,0x5,0xF,0xFF};
+    uint8_t attribute[] = {0,1,2,3,4,5,6,7,8,9,0xA,0xB,0xC,0xD,0xE,0xF,0x41,0,0xF,0,0};
 
     writeSequenceRegisters(sequencer);
     writeCRTCRegisters(crtc);

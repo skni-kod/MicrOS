@@ -41,9 +41,11 @@ int kmain()
     
     for(long i=0; i<100000; i++);
 
-    enter_13H_mode();
+    //enter_13H_mode();
     drawDupaIn13H();
     for(long i=0; i<100000; i++);
+    testRegisters();
+    //enter_13H_mode();
     //enter_3H_mode();
     //drawDupaIn13H();
     return 0;

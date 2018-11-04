@@ -154,6 +154,10 @@ Main:
     ; Load all kernel sectors
     call LoadKernel
 
+    mov ah, 0x0
+    mov al, 0x93
+    int 0x10
+
     ; Enter protected mode and jump to the loaded kernel
     call JumpToKernel
 
