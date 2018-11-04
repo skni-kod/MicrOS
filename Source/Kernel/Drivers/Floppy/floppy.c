@@ -7,46 +7,46 @@ bool floppy_interrupt_flag = false;
 
 void floppy_init()
 {
-    floppy_init_dma();
+    floppy_dma_init();
     floppy_reset();
 }
 
-void floppy_init_dma()
+void floppy_dma_init()
 {
     // Enable floppy interrupts
     pic_enable_irq(6);
 
     // Tell DMA that we want to configure floppy (channel 2)
-    outb(0x0a, 0x06);
+    outb(DMA_SINGLE_CHANNEL_MASK_REGISTER, 0x06);
 
     // Reset Flip-Flop register
-	outb(0xd8, 0xff);
+	outb(DMA_FLIP_FLOP_RESET_REGISTER, 0xff);
 
-    //address=0x1000 
-	outb(0x04, 0);
-	outb(0x04, 0x10);
+    // Set buffer to 0x0500 address
+	outb(DMA_START_ADDRESS_REGISTER, 0);
+	outb(DMA_START_ADDRESS_REGISTER, 0x05);
 
     // Reset Flip-Flop register
-	outb(0xd8, 0xff);
+	outb(DMA_FLIP_FLOP_RESET_REGISTER, 0xff);
 
     // Count to 0x23ff (number of bytes in a 3.5" floppy disk track)
-	outb(0x05, 0xff);
-	outb(0x05, 0x23);
+	outb(DMA_COUNT_REGISTER_CHANNEL, 0xff);
+	outb(DMA_COUNT_REGISTER_CHANNEL, 0x23);
 
     // We don't want to have external page register
-	outb(0x80, 0);
+	outb(DMA_EXTERNAL_PAGE_REGISTER, 0);
     
     // Release channel
-	outb(0x0a, 0x02);
+	outb(DMA_SINGLE_CHANNEL_MASK_REGISTER, 0x02);
 }
 
 void floppy_reset()
 {
     // Disable floppy controller
-    outb(0x3f2, 0);
+    outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0);
 
-    // Enable floppy controller
-    outb(0x3f2, 4 | 8);
+    // Enable floppy controller (reset (0x04) | DMA (0x08))
+    outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x0C);
 
     // Wait for interrupt and continue reset sequence
     floppy_wait_for_interrupt();
@@ -55,7 +55,7 @@ void floppy_reset()
 void floppy_dma_read() {
  
     // Tell DMA that we want to configure floppy (channel 2)
-	outb(0x0a, 0x06);
+	outb(DMA_SINGLE_CHANNEL_MASK_REGISTER, 0x06);
 
 	// | MOD1 | MOD0 | DOWN | AUTO | TRA1 | TRA0 | SEL1 | SEL0 |
     // |  0   |  1   |  0   |  1   |  0   |  1   |  1   |  0   | = 0x56
@@ -72,10 +72,10 @@ void floppy_dma_read() {
     //  10 - reading from memory
     //  11 - invalid
     // SEL0, SEL1 - channel to change
-    outb(0x0b, 0x56); 
+    outb(DMA_MODE_REGISTER, 0x56); 
 
     // Release channel
-	outb(0x0a, 0x02);
+	outb(DMA_SINGLE_CHANNEL_MASK_REGISTER, 0x02);
 }
 
 void floppy_wait_for_interrupt()
