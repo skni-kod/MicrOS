@@ -25,6 +25,7 @@ void floppy_wait_until_ready();
 void floppy_send_command(uint8_t cmd);
 uint8_t floppy_read_data();
 void floppy_get_interrupt_data(uint32_t* status_register, uint32_t* cylinder);
+void floppy_set_parameters(uint32_t step_rate, uint32_t head_load_time, uint32_t head_unload_time, bool dma);
 
 void floppy_dma_init();
 void floppy_dma_read();

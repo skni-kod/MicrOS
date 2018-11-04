@@ -23,12 +23,26 @@ void floppy_reset()
     // Wait for interrupt and continue reset sequence
     floppy_wait_for_interrupt();
 
-    // Tell all connected drivers that we catched interrupt (SENSE_INTERRUPT command)
+    // Tell all connected devices that we catched the interrupt (SENSE_INTERRUPT command)
     uint32_t status_register, cyilnder;
     for (int i = 0; i < 4; i++)
     {
 		floppy_get_interrupt_data(&status_register, &cyilnder);
     }
+
+    // Set transfer speed to 500 kb/s
+    //  00 - 500 Kb/s
+    //  01 - 250 Kb/s
+    //  10 - 100 Kb/s
+    //  11 - 1 Mb/s
+    outb(FLOPPY_CONTROL_REGISTER, 0);
+
+    // Set floppy parameters
+    //  step rate = 3 ms
+    //  head load time = 16 ms
+    //  head unload time = 240 ms
+    //  DMA = yes
+    floppy_set_parameters(3, 16, 240, true);
 }
 
 void floppy_wait_until_ready()
@@ -52,10 +66,30 @@ uint8_t floppy_read_data()
 
 void floppy_get_interrupt_data(uint32_t* status_register, uint32_t* cylinder)
 {
+    // Send SENSE_INTERRUPT command
 	floppy_send_command(0x08);
  
 	*status_register = floppy_read_data();
 	*cylinder = floppy_read_data();
+}
+
+void floppy_set_parameters(uint32_t step_rate, uint32_t head_load_time, uint32_t head_unload_time, bool dma)
+{
+	uint32_t data = 0;
+ 
+    // Send SPECIFY command
+	floppy_send_command(0x03);
+ 
+    // S S S S H H H H
+    //  S = Step Rate
+    //  H = Head Unload Time
+	data = ((step_rate & 0xf) << 4) | (head_unload_time & 0xf);
+	floppy_send_command(data);
+ 
+    // H H H H H H H DMA
+    //  H = Head Load Time
+	data = (head_load_time << 1) | dma;
+	floppy_send_command(data);
 }
 
 void floppy_dma_init()
