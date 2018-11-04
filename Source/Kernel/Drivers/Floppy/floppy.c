@@ -3,13 +3,19 @@
 floppy_header* floppy_header_data = 0x7c00;
 uint8_t* dma_buffer = 0x0500;
 
+bool floppy_interrupt_flag = false;
+
 void floppy_init()
 {
     floppy_init_dma();
+    floppy_reset();
 }
 
 void floppy_init_dma()
 {
+    // Enable floppy interrupts
+    pic_enable_irq(6);
+
     // Tell DMA that we want to configure floppy (channel 2)
     outb(0x0a, 0x06);
 
@@ -32,6 +38,18 @@ void floppy_init_dma()
     
     // Release channel
 	outb(0x0a, 0x02);
+}
+
+void floppy_reset()
+{
+    // Disable floppy controller
+    outb(0x3f2, 0);
+
+    // Enable floppy controller
+    outb(0x3f2, 4 | 8);
+
+    // Wait for interrupt and continue reset sequence
+    floppy_wait_for_interrupt();
 }
 
 void floppy_dma_read() {
@@ -58,4 +76,15 @@ void floppy_dma_read() {
 
     // Release channel
 	outb(0x0a, 0x02);
+}
+
+void floppy_wait_for_interrupt()
+{
+    while(!floppy_interrupt_flag);
+    floppy_interrupt_flag = false;
+}
+
+void floppy_interrupt()
+{
+    floppy_interrupt_flag = true;
 }

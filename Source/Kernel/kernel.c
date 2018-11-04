@@ -29,6 +29,9 @@ void startup()
 
     idt_init();
     print_ok_status("Interrupt Descriptor Table");
+
+    floppy_init();
+    print_ok_status("Floppy");
     
     keyboard_init();
     print_ok_status("Keyboard");
@@ -40,8 +43,6 @@ void startup()
 
 int kmain()
 {
-    floppy_init();
-
     startup();
     vga_printstring("Hello, World!\n");
     vga_printstring("\nREADY.\n");

@@ -88,6 +88,7 @@ void int5_handler()
  
 void int6_handler()
 {
+    floppy_interrupt();
     pic_confirm_master();
 }
  
