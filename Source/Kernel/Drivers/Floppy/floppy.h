@@ -21,6 +21,10 @@
 
 void floppy_init();
 void floppy_reset();
+void floppy_wait_until_ready();
+void floppy_send_command(uint8_t cmd);
+uint8_t floppy_read_data();
+void floppy_get_interrupt_data(uint32_t* status_register, uint32_t* cylinder);
 
 void floppy_dma_init();
 void floppy_dma_read();

@@ -11,6 +11,53 @@ void floppy_init()
     floppy_reset();
 }
 
+
+void floppy_reset()
+{
+    // Disable floppy controller
+    outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0);
+
+    // Enable floppy controller (reset (0x04) | DMA (0x08))
+    outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x0C);
+
+    // Wait for interrupt and continue reset sequence
+    floppy_wait_for_interrupt();
+
+    // Tell all connected drivers that we catched interrupt (SENSE_INTERRUPT command)
+    uint32_t status_register, cyilnder;
+    for (int i = 0; i < 4; i++)
+    {
+		floppy_get_interrupt_data(&status_register, &cyilnder);
+    }
+}
+
+void floppy_wait_until_ready()
+{
+    // Get main status register and check if the last bit is set
+    // If yes, data register is ready for data transfer
+    while(!(inb(FLOPPY_MAIN_STAUTS_REGISTER) & 0x80));
+}
+
+void floppy_send_command(uint8_t cmd)
+{
+    floppy_wait_until_ready();
+    return outb(FLOPPY_DATA_REGISTER, cmd);
+}
+ 
+uint8_t floppy_read_data()
+{
+	floppy_wait_until_ready();
+	return inb(FLOPPY_DATA_REGISTER);
+}
+
+void floppy_get_interrupt_data(uint32_t* status_register, uint32_t* cylinder)
+{
+	floppy_send_command(0x08);
+ 
+	*status_register = floppy_read_data();
+	*cylinder = floppy_read_data();
+}
+
 void floppy_dma_init()
 {
     // Enable floppy interrupts
@@ -38,18 +85,6 @@ void floppy_dma_init()
     
     // Release channel
 	outb(DMA_SINGLE_CHANNEL_MASK_REGISTER, 0x02);
-}
-
-void floppy_reset()
-{
-    // Disable floppy controller
-    outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0);
-
-    // Enable floppy controller (reset (0x04) | DMA (0x08))
-    outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x0C);
-
-    // Wait for interrupt and continue reset sequence
-    floppy_wait_for_interrupt();
 }
 
 void floppy_dma_read() {
