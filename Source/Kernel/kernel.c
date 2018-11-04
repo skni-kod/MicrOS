@@ -3,6 +3,7 @@
 #include "Drivers/Keyboard/keyboard.h"
 #include "Interrupts/IDT/idt.h"
 #include "Drivers/Keyboard/keyboard.h"
+#include "Drivers/Floppy/floppy.h"
 
 void print_ok_status(char* message)
 {
@@ -39,6 +40,8 @@ void startup()
 
 int kmain()
 {
+    floppy_init();
+
     startup();
     vga_printstring("Hello, World!\n");
     vga_printstring("\nREADY.\n");
