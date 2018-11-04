@@ -4,7 +4,7 @@
 #include "Interrupts/IDT/idt.h"
 #include "Drivers/Keyboard/keyboard.h"
 
-#include "../../Library/string.h"
+#include "../../Library/stdlib.h"
 
 void print_ok_status(char* message)
 {
