@@ -4,6 +4,8 @@
 #include "Interrupts/IDT/idt.h"
 #include "Drivers/Keyboard/keyboard.h"
 
+#include "../../Library/string.h"
+
 void print_ok_status(char* message)
 {
     vga_color col;
@@ -43,14 +45,12 @@ int kmain()
     vga_printstring("Hello, World!\n");
     vga_printstring("\nREADY.\n");
 
-    while(1)
-    {
-        if(!isBufferEmpty())
-        {
-            ScanAsciiPair c = get_key_from_buffer();
-            vga_printchar(c.ascii);
-        }
-    }
+    char* t = "1750";
+    int32_t ti = atoi(t);
+    char buffer[10];
+    itoa(ti, buffer, 16);
+
+    vga_printstring(buffer);
 
     return 0;
 }

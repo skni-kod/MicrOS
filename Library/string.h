@@ -9,5 +9,7 @@ int memcmp(const void* buffer1, const void* buffer2, size_t size);
 void* memcpy(void* destination, const void* source, size_t size);
 void* memmove(void* destination, const void* source, size_t size);
 size_t strlen(const char* str);
+int32_t atoi(const char* string);
+char* itoa(int input, char* buffer, int base);
 
 #endif
