@@ -338,14 +338,14 @@ void pixel_256 (unsigned char color, unsigned int x, unsigned int y) {
 
 void testRegisters()
 {
-    uint8_t misc = inb(0x3CC);
+    //uint8_t misc = inb(0x3CC);
     uint8_t sequencer[5];
     uint8_t crtc[25];
     uint8_t graphics[9];
     uint8_t attribute[21];
-    getSequenceRegisters(sequencer);
-    getCRTCRegisters(crtc);
-    getGraphicsContRegisters(graphics);
+    //getSequenceRegisters(sequencer);
+    //getCRTCRegisters(crtc);
+    //getGraphicsContRegisters(graphics);
     getAtributteContRegisters(attribute);
 
     int i = 0;
@@ -452,12 +452,12 @@ void enter_13H_mode()
     outb(0x3B4 + 1, 0xA3);*/
 }
 
-void drawDupaIn13H()
+void drawDupaIn13H(int color)
 {
     for(int x = 0; x<320; x++)
     {
         for(int y = 0; y<200; y++)
-            pixel_256(3, x, y);
+            pixel_256(color, x, y);
     }
 }
 
