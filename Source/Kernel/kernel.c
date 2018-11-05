@@ -19,7 +19,8 @@ void print_ok_status(char* message)
 
 void startup()
 {
-    vga_clear_screen();
+    //Don't use VGA before calling VGA init
+    vga_init();
     vga_printstring("MicrOS is starting...\n");
     print_ok_status("VGA Driver");
 
