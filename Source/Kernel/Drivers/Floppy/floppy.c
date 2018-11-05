@@ -24,10 +24,10 @@ void floppy_reset()
     floppy_wait_for_interrupt();
 
     // Tell all connected devices that we catched the interrupt (SENSE_INTERRUPT command)
-    uint32_t status_register, cyilnder;
+    uint32_t status_register, cylinder;
     for (int i = 0; i < 4; i++)
     {
-		floppy_get_interrupt_data(&status_register, &cyilnder);
+		floppy_get_interrupt_data(&status_register, &cylinder);
     }
 
     // Set transfer speed to 500 kb/s
@@ -43,6 +43,8 @@ void floppy_reset()
     //  head unload time = 240 ms
     //  DMA = yes
     floppy_set_parameters(3, 16, 240, true);
+
+    floppy_calibrate();
 }
 
 void floppy_wait_until_ready()
@@ -90,6 +92,44 @@ void floppy_set_parameters(uint32_t step_rate, uint32_t head_load_time, uint32_t
     //  H = Head Load Time
 	data = (head_load_time << 1) | dma;
 	floppy_send_command(data);
+}
+
+void floppy_calibrate()
+{
+    floppy_enable_motor();
+
+    while(true)
+    {
+        // Send CALIBRATE command
+        floppy_send_command(0x07);
+
+        // Send driver number
+        floppy_send_command(0);
+
+        floppy_wait_for_interrupt();
+
+        uint32_t status_register, cylinder;
+        floppy_get_interrupt_data(&status_register, &cylinder);
+
+        if(cylinder == 0)
+        {
+            break;
+        }
+    }
+
+    floppy_disable_motor();
+}
+
+void floppy_enable_motor()
+{
+    // Enable floppy motor (reset (0x04) | Drive 0 Motor (0x10))
+    outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x14);
+}
+
+void floppy_disable_motor()
+{
+    // Disable floppy motor (reset (0x04))
+    outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04);
 }
 
 void floppy_dma_init()
