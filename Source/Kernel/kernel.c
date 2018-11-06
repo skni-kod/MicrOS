@@ -36,12 +36,13 @@ int kmain()
 {
     //startup();
 
-    //vga_printstring("Hello, World!\n");
-    //vga_printstring("\nREADY.");
+    vga_printstring("Hello, World!\n");
+    vga_printstring("\nREADY.");
     
     for(long i=0; i<100000; i++);
 
     //enter_13H_mode();
+
     drawDupaIn13H(3);
     for(long i=0; i<100000; i++);
     testRegisters();
