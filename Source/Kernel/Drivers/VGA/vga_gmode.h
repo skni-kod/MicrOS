@@ -25,5 +25,6 @@ void pixel_256 (unsigned char color, unsigned int x, unsigned int y);
 void drawDupaIn13H(int color);
 
 void setFont(uint8_t* buf, uint8_t font_height);
+char getMode();
 
 #endif

@@ -1,13 +1,16 @@
 #include "vga_gmode.h"
 #include "../../Assembly/io.h"
 #include "../../../../Library/string.h"
+#include "vga.h"
 
 #define	peekb(S,O)		*(unsigned char *)(16uL * (S) + (O))
 #define	pokeb(S,O,V)		*(unsigned char *)(16uL * (S) + (O)) = (V)
 #define	pokew(S,O,V)		*(unsigned short *)(16uL * (S) + (O)) = (V)
 #define	_vmemwr(DS,DO,S,N)	memcpy((char *)((DS) * 16 + (DO)), S, N)
 
-const uint8_t g_320x200x256[] =
+static char mode = 3;
+
+static const uint8_t g_320x200x256[] =
     {
         /* MISC */
             0x63,
@@ -28,7 +31,7 @@ const uint8_t g_320x200x256[] =
     };
 
 
-const uint8_t g_80x25_text[] =
+static const uint8_t g_80x25_text[] =
 {
 /* MISC */
 	0x67,
@@ -308,6 +311,8 @@ static unsigned char g_8x16_font[4096] =
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
+static uint8_t text_dump[4000];
+
 void writeRegisters(uint8_t* registers)
 {
     outb(miscPort, *(registers));
@@ -402,7 +407,9 @@ void writeRegistersText(uint8_t* registers)
 
 void set13HVideoMode()
 {
+    memcpy(text_dump, VGA_BASE_ADDR, 4000);
     writeRegisters(g_320x200x256);
+    mode = 0x13;
 }
 
 void set3HVideoMode()
@@ -411,7 +418,7 @@ void set3HVideoMode()
     cols = 80;
     rows = 25;
     ht = 16;
-    
+
     writeRegisters(g_80x25_text);
     setFont(g_8x16_font, 16);
     
@@ -426,6 +433,9 @@ void set3HVideoMode()
 /* set white-on-black attributes for all text */
 	for(i = 0; i < cols * rows; i++)
 		pokeb(0xB800, i * 2 + 1, 7);
+
+    memcpy(VGA_BASE_ADDR, text_dump, 4000);
+    mode = 3;
 }
 
 static unsigned get_fb_seg(void)
@@ -543,4 +553,9 @@ void drawDupaIn13H(int color)
         for(int y = 0; y<200; y++)
             pixel_256(color, x, y);
     }
+}
+
+char getMode()
+{
+    return mode;
 }

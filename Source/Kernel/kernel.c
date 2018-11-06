@@ -3,6 +3,7 @@
 #include "Drivers/Keyboard/keyboard.h"
 #include "Interrupts/IDT/idt.h"
 #include "Drivers/Keyboard/keyboard.h"
+#include "Drivers/VGA/vga_gmode.h"
 
 void print_ok_status(char* message)
 {
@@ -40,6 +41,9 @@ void startup()
 
 int kmain()
 {
+    vga_color col;
+    col.color_without_blink.letter = VGA_COLOR_GREEN;
+    col.color_without_blink.background = VGA_COLOR_BLACK;
     startup();
     vga_printstring("Hello, World!\n");
     vga_printstring("\nREADY.\n");
@@ -49,7 +53,21 @@ int kmain()
         if(!isBufferEmpty())
         {
             ScanAsciiPair c = get_key_from_buffer();
-            vga_printchar(c.ascii);
+            if(c.scancode == 59)
+            {
+                if(getMode() != 3)
+                    set3HVideoMode();
+            }
+            else if(c.scancode == 60)
+            {
+                if(getMode() != 0x13)
+                {
+                    set13HVideoMode();
+                    drawDupaIn13H(10);
+                }
+            }
+            else
+                vga_printchar(c.ascii);
         }
     }
 
