@@ -57,6 +57,7 @@ void idt_unset(uint8_t index)
 
 void int0_handler()
 {
+    timer_interrupt();
     pic_confirm_master();
 }
  
