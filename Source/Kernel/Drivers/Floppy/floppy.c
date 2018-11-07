@@ -5,6 +5,8 @@ volatile uint8_t* dma_buffer = 0x0500;
 
 volatile bool floppy_interrupt_flag = false;
 
+volatile char test[512];
+    
 void floppy_init()
 {
     floppy_dma_init();
@@ -12,14 +14,18 @@ void floppy_init()
 
     floppy_read_sector(0, 0, 1);
 
-    char test[512];
     for(int i=0; i<512; i++)
     {
         test[i] = dma_buffer[i];
     }
 
-    int a = 1;
-    a = 123;
+    vga_printstring("F: ");
+    for(int i=0; i<512; i++)
+    {
+        vga_printchar(test[i]);
+    }
+
+    vga_printchar('\n');
 }
 
 void floppy_reset()
@@ -151,6 +157,8 @@ void floppy_read_sector(uint8_t head, uint8_t track, uint8_t sector)
 
     // Run floppy motor and wait some time
     floppy_enable_motor();
+
+    floppy_seek(0, head);
  
 	// Prepare DMA for reading
 	floppy_dma_read();
@@ -200,6 +208,30 @@ void floppy_read_sector(uint8_t head, uint8_t track, uint8_t sector)
     
     // Disable floppy motor and wait some time
     floppy_disable_motor();
+}
+
+int floppy_seek(uint32_t cylinder, uint32_t head) {
+ 
+	uint32_t interrupt_sector, interrupt_cylinder;
+ 
+	while(true)
+    {
+		// Send seek command
+		floppy_send_command (0xf);
+		floppy_send_command ((head) << 2 | DEVICE_NUMBER);
+		floppy_send_command (cylinder);
+ 
+		// Wait for interrupt
+		floppy_wait_for_interrupt();
+		floppy_get_interrupt_data(&interrupt_sector, &interrupt_cylinder);
+ 
+		if (interrupt_cylinder == cylinder)
+        {
+            break;
+        }
+	}
+ 
+	return -1;
 }
 
 void floppy_dma_init()

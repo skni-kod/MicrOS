@@ -1,7 +1,7 @@
 #ifndef FLOPPY_H
 #define FLOPPY_H
 
-#define DEVICE_NUMBER 2
+#define DEVICE_NUMBER 1
 
 #define DMA_SINGLE_CHANNEL_MASK_REGISTER 0x0A
 #define DMA_FLIP_FLOP_RESET_REGISTER 0xD8
@@ -33,6 +33,7 @@ void floppy_calibrate();
 void floppy_read_sector(uint8_t head, uint8_t track, uint8_t sector);
 void floppy_enable_motor();
 void floppy_disable_motor();
+int floppy_seek(uint32_t cylinder, uint32_t head);
 
 void floppy_dma_init();
 void floppy_dma_read();

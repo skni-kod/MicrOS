@@ -3,13 +3,11 @@
 #include "Drivers/Keyboard/keyboard.h"
 #include "Interrupts/IDT/idt.h"
 #include "Drivers/Keyboard/keyboard.h"
-<<<<<<< HEAD
 #include "Drivers/Floppy/floppy.h"
-=======
 #include "Drivers/VGA/vga_gmode.h"
 #include "Drivers/PCSpeaker/pcspeaker.h"
+#include "Timer/timer.h"
 #include <stdint.h>
->>>>>>> master
 
 void print_ok_status(char* message)
 {
@@ -36,6 +34,9 @@ void startup()
 
     idt_init();
     print_ok_status("Interrupt Descriptor Table");
+
+    timer_init();
+    print_ok_status("Timer");
 
     floppy_init();
     print_ok_status("Floppy");
