@@ -57,6 +57,7 @@ void idt_unset(uint8_t index)
 
 void int0_handler()
 {
+    timer_interrupt();
     pic_confirm_master();
 }
  
@@ -138,7 +139,9 @@ void int15_handler()
 
 void int48_handler()
 {
-    
+    // Temporary only sleep, but it will hold more functions
+    uint32_t system_clock = timer_get_system_clock();
+    __asm__ ("movl %0, %%eax" :: "r" (system_clock) : "%eax");
 }
 
 void int49_handler()
