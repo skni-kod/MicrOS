@@ -4,8 +4,6 @@ volatile floppy_header* floppy_header_data = 0x7c00;
 volatile uint8_t* dma_buffer = 0x0500;
 
 volatile bool floppy_interrupt_flag = false;
-
-volatile char test[512];
     
 void floppy_init()
 {
@@ -14,15 +12,10 @@ void floppy_init()
 
     floppy_read_sector(0, 0, 1);
 
-    for(int i=0; i<512; i++)
-    {
-        test[i] = dma_buffer[i];
-    }
-
     vga_printstring("F: ");
     for(int i=0; i<512; i++)
     {
-        vga_printchar(test[i]);
+        vga_printchar(dma_buffer[i]);
     }
 
     vga_printchar('\n');
