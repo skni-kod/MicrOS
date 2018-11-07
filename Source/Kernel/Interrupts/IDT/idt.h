@@ -8,6 +8,7 @@
 #include "../../Assembly/io.h"
 #include "../../Drivers/Floppy/floppy.h"
 #include "../PIC/pic.h"
+#include "../../Timer/timer.h"
 
 void idt_init();
 void idt_set(uint8_t index, uint32_t (*handler)());
