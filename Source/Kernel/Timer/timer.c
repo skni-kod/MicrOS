@@ -1,10 +1,10 @@
 #include "timer.h"
 
-uint64_t system_clock = 0;
-uint64_t system_clock_fractions = 0;
+uint32_t system_clock = 0;
+uint32_t system_clock_fractions = 0;
 
 uint16_t reload_time = 0;
-uint64_t expected_clock_fraction = 0;
+uint32_t expected_clock_fraction = 0;
 
 void timer_init()
 {
@@ -30,7 +30,7 @@ void timer_init()
     //  100 - mode 4 - software triggered strobe
     //  101 - mode 5 - hardware triggered strobe
     // BCD - use BCD format or binary
-    outb(MODE_COMMAND_REGISTER, 0x34);
+    outb(MODE_COMMAND_REGISTER, 0x36);
 
     reload_time = timer_get_reload_value();
     expected_clock_fraction = timer_get_expected_clock_fraction();
@@ -45,9 +45,14 @@ uint16_t timer_get_reload_value()
     return TIMER_FREQUENCY_HZ / TARGET_FREQUENCY;
 }
 
-uint64_t timer_get_expected_clock_fraction()
+uint32_t timer_get_expected_clock_fraction()
 {
     return TIMER_FREQUENCY_HZ - (reload_time * TARGET_FREQUENCY);
+}
+
+uint32_t timer_get_system_clock()
+{
+    return system_clock;
 }
 
 void timer_interrupt()

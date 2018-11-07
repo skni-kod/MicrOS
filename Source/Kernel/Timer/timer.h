@@ -12,7 +12,8 @@
 
 void timer_init();
 uint16_t timer_get_reload_value();
-uint64_t timer_get_expected_clock_fraction();
+uint32_t timer_get_expected_clock_fraction();
+uint32_t timer_get_system_clock();
 void timer_interrupt();
 
 #endif
