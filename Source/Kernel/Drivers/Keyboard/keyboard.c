@@ -197,7 +197,7 @@ void keyboard_handler()
           kb_state->num_lock_active = !kb_state->num_lock_active;
           kb_estate->num_lock_led = !kb_estate->num_lock_led;
           break;
-        case 60:
+        case 70:
           kb_state->scroll_lock_pressed = 1;
           kb_state->scroll_lock_active = !kb_state->scroll_lock_active;
           kb_estate->scroll_lock_led = !kb_estate->scroll_lock_led;
@@ -228,7 +228,7 @@ void keyboard_handler()
         case 69 + 128:
           kb_state->num_lock_pressed = 0;
           break;
-        case 60 + 128:
+        case 70 + 128:
           kb_state->scroll_lock_pressed = 0;
           break;
         default:
