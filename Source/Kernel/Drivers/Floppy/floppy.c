@@ -9,6 +9,17 @@ void floppy_init()
 {
     floppy_dma_init();
     floppy_reset();
+
+    floppy_read_sector(0, 0, 1);
+
+    char test[512];
+    for(int i=0; i<512; i++)
+    {
+        test[i] = dma_buffer[i];
+    }
+
+    int a = 1;
+    a = 123;
 }
 
 void floppy_reset()
@@ -124,14 +135,71 @@ void floppy_enable_motor()
 {
     // Enable floppy motor (reset (0x04) | Drive 0 Motor (0x10))
     outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x14);
-    sleep(300);
+    sleep(600);
 }
 
 void floppy_disable_motor()
 {
     // Disable floppy motor (reset (0x04))
     outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04);
-    sleep(300);
+    sleep(600);
+}
+
+void floppy_read_sector(uint8_t head, uint8_t track, uint8_t sector)
+{
+	uint32_t interrupt_sector, interrupt_cylinder;
+
+    // Run floppy motor and wait some time
+    floppy_enable_motor();
+ 
+	// Prepare DMA for reading
+	floppy_dma_read();
+ 
+	// Send command to read sector
+    //  0x06 - read sector command
+    //  0x20 - skip deleted data address marks
+    //  0x40 - double density mode
+    //  0x80 - operate on both tracks of the cylinder
+	floppy_send_command(0x06 | 0x20 | 0x40 | 0x80);
+	
+    // _ _ _ _ _ HEAD DEV1 DEV2
+    floppy_send_command(head << 2 | DEVICE_NUMBER);
+
+    // Track number
+	floppy_send_command(track);
+
+    // Head number
+	floppy_send_command(head);
+
+    // Sector number
+	floppy_send_command(sector);
+
+    // Sector size (2 = 512)
+	floppy_send_command(2);
+
+    // Sectors per track
+	floppy_send_command((*floppy_header_data).sectors_per_track);
+
+    // Length of gap (0x1B = floppy 3,5)
+	floppy_send_command(0x1B);
+
+    // Data length 
+	floppy_send_command(0xff);
+ 
+	// Wait for interrupt
+	floppy_wait_for_interrupt();
+ 
+	// Read command status
+	for (int i = 0; i < 7; i++)
+    {
+		floppy_read_data();
+    }
+ 
+	// Confirm interrupt
+	floppy_get_interrupt_data(&interrupt_sector, &interrupt_cylinder);
+    
+    // Disable floppy motor and wait some time
+    floppy_disable_motor();
 }
 
 void floppy_dma_init()

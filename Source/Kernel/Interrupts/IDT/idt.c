@@ -1,8 +1,8 @@
 #include "idt.h"
 #include "../../Drivers/Keyboard/keyboard.h"
 
-idt_entry idt_entries[IDT_INTERRUPT_DESCRIPTOR_TABLE_LENGTH];
-idt_info idt_information;
+volatile idt_entry idt_entries[IDT_INTERRUPT_DESCRIPTOR_TABLE_LENGTH];
+volatile idt_info idt_information;
 
 void idt_init()
 {
