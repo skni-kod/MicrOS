@@ -4,6 +4,8 @@
 #include "Interrupts/IDT/idt.h"
 #include "Drivers/Keyboard/keyboard.h"
 #include "Drivers/VGA/vga_gmode.h"
+#include "Drivers/PCSpeaker/pcspeaker.h"
+#include <stdint.h>
 
 void print_ok_status(char* message)
 {
@@ -65,6 +67,14 @@ int kmain()
                     set13HVideoMode();
                     drawDupaIn13H(10);
                 }
+            }
+            else if(c.scancode == 61)
+            {
+                sound(1000);
+            }
+            else if(c.scancode == 62)
+            {
+                nosound();
             }
             else
                 vga_printchar(c.ascii);
