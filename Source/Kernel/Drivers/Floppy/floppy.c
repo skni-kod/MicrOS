@@ -1,16 +1,15 @@
 #include "floppy.h"
 
-floppy_header* floppy_header_data = 0x7c00;
-uint8_t* dma_buffer = 0x0500;
+volatile floppy_header* floppy_header_data = 0x7c00;
+volatile uint8_t* dma_buffer = 0x0500;
 
-bool floppy_interrupt_flag = false;
+volatile bool floppy_interrupt_flag = false;
 
 void floppy_init()
 {
     floppy_dma_init();
     floppy_reset();
 }
-
 
 void floppy_reset()
 {
@@ -44,6 +43,7 @@ void floppy_reset()
     //  DMA = yes
     floppy_set_parameters(3, 16, 240, true);
 
+    // Do calibration
     floppy_calibrate();
 }
 
@@ -124,12 +124,14 @@ void floppy_enable_motor()
 {
     // Enable floppy motor (reset (0x04) | Drive 0 Motor (0x10))
     outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x14);
+    sleep(300);
 }
 
 void floppy_disable_motor()
 {
     // Disable floppy motor (reset (0x04))
     outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04);
+    sleep(300);
 }
 
 void floppy_dma_init()

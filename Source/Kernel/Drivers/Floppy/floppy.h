@@ -18,6 +18,7 @@
 #include "floppy_header.h"
 #include "../../Interrupts/PIC/pic.h"
 #include "../../Assembly/io.h"
+#include "../../../../Library/stdlib.h"
 
 void floppy_init();
 void floppy_reset();
