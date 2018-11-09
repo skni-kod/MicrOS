@@ -8,7 +8,20 @@ volatile bool floppy_interrupt_flag = false;
 void floppy_init()
 {
     floppy_dma_init();
-    floppy_reset();
+    
+    if(floppy_reset() == -1)
+    {
+        log_error("[Floppy] Reset failure");
+        return;
+    }
+    log_info("[Floppy] Reset done");
+
+    if(floppy_calibrate() == -1)
+    {
+        log_error("[Floppy] Calibration failure");
+        return;
+    }
+    log_info("[Floppy] Calibration done");
 
     floppy_read_sector(0, 0, 1);
 
@@ -21,7 +34,7 @@ void floppy_init()
     vga_printchar('\n');
 }
 
-void floppy_reset()
+uint8_t floppy_reset()
 {
     // Disable floppy controller
     outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0);
@@ -36,7 +49,7 @@ void floppy_reset()
     uint32_t status_register, cylinder;
     for (int i = 0; i < 4; i++)
     {
-		floppy_get_interrupt_data(&status_register, &cylinder);
+		floppy_confirm_interrupt(&status_register, &cylinder);
     }
 
     // Set transfer speed to 500 kb/s
@@ -52,31 +65,48 @@ void floppy_reset()
     //  head unload time = 240 ms
     //  DMA = yes
     floppy_set_parameters(3, 16, 240, true);
-
-    // Do calibration
-    floppy_calibrate();
 }
 
-void floppy_wait_until_ready()
+uint8_t floppy_wait_until_ready()
 {
-    // Get main status register and check if the last bit is set
-    // If yes, data register is ready for data transfer
-    while(!(inb(FLOPPY_MAIN_STAUTS_REGISTER) & 0x80));
+    for(int i=0; i<1000; i++)
+    {
+        // Get main status register and check if the last bit is set
+        // If yes, data register is ready for data transfer
+        if(inb(FLOPPY_MAIN_STAUTS_REGISTER) & 0x80)
+        {
+            return 0;
+        }
+
+        sleep(1);
+    }
+
+    return -1;
 }
 
-void floppy_send_command(uint8_t cmd)
+uint8_t floppy_send_command(uint8_t cmd)
 {
-    floppy_wait_until_ready();
-    return outb(FLOPPY_DATA_REGISTER, cmd);
+    if(floppy_wait_until_ready() == -1)
+    {
+        log_error("[Floppy] Send command - timeout");
+        return -1;
+    }
+
+    outb(FLOPPY_DATA_REGISTER, cmd);
 }
  
 uint8_t floppy_read_data()
 {
-	floppy_wait_until_ready();
+	if(floppy_wait_until_ready() == -1)
+    {
+        log_error("[Floppy] Read data - timeout");
+        return -1;
+    }
+
 	return inb(FLOPPY_DATA_REGISTER);
 }
 
-void floppy_get_interrupt_data(uint32_t* status_register, uint32_t* cylinder)
+void floppy_confirm_interrupt(uint32_t* status_register, uint32_t* cylinder)
 {
     // Send SENSE_INTERRUPT command
 	floppy_send_command(0x08);
@@ -104,11 +134,11 @@ void floppy_set_parameters(uint32_t step_rate, uint32_t head_load_time, uint32_t
 	floppy_send_command(data);
 }
 
-void floppy_calibrate()
+uint8_t floppy_calibrate()
 {
     floppy_enable_motor();
 
-    while(true)
+    for(int i=0; i<1000; i++)
     {
         // Send CALIBRATE command
         floppy_send_command(0x07);
@@ -119,12 +149,15 @@ void floppy_calibrate()
         floppy_wait_for_interrupt();
 
         uint32_t status_register, cylinder;
-        floppy_get_interrupt_data(&status_register, &cylinder);
+        floppy_confirm_interrupt(&status_register, &cylinder);
 
         if(cylinder == 0)
         {
-            break;
+            floppy_disable_motor();
+            return 0;
         }
+
+        sleep(1);
     }
 
     floppy_disable_motor();
@@ -197,7 +230,7 @@ void floppy_read_sector(uint8_t head, uint8_t track, uint8_t sector)
     }
  
 	// Confirm interrupt
-	floppy_get_interrupt_data(&interrupt_sector, &interrupt_cylinder);
+	floppy_confirm_interrupt(&interrupt_sector, &interrupt_cylinder);
     
     // Disable floppy motor and wait some time
     floppy_disable_motor();
@@ -207,21 +240,23 @@ int floppy_seek(uint32_t cylinder, uint32_t head) {
  
 	uint32_t interrupt_sector, interrupt_cylinder;
  
-	while(true)
+	for(int i=0; i<1000; i++)
     {
 		// Send seek command
-		floppy_send_command (0xf);
-		floppy_send_command ((head) << 2 | DEVICE_NUMBER);
-		floppy_send_command (cylinder);
+		floppy_send_command(0xf);
+		floppy_send_command((head) << 2 | DEVICE_NUMBER);
+		floppy_send_command(cylinder);
  
 		// Wait for interrupt
 		floppy_wait_for_interrupt();
-		floppy_get_interrupt_data(&interrupt_sector, &interrupt_cylinder);
+		floppy_confirm_interrupt(&interrupt_sector, &interrupt_cylinder);
  
 		if (interrupt_cylinder == cylinder)
         {
-            break;
+            return 0;
         }
+
+        sleep(1);
 	}
  
 	return -1;
