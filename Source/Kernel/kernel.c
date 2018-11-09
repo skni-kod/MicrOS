@@ -6,6 +6,10 @@
 #include "Drivers/Floppy/floppy.h"
 #include "Drivers/VGA/vga_gmode.h"
 #include "Drivers/PCSpeaker/pcspeaker.h"
+<<<<<<< HEAD
+=======
+#include "Misc/startupMisc.h"
+>>>>>>> master
 #include "Timer/timer.h"
 #include <stdint.h>
 
@@ -44,6 +48,9 @@ void startup()
     keyboard_init();
     print_ok_status("Keyboard");
 
+    timer_init();
+    print_ok_status("Timer");
+
     vga_printstring("MicrOS ready\n");
     vga_printstring("Created by Application Section of SKNI KOD\n");
     vga_printstring("Version ... no version\n");
@@ -56,6 +63,7 @@ int kmain()
     col.color_without_blink.background = VGA_COLOR_BLACK;
     startup();
     vga_printstring("Hello, World!\n");
+    whatIsLove();
     vga_printstring("\nREADY.\n");
 
     while(1)
