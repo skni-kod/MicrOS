@@ -28,7 +28,7 @@ uint8_t floppy_reset();
 uint8_t floppy_wait_until_ready();
 uint8_t floppy_send_command(uint8_t cmd);
 uint8_t floppy_read_data();
-void floppy_confirm_interrupt(uint32_t* status_register, uint32_t* cylinder);
+void floppy_confirm_interrupt(uint32_t* st0, uint32_t* cylinder);
 void floppy_set_parameters(uint32_t step_rate, uint32_t head_load_time, uint32_t head_unload_time, bool dma);
 uint8_t floppy_calibrate();
 void floppy_read_sector(uint8_t head, uint8_t track, uint8_t sector);

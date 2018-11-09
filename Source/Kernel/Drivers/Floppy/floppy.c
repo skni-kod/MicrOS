@@ -4,6 +4,13 @@ volatile floppy_header* floppy_header_data = 0x7c00;
 volatile uint8_t* dma_buffer = 0x0500;
 
 volatile bool floppy_interrupt_flag = false;
+char * st0_messages[] =
+{
+    "normal",
+    "error",
+    "invalid command",
+    "drive not ready"
+};
     
 void floppy_init()
 {
@@ -11,24 +18,24 @@ void floppy_init()
     
     if(floppy_reset() == -1)
     {
-        log_error("[Floppy] Reset failure");
+        log_error("[Floppy] floppy_init - reset failure");
         return;
     }
-    log_info("[Floppy] Reset done");
+    log_info("[Floppy] floppy_init - reset done");
 
     if(floppy_calibrate() == -1)
     {
-        log_error("[Floppy] Calibration failure");
+        log_error("[Floppy] floppy_init - calibration failure");
         return;
     }
-    log_info("[Floppy] Calibration done");
+    log_info("[Floppy] floppy_init - calibration done");
 
     floppy_read_sector(0, 0, 1);
 
     vga_printstring("F: ");
     for(int i=0; i<512; i++)
     {
-        vga_printchar(dma_buffer[i]);
+        //vga_printchar(dma_buffer[i]);
     }
 
     vga_printchar('\n');
@@ -46,10 +53,12 @@ uint8_t floppy_reset()
     floppy_wait_for_interrupt();
 
     // Tell all connected devices that we catched the interrupt (SENSE_INTERRUPT command)
-    uint32_t status_register, cylinder;
-    for (int i = 0; i < 4; i++)
+    uint32_t st0, cylinder;
+
+    floppy_confirm_interrupt(&st0, &cylinder);
+    if(st0 != 0xC0)
     {
-		floppy_confirm_interrupt(&status_register, &cylinder);
+        log_error("[Floppy] Invalid reset");
     }
 
     // Set transfer speed to 500 kb/s
@@ -81,6 +90,7 @@ uint8_t floppy_wait_until_ready()
         sleep(1);
     }
 
+    log_error("[Floppy] floppy_wait_until_ready - timeout");
     return -1;
 }
 
@@ -88,7 +98,7 @@ uint8_t floppy_send_command(uint8_t cmd)
 {
     if(floppy_wait_until_ready() == -1)
     {
-        log_error("[Floppy] Send command - timeout");
+        log_error("[Floppy] floppy_send_command - timeout");
         return -1;
     }
 
@@ -99,19 +109,19 @@ uint8_t floppy_read_data()
 {
 	if(floppy_wait_until_ready() == -1)
     {
-        log_error("[Floppy] Read data - timeout");
+        log_error("[Floppy] floppy_read_data - timeout");
         return -1;
     }
 
 	return inb(FLOPPY_DATA_REGISTER);
 }
 
-void floppy_confirm_interrupt(uint32_t* status_register, uint32_t* cylinder)
+void floppy_confirm_interrupt(uint32_t* st0, uint32_t* cylinder)
 {
     // Send SENSE_INTERRUPT command
 	floppy_send_command(0x08);
  
-	*status_register = floppy_read_data();
+	*st0 = floppy_read_data();
 	*cylinder = floppy_read_data();
 }
 
@@ -148,8 +158,14 @@ uint8_t floppy_calibrate()
 
         floppy_wait_for_interrupt();
 
-        uint32_t status_register, cylinder;
-        floppy_confirm_interrupt(&status_register, &cylinder);
+        uint32_t st0, cylinder;
+
+        floppy_confirm_interrupt(&st0, &cylinder);
+        if(st0 != 0x20)
+        {
+            log_error("[Floppy] Invalid calibration");
+            log_error(st0_messages[st0 >> 6]);
+        }
 
         if(cylinder == 0)
         {
@@ -179,8 +195,6 @@ void floppy_disable_motor()
 
 void floppy_read_sector(uint8_t head, uint8_t track, uint8_t sector)
 {
-	uint32_t interrupt_sector, interrupt_cylinder;
-
     // Run floppy motor and wait some time
     floppy_enable_motor();
 
@@ -224,13 +238,70 @@ void floppy_read_sector(uint8_t head, uint8_t track, uint8_t sector)
 	floppy_wait_for_interrupt();
  
 	// Read command status
-	for (int i = 0; i < 7; i++)
-    {
-		floppy_read_data();
-    }
+    uint8_t st0 = floppy_read_data();
+    uint8_t st1 = floppy_read_data();
+    uint8_t st2 = floppy_read_data();
+    uint8_t cylinder_data = floppy_read_data();
+    uint8_t head_data = floppy_read_data();
+    uint8_t sector_data = floppy_read_data();
+    uint8_t bps = floppy_read_data();
  
+    if(st0 != 0x20)
+    {
+        log_error("[Floppy] Invalid read sector");
+        log_error(st0_messages[st0 >> 6]);
+    }
+
+    if(st1 & 0x80)
+    {
+        log_error("[Floppy] End of cylinder");
+    }
+    if(st1 & 0x20)
+    {
+        log_error("[Floppy] Data error");
+    }
+    if(st1 & 0x04)
+    {
+        log_error("[Floppy] No data");
+    }
+    if(st1 & 0x02)
+    {
+        log_error("[Floppy] Not writable");
+    }
+    if(st1 & 0x01)
+    {
+        log_error("[Floppy] Missing address mark");
+    }
+
+
+    if(st2 & 0x40)
+    {
+        log_error("[Floppy] control mask");
+    }
+    if(st2 & 0x20)
+    {
+        log_error("[Floppy] data error in data field");
+    }
+    if(st2 & 0x10)
+    {
+        log_error("[Floppy] wrong cylinder");
+    }
+    if(st2 & 0x02)
+    {
+        log_error("[Floppy] bad cylinder");  
+    }
+    if(st2 & 0x01)
+    {
+        log_error("[Floppy] missing data address mark");  
+    }
+
+    if(bps != 0x2)
+    {
+        log_error("[Floppy] invalid bps");   
+    }
+
 	// Confirm interrupt
-	floppy_confirm_interrupt(&interrupt_sector, &interrupt_cylinder);
+	floppy_confirm_interrupt(&st0, &cylinder_data);
     
     // Disable floppy motor and wait some time
     floppy_disable_motor();
@@ -238,7 +309,7 @@ void floppy_read_sector(uint8_t head, uint8_t track, uint8_t sector)
 
 int floppy_seek(uint32_t cylinder, uint32_t head) {
  
-	uint32_t interrupt_sector, interrupt_cylinder;
+	uint32_t st0, interrupt_cylinder;
  
 	for(int i=0; i<1000; i++)
     {
@@ -249,7 +320,11 @@ int floppy_seek(uint32_t cylinder, uint32_t head) {
  
 		// Wait for interrupt
 		floppy_wait_for_interrupt();
-		floppy_confirm_interrupt(&interrupt_sector, &interrupt_cylinder);
+		floppy_confirm_interrupt(&st0, &interrupt_cylinder);
+        if(st0 != 0x20)
+        {
+            log_error("[Floppy] Invalid seek");
+        }
  
 		if (interrupt_cylinder == cylinder)
         {
