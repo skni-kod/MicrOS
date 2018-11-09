@@ -7,54 +7,39 @@
 #include "Drivers/PCSpeaker/pcspeaker.h"
 #include "Misc/startupMisc.h"
 #include "Timer/timer.h"
+#include "Logger/logger.h"
 #include <stdint.h>
-
-void print_ok_status(char* message)
-{
-    vga_color col;
-    col.color_without_blink.letter = VGA_COLOR_GREEN;
-    col.color_without_blink.background = VGA_COLOR_BLACK;
-    
-    vga_printstring("[ ");
-    vga_printstring_color("OK", &col);
-    vga_printstring(" ] ");
-    vga_printstring(message);
-    vga_printstring("\n");
-}
 
 void startup()
 {
     //Don't use VGA before calling VGA init
     vga_init();
-    vga_printstring("MicrOS is starting...\n");
-    print_ok_status("VGA Driver");
+    log_info("MicrOS is starting...");
+    log_ok("VGA Driver");
 
     pic_init();
-    print_ok_status("Programmable Interrupt Controller");
+    log_ok("Programmable Interrupt Controller");
 
     idt_init();
-    print_ok_status("Interrupt Descriptor Table");
+    log_ok("Interrupt Descriptor Table");
     
     keyboard_init();
-    print_ok_status("Keyboard");
+    log_ok("Keyboard");
 
     timer_init();
-    print_ok_status("Timer");
+    log_ok("Timer");
 
-    vga_printstring("MicrOS ready\n");
-    vga_printstring("Created by Application Section of SKNI KOD\n");
-    vga_printstring("Version ... no version\n");
+    log_info("MicrOS ready");
+    log_info("Created by Application Section of SKNI KOD");
+    log_info("Version ... no version");
 }
 
 int kmain()
 {
-    vga_color col;
-    col.color_without_blink.letter = VGA_COLOR_GREEN;
-    col.color_without_blink.background = VGA_COLOR_BLACK;
     startup();
-    vga_printstring("Hello, World!\n");
-    whatIsLove();
-    vga_printstring("\nREADY.\n");
+    log_info("Hello, World!");
+    //whatIsLove();
+    log_ok("READY.");
 
     while(1)
     {
