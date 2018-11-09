@@ -208,10 +208,10 @@ void floppy_read_sector(uint8_t head, uint8_t track, uint8_t sector)
     // Run floppy motor and wait some time
     floppy_enable_motor();
 
-    floppy_seek(0, head);
- 
-	// Prepare DMA for reading
-	//floppy_dma_read();
+    if(floppy_seek(0, head) == -1)
+    {
+        log_error("[Floppy] Seek failure");
+    }
  
 	// Send command to read sector
     //  0x06 - read sector command
@@ -389,7 +389,7 @@ void floppy_dma_init()
     //  10 - reading from memory
     //  11 - invalid
     // SEL0, SEL1 - channel to change
-    outb(DMA_MODE_REGISTER, 0x44); 
+    outb(DMA_MODE_REGISTER, 0x56); 
     
     // Release channel
 	outb(DMA_SINGLE_CHANNEL_MASK_REGISTER, 0x02);
