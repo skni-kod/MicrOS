@@ -6,10 +6,7 @@
 #include "Drivers/Floppy/floppy.h"
 #include "Drivers/VGA/vga_gmode.h"
 #include "Drivers/PCSpeaker/pcspeaker.h"
-<<<<<<< HEAD
-=======
 #include "Misc/startupMisc.h"
->>>>>>> master
 #include "Timer/timer.h"
 #include <stdint.h>
 
