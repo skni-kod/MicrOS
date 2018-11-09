@@ -24,6 +24,7 @@
 #include "../../Logger/logger.h"
 
 void floppy_init();
+void floppy_lba_to_chs(int lba, int *head, int *track, int *sector);
 uint8_t floppy_reset();
 uint8_t floppy_wait_until_ready();
 uint8_t floppy_send_command(uint8_t cmd);
@@ -37,7 +38,6 @@ void floppy_disable_motor();
 int floppy_seek(uint32_t cylinder, uint32_t head);
 
 void floppy_dma_init();
-void floppy_dma_read();
 
 void floppy_wait_for_interrupt();
 void floppy_interrupt();

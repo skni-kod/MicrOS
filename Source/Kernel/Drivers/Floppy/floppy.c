@@ -1,10 +1,10 @@
 #include "floppy.h"
 
 volatile floppy_header* floppy_header_data = 0x7c00;
-volatile uint8_t* dma_buffer = 0x0500;
+volatile uint8_t* dma_buffer = 0x1000;
 
 volatile bool floppy_interrupt_flag = false;
-char * st0_messages[] =
+char* st0_messages[] =
 {
     "normal",
     "error",
@@ -30,15 +30,25 @@ void floppy_init()
     }
     log_info("[Floppy] floppy_init - calibration done");
 
-    floppy_read_sector(0, 0, 1);
+    // Test floppy by read first sector with bootloader
+    uint8_t head, track, sector;
+    floppy_lba_to_chs(0, &head, &track, &sector);
+    floppy_read_sector(head, track, sector);
 
     vga_printstring("F: ");
     for(int i=0; i<512; i++)
     {
-        //vga_printchar(dma_buffer[i]);
+        vga_printchar(dma_buffer[i]);
     }
 
     vga_printchar('\n');
+}
+
+void floppy_lba_to_chs(int lba, int *head, int *track, int *sector)
+{
+	*head = (lba % ((*floppy_header_data).sectors_per_track * 2) ) / (*floppy_header_data).sectors_per_track;
+	*track = lba / ((*floppy_header_data).sectors_per_track * 2);
+	*sector = lba % (*floppy_header_data).sectors_per_track + 1;
 }
 
 uint8_t floppy_reset()
@@ -47,7 +57,7 @@ uint8_t floppy_reset()
     outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0);
 
     // Enable floppy controller (reset (0x04) | DMA (0x08))
-    outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x0C);
+    outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04 | 0x08);
 
     // Wait for interrupt and continue reset sequence
     floppy_wait_for_interrupt();
@@ -127,7 +137,7 @@ void floppy_confirm_interrupt(uint32_t* st0, uint32_t* cylinder)
 
 void floppy_set_parameters(uint32_t step_rate, uint32_t head_load_time, uint32_t head_unload_time, bool dma)
 {
-	uint32_t data = 0;
+	uint8_t data = 0;
  
     // Send SPECIFY command
 	floppy_send_command(0x03);
@@ -140,7 +150,7 @@ void floppy_set_parameters(uint32_t step_rate, uint32_t head_load_time, uint32_t
  
     // H H H H H H H DMA
     //  H = Head Load Time
-	data = (head_load_time << 1) | dma;
+	data = (head_load_time << 1) | (dma ? 0 : 1);
 	floppy_send_command(data);
 }
 
@@ -154,7 +164,7 @@ uint8_t floppy_calibrate()
         floppy_send_command(0x07);
 
         // Send driver number
-        floppy_send_command(0);
+        floppy_send_command(DEVICE_NUMBER);
 
         floppy_wait_for_interrupt();
 
@@ -182,7 +192,7 @@ uint8_t floppy_calibrate()
 void floppy_enable_motor()
 {
     // Enable floppy motor (reset (0x04) | Drive 0 Motor (0x10))
-    outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x14);
+    outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04 | 0x08 | 0x10);
     sleep(600);
 }
 
@@ -201,7 +211,7 @@ void floppy_read_sector(uint8_t head, uint8_t track, uint8_t sector)
     floppy_seek(0, head);
  
 	// Prepare DMA for reading
-	floppy_dma_read();
+	//floppy_dma_read();
  
 	// Send command to read sector
     //  0x06 - read sector command
@@ -225,8 +235,10 @@ void floppy_read_sector(uint8_t head, uint8_t track, uint8_t sector)
     // Sector size (2 = 512)
 	floppy_send_command(2);
 
+    uint8_t sectors_per_track = (*floppy_header_data).sectors_per_track;
+
     // Sectors per track
-	floppy_send_command((*floppy_header_data).sectors_per_track);
+	floppy_send_command(((sector+1)>=sectors_per_track)?sectors_per_track:(sector+1));
 
     // Length of gap (0x1B = floppy 3,5)
 	floppy_send_command(0x1B);
@@ -350,7 +362,7 @@ void floppy_dma_init()
 
     // Set buffer to 0x0500 address
 	outb(DMA_START_ADDRESS_REGISTER, 0);
-	outb(DMA_START_ADDRESS_REGISTER, 0x05);
+	outb(DMA_START_ADDRESS_REGISTER, 0x10);
 
     // Reset Flip-Flop register
 	outb(DMA_FLIP_FLOP_RESET_REGISTER, 0xff);
@@ -362,16 +374,7 @@ void floppy_dma_init()
     // We don't want to have external page register
 	outb(DMA_EXTERNAL_PAGE_REGISTER, 0);
     
-    // Release channel
-	outb(DMA_SINGLE_CHANNEL_MASK_REGISTER, 0x02);
-}
-
-void floppy_dma_read() {
- 
-    // Tell DMA that we want to configure floppy (channel 2)
-	outb(DMA_SINGLE_CHANNEL_MASK_REGISTER, 0x06);
-
-	// | MOD1 | MOD0 | DOWN | AUTO | TRA1 | TRA0 | SEL1 | SEL0 |
+    // | MOD1 | MOD0 | DOWN | AUTO | TRA1 | TRA0 | SEL1 | SEL0 |
     // |  0   |  1   |  0   |  1   |  0   |  1   |  1   |  0   | = 0x56
     // MOD0, MOD1 - mode
     //  00 - transfer on demand
@@ -386,8 +389,8 @@ void floppy_dma_read() {
     //  10 - reading from memory
     //  11 - invalid
     // SEL0, SEL1 - channel to change
-    outb(DMA_MODE_REGISTER, 0x56); 
-
+    outb(DMA_MODE_REGISTER, 0x44); 
+    
     // Release channel
 	outb(DMA_SINGLE_CHANNEL_MASK_REGISTER, 0x02);
 }
