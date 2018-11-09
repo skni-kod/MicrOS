@@ -17,7 +17,7 @@ void log_warning(char* content)
 
 void log_error(char* content)
 {
-    logger_print_on_screen(content, " ERRO ", VGA_COLOR_LIGHT_RED);
+    logger_print_on_screen(content, " FUCK ", VGA_COLOR_LIGHT_RED);
 }
 
 void log_critical(char* content)
