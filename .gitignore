@@ -56,3 +56,6 @@ Tools
 Build
 Scripts
 .vscode
+
+cloc.exe
+cloc.bat
