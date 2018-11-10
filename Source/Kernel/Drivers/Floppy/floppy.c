@@ -32,7 +32,7 @@ void floppy_init()
 
     // Test floppy by read first sector with bootloader
     uint8_t head, track, sector;
-    floppy_lba_to_chs(0, &head, &track, &sector);
+    floppy_lba_to_chs(33, &head, &track, &sector);
     floppy_read_sector(head, track, sector);
 
     vga_printstring("F: ");
@@ -44,7 +44,7 @@ void floppy_init()
     vga_printchar('\n');
 }
 
-void floppy_lba_to_chs(int lba, int *head, int *track, int *sector)
+void floppy_lba_to_chs(uint8_t lba, uint8_t *head, uint8_t *track, uint8_t *sector)
 {
 	*head = (lba % ((*floppy_header_data).sectors_per_track * 2) ) / (*floppy_header_data).sectors_per_track;
 	*track = lba / ((*floppy_header_data).sectors_per_track * 2);
@@ -360,15 +360,15 @@ void floppy_dma_init()
     // Reset Flip-Flop register
 	outb(DMA_FLIP_FLOP_RESET_REGISTER, 0xff);
 
-    // Set buffer to 0x0500 address
-	outb(DMA_START_ADDRESS_REGISTER, 0);
-	outb(DMA_START_ADDRESS_REGISTER, 0x10);
+    // Set buffer to the specified address
+	outb(DMA_START_ADDRESS_REGISTER, (uint16_t)dma_buffer & 0xff);
+	outb(DMA_START_ADDRESS_REGISTER, (uint16_t)dma_buffer >> 8);
 
     // Reset Flip-Flop register
 	outb(DMA_FLIP_FLOP_RESET_REGISTER, 0xff);
 
     // Count to 0x23ff (number of bytes in a 3.5" floppy disk track)
-	outb(DMA_COUNT_REGISTER_CHANNEL, 0xff);
+	outb(DMA_COUNT_REGISTER_CHANNEL, (0xff));
 	outb(DMA_COUNT_REGISTER_CHANNEL, 0x23);
 
     // We don't want to have external page register

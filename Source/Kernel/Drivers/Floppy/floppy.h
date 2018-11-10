@@ -24,7 +24,7 @@
 #include "../../Logger/logger.h"
 
 void floppy_init();
-void floppy_lba_to_chs(int lba, int *head, int *track, int *sector);
+void floppy_lba_to_chs(uint8_t lba, uint8_t *head, uint8_t *track, uint8_t *sector);
 uint8_t floppy_reset();
 uint8_t floppy_wait_until_ready();
 uint8_t floppy_send_command(uint8_t cmd);
