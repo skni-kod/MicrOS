@@ -21,6 +21,7 @@
 #include "../../Interrupts/PIC/pic.h"
 #include "../../Assembly/io.h"
 #include "../../../../Library/stdlib.h"
+#include "../../../../Library/string.h"
 #include "../../Logger/logger.h"
 
 void floppy_init();
@@ -32,12 +33,14 @@ uint8_t floppy_read_data();
 void floppy_confirm_interrupt(uint32_t* st0, uint32_t* cylinder);
 void floppy_set_parameters(uint32_t step_rate, uint32_t head_load_time, uint32_t head_unload_time, bool dma);
 uint8_t floppy_calibrate();
-void floppy_read_sector(uint8_t head, uint8_t track, uint8_t sector);
+uint8_t* floppy_read_sector(uint8_t head, uint8_t track, uint8_t sector);
+void floppy_write_sector(uint8_t head, uint8_t track, uint8_t sector, uint8_t* content);
+uint8_t* floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sector, bool read);
 void floppy_enable_motor();
 void floppy_disable_motor();
 int floppy_seek(uint32_t cylinder, uint32_t head);
 
-void floppy_dma_init();
+void floppy_dma_init(bool read);
 
 void floppy_wait_for_interrupt();
 void floppy_interrupt();

@@ -7,8 +7,9 @@ volatile bool floppy_interrupt_flag = false;
     
 void floppy_init()
 {
-    floppy_dma_init();
-    
+    // Enable floppy interrupts
+    pic_enable_irq(6);
+
     if(floppy_reset() == -1)
     {
         log_error("[Floppy] Reset failure");
@@ -183,22 +184,37 @@ void floppy_disable_motor()
     sleep(600);
 }
 
-void floppy_read_sector(uint8_t head, uint8_t track, uint8_t sector)
+uint8_t* floppy_read_sector(uint8_t head, uint8_t track, uint8_t sector)
+{
+    floppy_do_operation_on_sector(head, track, sector, true);
+}
+
+void floppy_write_sector(uint8_t head, uint8_t track, uint8_t sector, uint8_t* content)
+{
+    memcpy(dma_buffer, content, 512);
+    floppy_do_operation_on_sector(head, track, sector, false);
+}
+
+uint8_t* floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sector, bool read)
 {
     // Run floppy motor and wait some time
     floppy_enable_motor();
 
+    // Init DMA
+    floppy_dma_init(read);
+
     if(floppy_seek(0, head) == -1)
     {
         log_error("[Floppy] Seek failure");
+        return -1;
     }
  
 	// Send command to read sector
-    //  0x06 - read sector command
+    //  0x06 or 0x05 - read or write sector command
     //  0x20 - skip deleted data address marks
     //  0x40 - double density mode
     //  0x80 - operate on both tracks of the cylinder
-	floppy_send_command(0x06 | 0x20 | 0x40 | 0x80);
+	floppy_send_command((read ? 0x06 : 0x05) | 0x20 | 0x40 | 0x80);
 	
     // _ _ _ _ _ HEAD DEV1 DEV2
     floppy_send_command(head << 2 | DEVICE_NUMBER);
@@ -261,28 +277,28 @@ void floppy_read_sector(uint8_t head, uint8_t track, uint8_t sector)
 
     if(st2 & 0x40)
     {
-        log_error("[Floppy] control mask");
+        log_error("[Floppy] Control mask");
     }
     if(st2 & 0x20)
     {
-        log_error("[Floppy] data error in data field");
+        log_error("[Floppy] Data error in data field");
     }
     if(st2 & 0x10)
     {
-        log_error("[Floppy] wrong cylinder");
+        log_error("[Floppy] Wrong cylinder");
     }
     if(st2 & 0x02)
     {
-        log_error("[Floppy] bad cylinder");  
+        log_error("[Floppy] Bad cylinder");  
     }
     if(st2 & 0x01)
     {
-        log_error("[Floppy] missing data address mark");  
+        log_error("[Floppy] Missing data address mark");  
     }
 
     if(bps != 0x2)
     {
-        log_error("[Floppy] invalid bps");   
+        log_error("[Floppy] Invalid bps");   
     }
 
 	// Confirm interrupt
@@ -290,6 +306,8 @@ void floppy_read_sector(uint8_t head, uint8_t track, uint8_t sector)
     
     // Disable floppy motor and wait some time
     floppy_disable_motor();
+
+    return dma_buffer;
 }
 
 int floppy_seek(uint32_t cylinder, uint32_t head)
@@ -322,11 +340,8 @@ int floppy_seek(uint32_t cylinder, uint32_t head)
 	return -1;
 }
 
-void floppy_dma_init()
+void floppy_dma_init(bool read)
 {
-    // Enable floppy interrupts
-    pic_enable_irq(6);
-
     // Tell DMA that we want to configure floppy (channel 2)
     outb(DMA_SINGLE_CHANNEL_MASK_REGISTER, 0x06);
 
@@ -348,21 +363,21 @@ void floppy_dma_init()
 	outb(DMA_EXTERNAL_PAGE_REGISTER, 0);
     
     // | MOD1 | MOD0 | DOWN | AUTO | TRA1 | TRA0 | SEL1 | SEL0 |
-    // |  0   |  1   |  0   |  1   |  0   |  1   |  1   |  0   | = 0x56
-    // MOD0, MOD1 - mode
+    // |  0   |  1   |  0   |  1   |  x   |  x   |  1   |  0   | = 0x56
+    // MOD1, MOD0 - mode
     //  00 - transfer on demand
     //  01 - single DMA transfer
     //  10 - block DMA transfer
     //  11 - cascade mode (with another DMA controller)
     // DOWN - set order of data
     // AUTO - reset address after transfer if set
-    // TRA0, TRA1 - transfer type
+    // TRA1, TRA0 - transfer type
     //  00 - self test of the controller
-    //  01 - writing to memory
-    //  10 - reading from memory
+    //  01 - reading from memory
+    //  10 - writing to memory
     //  11 - invalid
     // SEL0, SEL1 - channel to change
-    outb(DMA_MODE_REGISTER, 0x56); 
+    outb(DMA_MODE_REGISTER, 0x52 | (read ? 0x04 : 0x08)); 
     
     // Release channel
 	outb(DMA_SINGLE_CHANNEL_MASK_REGISTER, 0x02);
