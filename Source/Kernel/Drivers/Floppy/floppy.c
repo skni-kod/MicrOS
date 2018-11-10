@@ -4,13 +4,6 @@ volatile floppy_header* floppy_header_data = 0x7c00;
 volatile uint8_t* dma_buffer = 0x1000;
 
 volatile bool floppy_interrupt_flag = false;
-char* st0_messages[] =
-{
-    "normal",
-    "error",
-    "invalid command",
-    "drive not ready"
-};
     
 void floppy_init()
 {
@@ -18,35 +11,22 @@ void floppy_init()
     
     if(floppy_reset() == -1)
     {
-        log_error("[Floppy] floppy_init - reset failure");
+        log_error("[Floppy] Reset failure");
         return;
     }
-    log_info("[Floppy] floppy_init - reset done");
+    log_info("[Floppy] Reset done");
 
     if(floppy_calibrate() == -1)
     {
-        log_error("[Floppy] floppy_init - calibration failure");
+        log_error("[Floppy] Calibration failure");
         return;
     }
-    log_info("[Floppy] floppy_init - calibration done");
-
-    // Test floppy by read first sector with bootloader
-    uint8_t head, track, sector;
-    floppy_lba_to_chs(33, &head, &track, &sector);
-    floppy_read_sector(head, track, sector);
-
-    vga_printstring("F: ");
-    for(int i=0; i<512; i++)
-    {
-        vga_printchar(dma_buffer[i]);
-    }
-
-    vga_printchar('\n');
+    log_info("[Floppy] Calibration done");
 }
 
 void floppy_lba_to_chs(uint8_t lba, uint8_t *head, uint8_t *track, uint8_t *sector)
 {
-	*head = (lba % ((*floppy_header_data).sectors_per_track * 2) ) / (*floppy_header_data).sectors_per_track;
+	*head = (lba % ((*floppy_header_data).sectors_per_track * 2)) / (*floppy_header_data).sectors_per_track;
 	*track = lba / ((*floppy_header_data).sectors_per_track * 2);
 	*sector = lba % (*floppy_header_data).sectors_per_track + 1;
 }
@@ -68,7 +48,7 @@ uint8_t floppy_reset()
     floppy_confirm_interrupt(&st0, &cylinder);
     if(st0 != 0xC0)
     {
-        log_error("[Floppy] Invalid reset");
+        log_error("[Floppy] Invalid ST0 after reset");
     }
 
     // Set transfer speed to 500 kb/s
@@ -100,7 +80,7 @@ uint8_t floppy_wait_until_ready()
         sleep(1);
     }
 
-    log_error("[Floppy] floppy_wait_until_ready - timeout");
+    log_error("[Floppy] Timeout while waiting for availability");
     return -1;
 }
 
@@ -108,7 +88,7 @@ uint8_t floppy_send_command(uint8_t cmd)
 {
     if(floppy_wait_until_ready() == -1)
     {
-        log_error("[Floppy] floppy_send_command - timeout");
+        log_error("[Floppy] Timeout while waiting for command send");
         return -1;
     }
 
@@ -119,7 +99,7 @@ uint8_t floppy_read_data()
 {
 	if(floppy_wait_until_ready() == -1)
     {
-        log_error("[Floppy] floppy_read_data - timeout");
+        log_error("[Floppy] Timeout while waiting for data read");
         return -1;
     }
 
@@ -171,10 +151,9 @@ uint8_t floppy_calibrate()
         uint32_t st0, cylinder;
 
         floppy_confirm_interrupt(&st0, &cylinder);
-        if(st0 != 0x20)
+        if(st0 & 0x20 == 0)
         {
-            log_error("[Floppy] Invalid calibration");
-            log_error(st0_messages[st0 >> 6]);
+            log_error("[Floppy] Invalid ST0 after calibration");
         }
 
         if(cylinder == 0)
@@ -187,6 +166,7 @@ uint8_t floppy_calibrate()
     }
 
     floppy_disable_motor();
+    return -1;
 }
 
 void floppy_enable_motor()
@@ -257,12 +237,6 @@ void floppy_read_sector(uint8_t head, uint8_t track, uint8_t sector)
     uint8_t head_data = floppy_read_data();
     uint8_t sector_data = floppy_read_data();
     uint8_t bps = floppy_read_data();
- 
-    if(st0 != 0x20)
-    {
-        log_error("[Floppy] Invalid read sector");
-        log_error(st0_messages[st0 >> 6]);
-    }
 
     if(st1 & 0x80)
     {
@@ -284,7 +258,6 @@ void floppy_read_sector(uint8_t head, uint8_t track, uint8_t sector)
     {
         log_error("[Floppy] Missing address mark");
     }
-
 
     if(st2 & 0x40)
     {
@@ -319,8 +292,8 @@ void floppy_read_sector(uint8_t head, uint8_t track, uint8_t sector)
     floppy_disable_motor();
 }
 
-int floppy_seek(uint32_t cylinder, uint32_t head) {
- 
+int floppy_seek(uint32_t cylinder, uint32_t head)
+{
 	uint32_t st0, interrupt_cylinder;
  
 	for(int i=0; i<1000; i++)
@@ -333,9 +306,9 @@ int floppy_seek(uint32_t cylinder, uint32_t head) {
 		// Wait for interrupt
 		floppy_wait_for_interrupt();
 		floppy_confirm_interrupt(&st0, &interrupt_cylinder);
-        if(st0 != 0x20)
+        if(st0 & 0x20 == 0)
         {
-            log_error("[Floppy] Invalid seek");
+            log_error("[Floppy] Invalid ST0 after seek");
         }
  
 		if (interrupt_cylinder == cylinder)
