@@ -111,6 +111,12 @@ GDT_Desc:
     dw GDT_End - GDT - 1
     dd GDT
 
+PD_Address:
+    dw 0x1000
+
+First_MB_PT:
+    dw 0x2000
+
 ; Entry point of bootloader
 Main:
     ; Set stack pointer to be directly under bootloader
@@ -428,6 +434,40 @@ LoadKernel:
     pop ebp
 
     ret
+
+; Input: eax - address of Page Directory
+; Output: nothing
+EnablePagging:
+    ; Making function safe
+    push ebx
+
+    ; Set Address Of The Page Directory
+    mov cr3, eax
+
+    ;enable pagging
+    mov ebx, cr0
+    or 3bx, 0x80000000
+    mov cr0, ebx
+
+    pop ebx
+
+    ret
+
+; Input ax - Address to PT alligned with 0x1000
+; Input bx - No Of Entry 
+AddEntryToPD:
+    or ax, 3
+    mov [PD_Address + bx * 4], ax
+    ret
+    
+MapFirstMb:
+    push ax
+    push bx
+    mov ax, First_MB_PT
+    mov bx, 0
+    call AddEntryToPD
+
+    
 
 ; Input: nothing
 ; Output: nothing
