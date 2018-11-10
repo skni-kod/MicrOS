@@ -184,13 +184,19 @@ void floppy_disable_motor()
     sleep(600);
 }
 
-uint8_t* floppy_read_sector(uint8_t head, uint8_t track, uint8_t sector)
+uint8_t* floppy_read_sector(uint8_t sector)
 {
+    uint8_t head, track;
+    floppy_lba_to_chs(sector, &head, &track, &sector);
+
     floppy_do_operation_on_sector(head, track, sector, true);
 }
 
-void floppy_write_sector(uint8_t head, uint8_t track, uint8_t sector, uint8_t* content)
+void floppy_write_sector(uint8_t sector, uint8_t* content)
 {
+    uint8_t head, track;
+    floppy_lba_to_chs(sector, &head, &track, &sector);
+
     memcpy(dma_buffer, content, 512);
     floppy_do_operation_on_sector(head, track, sector, false);
 }
