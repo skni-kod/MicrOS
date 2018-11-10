@@ -2,6 +2,7 @@
 #define FLOPPY_H
 
 #define DEVICE_NUMBER 0
+#define IDLE_TIME 3000
 
 #define DMA_SINGLE_CHANNEL_MASK_REGISTER 0x0A
 #define DMA_FLIP_FLOP_RESET_REGISTER 0xD8
@@ -23,6 +24,7 @@
 #include "../../../../Library/stdlib.h"
 #include "../../../../Library/string.h"
 #include "../../Logger/logger.h"
+#include "../../Timer/timer.h"
 
 void floppy_init();
 void floppy_lba_to_chs(uint8_t lba, uint8_t *head, uint8_t *track, uint8_t *sector);
@@ -44,5 +46,6 @@ void floppy_dma_init(bool read);
 
 void floppy_wait_for_interrupt();
 void floppy_interrupt();
+void floppy_timer_interrupt();
 
 #endif

@@ -2,11 +2,18 @@
 
 volatile floppy_header* floppy_header_data = 0x7c00;
 volatile uint8_t* dma_buffer = 0x1000;
+volatile uint32_t time_of_last_activity = 0;
+volatile bool motor_enabled = false;
 
 volatile bool floppy_interrupt_flag = false;
     
 void floppy_init()
 {
+    // Enable timer interrupt (to check if floppy can be shut down after some time of inactivity)
+    pic_enable_irq(0);
+
+    time_of_last_activity = timer_get_system_clock();
+
     // Enable floppy interrupts
     pic_enable_irq(6);
 
@@ -159,29 +166,40 @@ uint8_t floppy_calibrate()
 
         if(cylinder == 0)
         {
-            floppy_disable_motor();
             return 0;
         }
 
         sleep(1);
     }
 
-    floppy_disable_motor();
     return -1;
 }
 
 void floppy_enable_motor()
 {
-    // Enable floppy motor (reset (0x04) | Drive 0 Motor (0x10))
-    outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04 | 0x08 | 0x10);
-    sleep(600);
+    if(!motor_enabled)
+    {
+        // Enable floppy motor (reset (0x04) | Drive 0 Motor (0x10))
+        outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04 | 0x08 | 0x10);
+        sleep(300);
+    
+        log_info("[Floppy] Motor enabled");
+        motor_enabled = true;
+    }
+
+    time_of_last_activity = timer_get_system_clock();
 }
 
 void floppy_disable_motor()
 {
-    // Disable floppy motor (reset (0x04))
-    outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04);
-    sleep(600);
+    if(motor_enabled)
+    {
+        // Disable floppy motor (reset (0x04))
+        outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04);
+    
+        log_info("[Floppy] Motor disabled");
+        motor_enabled = false;
+    }
 }
 
 uint8_t* floppy_read_sector(uint8_t sector)
@@ -309,9 +327,6 @@ uint8_t* floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
 
 	// Confirm interrupt
 	floppy_confirm_interrupt(&st0, &cylinder_data);
-    
-    // Disable floppy motor and wait some time
-    floppy_disable_motor();
 
     return dma_buffer;
 }
@@ -398,4 +413,16 @@ void floppy_wait_for_interrupt()
 void floppy_interrupt()
 {
     floppy_interrupt_flag = true;
+}
+
+void floppy_timer_interrupt()
+{
+    if(motor_enabled)
+    {
+        uint32_t system_clock = timer_get_system_clock();
+        if(system_clock >= time_of_last_activity + IDLE_TIME)
+        {
+            floppy_disable_motor();
+        }
+    }
 }
