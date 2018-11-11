@@ -5,9 +5,20 @@ call CreateIdentityPageTable
 call CreateKernelPageTable
 call EnablePaging
 
+; Set new stack with virtual address
+extern stack
+extern stack_size
+
+mov eax, stack
+add eax, [stack_size]
+
+mov esp, eax
+
+; Jump to kmain and start kernel work
 extern kmain
 call kmain
 
+; Something went wrong, but no problem!
 JMP $
 
 ; Input: nothing
