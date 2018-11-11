@@ -8,15 +8,21 @@
 #include "Misc/startupMisc.h"
 #include "Timer/timer.h"
 #include "Logger/logger.h"
+#include "Memory/GDT/gdt.h"
+#include "Memory/Paging/paging.h"
 #include <stdint.h>
 
 void startup()
 {
+    // Must be done before any VGA operation
+    gdt_init();
+    paging_init();
+
     //Don't use VGA before calling VGA init
     vga_init();
     log_info("MicrOS is starting...");
     log_ok("VGA Driver");
-
+    
     pic_init();
     log_ok("Programmable Interrupt Controller");
 
@@ -37,6 +43,7 @@ void startup()
 int kmain()
 {
     startup();
+
     log_info("Hello, World!");
     //whatIsLove();
     log_ok("READY.");
