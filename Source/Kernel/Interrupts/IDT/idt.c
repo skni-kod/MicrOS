@@ -1,8 +1,8 @@
 #include "idt.h"
 #include "../../Drivers/Keyboard/keyboard.h"
 
-idt_entry idt_entries[IDT_INTERRUPT_DESCRIPTOR_TABLE_LENGTH];
-idt_info idt_information;
+volatile idt_entry idt_entries[IDT_INTERRUPT_DESCRIPTOR_TABLE_LENGTH];
+volatile idt_info idt_information;
 
 void idt_init()
 {
@@ -58,6 +58,7 @@ void idt_unset(uint8_t index)
 void int0_handler()
 {
     timer_interrupt();
+    floppy_timer_interrupt();
     pic_confirm_master();
 }
  
@@ -89,6 +90,7 @@ void int5_handler()
  
 void int6_handler()
 {
+    floppy_interrupt();
     pic_confirm_master();
 }
  

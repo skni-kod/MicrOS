@@ -3,6 +3,7 @@
 #include "Drivers/Keyboard/keyboard.h"
 #include "Interrupts/IDT/idt.h"
 #include "Drivers/Keyboard/keyboard.h"
+#include "Drivers/Floppy/floppy.h"
 #include "Drivers/VGA/vga_gmode.h"
 #include "Drivers/PCSpeaker/pcspeaker.h"
 #include "Misc/startupMisc.h"
@@ -28,6 +29,12 @@ void startup()
 
     idt_init();
     log_ok("Interrupt Descriptor Table");
+
+    timer_init();
+    log_ok("Timer");
+
+    floppy_init();
+    log_ok("Floppy");
     
     keyboard_init();
     log_ok("Keyboard");
