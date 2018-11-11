@@ -6,6 +6,7 @@
 #include "Drivers/Floppy/floppy.h"
 #include "Drivers/VGA/vga_gmode.h"
 #include "Drivers/PCSpeaker/pcspeaker.h"
+#include "Drivers/PCI/pci.h"
 #include "Misc/startupMisc.h"
 #include "Timer/timer.h"
 #include "Logger/logger.h"
@@ -41,6 +42,15 @@ void startup()
 
     timer_init();
     log_ok("Timer");
+
+    pci_init();
+    log_ok("PCI");
+    uint8_t nd = get_number_of_devices();
+    char string[30]= "Number of devices: ";
+    string[19] = (nd / 10) + 48;
+    string[20] = (nd % 10) + 48;
+    string[21] = 0;
+    log_info(string);
 
     log_info("MicrOS ready");
     log_info("Created by Application Section of SKNI KOD");
