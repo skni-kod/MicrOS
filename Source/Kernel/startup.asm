@@ -1,5 +1,5 @@
-;                         MicrOS kernel memory layout in protected mode
-;                               Entry 768 in the directory table
+;                       MicrOS kernel memory layout in protected mode
+;                             Entry 768 in the directory table
 ; |---------------|------------|----------------|-------------|-------------------------|
 ; |    1 MiB      |   1 MiB    |      4 KiB     |    4 MiB    |        1017 MiB         |
 ; | BIOS & Kernel |   Stack    | Page directory | Page tables | Dynamic allocation area |
@@ -17,12 +17,7 @@ call CreateKernelPageTable
 call EnablePaging
 
 ; Set new stack with virtual address
-extern stack
-extern stack_size
-
-mov eax, stack
-add eax, [stack_size]
-
+mov eax, 0xC0200000
 mov esp, eax
 
 ; Jump to kmain and start kernel work
