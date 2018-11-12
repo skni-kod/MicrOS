@@ -56,7 +56,7 @@ CreateIdentityPageTable:
     inc eax
 
     ; Leave loop if we filled all entries for the first megabyte
-    cmp eax, 256
+    cmp eax, 1024
     jl fill_identity_page_table_loop
 
     ret
@@ -83,7 +83,7 @@ CreateKernelPageTable:
     inc eax
 
     ; Leave loop if we filled all entries for the first megabyte
-    cmp eax, 256
+    cmp eax, 1024
     jl fill_kernel_page_table_loop
 
     ret

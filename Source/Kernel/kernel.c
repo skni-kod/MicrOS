@@ -11,6 +11,7 @@
 #include "Logger/logger.h"
 #include "Memory/GDT/gdt.h"
 #include "Memory/Paging/paging.h"
+#include "Memory/Manager/memory_manager.h"
 #include <stdint.h>
 
 void startup()
@@ -24,6 +25,10 @@ void startup()
     log_info("MicrOS is starting...");
     log_ok("VGA Driver");
     
+    memory_manager_set_base_address(0xc0100000);
+    memory_manager_init_memory(0x30000);
+    log_ok("Memory manager");
+
     pic_init();
     log_ok("Programmable Interrupt Controller");
 
