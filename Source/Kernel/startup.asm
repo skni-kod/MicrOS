@@ -1,3 +1,14 @@
+;                         MicrOS kernel memory layout in protected mode
+;                               Entry 768 in the directory table
+; |---------------|------------|----------------|-------------|-------------------------|
+; |    1 MiB      |   1 MiB    |      4 KiB     |    4 MiB    |        1017 MiB         |
+; | BIOS & Kernel |   Stack    | Page directory | Page tables | Dynamic allocation area |
+; |               |            |                |             |                         | 
+; |  0xC0000000   | 0xC0100000 |   0xC0200000   | 0xC0201000  |       0xC0601000        |
+; |  0xC00FFFFF   | 0xC01FFFFF |   0xC0200FFF   | 0xC0600FFF  |       0xFFFFFFFF        |
+; |---------------|------------|----------------|-------------|-------------------------|
+; {                       Page 1                       }{   Page 2   }{   Page 3 - n    }
+
 [BITS 32]
 
 call CreateDirectoryTable
