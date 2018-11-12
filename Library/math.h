@@ -15,8 +15,27 @@
 #define M_SQRT2     1.41421356237309504880
 #define M_SQRT1_2   0.70710678118654752440
 
+
 double fabs(double x);
 float fabsf(float x);
-long double fabsl(long double x);
+
+// Power functions 
+
+double sqrt(double x);
+float sqrtf(float x);
+
+//Trigonometric functions
+
+double sin(double x);
+float sinf(float x);
+
+double cos(double x);
+float cosf(float x);
+
+double tan(double x);
+float tanf(float x);
+
+double asin(double x);
+float asinf(float x);
 
 #endif
