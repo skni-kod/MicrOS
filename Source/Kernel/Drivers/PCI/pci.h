@@ -13,7 +13,7 @@ typedef union pci_in_data {
         uint32_t bus_num        : 8;
         uint32_t reserved       : 7;
         uint32_t enable         : 1;
-    };
+    } __attribute__((packed));
 } pci_in_data;
 
 typedef union pci_dev {
@@ -49,14 +49,14 @@ typedef union pci_dev {
         uint8_t interrupt_pin;
         uint8_t min_grant;
         uint8_t max_latency;
-    };
+    } __attribute__((packed));
 } pci_dev;
 
 #define PCI_CONFIG_ADDRESS  0xCF8
 #define PCI_CONFIG_DATA 0xCFC
 
-uint32_t get_register(pci_in_data data);
-void get_device_info(pci_in_data data, pci_dev* info);
+uint32_t get_register(pci_in_data* data);
+void get_device_info(pci_in_data* data, pci_dev* info);
 pci_dev* get_device(uint8_t index);
 void pci_init();
 uint8_t get_number_of_devices();
