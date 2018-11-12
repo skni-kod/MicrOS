@@ -31,12 +31,12 @@ JMP $
 ; Output: nothing
 CreateDirectoryTable:
     ; Add temporary identity entry (physical address: 0, virtual address: 0) to the directory table
-    mov eax, 0x00002003
-    mov [0x1000], eax
+    mov eax, 0x00201003
+    mov [0x00200000], eax
 
     ; Add kernel entry (first megabyte will be mapped to 0xc0000000)
-    mov eax, 0x00003003
-    mov [0x1000 + 0x300 * 4], eax
+    mov eax, 0x00202003
+    mov [0x00200000 + 0x300 * 4], eax
 
     ret
 
@@ -55,7 +55,7 @@ CreateIdentityPageTable:
     or ecx, 3
     
     ; Set entry
-    mov [0x2000 + eax*4], ecx
+    mov [0x00201000 + eax*4], ecx
 
     ; Go to the next entry
     add ebx, 0x1000
@@ -82,7 +82,7 @@ CreateKernelPageTable:
     or ecx, 3
     
     ; Set entry
-    mov [0x3000 + eax*4], ecx
+    mov [0x00202000 + eax*4], ecx
 
     ; Go to the next entry
     add ebx, 0x1000
@@ -98,7 +98,7 @@ CreateKernelPageTable:
 ; Output: nothing
 EnablePaging:
     ; Set address of the directory table
-    mov eax, 0x1000
+    mov eax, 0x200000
     mov cr3, eax
 
     ; Enable paging

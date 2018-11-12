@@ -1,6 +1,7 @@
 #include "paging.h"
 
-paging_table_entry* directory_table = DIRECTORY_TABLE_ADDRESS;
+paging_table_entry* page_directory = (paging_table_entry*)PAGE_DIRECTORY_ADDRESS;
+paging_table_entry* page_tables = (paging_table_entry*)PAGE_TABLES_ADDRESS;
 
 void paging_init()
 {
@@ -9,5 +10,5 @@ void paging_init()
 
 void paging_remove_identity()
 {
-    directory_table[0].present = 0;
+    page_directory[0].present = 0;
 }

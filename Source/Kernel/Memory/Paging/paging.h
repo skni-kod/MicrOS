@@ -1,9 +1,8 @@
 #ifndef PAGING_H
 #define PAGING_H
 
-#define DIRECTORY_TABLE_ADDRESS 0x1000
-#define IDENTITY_PAGE_TABLE 0x2000
-#define KERNEL_PAGE_TABLE 0x3000
+#define PAGE_DIRECTORY_ADDRESS 0x200000
+#define PAGE_TABLES_ADDRESS 0x201000
 
 #include "paging_table_entry.h"
 
