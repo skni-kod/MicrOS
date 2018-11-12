@@ -56,7 +56,8 @@ typedef union pci_dev {
 #define PCI_CONFIG_DATA 0xCFC
 
 uint32_t get_register(pci_in_data data);
-pci_dev get_device_info(pci_in_data data);
+void get_device_info(pci_in_data data, pci_dev* info);
+pci_dev* get_device(uint8_t index);
 void pci_init();
 uint8_t get_number_of_devices();
 

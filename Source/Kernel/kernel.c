@@ -14,6 +14,8 @@
 #include "Memory/Paging/paging.h"
 #include <stdint.h>
 
+char buff[100];
+
 void startup()
 {
     // Must be done before any VGA operation
@@ -45,12 +47,11 @@ void startup()
 
     pci_init();
     log_ok("PCI");
+    log_info("Number of devices: ");
     uint8_t nd = get_number_of_devices();
-    char string[30]= "Number of devices: ";
-    string[19] = (nd / 10) + 48;
-    string[20] = (nd % 10) + 48;
-    string[21] = 0;
-    log_info(string);
+    log_info(itoa(nd, buff, 10));
+    pci_dev* dev = get_device(0);
+    log_info(itoa(dev->header_type, buff, 16));
 
     log_info("MicrOS ready");
     log_info("Created by Application Section of SKNI KOD");
