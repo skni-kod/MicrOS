@@ -2,7 +2,19 @@
 
 #define CURRENT_YEAR 2018 // Change this each year!
 
-int century_register = 0x00; // Set by ACPI table parsing code if possible
+int century_register = 0x32; // Set by ACPI table parsing code if possible
+
+// Register  Contents
+//  0x00      Seconds
+//  0x02      Minutes
+//  0x04      Hours
+//  0x06      Weekday
+//  0x07      Day of Month
+//  0x08      Month
+//  0x09      Year
+//  0x32      Century (maybe)
+//  0x0A      Status Register A
+//  0x0B      Status Register B
 
 enum
 {
@@ -353,4 +365,57 @@ uint32_t read_year()
       }
 
       return year;
+}
+
+uint8_t BINtoBCD(uint8_t n)
+{
+      uint8_t j = n % 10;
+      uint8_t d = n / 10;
+
+      uint8_t value = j + (d << 4);
+      return value;
+}
+
+void set_rtc(rtc_time* time)
+{
+      //Disable interrupts
+      disable();
+
+      uint8_t registerB = get_RTC_register(0x0B);
+      //change values to BCD
+      if (!(registerB & 0x04))
+      {
+            time->second = BINtoBCD(time->second);
+            time->minute = BINtoBCD(time->minute);
+            time->hour = BINtoBCD(time->hour);
+            time->day = BINtoBCD(time->day);
+            time->month = BINtoBCD(time->month);
+            time->year = BINtoBCD(time->year % 100);
+      }
+
+      //Setting 0x80 byte to disable NMI
+
+      outb(0x70, 0x80);
+      outb(0x71, time->second);
+
+      outb(0x70, 0x82);
+      outb(0x71, time->minute);
+
+      outb(0x70, 0x84);
+      outb(0x71, time->hour);
+
+      outb(0x70, 0x87);
+      outb(0x71, time->day);
+
+      outb(0x70, 0x88);
+      outb(0x71, time->month);
+
+      outb(0x70, 0x89);
+      outb(0x71, time->year);
+
+      //enable interrupts
+      enable();
+
+      //enable NMI
+      outb(0x70, inb(0x70) & 0x7F);
 }

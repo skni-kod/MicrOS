@@ -22,4 +22,6 @@ uint8_t read_day();
 uint8_t read_month();
 uint32_t read_year();
 
+void set_rtc(rtc_time* time);
+
 #endif
