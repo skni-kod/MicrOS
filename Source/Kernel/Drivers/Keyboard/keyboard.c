@@ -81,12 +81,12 @@ unsigned char kbdusB[128] =
     0,	/* All other keys are undefined */
 };	
 
-volatile KeyboardStateFlags* const kb_state = 0x0417;
-volatile KeyboardExtendedStateFlags* const kb_estate = 0x0496;
-volatile uint16_t* const buffer_start = 0x0480;
-volatile uint16_t* const buffer_end = 0x0482;
-volatile uint16_t* const buffer_write = 0x041C;
-volatile uint16_t* const buffer_read = 0x041A;
+volatile KeyboardStateFlags* const kb_state = 0xc0000417;
+volatile KeyboardExtendedStateFlags* const kb_estate = 0xc0000496;
+volatile uint16_t* const buffer_start = 0xc0000480;
+volatile uint16_t* const buffer_end = 0xc0000482;
+volatile uint16_t* const buffer_write = 0xc000041C;
+volatile uint16_t* const buffer_read = 0xc000041A;
 
 void keyboard_init()
 {
@@ -126,7 +126,7 @@ void put_key_to_buffor(unsigned char scancode, unsigned char ascii)
     return;
   }
     
-  volatile ScanAsciiPair* character = (0x0040 * 0x10) + (*buffer_write);
+  volatile ScanAsciiPair* character = (0xc0000000 + (0x0040 * 0x10)) + (*buffer_write);
   character->ascii = ascii;
   character->scancode = scancode;
   incrementBufferPointer(buffer_write);
@@ -141,7 +141,7 @@ ScanAsciiPair get_key_from_buffer()
     c.scancode = 255;
     return c;
   }
-  ScanAsciiPair* tmp = (0x0040 * 0x10) + (*buffer_read);
+  ScanAsciiPair* tmp = (0xc0000000 + (0x0040 * 0x10)) + (*buffer_read);
   c.ascii = tmp->ascii;
   c.scancode = tmp->scancode;
   incrementBufferPointer(buffer_read);
@@ -197,7 +197,7 @@ void keyboard_handler()
           kb_state->num_lock_active = !kb_state->num_lock_active;
           kb_estate->num_lock_led = !kb_estate->num_lock_led;
           break;
-        case 60:
+        case 70:
           kb_state->scroll_lock_pressed = 1;
           kb_state->scroll_lock_active = !kb_state->scroll_lock_active;
           kb_estate->scroll_lock_led = !kb_estate->scroll_lock_led;
@@ -228,7 +228,7 @@ void keyboard_handler()
         case 69 + 128:
           kb_state->num_lock_pressed = 0;
           break;
-        case 60 + 128:
+        case 70 + 128:
           kb_state->scroll_lock_pressed = 0;
           break;
         default:

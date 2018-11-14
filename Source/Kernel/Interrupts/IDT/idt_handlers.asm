@@ -161,9 +161,22 @@ int15:
   iret
 
 int48:
-  pusha
+  push ecx
+  push edx
+  push ebx
+  push esp
+  push ebp
+  push esi
+  push edi
   call int48_handler
-  popa
+  pop edi
+  pop esi
+  pop ebp
+  pop esp
+  pop ebx
+  pop edx
+  pop ecx
+  
   iret
 
 int49:
