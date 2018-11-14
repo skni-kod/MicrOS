@@ -11,6 +11,7 @@
 #include "Logger/logger.h"
 #include "Memory/GDT/gdt.h"
 #include "Memory/Paging/paging.h"
+#include "Memory/Map/memory_map.h"
 #include <stdint.h>
 
 void startup()
@@ -54,6 +55,8 @@ int kmain()
     log_info("Hello, World!");
     //whatIsLove();
     log_ok("READY.");
+
+    memory_map_dump();
 
     while(1)
     {
