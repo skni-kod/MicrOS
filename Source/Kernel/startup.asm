@@ -83,6 +83,17 @@ GDT_Desc:
     dd GDT
 
 Main:
+    ; Load memory map before we will switch to the protected mode
+    ; Buffer segment
+    mov bx, 0x0000
+    mov es, bx
+
+    ; Buffer offset
+    mov bx, 0x0500
+    mov di, bx
+
+    call LoadMemoryMap
+
     ; Disable interrupts
     cli
 
@@ -95,10 +106,36 @@ Main:
     mov cr0, eax
 
     ; Jump to protected area 
-    jmp dword 0x08:JumpToKernel_ProtectedArea
+    jmp dword 0x08:Main_ProtectedArea
+
+; Input:
+;   es - buffer segment
+;   di - buffer offset
+LoadMemoryMap:
+    xor ebx, ebx
+
+    LoadMemoryMap_Loop:
+    ; Set magic number
+    mov edx, 0x534d4150
+
+    ; Set number of bytes to read
+    mov ecx, 24
+
+    ; Read memory map
+    mov eax, 0xe820
+    int 0x15
+
+    ; Increment pointer in buffer
+    add di, 24
+
+    ; Exit if ebx is equal to zero (reading has ended)
+    cmp ebx, 0
+    jne LoadMemoryMap_Loop
+
+    ret
     
 [BITS 32]
-    JumpToKernel_ProtectedArea:
+    Main_ProtectedArea:
 
     ; Set data and stack segments to the third GDI descriptor
     mov ax, 0x10
