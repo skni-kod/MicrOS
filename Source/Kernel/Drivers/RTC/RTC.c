@@ -18,8 +18,8 @@ int get_update_in_progress_flag()
 
 unsigned char get_RTC_register(int reg)
 {
-      uint8_t NMI_bit = inb(cmos_data) & 0x80;
-      outb(NMI_bit | cmos_address, reg);
+      uint8_t NMI_bit = inb(cmos_address) & 0x80;
+      outb(cmos_address, reg | NMI_bit);
       return inb(cmos_data);
 }
 
