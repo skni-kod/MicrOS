@@ -11,6 +11,7 @@
 #include "Logger/logger.h"
 #include "Memory/GDT/gdt.h"
 #include "Memory/Paging/paging.h"
+#include "Misc/panicScreen.h"
 #include <stdint.h>
 
 void startup()
@@ -54,7 +55,6 @@ int kmain()
     log_info("Hello, World!");
     //whatIsLove();
     log_ok("READY.");
-
     while(1)
     {
         if(!isBufferEmpty())
@@ -80,6 +80,10 @@ int kmain()
             else if(c.scancode == 62)
             {
                 nosound();
+            }
+            else if(c.scancode == 63)
+            {
+                showPanicScreen(0x42, "Someone ask Question about Life, the Universe and Evertything");
             }
             else
                 vga_printchar(c.ascii);
