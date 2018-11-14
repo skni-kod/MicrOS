@@ -9,23 +9,117 @@
 ; |---------------|------------|----------------|-------------|-------------------------|
 ; {                       Page 1                       }{   Page 2   }{   Page 3 - n    }
 
+[BITS 16]
+
+jmp Main
+
+; Entry frame: https://wiki.osdev.org/GDT
+GDT:
+; Null segment, reserved by CPU
+GDT_Null:
+    dd 0x00000000
+    dd 0x00000000
+
+; Code segment
+GDT_Code:
+    ; Segment limit (4 GiB)
+    dw 0xFFFF
+
+    ; Segment base address (16 bits)
+    dw 0x0000
+
+    ; Segment base address (8 bits)
+    db 0x00
+
+    ; 1 - present bit (1 for all valid sectors)
+    ; 00 - privilege (ring level), 00 is the higest
+    ; 1 - reserved
+    ; 1 - excebutable bit, code can be excecuted here
+    ; 0 - conforming bit, only kernel can execute code
+    ; 1 - segment can be read
+    ; 0 - access bit, default is zero
+    db 10011010b
+
+    ; 1 - granularity (0 = 1B block, 1 = 4 KiB block)
+    ; 1 - size bit (0 = 16b protected mode, 1 = 32b protected mode)
+    ; 00 - reserved
+    ; 1111 - segment base address (4 bits)
+    db 11001111b
+
+    ; Segment base address (8 bits)
+    db 0x00
+
+; Data segment
+GDT_Data:
+    ; Segment limit (4 GiB)
+    dw 0xFFFF
+
+    ; Segment base address (16 bits)
+    dw 0x0000
+
+    ; Segment base address (8 bits)
+    db 0x00
+
+    ; 1 - present bit (1 for all valid sectors)
+    ; 00 - privilege (ring level), 00 is the higest
+    ; 1 - reserved
+    ; 0 - excebutable bit, code can't be excecuted here (because it's just data)
+    ; 0 - conforming bit, only kernel can execute code
+    ; 1 - segment can be read
+    ; 0 - access bit, default is zero
+    db 10010010b
+
+    ; 1 - granularity (0 = 1B block, 1 = 4 KiB block)
+    ; 1 - size bit (0 = 16b protected mode, 1 = 32b protected mode)
+    ; 00 - reserved
+    ; 1111 - segment base address (4 bits)
+    db 11001111b
+
+    ; Segment base address (8 bits)
+    db 0x00
+GDT_End:
+GDT_Desc:
+    dw GDT_End - GDT - 1
+    dd GDT
+
+Main:
+    ; Disable interrupts
+    cli
+
+    ; Load GDT table
+    lgdt [dword GDT_Desc]
+
+    ; Set protected mode flag
+    mov eax, cr0
+    or eax, 1
+    mov cr0, eax
+
+    ; Jump to protected area 
+    jmp dword 0x08:JumpToKernel_ProtectedArea
+    
 [BITS 32]
+    JumpToKernel_ProtectedArea:
 
-call CreateDirectoryTable
-call CreateIdentityPageTable
-call CreateKernelPageTable
-call EnablePaging
+    ; Set data and stack segments to the third GDI descriptor
+    mov ax, 0x10
+    mov ds, ax
+    mov ss, ax
 
-; Set new stack with virtual address
-mov eax, 0xC0200000
-mov esp, eax
+    call CreateDirectoryTable
+    call CreateIdentityPageTable
+    call CreateKernelPageTable
+    call EnablePaging
 
-; Jump to kmain and start kernel work
-extern kmain
-call kmain
+    ; Set new stack with virtual address
+    mov eax, 0xC0200000
+    mov esp, eax
 
-; Something went wrong, but no problem!
-JMP $
+    ; Jump to kmain and start kernel work
+    extern kmain
+    call kmain
+
+    ; Something went wrong, but no problem!
+    JMP $
 
 ; Input: nothing
 ; Output: nothing
