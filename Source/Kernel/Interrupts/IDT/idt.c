@@ -101,6 +101,7 @@ void int7_handler()
 
 void int8_handler()
 {
+    vga_printstring("DUUUUPA");
     pic_confirm_master_and_slave();
 }
 

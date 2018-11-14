@@ -376,7 +376,7 @@ uint8_t BINtoBCD(uint8_t n)
       return value;
 }
 
-void set_rtc(rtc_time* time)
+void set_rtc(rtc_time *time)
 {
       //Disable interrupts
       disable();
@@ -418,4 +418,15 @@ void set_rtc(rtc_time* time)
 
       //enable NMI
       outb(0x70, inb(0x70) & 0x7F);
+}
+
+void enable_irq8()
+{
+      disable();              // disable interrupts
+      outb(0x70, 0x8B);        // select register B, and disable NMI
+      char prev = inb(0x71);   // read the current value of register B
+      outb(0x70, 0x8B);        // set the index again (a read will reset the index to register D)
+      outb(0x71, prev | 0x40); // write the previous value ORed with 0x40. This turns on bit 6 of register B
+      enable();
+      outb(0x70, inb(0x70) & 0x7F); // enable NMI
 }

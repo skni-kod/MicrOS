@@ -6,6 +6,7 @@
 #include "Drivers/Floppy/floppy.h"
 #include "Drivers/VGA/vga_gmode.h"
 #include "Drivers/PCSpeaker/pcspeaker.h"
+#include "Drivers/RTC/RTC.h"
 #include "Misc/startupMisc.h"
 #include "Timer/timer.h"
 #include "Logger/logger.h"
@@ -54,6 +55,23 @@ int kmain()
     log_info("Hello, World!");
     //whatIsLove();
     log_ok("READY.");
+
+    // rtc_time time;
+
+    // time.second = 14;
+    // time.minute = 6;
+    // time.hour = 12;
+
+    // time.day = 5;
+    // time.month = 10;
+    // time.year = 2015;
+
+    // set_rtc(&time);
+
+    // read_rtc(&time);
+
+    pic_enable_irq(8);
+    enable_irq8();
 
     while(1)
     {
