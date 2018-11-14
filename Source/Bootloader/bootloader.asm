@@ -315,18 +315,26 @@ LoadKernel:
     ; Push initial loaded sectors count
     xor bx, bx
     push bx
-
-    LoadKernel_LoadNextSector: 
-    ; Segment
-    mov bx, 0x1000
+    
+    ; Initial segment
+    mov bx, 0x0000
     mov es, bx
 
+    LoadKernel_LoadNextSector:
     ; Offset (current sector index * 512 bytes)
     mov ax, [ebp - 4]
     mov dx, 0x200
     mul dx
     mov bx, ax
+    add bx, 0xF000
 
+    cmp bx, 0
+    jne Next
+
+    mov ax, 0x1000
+    mov es, ax
+
+    Next:
     ; Number of sectors to read
     mov al, 1
 
@@ -363,7 +371,7 @@ LoadKernel:
 ; Input: nothing
 ; Output: nothing
 JumpToKernel:
-    jmp 0x1000:0x0000
+    jmp 0x0000:0xF000
 
 times 510 - ($ - $$) db 0
 dw 0xAA55
