@@ -62,6 +62,7 @@ char *itoa(int input, char *buffer, int base)
     buffer[index] = '\0';
 
     return buffer;
+}
 
 void sleep(uint32_t ms)
 {
