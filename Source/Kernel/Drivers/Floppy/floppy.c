@@ -1,6 +1,6 @@
 #include "floppy.h"
 
-volatile floppy_header* floppy_header_data = 0x7c00;
+volatile floppy_header* floppy_header_data = 0xc0007c00;
 volatile uint8_t* dma_buffer = 0x1000;
 volatile uint32_t time_of_last_activity = 0;
 volatile bool motor_enabled = false;
@@ -207,7 +207,7 @@ uint8_t* floppy_read_sector(uint8_t sector)
     uint8_t head, track;
     floppy_lba_to_chs(sector, &head, &track, &sector);
 
-    floppy_do_operation_on_sector(head, track, sector, true);
+    return floppy_do_operation_on_sector(head, track, sector, true) + 0xc0000000;
 }
 
 void floppy_write_sector(uint8_t sector, uint8_t* content)
