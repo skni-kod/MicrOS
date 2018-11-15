@@ -70,6 +70,7 @@ int kmain()
 
     // read_rtc(&time);
 
+    pic_enable_irq(2);
     pic_enable_irq(8);
     enable_irq8();
 
