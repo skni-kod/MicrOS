@@ -11,6 +11,40 @@ void idt_init()
     idt_information.size = sizeof(idt_entry) * IDT_INTERRUPT_DESCRIPTOR_TABLE_LENGTH - 1;
     idt_information.offset = (uint32_t)&idt_entries;
 
+    // Exceptions
+    idt_set(0, exc0);
+    idt_set(1, exc1);
+    idt_set(2, exc2);
+    idt_set(3, exc3);
+    idt_set(4, exc4);
+    idt_set(5, exc5);
+    idt_set(6, exc6);
+    idt_set(7, exc7);
+    idt_set(8, exc8);
+    idt_set(9, exc9);
+    idt_set(10, exc10);
+    idt_set(11, exc11);
+    idt_set(12, exc12);
+    idt_set(13, exc13);
+    idt_set(14, exc14);
+    idt_set(15, exc15);
+    idt_set(16, exc16);
+    idt_set(17, exc17);
+    idt_set(18, exc18);
+    idt_set(19, exc19);
+    idt_set(20, exc20);
+    idt_set(21, exc21);
+    idt_set(22, exc22);
+    idt_set(23, exc23);
+    idt_set(24, exc24);
+    idt_set(25, exc25);
+    idt_set(26, exc26);
+    idt_set(27, exc27);
+    idt_set(28, exc28);
+    idt_set(29, exc29);
+    idt_set(30, exc30);
+    idt_set(31, exc31);
+
     // Hardware interrupts (IRQ)
     idt_set(32, int32);      // Programmable Interrupt Timer 
     idt_set(33, int33);      // Keyboard
@@ -79,6 +113,11 @@ void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)())
             break;
         }
     }
+}
+
+void global_exc_handler(interrupt_state state, int error_code)
+{
+
 }
 
 void global_int_handler(interrupt_state state)
