@@ -24,5 +24,7 @@ uint32_t read_year();
 
 void set_rtc(rtc_time* time);
 void rtc_enable_IRQ8();
+void rtc_disable_IRQ8();
+void rtc_change_interrupt_rate(uint8_t rate);
 
 #endif
