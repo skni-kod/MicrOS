@@ -8,6 +8,7 @@
 #define TARGET_FREQUENCY 1000
 
 #include "../Interrupts/PIC/pic.h"
+#include "../Interrupts/IDT/idt.h"
 #include "../Assembly/io.h"
 
 void timer_init();

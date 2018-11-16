@@ -17,6 +17,7 @@ void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)());
 void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)());
 
 void global_int_handler();
+void software_interrupt_handler();
 
 // Hardware interrupts
 extern uint32_t int0();

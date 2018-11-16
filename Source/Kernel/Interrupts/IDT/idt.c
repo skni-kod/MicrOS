@@ -64,6 +64,7 @@ void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)())
         {
             interrupt_handlers[i].interrupt_number = interrupt_number;
             interrupt_handlers[i].handler = handler;
+            break;
         }
     }
 }
@@ -74,8 +75,8 @@ void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)())
     {
         if(interrupt_handlers[i].interrupt_number == interrupt_number && interrupt_handlers[i].handler == handler)
         {
-            interrupt_handlers[i].interrupt_number = 0;
             interrupt_handlers[i].handler = 0;
+            break;
         }
     }
 }
@@ -84,11 +85,17 @@ void global_int_handler(interrupt_state state)
 {
     for(int i=0; i<IDT_MAX_INTERRUPT_HANDLERS; i++)
     {
-        if(interrupt_handlers[i].interrupt_number == state.interrupt_number)
+        if(interrupt_handlers[i].interrupt_number == state.interrupt_number && interrupt_handlers[i].handler != 0)
         {
             interrupt_handlers[i].handler();
         }
     }
 
-    pic_confirm_master_and_slave();
+    if(state.interrupt_number == 48)
+    {
+        // Temporary only sleep, but it will hold more functions
+        state.eax = timer_get_system_clock();
+    }
+
+    state.interrupt_number < 8 ? pic_confirm_master() : pic_confirm_master_and_slave();
 }
