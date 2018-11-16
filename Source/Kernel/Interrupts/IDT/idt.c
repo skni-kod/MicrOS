@@ -101,7 +101,11 @@ void int7_handler()
 
 void int8_handler()
 {
+    vga_printstring("DUUUUPA");
     pic_confirm_master_and_slave();
+
+    outb(0x70, 0x0C);	// select register C
+    inb(0x71);		//read it to get next IRQ8
 }
 
 void int9_handler()

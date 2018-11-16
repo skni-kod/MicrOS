@@ -6,6 +6,7 @@
 #include "Drivers/Floppy/floppy.h"
 #include "Drivers/VGA/vga_gmode.h"
 #include "Drivers/PCSpeaker/pcspeaker.h"
+#include "Drivers/RTC/RTC.h"
 #include "Misc/startupMisc.h"
 #include "Timer/timer.h"
 #include "Logger/logger.h"
@@ -55,6 +56,7 @@ int kmain()
     log_info("Hello, World!");
     //whatIsLove();
     log_ok("READY.");
+
     while(1)
     {
         if(!isBufferEmpty())
