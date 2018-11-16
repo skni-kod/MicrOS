@@ -14,6 +14,8 @@ void idt_init();
 void idt_set(uint8_t index, uint32_t (*handler)());
 void idt_unset(uint8_t index);
 
+void int_handler();
+
 // Hardware interrupts
 extern uint32_t int0();
 extern uint32_t int1();

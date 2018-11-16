@@ -20,185 +20,112 @@ global int50
 global int51
 global int52
 
-global int0_handler
-global int1_handler
-global int2_handler
-global int3_handler
-global int4_handler
-global int5_handler
-global int6_handler
-global int7_handler
-global int8_handler
-global int9_handler
-global int10_handler
-global int11_handler
-global int12_handler
-global int13_handler
-global int14_handler
-global int15_handler
-global int48_handler
-global int49_handler
-global int50_handler
-global int51_handler
-global int52_handler
- 
-extern int0_handler
-extern int1_handler
-extern int2_handler
-extern int3_handler
-extern int4_handler
-extern int5_handler
-extern int6_handler
-extern int7_handler
-extern int8_handler
-extern int9_handler
-extern int10_handler
-extern int11_handler
-extern int12_handler
-extern int13_handler
-extern int14_handler
-extern int15_handler
-extern int48_handler
-extern int49_handler
-extern int50_handler
-extern int51_handler
-extern int52_handler
+extern int_handler
 
 int0:
-  pusha
-  call int0_handler
-  popa
-  iret
+  push 0
+  jmp int_wrapper
 
 int1:
-  pusha
-  call int1_handler
-  popa
-  iret
+  push 1
+  jmp int_wrapper
 
 int2:
-  pusha
-  call int2_handler
-  popa
-  iret
+  push 2
+  jmp int_wrapper
 
 int3:
-  pusha
-  call int3_handler
-  popa
-  iret
+  push 3
+  jmp int_wrapper
 
 int4:
-  pusha
-  call int4_handler
-  popa
-  iret
+  push 4
+  jmp int_wrapper
 
 int5:
-  pusha
-  call int5_handler
-  popa
-  iret
+  push 5
+  jmp int_wrapper
 
 int6:
-  pusha
-  call int6_handler
-  popa
-  iret
+  push 6
+  jmp int_wrapper
 
 int7:
-  pusha
-  call int7_handler
-  popa
-  iret
+  push 7
+  jmp int_wrapper
   
 int8:
-  pusha
-  call int8_handler
-  popa
-  iret
+  push 8
+  jmp int_wrapper
   
 int9:
-  pusha
-  call int9_handler
-  popa
-  iret
+  push 9
+  jmp int_wrapper
   
 int10:
-  pusha
-  call int10_handler
-  popa
-  iret
+  push 10
+  jmp int_wrapper
   
 int11:
-  pusha
-  call int11_handler
-  popa
-  iret
+  push 11
+  jmp int_wrapper
   
 int12:
-  pusha
-  call int12_handler
-  popa
-  iret
+  push 12
+  jmp int_wrapper
   
 int13:
-  pusha
-  call int13_handler
-  popa
-  iret
+  push 13
+  jmp int_wrapper
   
 int14:
-  pusha
-  call int14_handler
-  popa
-  iret
+  push 14
+  jmp int_wrapper
   
 int15:
-  pusha
-  call int15_handler
-  popa
-  iret
+  push 15
+  jmp int_wrapper
 
 int48:
+  push 48
+  jmp int_wrapper
+
+int49:
+  push 49
+  jmp int_wrapper
+
+int50:
+  push 50
+  jmp int_wrapper
+
+int51:
+  push 51
+  jmp int_wrapper
+
+int52:
+  push 52
+  jmp int_wrapper
+
+int_wrapper:
+  push eax
+  push ebx
   push ecx
   push edx
-  push ebx
   push esp
   push ebp
   push esi
   push edi
-  call int48_handler
+
+  call int_handler
+
   pop edi
   pop esi
   pop ebp
   pop esp
-  pop ebx
   pop edx
   pop ecx
+  pop ebx
+  pop eax
   
-  iret
-
-int49:
-  pusha
-  call int49_handler
-  popa
-  iret
-
-int50:
-  pusha
-  call int50_handler
-  popa
-  iret
-
-int51:
-  pusha
-  call int51_handler
-  popa
-  iret
-
-int52:
-  pusha
-  call int52_handler
-  popa
+  add esp, 4
   iret
