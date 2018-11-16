@@ -420,7 +420,7 @@ void set_rtc(rtc_time *time)
       outb(0x70, inb(0x70) & 0x7F);
 }
 
-void enable_irq8()
+void rtc_enable_IRQ8()
 {
       disable();              // disable interrupts
       outb(0x70, 0x8B);        // select register B, and disable NMI
