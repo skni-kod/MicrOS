@@ -5,6 +5,42 @@ volatile idt_entry idt_entries[IDT_INTERRUPT_DESCRIPTOR_TABLE_LENGTH];
 volatile idt_info idt_information;
 volatile interrupt_handler_definition interrupt_handlers[IDT_MAX_INTERRUPT_HANDLERS];
 
+exception_definition exceptions[] =
+{
+    { .interrupt_number = 0,  .halt = true, .description = "Divide-by-zero error", },
+    { .interrupt_number = 1,  .halt = true, .description = "Debug", },
+    { .interrupt_number = 2,  .halt = true, .description = "Non-maskable Interrupt", },
+    { .interrupt_number = 3,  .halt = true, .description = "Breakpoint", },
+    { .interrupt_number = 4,  .halt = true, .description = "Overflow", },
+    { .interrupt_number = 5,  .halt = true, .description = "Bound Range Exceeded", },
+    { .interrupt_number = 6,  .halt = true, .description = "Invalid Opcode", },
+    { .interrupt_number = 7,  .halt = true, .description = "Device Not Available", },
+    { .interrupt_number = 8,  .halt = true, .description = "Double Fault", },
+    { .interrupt_number = 9,  .halt = true, .description = "Coprocessor Segment Overrun", },
+    { .interrupt_number = 10, .halt = true, .description = "Invalid TSS", },
+    { .interrupt_number = 11, .halt = true, .description = "Segment Not Present", },
+    { .interrupt_number = 12, .halt = true, .description = "Stack-Segment Fault", },
+    { .interrupt_number = 13, .halt = true, .description = "General Protection Fault", },
+    { .interrupt_number = 14, .halt = true, .description = "Page Fault", },
+    { .interrupt_number = 15, .halt = true, .description = "Reserved", },
+    { .interrupt_number = 16, .halt = true, .description = "x87 Floating-Point Exception", },
+    { .interrupt_number = 17, .halt = true, .description = "Alignment Check", },
+    { .interrupt_number = 18, .halt = true, .description = "Machine Check", },
+    { .interrupt_number = 19, .halt = true, .description = "SIMD Floating-Point Exception", },
+    { .interrupt_number = 20, .halt = true, .description = "Virtualization Exception", },
+    { .interrupt_number = 21, .halt = true, .description = "Reserved", },
+    { .interrupt_number = 22, .halt = true, .description = "Reserved", },
+    { .interrupt_number = 23, .halt = true, .description = "Reserved", },
+    { .interrupt_number = 24, .halt = true, .description = "Reserved", },
+    { .interrupt_number = 25, .halt = true, .description = "Reserved", },
+    { .interrupt_number = 26, .halt = true, .description = "Reserved", },
+    { .interrupt_number = 27, .halt = true, .description = "Reserved", },
+    { .interrupt_number = 28, .halt = true, .description = "Reserved", },
+    { .interrupt_number = 29, .halt = true, .description = "Reserved", },
+    { .interrupt_number = 30, .halt = true, .description = "Security Exception", },
+    { .interrupt_number = 31, .halt = true, .description = "Reserved", }
+};
+
 void idt_init()
 {
     // Init Interrupt Descriptor Table descriptor
@@ -117,7 +153,16 @@ void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)())
 
 void global_exc_handler(interrupt_state state, int error_code)
 {
+    for(int i=0; i<32; i++)
+    {
+        if(exceptions[i].halt && exceptions[i].interrupt_number == state.interrupt_number)
+        {
+            showPanicScreen(state.interrupt_number, exceptions[i].description);
+             __asm__ ( "hlt " );
 
+            break;
+        }
+    }
 }
 
 void global_int_handler(interrupt_state state)

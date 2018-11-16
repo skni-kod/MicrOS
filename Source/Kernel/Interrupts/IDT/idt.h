@@ -8,7 +8,9 @@
 #include "idt_info.h"
 #include "interrupt_state.h"
 #include "interrupt_handler_definition.h"
+#include "exception_definition.h"
 #include "../PIC/pic.h"
+#include "../../Misc/panicScreen.h"
 
 void idt_init();
 void idt_set(uint8_t index, uint32_t (*handler)());
