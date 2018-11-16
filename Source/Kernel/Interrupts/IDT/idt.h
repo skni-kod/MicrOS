@@ -20,22 +20,22 @@ void global_int_handler();
 void software_interrupt_handler();
 
 // Hardware interrupts
-extern uint32_t int0();
-extern uint32_t int1();
-extern uint32_t int2();
-extern uint32_t int3();
-extern uint32_t int4();
-extern uint32_t int5();
-extern uint32_t int6();
-extern uint32_t int7();
-extern uint32_t int8();
-extern uint32_t int9();
-extern uint32_t int10();
-extern uint32_t int11();
-extern uint32_t int12();
-extern uint32_t int13();
-extern uint32_t int14();
-extern uint32_t int15();
+extern uint32_t int32();
+extern uint32_t int33();
+extern uint32_t int34();
+extern uint32_t int35();
+extern uint32_t int36();
+extern uint32_t int37();
+extern uint32_t int38();
+extern uint32_t int39();
+extern uint32_t int40();
+extern uint32_t int41();
+extern uint32_t int42();
+extern uint32_t int43();
+extern uint32_t int44();
+extern uint32_t int45();
+extern uint32_t int46();
+extern uint32_t int47();
 
 // Software interrupts
 extern uint32_t int48();

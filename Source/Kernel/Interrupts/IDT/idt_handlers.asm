@@ -1,19 +1,19 @@
-global int0
-global int1
-global int2
-global int3
-global int4
-global int5
-global int6
-global int7
-global int8
-global int9
-global int10
-global int11
-global int12
-global int13
-global int14
-global int15
+global int32
+global int33
+global int34
+global int35
+global int36
+global int37
+global int38
+global int39
+global int40
+global int41
+global int42
+global int43
+global int44
+global int45
+global int46
+global int47
 global int48
 global int49
 global int50
@@ -22,68 +22,68 @@ global int52
 
 extern global_int_handler
 
-int0:
-  push 0
+int32:
+  push 32
   jmp int_wrapper
 
-int1:
-  push 1
+int33:
+  push 33
   jmp int_wrapper
 
-int2:
-  push 2
+int34:
+  push 34
   jmp int_wrapper
 
-int3:
-  push 3
+int35:
+  push 35
   jmp int_wrapper
 
-int4:
-  push 4
+int36:
+  push 36
   jmp int_wrapper
 
-int5:
-  push 5
+int37:
+  push 37
   jmp int_wrapper
 
-int6:
-  push 6
+int38:
+  push 38
   jmp int_wrapper
 
-int7:
-  push 7
+int39:
+  push 39
   jmp int_wrapper
   
-int8:
-  push 8
+int40:
+  push 40
   jmp int_wrapper
   
-int9:
-  push 9
+int41:
+  push 41
   jmp int_wrapper
   
-int10:
-  push 10
+int42:
+  push 42
   jmp int_wrapper
   
-int11:
-  push 11
+int43:
+  push 43
   jmp int_wrapper
   
-int12:
-  push 12
+int44:
+  push 44
   jmp int_wrapper
   
-int13:
-  push 13
+int45:
+  push 45
   jmp int_wrapper
   
-int14:
-  push 14
+int46:
+  push 46
   jmp int_wrapper
   
-int15:
-  push 15
+int47:
+  push 47
   jmp int_wrapper
 
 int48:

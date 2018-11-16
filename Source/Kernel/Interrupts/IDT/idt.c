@@ -12,22 +12,22 @@ void idt_init()
     idt_information.offset = (uint32_t)&idt_entries;
 
     // Hardware interrupts (IRQ)
-    idt_set(32, int0);      // Programmable Interrupt Timer 
-    idt_set(33, int1);      // Keyboard
-    idt_set(34, int2);      // Cascade
-    idt_set(35, int3);      // COM2
-    idt_set(36, int4);      // COM1
-    idt_set(37, int5);      // LPT2
-    idt_set(38, int6);      // Floppy
-    idt_set(39, int7);      // LPT1
-    idt_set(40, int8);      // CMOS
-    idt_set(41, int9);      // Free
-    idt_set(42, int10);     // Free
-    idt_set(43, int11);     // Free
-    idt_set(44, int12);     // Mouse
-    idt_set(45, int13);     // FPU
-    idt_set(46, int14);     // Primary ATA Hard Disk
-    idt_set(47, int15);     // Secondary ATA Hard Disk
+    idt_set(32, int32);      // Programmable Interrupt Timer 
+    idt_set(33, int33);      // Keyboard
+    idt_set(34, int34);      // Cascade
+    idt_set(35, int35);      // COM2
+    idt_set(36, int36);      // COM1
+    idt_set(37, int37);      // LPT2
+    idt_set(38, int38);      // Floppy
+    idt_set(39, int39);      // LPT1
+    idt_set(40, int40);      // CMOS
+    idt_set(41, int41);      // Free
+    idt_set(42, int42);      // Free
+    idt_set(43, int43);      // Free
+    idt_set(44, int44);      // Mouse
+    idt_set(45, int45);      // FPU
+    idt_set(46, int46);      // Primary ATA Hard Disk
+    idt_set(47, int47);      // Secondary ATA Hard Disk
 
     // Software interrupts
     idt_set(48, int48);
@@ -62,7 +62,7 @@ void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)())
     {
         if(interrupt_handlers[i].handler == 0)
         {
-            interrupt_handlers[i].interrupt_number = interrupt_number;
+            interrupt_handlers[i].interrupt_number = interrupt_number + 32;
             interrupt_handlers[i].handler = handler;
             break;
         }
@@ -73,7 +73,7 @@ void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)())
 {
     for(int i=0; i<IDT_MAX_INTERRUPT_HANDLERS; i++)
     {
-        if(interrupt_handlers[i].interrupt_number == interrupt_number && interrupt_handlers[i].handler == handler)
+        if(interrupt_handlers[i].interrupt_number == interrupt_number + 32 && interrupt_handlers[i].handler == handler)
         {
             interrupt_handlers[i].handler = 0;
             break;
@@ -91,11 +91,12 @@ void global_int_handler(interrupt_state state)
         }
     }
 
+    // This is temporary code which imitates software interrupt and handles sleep function (which is required for
+    // floppy driver). It will be moved to the separate files in da future.
     if(state.interrupt_number == 48)
     {
-        // Temporary only sleep, but it will hold more functions
         state.eax = timer_get_system_clock();
     }
 
-    state.interrupt_number < 8 ? pic_confirm_master() : pic_confirm_master_and_slave();
+    state.interrupt_number - 32 < 8 ? pic_confirm_master() : pic_confirm_master_and_slave();
 }
