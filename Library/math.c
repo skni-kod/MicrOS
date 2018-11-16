@@ -76,6 +76,22 @@ float asinf(float x)
     return x;
 }
 
+double acos(double x)
+{
+    double two = 2;
+    double asinX = asin(x);
+    __asm__ ("fldl %1 \n fldpi \n fdivp \n fldl %2 \n fsubrp \n fstpl %0" : "=m"(x): "m"(two), "m"(asinX));
+    return x;
+}
+
+float acosf(float x)
+{
+    float two = 2;
+    float asinX = asinf(x);
+    __asm__ ("fld %1 \n fldpi \n fdivp \n fld %2 \n fsubrp \n fstp %0" : "=m"(x): "m"(two), "m"(asinX));
+    return x;
+}
+
 //Nearest integer floating-point operations
 
 double round(double x)
