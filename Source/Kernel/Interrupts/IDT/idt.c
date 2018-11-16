@@ -55,7 +55,7 @@ void idt_unset(uint8_t index)
     idt_entries[index].present = 0;
 }
 
-void int_handler()
+void int_handler(interrupt_state state)
 {
-    
+    pic_confirm_master_and_slave();
 }

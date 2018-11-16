@@ -5,6 +5,7 @@
 
 #include "idt_entry.h"
 #include "idt_info.h"
+#include "interrupt_state.h"
 #include "../../Assembly/io.h"
 #include "../../Drivers/Floppy/floppy.h"
 #include "../PIC/pic.h"

@@ -107,25 +107,25 @@ int52:
   jmp int_wrapper
 
 int_wrapper:
-  push eax
-  push ebx
-  push ecx
-  push edx
-  push esp
-  push ebp
-  push esi
   push edi
+  push esi
+  push ebp
+  push esp
+  push edx
+  push ecx
+  push ebx
+  push eax
 
   call int_handler
 
-  pop edi
-  pop esi
-  pop ebp
-  pop esp
-  pop edx
-  pop ecx
-  pop ebx
   pop eax
+  pop ebx
+  pop ecx
+  pop edx
+  pop esp
+  pop ebp
+  pop esi
+  pop edi
   
   add esp, 4
   iret
