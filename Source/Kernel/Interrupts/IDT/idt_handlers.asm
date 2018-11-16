@@ -20,7 +20,7 @@ global int50
 global int51
 global int52
 
-extern int_handler
+extern global_int_handler
 
 int0:
   push 0
@@ -116,7 +116,7 @@ int_wrapper:
   push ebx
   push eax
 
-  call int_handler
+  call global_int_handler
 
   pop eax
   pop ebx

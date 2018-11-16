@@ -3,6 +3,7 @@
 
 volatile idt_entry idt_entries[IDT_INTERRUPT_DESCRIPTOR_TABLE_LENGTH];
 volatile idt_info idt_information;
+volatile interrupt_handler_definition interrupt_handlers[IDT_MAX_INTERRUPT_HANDLERS];
 
 void idt_init()
 {
@@ -55,7 +56,39 @@ void idt_unset(uint8_t index)
     idt_entries[index].present = 0;
 }
 
-void int_handler(interrupt_state state)
+void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)())
 {
+    for(int i=0; i<IDT_MAX_INTERRUPT_HANDLERS; i++)
+    {
+        if(interrupt_handlers[i].handler == 0)
+        {
+            interrupt_handlers[i].interrupt_number = interrupt_number;
+            interrupt_handlers[i].handler = handler;
+        }
+    }
+}
+
+void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)())
+{
+    for(int i=0; i<IDT_MAX_INTERRUPT_HANDLERS; i++)
+    {
+        if(interrupt_handlers[i].interrupt_number == interrupt_number && interrupt_handlers[i].handler == handler)
+        {
+            interrupt_handlers[i].interrupt_number = 0;
+            interrupt_handlers[i].handler = 0;
+        }
+    }
+}
+
+void global_int_handler(interrupt_state state)
+{
+    for(int i=0; i<IDT_MAX_INTERRUPT_HANDLERS; i++)
+    {
+        if(interrupt_handlers[i].interrupt_number == state.interrupt_number)
+        {
+            interrupt_handlers[i].handler();
+        }
+    }
+
     pic_confirm_master_and_slave();
 }
