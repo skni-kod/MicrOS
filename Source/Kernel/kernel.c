@@ -6,12 +6,14 @@
 #include "Drivers/Floppy/floppy.h"
 #include "Drivers/VGA/vga_gmode.h"
 #include "Drivers/PCSpeaker/pcspeaker.h"
+#include "Drivers/RTC/RTC.h"
 #include "Misc/startupMisc.h"
 #include "Timer/timer.h"
 #include "Logger/logger.h"
 #include "Memory/GDT/gdt.h"
 #include "Memory/Paging/paging.h"
 #include "Memory/Map/memory_map.h"
+#include "Misc/panicScreen.h"
 #include <stdint.h>
 
 void startup()
@@ -39,9 +41,6 @@ void startup()
     
     keyboard_init();
     log_ok("Keyboard");
-
-    timer_init();
-    log_ok("Timer");
 
     log_info("MicrOS ready");
     log_info("Created by Application Section of SKNI KOD");
@@ -83,6 +82,10 @@ int kmain()
             else if(c.scancode == 62)
             {
                 nosound();
+            }
+            else if(c.scancode == 63)
+            {
+                showPanicScreen(0x42, "Someone ask Question about Life, the Universe and Evertything");
             }
             else
                 vga_printchar(c.ascii);

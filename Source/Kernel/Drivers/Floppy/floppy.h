@@ -20,6 +20,7 @@
 #include <stdbool.h>
 #include "floppy_header.h"
 #include "../../Interrupts/PIC/pic.h"
+#include "../../Interrupts/IDT/idt.h"
 #include "../../Assembly/io.h"
 #include "../../../../Library/stdlib.h"
 #include "../../../../Library/string.h"

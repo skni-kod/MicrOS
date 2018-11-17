@@ -238,3 +238,14 @@ EnablePaging:
     mov cr0, ebx
 
     ret
+
+; Input: nothing
+; Output: nothing
+InitFPU:
+    mov eax, cr0
+
+    ; Set NE bit (force to use PIC)
+    or eax, 00100000b
+
+    mov cr0, eax
+    ret
