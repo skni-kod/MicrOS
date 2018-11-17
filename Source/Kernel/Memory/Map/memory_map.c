@@ -3,6 +3,16 @@
 uint8_t* memory_map_entries_count = MEMORY_MAP_ENTRIES_COUNT;
 memory_map_entry* memory_map = MEMORY_MAP_BUFFER;
 
+memory_map_entry* memory_map_get()
+{
+    return memory_map;
+}
+
+uint8_t memory_map_get_entries_count()
+{
+    return *memory_map_entries_count;
+}
+
 void memory_map_dump()
 {
     vga_printstring("BaseAddress  Length  Type  ACPI\n");

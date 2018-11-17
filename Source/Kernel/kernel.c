@@ -13,6 +13,7 @@
 #include "Memory/GDT/gdt.h"
 #include "Memory/Paging/paging.h"
 #include "Memory/Map/memory_map.h"
+#include "Memory/Manager/Physic/physical_memory_manager.h"
 #include "Misc/panicScreen.h"
 #include <stdint.h>
 
@@ -56,6 +57,9 @@ int kmain()
     log_ok("READY.");
 
     memory_map_dump();
+
+    physical_memory_init();
+    physical_memory_dump();
 
     while(1)
     {
