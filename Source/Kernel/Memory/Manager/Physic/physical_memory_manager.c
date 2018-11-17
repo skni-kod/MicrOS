@@ -1,8 +1,10 @@
 #include "physical_memory_manager.h"
 
 physical_memory_entry physical_entries[1024];
+physical_memory_entry mem_entries[1024];
 
 int between(uint64_t number, uint64_t a, uint64_t b);
+int between_or_eq(uint64_t number, uint64_t a, uint64_t b);
 
 void physical_memory_init()
 {
@@ -58,7 +60,6 @@ void draw_4MB_array(uint64_t number_of_sector)
 {
     uint64_t begin_addr = number_of_sector * 1024 * 1024 * 4;
     uint64_t end_addr = begin_addr + 1024 * 4;
-    physical_memory_entry mem_entries[1024];
 
     memory_map_entry* memory_map_entries = memory_map_get();
     uint8_t entries_count = memory_map_get_entries_count();
@@ -73,7 +74,7 @@ void draw_4MB_array(uint64_t number_of_sector)
         uint64_t start_index = memory_map_entries[i].base_address;
         uint64_t end_index = start_index + (memory_map_entries[i].length);
 
-        if((begin_addr < start_index) && (end_addr < end_index))
+        if((begin_addr <= start_index) && (end_index <= end_addr))
         {
             uint64_t a = (start_index - begin_addr) / 1024 / 4;
             uint64_t b = (end_index - begin_addr) / 1024 / 4;
@@ -92,7 +93,7 @@ void draw_4MB_array(uint64_t number_of_sector)
             continue;
         }
 
-        if((start_index < begin_addr) && between(end_index, begin_addr, end_addr))
+        if((start_index < begin_addr) && between_or_eq(end_index, begin_addr, end_addr))
         {
             uint64_t a = 0;
             uint64_t b = (end_index - begin_addr) / 1024 / 4;
@@ -111,7 +112,7 @@ void draw_4MB_array(uint64_t number_of_sector)
             continue;
         }
 
-        if(between(start_index, begin_addr, end_addr) && (end_index > end_addr))
+        if(between_or_eq(start_index, begin_addr, end_addr) && (end_index > end_addr))
         {
             uint64_t a = (start_index - begin_addr) / 1024 / 4;
             uint64_t b = 1024;
@@ -169,6 +170,13 @@ void draw_4MB_array(uint64_t number_of_sector)
 int between(uint64_t number, uint64_t a, uint64_t b)
 {
     if((a < number) && (number < b))
+        return 1;
+    return 0;
+}
+
+int between_or_eq(uint64_t number, uint64_t a, uint64_t b)
+{
+    if((a <= number) && (number <= b))
         return 1;
     return 0;
 }
