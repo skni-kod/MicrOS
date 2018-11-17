@@ -41,9 +41,6 @@ void startup()
     keyboard_init();
     log_ok("Keyboard");
 
-    timer_init();
-    log_ok("Timer");
-
     log_info("MicrOS ready");
     log_info("Created by Application Section of SKNI KOD");
     log_info("Version ... no version");
