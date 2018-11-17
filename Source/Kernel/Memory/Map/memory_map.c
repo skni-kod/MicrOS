@@ -1,12 +1,13 @@
 #include "memory_map.h"
 
-memory_map_entry* memory_map = MEMORY_MAP_ADDRESS;
+uint8_t* memory_map_entries_count = MEMORY_MAP_ENTRIES_COUNT;
+memory_map_entry* memory_map = MEMORY_MAP_BUFFER;
 
 void memory_map_dump()
 {
-    
+    vga_printstring("BaseAddress  Length  Type  ACPI\n");
 
-    for(int i=0; i<10; i++)
+    for(int i=0; i<*memory_map_entries_count; i++)
     {
         char buffer[40];
 
@@ -18,7 +19,6 @@ void memory_map_dump()
         
         vga_printstring(" ");
         
-
         itoa(memory_map[i].length >> 32, buffer, 16);
         vga_printstring(buffer);
 

@@ -114,7 +114,22 @@ Main:
 LoadMemoryMap:
     xor ebx, ebx
 
+    ; Push initial buffer address
+    push di
+
+    ; Push initial entries count
+    mov eax, 0
+    push eax
+
     LoadMemoryMap_Loop:
+    ; Increment pointer in buffer
+    add di, 24
+
+    ; Increment entries count
+    pop eax
+    inc eax
+    push eax
+
     ; Set magic number
     mov edx, 0x534d4150
 
@@ -125,13 +140,15 @@ LoadMemoryMap:
     mov eax, 0xe820
     int 0x15
 
-    ; Increment pointer in buffer
-    add di, 24
-
     ; Exit if ebx is equal to zero (reading has ended)
     cmp ebx, 0
     jne LoadMemoryMap_Loop
 
+    ; Store entries count at the begin of the buffer
+    pop eax
+    pop di
+    mov [di], eax
+    
     ret
     
 [BITS 32]
