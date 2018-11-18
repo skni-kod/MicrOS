@@ -60,5 +60,11 @@ void get_device_info(pci_in_data* data, pci_dev* info);
 pci_dev* get_device(uint8_t index);
 void pci_init();
 uint8_t get_number_of_devices();
+void checkAllBuses();
+void checkBus(uint16_t bus);
+void checkDevice(uint16_t bus, uint16_t dev);
+void checkPciPciBridge(pci_dev* dev);
+void insertDevice(pci_dev* dev);
+
 
 #endif
