@@ -2,6 +2,7 @@
 
 physical_memory_entry physical_entries[1024];
 physical_memory_entry mem_entries[1024];
+char buffer[500];
 
 int between(uint64_t number, uint64_t a, uint64_t b);
 int between_or_eq(uint64_t number, uint64_t a, uint64_t b);
@@ -181,31 +182,73 @@ int between_or_eq(uint64_t number, uint64_t a, uint64_t b)
     return 0;
 }
 
-void memoryViewer()
+void drawInVGA(uint64_t i)
 {
-    uint64_t i = 0;
     vga_clear_screen();
     vga_printstring("Memory Viewer\n\n");
     draw_4MB_array(i);
+    vga_newline();
+    vga_newline();
+    vga_printstring("Showing: ");
+    vga_printstring(itoa(i, buffer, 10));
+    vga_printstring(" memory sector (4MiB).\nEach char is one page width (4KiB).\n");
+    vga_printstring("Begin address of watching memory: 0x");
+    vga_printstring(itoa(i * 4 * 1024 * 1024, buffer, 16));
+    vga_printstring(" (");
+    vga_printstring(itoa(i * 4, buffer, 10));
+    vga_printstring(" MiB)\nEnd address of watching memory: 0x");
+    vga_printstring(itoa((i+1) * 4 * 1024 * 1024, buffer, 16));
+    vga_printstring(" (");
+    vga_printstring(itoa((i+1) * 4, buffer, 10));
+    vga_printstring(" MiB)\n");
+    vga_color col;
+    col.color_without_blink.letter = VGA_COLOR_WHITE;
+    col.color_without_blink.background = VGA_COLOR_GREEN;
+    vga_printchar_color(' ', &col);
+    vga_printstring(" - free,  ");
+    col.color_without_blink.background = VGA_COLOR_BLUE;
+    vga_printchar_color(' ', &col);
+    vga_printstring(" - reserved,  ");
+    col.color_without_blink.background = VGA_COLOR_RED;
+    vga_printchar_color(' ', &col);
+    vga_printstring(" - allocated,  ");
+    col.color_without_blink.background = VGA_COLOR_DARK_GRAY;
+    vga_printchar_color(' ', &col);
+    vga_printstring(" - no access\n");
+    vga_printstring("F1 - previous sector, F2 - next sector, F3 - prev 100 sect, F4 - next 100 sect\n");
+    vga_printstring("ESC - quit");
 
+}
+
+void memoryViewer()
+{
+    uint64_t i = 0;
+    
+    drawInVGA(i);
     while(1)
     {
         if(!isBufferEmpty())
         {
             ScanAsciiPair c = get_key_from_buffer();
-            if(c.scancode == 59)
+            if(c.scancode == 60)
             {
                 i++;
-                vga_clear_screen();
-                vga_printstring("Memory Viewer\n\n");
-                draw_4MB_array(i);
+                drawInVGA(i);
             }
-            else if(c.scancode == 60)
+            else if(c.scancode == 59)
             {
                 i--;
-                vga_clear_screen();
-                vga_printstring("Memory Viewer\n\n");
-                draw_4MB_array(i);
+                drawInVGA(i);
+            }
+            if(c.scancode == 62)
+            {
+                i += 100;
+                drawInVGA(i);
+            }
+            else if(c.scancode == 61)
+            {
+                i -= 100;
+                drawInVGA(i);
             }
             else if(c.scancode == 1)
             {
