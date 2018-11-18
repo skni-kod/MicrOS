@@ -180,11 +180,11 @@ LoadMemoryMap:
 CreateDirectoryTable:
     ; Add temporary identity entry (physical address: 0, virtual address: 0) to the directory table
     mov eax, 0x00201003
-    mov [0x00200000], eax
+    mov [0x00001000], eax
 
     ; Add kernel entry (first megabyte will be mapped to 0xc0000000)
     mov eax, 0x00202003
-    mov [0x00200000 + 0x300 * 4], eax
+    mov [0x00001000 + 0x300 * 4], eax
 
     ret
 
@@ -246,7 +246,7 @@ CreateKernelPageTable:
 ; Output: nothing
 EnablePaging:
     ; Set address of the directory table
-    mov eax, 0x200000
+    mov eax, 0x00001000
     mov cr3, eax
 
     ; Enable paging

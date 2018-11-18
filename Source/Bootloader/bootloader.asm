@@ -1,13 +1,13 @@
-;                              MicrOS memory layout in real mode
+;                                           MicrOS memory layout in real mode
 ;
-; |------------|---------|---------|------------|------------|---------|---------|------------|
-; |   1 KiB    |  256 B  | 29 KiB  |   512 B    |   28 KiB   | 578 KiB |  1 KiB  |  383 KiB   |
-; | Interrupts |   BDA   | DMA, DP | Bootloader | FAT32 data |  Kernel |  EBDA   | Video, ROM |
-; |            |         |         |            |            |         |         |            |
-; |  0x00000   | 0x00400 | 0x00500 |  0x07C00   |  0x07E00   | 0x0F000 | 0x9FC00 |  0xA0000   |
-; |  0x003FF   | 0x004FF | 0x07BFF |  0x07DFF   |  0x0EFFF   | 0x9FBDD | 0x9FFFF |  0xFFFFF   |
-; |------------|---------|---------|------------|------------|---------|---------|------------|
-; {                         Segment 1                            }{       Segment 2 - n       }
+; |------------|---------|------------|----------------|---------|------------|------------|---------|---------|------------|
+; |   1 KiB    |  256 B  |   3 KiB    |     4 KiB      | 25 KiB  |   512 B    |   28 KiB   | 578 KiB |  1 KiB  |  383 KiB   |
+; | Interrupts |   BDA   | Floppy DMA | Directory page |  Free   | Bootloader | FAT32 data |  Kernel |  EBDA   | Video, ROM |
+; |            |         |            |                |         |            |            |         |         |            |
+; |  0x00000   | 0x00400 |  0x00500   |    0x01000     | 0x02000 |  0x07C00   |  0x07E00   | 0x0F000 | 0x9FC00 |  0xA0000   |
+; |  0x003FF   | 0x004FF |  0x00FFF   |    0x01FFF     | 0x07BFF |  0x07DFF   |  0x0EFFF   | 0x9FBDD | 0x9FFFF |  0xFFFFF   |
+; |------------|---------|------------|----------------|---------|------------|------------|---------|---------|------------|
+; {                                        Segment 1                                            }{       Segment 2 - n      }
 
 [BITS 16]
 [ORG 0x7C00]

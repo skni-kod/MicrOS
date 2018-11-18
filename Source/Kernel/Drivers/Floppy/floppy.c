@@ -1,7 +1,7 @@
 #include "floppy.h"
 
-volatile floppy_header* floppy_header_data = 0xc0007c00;
-volatile uint8_t* dma_buffer = 0x1000;
+volatile floppy_header* floppy_header_data = FLOPPY_HEADER_DATA;
+volatile uint8_t* dma_buffer = DMA_ADDRESS;
 volatile uint32_t time_of_last_activity = 0;
 volatile bool motor_enabled = false;
 
