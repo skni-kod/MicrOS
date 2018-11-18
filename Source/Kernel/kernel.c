@@ -91,6 +91,10 @@ int kmain()
             {
                 showPanicScreen(0x42, "Someone ask Question about Life, the Universe and Evertything");
             }
+            else if(c.scancode == 64)
+            {
+                memoryViewer();
+            }
             else
                 vga_printchar(c.ascii);
         }
