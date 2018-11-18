@@ -150,19 +150,28 @@ void draw_4MB_array(uint64_t number_of_sector)
     }
 
     vga_color col;
-    col.color_without_blink.letter = VGA_COLOR_WHITE;
+    //col.color_without_blink.letter = VGA_COLOR_WHITE;
 
     for(int i=0; i<1024; i++)
     {
         switch(mem_entries[i].type)
         {
-            case physical_memory_free:          col.color_without_blink.background = VGA_COLOR_GREEN; break;
-            case physical_memory_reserved:      col.color_without_blink.background = VGA_COLOR_BLUE; break;
-            case physical_memory_filled:        col.color_without_blink.background = VGA_COLOR_RED; break;
-            case physical_memory_not_available: col.color_without_blink.background = VGA_COLOR_DARK_GRAY; break;
+            case physical_memory_free:          col.color_without_blink.letter = VGA_COLOR_GREEN; break;
+            case physical_memory_reserved:      col.color_without_blink.letter = VGA_COLOR_BLUE; break;
+            case physical_memory_filled:        col.color_without_blink.letter = VGA_COLOR_RED; break;
+            case physical_memory_not_available: col.color_without_blink.letter = VGA_COLOR_DARK_GRAY; break;
         }
-
-        vga_printchar_color(' ', &col);
+        if(i%2)
+        {
+            col.color_without_blink.background = VGA_COLOR_BLACK;
+            vga_printchar_color(178, &col);
+        }
+        else
+        {
+            col.color_without_blink.background = col.color_without_blink.letter;
+            col.color_without_blink.letter = VGA_COLOR_BLACK;
+            vga_printchar_color('_', &col);
+        }
     }
 
     vga_newline();
