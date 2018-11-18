@@ -1,13 +1,12 @@
-;                       MicrOS kernel memory layout in protected mode
-;                             Entry 768 in the directory table
-; |---------------|------------|----------------|-------------|-------------------------|
-; |    1 MiB      |   1 MiB    |      4 KiB     |    4 MiB    |        1017 MiB         |
-; | BIOS & Kernel |   Stack    | Page directory | Page tables | Dynamic allocation area |
-; |               |            |                |             |                         | 
-; |  0xC0000000   | 0xC0100000 |   0xC0200000   | 0xC0201000  |       0xC0601000        |
-; |  0xC00FFFFF   | 0xC01FFFFF |   0xC0200FFF   | 0xC0600FFF  |       0xFFFFFFFF        |
-; |---------------|------------|----------------|-------------|-------------------------|
-; {                       Page 1                       }{   Page 2   }{   Page 3 - n    }
+;                                   MicrOS virtual memory layout
+; |---------------|------------|------------|-------------|------------|-------------------------|
+; |     1 MiB     |   15 MiB   |   1 Mib    |    4 MiB    |   3 MiB    |        1017 MiB         |
+; | BIOS & Kernel |  Reserved  |   Stack    | Page tables |  Reserved  | Dynamic allocation area |
+; |               |            |            |             |            |                         | 
+; |  0xC0000000   | 0xC0100000 | 0xC1000000 | 0xC1100000  | 0xC1500000 |       0xC1800000        |
+; |  0xC00FFFFF   | 0xC0FFFFFF | 0xC10FFFFF | 0xC14FFFFF  | 0xC17FFFFF |       0xFFFFFFFF        |
+; |---------------|------------|------------|-------------|--------------------------------------|
+; {     Page 1       }{2}{3}{4}{        Page 5       }{     Page 6     }{       Page 7 - n       }
 
 [BITS 16]
 
