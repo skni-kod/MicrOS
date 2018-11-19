@@ -164,7 +164,7 @@ LoadMemoryMap:
     call EnablePaging
 
     ; Set new stack with virtual address
-    mov eax, 0xC0200000
+    mov eax, 0xC1100000
     mov esp, eax
 
     ; Jump to kmain and start kernel work
