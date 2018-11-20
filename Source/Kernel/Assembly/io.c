@@ -49,6 +49,11 @@ void enable()
     __asm__ ("sti" ::);
 }
 
+void disable()
+{
+    __asm__ ("cli" ::);
+}
+
 void io_wait()
 {
     __asm__ ( "outb %%al, $0x80" : : "a"(0) );

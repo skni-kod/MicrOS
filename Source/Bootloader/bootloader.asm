@@ -1,13 +1,13 @@
-;                              MicrOS memory layout in real mode
+;                                            MicrOS physic memory layout
 ;
-; |------------|---------|----------|------------|------------|---------|---------|------------|
-; |   1 KiB    |  256 B  |  29 KiB  |   512 B    |   32 KiB   | 574 KiB |  1 KiB  |  383 KiB   |
-; | Interrupts |   BDA   |  Stack   | Bootloader | FAT32 data |  Kernel |  EBDA   | Video, ROM |
-; |            |         |          |            |            |         |         |            |
-; |  0x00000   | 0x00400 |  0x00500 |  0x07C00   |  0x07E00   | 0x10000 | 0x9FC00 |  0xA0000   |
-; |  0x003FF   | 0x004FF |  0x07BFF |  0x07DFF   |  0x0FFFF   | 0x9FBDD | 0x9FFFF |  0xFFFFF   |
-; |------------|---------|----------|------------|------------|---------|---------|------------|
-; {                       Segment 1                           }{        Segment 2 - n          }
+; |------------|---------|------------|----------------|---------|------------|------------|---------|---------|------------|------------|------------|------------|
+; |   1 KiB    |  256 B  |   3 KiB    |     4 KiB      | 25 KiB  |   512 B    |   28 KiB   | 578 KiB |  1 KiB  |  383 KiB   |   15 MiB   |   1 MiB    |   4 MiB    |
+; | Interrupts |   BDA   | Floppy DMA | Page Directory |  Free   | Bootloader | FAT32 data |  Kernel |  EBDA   | Video, ROM |  Reserved  |   Stack    | Page Table |
+; |            |         |            |                |         |            |            |         |         |            |            |            |            |
+; |  0x00000   | 0x00400 |  0x00500   |    0x01000     | 0x02000 |  0x07C00   |  0x07E00   | 0x0F000 | 0x9FC00 |  0xA0000   | 0x00100000 | 0x01000000 | 0x01100000 |
+; |  0x003FF   | 0x004FF |  0x00FFF   |    0x01FFF     | 0x07BFF |  0x07DFF   |  0x0EFFF   | 0x9FBDD | 0x9FFFF |  0xFFFFF   | 0x00FFFFFF | 0x010FFFFF | 0x014FFFFF |
+; |------------|---------|------------|----------------|---------|------------|------------|---------|---------|------------|------------|------------|------------|
+; {                                        Segment 1                                          }{                            Segment 2 - n                          }
 
 [BITS 16]
 [ORG 0x7C00]
@@ -41,75 +41,6 @@ FileSystemType                  db 'FAT12   '       ; 8 chars
 
 KernelFileName                  db 'KERNEL  BIN'    ; 11 chars
 NonDataSectors                  db 0x00
-
-; Entry frame: https://wiki.osdev.org/GDT
-GDT:
-; Null segment, reserved by CPU
-GDT_Null:
-    dd 0x00000000
-    dd 0x00000000
-
-; Code segment
-GDT_Code:
-    ; Segment limit (4 GiB)
-    dw 0xFFFF
-
-    ; Segment base address (16 bits)
-    dw 0x0000
-
-    ; Segment base address (8 bits)
-    db 0x00
-
-    ; 1 - present bit (1 for all valid sectors)
-    ; 00 - privilege (ring level), 00 is the higest
-    ; 1 - reserved
-    ; 1 - excebutable bit, code can be excecuted here
-    ; 0 - conforming bit, only kernel can execute code
-    ; 1 - segment can be read
-    ; 0 - access bit, default is zero
-    db 10011010b
-
-    ; 1 - granularity (0 = 1B block, 1 = 4 KiB block)
-    ; 1 - size bit (0 = 16b protected mode, 1 = 32b protected mode)
-    ; 00 - reserved
-    ; 1111 - segment base address (4 bits)
-    db 11001111b
-
-    ; Segment base address (8 bits)
-    db 0x00
-
-; Data segment
-GDT_Data:
-    ; Segment limit (4 GiB)
-    dw 0xFFFF
-
-    ; Segment base address (16 bits)
-    dw 0x0000
-
-    ; Segment base address (8 bits)
-    db 0x00
-
-    ; 1 - present bit (1 for all valid sectors)
-    ; 00 - privilege (ring level), 00 is the higest
-    ; 1 - reserved
-    ; 0 - excebutable bit, code can't be excecuted here (because it's just data)
-    ; 0 - conforming bit, only kernel can execute code
-    ; 1 - segment can be read
-    ; 0 - access bit, default is zero
-    db 10010010b
-
-    ; 1 - granularity (0 = 1B block, 1 = 4 KiB block)
-    ; 1 - size bit (0 = 16b protected mode, 1 = 32b protected mode)
-    ; 00 - reserved
-    ; 1111 - segment base address (4 bits)
-    db 11001111b
-
-    ; Segment base address (8 bits)
-    db 0x00
-GDT_End:
-GDT_Desc:
-    dw GDT_End - GDT - 1
-    dd GDT
 
 ; Entry point of bootloader
 Main:
@@ -384,18 +315,26 @@ LoadKernel:
     ; Push initial loaded sectors count
     xor bx, bx
     push bx
-
-    LoadKernel_LoadNextSector: 
-    ; Segment
-    mov bx, 0x1000
+    
+    ; Initial segment
+    mov bx, 0x0000
     mov es, bx
 
+    LoadKernel_LoadNextSector:
     ; Offset (current sector index * 512 bytes)
     mov ax, [ebp - 4]
     mov dx, 0x200
     mul dx
     mov bx, ax
+    add bx, 0xF000
 
+    cmp bx, 0
+    jne LoadKernel_Increment
+
+    mov ax, 0x1000
+    mov es, ax
+
+    LoadKernel_Increment:
     ; Number of sectors to read
     mov al, 1
 
@@ -432,30 +371,7 @@ LoadKernel:
 ; Input: nothing
 ; Output: nothing
 JumpToKernel:
-    ; Disable interrupts
-    cli
-
-    ; Load GDT table
-    lgdt [GDT_Desc]
-
-    ; Set protected mode flag
-    mov eax, cr0
-    or eax, 1
-    mov cr0, eax
-
-    ; Jump to protected area 
-    jmp 0x08:JumpToKernel_ProtectedArea
-    
-    [BITS 32]
-    JumpToKernel_ProtectedArea:
-
-    ; Set data and stack segments to the third GDI descriptor
-    mov ax, 0x10
-    mov ds, ax
-    mov ss, ax
-    
-    ; Jump to kernel, goodbye bootloader!
-    jmp 0x08:0x10000
+    jmp 0x0000:0xF000
 
 times 510 - ($ - $$) db 0
 dw 0xAA55

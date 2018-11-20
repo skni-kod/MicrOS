@@ -1,7 +1,7 @@
 #include "floppy.h"
 
-volatile floppy_header* floppy_header_data = 0x7c00;
-volatile uint8_t* dma_buffer = 0x1000;
+volatile floppy_header* floppy_header_data = FLOPPY_HEADER_DATA;
+volatile uint8_t* dma_buffer = DMA_ADDRESS;
 volatile uint32_t time_of_last_activity = 0;
 volatile bool motor_enabled = false;
 
@@ -11,11 +11,13 @@ void floppy_init()
 {
     // Enable timer interrupt (to check if floppy can be shut down after some time of inactivity)
     pic_enable_irq(0);
+    idt_attach_interrupt_handler(0, floppy_timer_interrupt);
 
     time_of_last_activity = timer_get_system_clock();
 
     // Enable floppy interrupts
     pic_enable_irq(6);
+    idt_attach_interrupt_handler(6, floppy_interrupt);
 
     if(floppy_reset() == -1)
     {
@@ -207,7 +209,7 @@ uint8_t* floppy_read_sector(uint8_t sector)
     uint8_t head, track;
     floppy_lba_to_chs(sector, &head, &track, &sector);
 
-    floppy_do_operation_on_sector(head, track, sector, true);
+    return floppy_do_operation_on_sector(head, track, sector, true) + 0xc0000000;
 }
 
 void floppy_write_sector(uint8_t sector, uint8_t* content)
