@@ -42,7 +42,7 @@ void insertDevice(pci_dev* dev)
 {
     for(int i = 0; i<16; i++)
     {
-        devices[number_of_devices].bits_32[i] == dev->bits_32[i];
+        devices[number_of_devices].bits_32[i] = dev->bits_32[i];
     }
     number_of_devices++;
 }
@@ -62,10 +62,13 @@ void checkDevice(uint16_t bus, uint16_t dev)
     data.enable = 1;
     data.bus_num = bus;
     data.device_num = dev;
+    data.register_num = 0;
+    data.reserved = 0;
+    data.function_num = 0;
     pci_dev temp;
     get_device_info(&data, &temp);
 
-    if(temp.vendor_id == 0xFFFF) return;
+    if(temp.vendor_id == (uint16_t)0xFFFF) return;
     insertDevice(&temp);
     checkPciPciBridge(&temp);
     if((temp.header_type & 0x80) != 0)
