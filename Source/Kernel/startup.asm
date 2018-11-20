@@ -158,7 +158,7 @@ LoadMemoryMap:
     mov ds, ax
     mov ss, ax
 
-    call CreateDirectoryTable
+    call CreatePageDirectory
     call CreateIdentityPageTable
     call CreateKernelPageTable
     call EnablePaging
@@ -176,14 +176,56 @@ LoadMemoryMap:
 
 ; Input: nothing
 ; Output: nothing
-CreateDirectoryTable:
-    ; Add temporary identity entry (physical address: 0, virtual address: 0) to the directory table
-    mov eax, 0x00201003
+CreatePageDirectory:
+    ; Add temporary identity entry (physical address: 0x00000000, virtual address: 0x00000000, 24 MB)
+    ; 0 - 4 MB
+    mov eax, 0x01100003
     mov [0x00001000], eax
 
-    ; Add kernel entry (first megabyte will be mapped to 0xc0000000)
-    mov eax, 0x00202003
+    ; 4 - 8 MB
+    mov eax, 0x01101003
+    mov [0x00001000 + 4], eax
+
+    ; 8 - 12 MB
+    mov eax, 0x01102003
+    mov [0x00001000 + 8], eax
+
+    ; 12 - 16 MB
+    mov eax, 0x01103003
+    mov [0x00001000 + 12], eax
+
+    ; 16 - 20 MB
+    mov eax, 0x01104003
+    mov [0x00001000 + 16], eax
+    
+    ; 20 - 24 MB
+    mov eax, 0x01105003
+    mov [0x00001000 + 20], eax
+
+    ; Add kernel entry (physical address: 0x00000000, virtual address: 0xC0000000, 24 MB)
+    ; 0 - 4 MB
+    mov eax, 0x01400003
     mov [0x00001000 + 0x300 * 4], eax
+    
+    ; 4 - 8 MB
+    mov eax, 0x01401003
+    mov [0x00001000 + 0x301 * 4], eax
+
+    ; 8 - 12 MB
+    mov eax, 0x01402003
+    mov [0x00001000 + 0x302 * 4], eax
+
+    ; 12 - 16 MB
+    mov eax, 0x01403003
+    mov [0x00001000 + 0x303 * 4], eax
+
+    ; 16 - 20 MB
+    mov eax, 0x01404003
+    mov [0x00001000 + 0x304 * 4], eax
+    
+    ; 20 - 24 MB
+    mov eax, 0x01405003
+    mov [0x00001000 + 0x305 * 4], eax
 
     ret
 
@@ -202,14 +244,14 @@ CreateIdentityPageTable:
     or ecx, 3
     
     ; Set entry
-    mov [0x00201000 + eax*4], ecx
+    mov [0x01100000 + eax*4], ecx
 
     ; Go to the next entry
     add ebx, 0x1000
     inc eax
 
     ; Leave loop if we filled all entries for the first megabyte
-    cmp eax, 1024
+    cmp eax, 0x6000
     jl fill_identity_page_table_loop
 
     ret
@@ -229,14 +271,14 @@ CreateKernelPageTable:
     or ecx, 3
     
     ; Set entry
-    mov [0x00202000 + eax*4], ecx
+    mov [0x01400000 + eax*4], ecx
 
     ; Go to the next entry
     add ebx, 0x1000
     inc eax
 
     ; Leave loop if we filled all entries for the first megabyte
-    cmp eax, 1024
+    cmp eax, 0x6000
     jl fill_kernel_page_table_loop
 
     ret
