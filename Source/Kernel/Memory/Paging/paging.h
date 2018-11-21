@@ -11,6 +11,7 @@ void paging_init();
 void paging_remove_identity();
 void paging_add_stack_guard();
 
-uint32_t paging_map_page(uint32_t physical_address, uint32_t virtual_address);
+void paging_map_page(uint32_t physical_address, uint32_t virtual_address);
+void paging_unmap_page(uint32_t virtual_address);
 
 #endif

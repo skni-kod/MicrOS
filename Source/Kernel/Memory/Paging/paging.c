@@ -30,8 +30,9 @@ void paging_add_stack_guard()
     page_with_stack->present = 0;
 }
 
-uint32_t paging_map_page(uint32_t physical_address, uint32_t virtual_address)
+void paging_map_page(uint32_t physical_address, uint32_t virtual_address)
 {
+    // Page directory index = virtual address / 1024 / 1024 / 4 = (4kb blocks);
     uint32_t page_directory_index = (virtual_address >> 12) / 1024;
 
     paging_table_entry* page_directory = PAGE_DIRECTORY_ADDRESS + (page_directory_index * 4);
@@ -39,8 +40,6 @@ uint32_t paging_map_page(uint32_t physical_address, uint32_t virtual_address)
 
     for(int i=0; i<1024; i++)
     {
-        paging_table_entry test = page_table[i];
-
         page_table[i].physical_page_address = (physical_address >> 12) + i;
         page_table[i].present = 1;
     }
@@ -48,4 +47,13 @@ uint32_t paging_map_page(uint32_t physical_address, uint32_t virtual_address)
     page_directory->physical_page_address = ((uint32_t)page_table - 0xC0000000) >> 12;
     page_directory->present = 1;
     page_directory->read_write = 1;
+}
+
+void paging_unmap_page(uint32_t virtual_address)
+{
+    // Page directory index = virtual address / 1024 / 1024 / 4 = (4kb blocks);
+    uint32_t page_directory_index = (virtual_address >> 12) / 1024;
+    
+    paging_table_entry* page_directory = PAGE_DIRECTORY_ADDRESS + (page_directory_index * 4);
+    page_directory->present = 0;
 }
