@@ -9,7 +9,7 @@ void paging_init()
     paging_add_stack_guard();
 
     paging_map_page(0x00000000, 0xc0000000);
-    //paging_map_page(0x00400000, 0xc0400000);
+    paging_map_page(0x00400000, 0xc0400000);
 }
 
 void paging_remove_identity()
@@ -39,11 +39,13 @@ uint32_t paging_map_page(uint32_t physical_address, uint32_t virtual_address)
 
     for(int i=0; i<1024; i++)
     {
-        page_table[i].physical_page_address = (physical_address + (i * 4096)) >> 12;
+        paging_table_entry test = page_table[i];
+
+        page_table[i].physical_page_address = (physical_address >> 12) + i;
         page_table[i].present = 1;
     }
 
-    page_directory->physical_page_address = (uint32_t)page_table >> 12;
+    page_directory->physical_page_address = ((uint32_t)page_table - 0xC0000000) >> 12;
     page_directory->present = 1;
     page_directory->read_write = 1;
 }
