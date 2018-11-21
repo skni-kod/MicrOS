@@ -3,7 +3,7 @@
 
 typedef struct physical_memory_entry
 {
-    uint8_t type : 3;
-} __attribute__((packed)) physical_memory_entry;
+    uint8_t type;
+} physical_memory_entry;
 
 #endif

@@ -44,6 +44,31 @@ void physical_memory_init()
     }
 }
 
+int32_t physical_memory_alloc_page()
+{
+    for(int i=0; i<1024; i++)
+    {
+        if(physical_entries[i].type == physical_memory_free)
+        {
+            physical_entries[i].type = physical_memory_filled;
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+bool physical_memory_dealloc_page(uint32_t index)
+{
+    if(physical_entries[index].type == physical_memory_filled)
+    {
+        physical_entries[index].type = physical_memory_free;
+        return false;
+    }
+
+    return true;
+}
+
 void physical_memory_dump()
 {
     vga_color col;
