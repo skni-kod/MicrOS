@@ -1,10 +1,20 @@
 #include "vga.h"
 
 // Position on screen
-vga_screen_pos vga_cursor_pos = { .x = 0, .y = 0 };
+vga_screen_pos vga_cursor_pos;
 volatile screen * const vga_video = (volatile screen*)(VGA_BASE_ADDR);
-uint8_t vga_current_printing_screen = 0;
-uint16_t vga_screen_offset = 0;
+uint8_t vga_current_printing_screen;
+uint16_t vga_screen_offset;
+
+void vga_init()
+{
+    vga_cursor_pos.x = 0;
+    vga_cursor_pos.y = 0;
+    vga_current_printing_screen = 0;
+    vga_screen_offset = 0;
+    vga_clear_screen();
+    vga_update_cursor_struct(vga_cursor_pos);
+}
 
 void vga_printchar(char c)
 {
@@ -32,6 +42,7 @@ void vga_printchar_color(char c, vga_color * color)
     {
         vga_newline();
     }
+    vga_update_cursor_struct(vga_cursor_pos);
 }
 
 void vga_printstring(char * str)
@@ -154,6 +165,7 @@ void vga_clear_screen()
 
     vga_cursor_pos.x = 0;
     vga_cursor_pos.y = 0;
+    vga_update_cursor_struct(vga_cursor_pos);
 }
 
 void vga_change_printing_screen(uint8_t a)
@@ -184,6 +196,16 @@ void vga_copy_screen(uint8_t from, uint8_t to)
             }
         }
     }
+}
+
+void vga_cursor_on()
+{
+    vga_enable_cursor(14, 15);
+}
+
+void vga_cursor_off()
+{
+    vga_disable_cursor();
 }
 
 void vga_newline()
@@ -225,4 +247,34 @@ uint16_t vga_calcualte_position_with_offset(uint16_t x, uint16_t y)
 uint16_t vga_calcualte_position_without_offset(uint16_t x, uint16_t y)
 {
     return x + y * VGA_SCREEN_COLUMNS;
+}
+
+void vga_enable_cursor(uint8_t cursor_start, uint8_t cursor_end)
+{
+    outb(0x3D4, 0x0A);
+	outb(0x3D5, (inb(0x3D5) & 0xC0) | cursor_start);
+ 
+	outb(0x3D4, 0x0B);
+	outb(0x3D5, (inb(0x3D5) & 0xE0) | cursor_end);
+}
+
+void vga_disable_cursor()
+{
+	outb(0x3D4, 0x0A);
+	outb(0x3D5, 0x20);
+}
+
+void vga_update_cursor(uint16_t x, uint16_t y)
+{
+	uint16_t pos = vga_calcualte_position_without_offset(x, y);
+ 
+	outb(0x3D4, 0x0F);
+	outb(0x3D5, (uint8_t) (pos & 0xFF));
+	outb(0x3D4, 0x0E);
+	outb(0x3D5, (uint8_t) ((pos >> 8) & 0xFF));
+}
+
+void vga_update_cursor_struct(vga_screen_pos pos)
+{
+    vga_update_cursor(pos.x, pos.y);
 }

@@ -5,5 +5,6 @@
 
 int32_t atoi(const char* string);
 char* itoa(int input, char* buffer, int base);
+void sleep(uint32_t ms);
 
 #endif

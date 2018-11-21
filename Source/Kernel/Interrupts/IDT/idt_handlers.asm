@@ -1,191 +1,320 @@
-global int0
-global int1
-global int2
-global int3
-global int4
-global int5
-global int6
-global int7
-global int8
-global int9
-global int10
-global int11
-global int12
-global int13
-global int14
-global int15
+global exc0
+global exc1
+global exc2
+global exc3
+global exc4
+global exc5
+global exc6
+global exc7
+global exc8
+global exc9
+global exc10
+global exc11
+global exc12
+global exc13
+global exc14
+global exc15
+global exc16
+global exc17
+global exc18
+global exc19
+global exc20
+global exc21
+global exc22
+global exc23
+global exc24
+global exc25
+global exc26
+global exc27
+global exc28
+global exc29
+global exc30
+global exc31
+
+global int32
+global int33
+global int34
+global int35
+global int36
+global int37
+global int38
+global int39
+global int40
+global int41
+global int42
+global int43
+global int44
+global int45
+global int46
+global int47
 global int48
 global int49
 global int50
 global int51
 global int52
 
-global int0_handler
-global int1_handler
-global int2_handler
-global int3_handler
-global int4_handler
-global int5_handler
-global int6_handler
-global int7_handler
-global int8_handler
-global int9_handler
-global int10_handler
-global int11_handler
-global int12_handler
-global int13_handler
-global int14_handler
-global int15_handler
-global int48_handler
-global int49_handler
-global int50_handler
-global int51_handler
-global int52_handler
- 
-extern int0_handler
-extern int1_handler
-extern int2_handler
-extern int3_handler
-extern int4_handler
-extern int5_handler
-extern int6_handler
-extern int7_handler
-extern int8_handler
-extern int9_handler
-extern int10_handler
-extern int11_handler
-extern int12_handler
-extern int13_handler
-extern int14_handler
-extern int15_handler
-extern int48_handler
-extern int49_handler
-extern int50_handler
-extern int51_handler
-extern int52_handler
+extern global_exc_handler
+extern global_int_handler
 
-int0:
-  pusha
-  call int0_handler
-  popa
-  iret
+exc0:
+  push 0
+  jmp exc_wrapper
 
-int1:
-  pusha
-  call int1_handler
-  popa
-  iret
+exc1:
+  push 1
+  jmp exc_wrapper
 
-int2:
-  pusha
-  call int2_handler
-  popa
-  iret
+exc2:
+  push 2
+  jmp exc_wrapper
 
-int3:
-  pusha
-  call int3_handler
-  popa
-  iret
+exc3:
+  push 3
+  jmp exc_wrapper
 
-int4:
-  pusha
-  call int4_handler
-  popa
-  iret
+exc4:
+  push 4
+  jmp exc_wrapper
 
-int5:
-  pusha
-  call int5_handler
-  popa
-  iret
+exc5:
+  push 5
+  jmp exc_wrapper
 
-int6:
-  pusha
-  call int6_handler
-  popa
-  iret
+exc6:
+  push 6
+  jmp exc_wrapper
 
-int7:
-  pusha
-  call int7_handler
-  popa
-  iret
+exc7:
+  push 7
+  jmp exc_wrapper
+
+exc8:
+  push 8
+  jmp exc_wrapper
+
+exc9:
+  push 9
+  jmp exc_wrapper
+
+exc10:
+  push 10
+  jmp exc_wrapper
+
+exc11:
+  push 11
+  jmp exc_wrapper
+
+exc12:
+  push 12
+  jmp exc_wrapper
+
+exc13:
+  push 13
+  jmp exc_wrapper
+
+exc14:
+  push 14
+  jmp exc_wrapper
+
+exc15:
+  push 15
+  jmp exc_wrapper
+
+exc16:
+  push 16
+  jmp exc_wrapper
+
+exc17:
+  push 17
+  jmp exc_wrapper
+
+exc18:
+  push 18
+  jmp exc_wrapper
+
+exc19:
+  push 19
+  jmp exc_wrapper
+
+exc20:
+  push 20
+  jmp exc_wrapper
+
+exc21:
+  push 21
+  jmp exc_wrapper
+
+exc22:
+  push 22
+  jmp exc_wrapper
+
+exc23:
+  push 23
+  jmp exc_wrapper
+
+exc24:
+  push 24
+  jmp exc_wrapper
+
+exc25:
+  push 25
+  jmp exc_wrapper
+
+exc26:
+  push 26
+  jmp exc_wrapper
+
+exc27:
+  push 27
+  jmp exc_wrapper
+
+exc28:
+  push 28
+  jmp exc_wrapper
+
+exc29:
+  push 29
+  jmp exc_wrapper
+
+exc30:
+  push 30
+  jmp exc_wrapper
+
+exc31:
+  push 31
+  jmp exc_wrapper
+
+int32:
+  push 32
+  jmp int_wrapper
+
+int33:
+  push 33
+  jmp int_wrapper
+
+int34:
+  push 34
+  jmp int_wrapper
+
+int35:
+  push 35
+  jmp int_wrapper
+
+int36:
+  push 36
+  jmp int_wrapper
+
+int37:
+  push 37
+  jmp int_wrapper
+
+int38:
+  push 38
+  jmp int_wrapper
+
+int39:
+  push 39
+  jmp int_wrapper
   
-int8:
-  pusha
-  call int8_handler
-  popa
-  iret
+int40:
+  push 40
+  jmp int_wrapper
   
-int9:
-  pusha
-  call int9_handler
-  popa
-  iret
+int41:
+  push 41
+  jmp int_wrapper
   
-int10:
-  pusha
-  call int10_handler
-  popa
-  iret
+int42:
+  push 42
+  jmp int_wrapper
   
-int11:
-  pusha
-  call int11_handler
-  popa
-  iret
+int43:
+  push 43
+  jmp int_wrapper
   
-int12:
-  pusha
-  call int12_handler
-  popa
-  iret
+int44:
+  push 44
+  jmp int_wrapper
   
-int13:
-  pusha
-  call int13_handler
-  popa
-  iret
+int45:
+  push 45
+  jmp int_wrapper
   
-int14:
-  pusha
-  call int14_handler
-  popa
-  iret
+int46:
+  push 46
+  jmp int_wrapper
   
-int15:
-  pusha
-  call int15_handler
-  popa
-  iret
+int47:
+  push 47
+  jmp int_wrapper
 
 int48:
-  pusha
-  call int48_handler
-  popa
-  iret
+  push 48
+  jmp int_wrapper
 
 int49:
-  pusha
-  call int49_handler
-  popa
-  iret
+  push 49
+  jmp int_wrapper
 
 int50:
-  pusha
-  call int50_handler
-  popa
-  iret
+  push 50
+  jmp int_wrapper
 
 int51:
-  pusha
-  call int51_handler
-  popa
-  iret
+  push 51
+  jmp int_wrapper
 
 int52:
-  pusha
-  call int52_handler
-  popa
+  push 52
+  jmp int_wrapper
+
+exc_wrapper:
+  push edi
+  push esi
+  push ebp
+  push esp
+  push edx
+  push ecx
+  push ebx
+  push eax
+
+  call global_exc_handler
+
+  pop eax
+  pop ebx
+  pop ecx
+  pop edx
+  pop esp
+  pop ebp
+  pop esi
+  pop edi
+  
+  ; Skip interrupt number and error code
+  add esp, 8
+  iret
+
+int_wrapper:
+  push edi
+  push esi
+  push ebp
+  push esp
+  push edx
+  push ecx
+  push ebx
+  push eax
+
+  call global_int_handler
+
+  pop eax
+  pop ebx
+  pop ecx
+  pop edx
+  pop esp
+  pop ebp
+  pop esi
+  pop edi
+  
+  ; Skip interrupt number
+  add esp, 4
+
   iret

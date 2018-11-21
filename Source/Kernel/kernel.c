@@ -3,54 +3,91 @@
 #include "Drivers/Keyboard/keyboard.h"
 #include "Interrupts/IDT/idt.h"
 #include "Drivers/Keyboard/keyboard.h"
-
-#include "../../Library/stdlib.h"
-
-void print_ok_status(char* message)
-{
-    vga_color col;
-    col.color_without_blink.letter = VGA_COLOR_GREEN;
-    col.color_without_blink.background = VGA_COLOR_BLACK;
-    
-    vga_printstring("[ ");
-    vga_printstring_color("OK", &col);
-    vga_printstring(" ] ");
-    vga_printstring(message);
-    vga_printstring("\n");
-}
+#include "Drivers/Floppy/floppy.h"
+#include "Drivers/VGA/vga_gmode.h"
+#include "Drivers/PCSpeaker/pcspeaker.h"
+#include "Drivers/RTC/RTC.h"
+#include "Misc/startupMisc.h"
+#include "Timer/timer.h"
+#include "Logger/logger.h"
+#include "Memory/GDT/gdt.h"
+#include "Memory/Paging/paging.h"
+#include "Misc/panicScreen.h"
+#include <stdint.h>
 
 void startup()
 {
-    vga_clear_screen();
-    vga_printstring("MicrOS is starting...\n");
-    print_ok_status("VGA Driver");
+    // Must be done before any VGA operation
+    gdt_init();
+    paging_init();
 
+    //Don't use VGA before calling VGA init
+    vga_init();
+    log_info("MicrOS is starting...");
+    log_ok("VGA Driver");
+    
     pic_init();
-    print_ok_status("Programmable Interrupt Controller");
+    log_ok("Programmable Interrupt Controller");
 
     idt_init();
-    print_ok_status("Interrupt Descriptor Table");
+    log_ok("Interrupt Descriptor Table");
+
+    timer_init();
+    log_ok("Timer");
+
+    floppy_init();
+    log_ok("Floppy");
     
     keyboard_init();
-    print_ok_status("Keyboard");
+    log_ok("Keyboard");
 
-    vga_printstring("MicrOS ready\n");
-    vga_printstring("Created by Application Section of SKNI KOD\n");
-    vga_printstring("Version ... no version\n");
+    log_info("MicrOS ready");
+    log_info("Created by Application Section of SKNI KOD");
+    log_info("Version ... no version");
 }
 
 int kmain()
 {
     startup();
-    vga_printstring("Hello, World!\n");
-    vga_printstring("\nREADY.\n");
 
-    char* t = "1750";
-    int32_t ti = atoi(t);
-    char buffer[10];
-    itoa(ti, buffer, 16);
+    log_info("Hello, World!");
+    //whatIsLove();
+    log_ok("READY.");
 
-    vga_printstring(buffer);
+    while(1)
+    {
+        if(!isBufferEmpty())
+        {
+            ScanAsciiPair c = get_key_from_buffer();
+            if(c.scancode == 59)
+            {
+                if(getMode() != 3)
+                    set3HVideoMode();
+            }
+            else if(c.scancode == 60)
+            {
+                if(getMode() != 0x13)
+                {
+                    set13HVideoMode();
+                    drawDupaIn13H(10);
+                }
+            }
+            else if(c.scancode == 61)
+            {
+                sound(1000);
+            }
+            else if(c.scancode == 62)
+            {
+                nosound();
+            }
+            else if(c.scancode == 63)
+            {
+                showPanicScreen(0x42, "Someone ask Question about Life, the Universe and Evertything");
+            }
+            else
+                vga_printchar(c.ascii);
+        }
+    }
 
     return 0;
 }

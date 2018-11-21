@@ -2,8 +2,9 @@
 #define VGA_H
 
 #include <stdint.h>
+#include "../../Assembly/io.h"
 
-#define VGA_BASE_ADDR 0xB8000
+#define VGA_BASE_ADDR 0xC00B8000
 #define VGA_SCREEN_COLUMNS 80
 #define VGA_SCREEN_ROWS 25
 
@@ -73,6 +74,7 @@ typedef union screen
 } screen;
 
 // Functions for users
+void vga_init();
 void vga_printchar(char c);
 void vga_printchar_color(char c, vga_color * color);
 void vga_printstring(char * str);
@@ -95,10 +97,17 @@ vga_screen_pos vga_get_cursor_pos();
 void vga_clear_screen();
 void vga_change_printing_screen(uint8_t a);
 void vga_copy_screen(uint8_t from, uint8_t to);
+void vga_cursor_on();
+void vga_cursor_off();
+
 
 // Helpers
 void vga_newline();
 uint16_t vga_calcualte_position_with_offset(uint16_t x, uint16_t y);
 uint16_t vga_calcualte_position_without_offset(uint16_t x, uint16_t y);
+void vga_enable_cursor(uint8_t cursor_start, uint8_t cursor_end);
+void vga_disable_cursor();
+void vga_update_cursor(uint16_t x, uint16_t y);
+void vga_update_cursor_struct(vga_screen_pos pos);
 
 #endif
