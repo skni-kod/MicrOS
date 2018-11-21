@@ -11,7 +11,11 @@ void paging_init()
 
 void paging_remove_identity()
 {
-    page_directory[0].present = 0;
+    // Remove 24 megabytes of identity mapping
+    for(int i=0; i<6; i++)
+    {
+        page_directory[i].present = 0;
+    }
 }
 
 void paging_add_stack_guard()
