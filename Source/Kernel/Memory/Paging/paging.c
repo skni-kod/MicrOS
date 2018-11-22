@@ -7,9 +7,6 @@ void paging_init()
 {
     paging_remove_identity();
     paging_add_stack_guard();
-
-    paging_map_page(0x00000000, 0xc0000000);
-    paging_map_page(0x00400000, 0xc0400000);
 }
 
 void paging_remove_identity()

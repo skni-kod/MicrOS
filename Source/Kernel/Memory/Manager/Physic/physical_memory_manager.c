@@ -44,7 +44,7 @@ void physical_memory_init()
     }
 }
 
-int32_t physical_memory_alloc_page()
+uint32_t physical_memory_alloc_page()
 {
     for(int i=0; i<1024; i++)
     {
@@ -55,7 +55,7 @@ int32_t physical_memory_alloc_page()
         }
     }
 
-    return -1;
+    return 0;
 }
 
 bool physical_memory_dealloc_page(uint32_t index)
