@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include "paging_table_entry.h"
+#include "../../Misc/panicScreen.h"
 
 void paging_init();
 void paging_remove_identity();

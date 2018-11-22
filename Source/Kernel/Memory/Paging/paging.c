@@ -59,7 +59,7 @@ int32_t paging_get_first_free_page_index(uint32_t from_index)
         }
     }
 
-    return -1;
+    showPanicScreen(0xA0, "Out of memory");
 }
 
 uint32_t paging_get_physical_index_of_virtual_page(uint32_t page_index)
