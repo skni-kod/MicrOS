@@ -27,17 +27,14 @@ void paging_add_stack_guard()
     page_with_stack->present = 0;
 }
 
-void paging_map_page(uint32_t physical_address, uint32_t virtual_address)
+void paging_map_page(uint32_t physical_page_index, uint32_t virtual_page_index)
 {
-    // Page directory index = virtual address / 1024 / 1024 / 4 = (4kb blocks);
-    uint32_t page_directory_index = (virtual_address >> 12) / 1024;
-
-    paging_table_entry* page_directory = PAGE_DIRECTORY_ADDRESS + (page_directory_index * 4);
-    paging_table_entry* page_table = 0xC0000000 + (page_directory->physical_page_address << 12);
+    paging_table_entry* page_directory = PAGE_DIRECTORY_ADDRESS + (virtual_page_index * 4);
+    paging_table_entry* page_table = page_tables + (virtual_page_index * 1024);
 
     for(int i=0; i<1024; i++)
     {
-        page_table[i].physical_page_address = (physical_address >> 12) + i;
+        page_table[i].physical_page_address = (physical_page_index << 12) + i;
         page_table[i].present = 1;
     }
 
@@ -46,12 +43,9 @@ void paging_map_page(uint32_t physical_address, uint32_t virtual_address)
     page_directory->read_write = 1;
 }
 
-void paging_unmap_page(uint32_t virtual_address)
+void paging_unmap_page(uint32_t page_index)
 {
-    // Page directory index = virtual address / 1024 / 1024 / 4 = (4kb blocks);
-    uint32_t page_directory_index = (virtual_address >> 12) / 1024;
-    
-    paging_table_entry* page_directory = PAGE_DIRECTORY_ADDRESS + (page_directory_index * 4);
+    paging_table_entry* page_directory = PAGE_DIRECTORY_ADDRESS + (page_index * 4);
     page_directory->present = 0;
 }
 
@@ -66,4 +60,12 @@ int32_t paging_get_first_free_page_index(uint32_t from_index)
     }
 
     return -1;
+}
+
+uint32_t paging_get_physical_address_of_virtual_page(uint32_t page_index)
+{
+    paging_table_entry* page_directory = PAGE_DIRECTORY_ADDRESS + (page_index * 4);
+    paging_table_entry* page_table = 0xC0000000 + ((uint32_t)page_directory->physical_page_address << 12);
+
+    return page_table->physical_page_address << 12;
 }
