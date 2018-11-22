@@ -57,3 +57,16 @@ void paging_unmap_page(uint32_t virtual_address)
     paging_table_entry* page_directory = PAGE_DIRECTORY_ADDRESS + (page_directory_index * 4);
     page_directory->present = 0;
 }
+
+int32_t paging_get_first_free_page_index(uint32_t from_index)
+{
+    for(int i=from_index; i<1024; i++)
+    {
+        if(page_directory[i].present == 0)
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
