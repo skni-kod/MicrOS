@@ -62,10 +62,10 @@ int32_t paging_get_first_free_page_index(uint32_t from_index)
     return -1;
 }
 
-uint32_t paging_get_physical_address_of_virtual_page(uint32_t page_index)
+uint32_t paging_get_physical_index_of_virtual_page(uint32_t page_index)
 {
     paging_table_entry* page_directory = PAGE_DIRECTORY_ADDRESS + (page_index * 4);
     paging_table_entry* page_table = 0xC0000000 + ((uint32_t)page_directory->physical_page_address << 12);
 
-    return page_table->physical_page_address << 12;
+    return page_table->physical_page_address;
 }
