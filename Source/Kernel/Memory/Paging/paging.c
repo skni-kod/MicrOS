@@ -69,3 +69,9 @@ uint32_t paging_get_physical_index_of_virtual_page(uint32_t page_index)
 
     return page_table->physical_page_address;
 }
+
+bool paging_is_page_mapped(uint32_t page_index)
+{
+    paging_table_entry* page_directory = PAGE_DIRECTORY_ADDRESS + (page_index * 4);
+    return page_directory->present;
+}

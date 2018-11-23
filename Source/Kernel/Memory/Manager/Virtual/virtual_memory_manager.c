@@ -20,6 +20,21 @@ bool virtual_memory_dealloc_page(uint32_t page_index)
     physical_memory_dealloc_page(physical_index);
 }
 
+uint32_t virtual_memory_get_allocated_pages_count()
+{
+    uint32_t count = 0;
+    for(int i = base_page_index; i < 1024; i++)
+    {
+        if(paging_is_page_mapped(i))
+        {
+            count++;
+        }
+        else break;
+    }
+
+    return count;
+}
+
 void virtual_memory_set_base_page_index(uint32_t index)
 {
     base_page_index = index;
