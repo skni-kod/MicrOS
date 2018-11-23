@@ -18,6 +18,7 @@ uint32_t* heap_alloc(uint32_t size)
                 current_entry->free = 0;
 
                 current_entry->next->next = 0;
+                current_entry->next->prev = current_entry;
                 current_entry->next->size = updated_free_size;
                 current_entry->next->free = 1;
 
@@ -35,7 +36,20 @@ uint32_t* heap_alloc(uint32_t size)
 
 void heap_dealloc(uint32_t* ptr)
 {
+    heap_entry* entry = (uint32_t)ptr - 8;
+    entry->free = 1;
 
+    if(entry->prev != 0 && entry->prev->free)
+    {
+        entry->prev->size += entry->size + 8;
+        entry->prev->next = entry->next;
+        entry->next->prev = entry->prev;
+    }
+
+    if(entry->next != 0 && entry->next->free)
+    {
+        heap_dealloc((uint32_t)entry->next + 8);
+    }
 }
 
 void heap_set_base_page_index(uint32_t index)
@@ -54,4 +68,5 @@ void heap_clear()
     heap->size = 0xFFFFFFFF - (uint32_t)heap;
     heap->free = 1;
     heap->next = 0;
+    heap->prev = 0;
 }
