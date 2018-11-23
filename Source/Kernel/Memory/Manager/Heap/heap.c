@@ -4,7 +4,33 @@ heap_entry* heap;
 
 uint32_t* heap_alloc(uint32_t size)
 {
+    heap_entry* current_entry = heap;
+    
+    while(true)
+    {
+        if(current_entry->free && current_entry->size >= size)
+        {
+            if(current_entry->next == 0)
+            {
+                uint32_t updated_free_size = current_entry->size - size - 8;
+                current_entry->next = (uint32_t)current_entry + size + 8;
+                current_entry->size = size;
+                current_entry->free = 0;
 
+                current_entry->next->next = 0;
+                current_entry->next->size = updated_free_size;
+                current_entry->next->free = 1;
+
+                return (uint32_t)current_entry + 8;
+            }
+            else
+            {
+
+            }
+        }
+
+        current_entry = current_entry->next;
+    }
 }
 
 void heap_dealloc(uint32_t* ptr)
