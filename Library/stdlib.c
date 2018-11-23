@@ -3,14 +3,14 @@
 void sleep(uint32_t ms)
 {
     // Temporary implementation, for testing purposes
-    uint32_t current_system_clock = call_interrupt_0a(0x01);
+    uint32_t current_system_clock = clock();
     uint32_t target_system_clock;
 
     target_system_clock = current_system_clock + ms;
 
     while(current_system_clock < target_system_clock)
     {
-        current_system_clock = call_interrupt_0a(0x01);
+        current_system_clock = clock();
     }
 }
 
