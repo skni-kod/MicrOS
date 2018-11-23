@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "string.h"
+#include "interrupt_helper.h"
 
 void sleep(uint32_t ms);
 int32_t atoi(const char* string);
