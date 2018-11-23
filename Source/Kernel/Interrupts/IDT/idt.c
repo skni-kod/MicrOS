@@ -108,6 +108,9 @@ void idt_init()
 
     // Load Interrupt Descriptor Table to the register
     __asm__ ("lidt %0" :: "m"(idt_information));
+
+    // Add system calls interrupt handler
+    idt_attach_interrupt_handler(16, syscalls_interrupt_handler);
 }
 
 void idt_set(uint8_t index, uint32_t (*handler)())
@@ -171,16 +174,17 @@ void global_int_handler(interrupt_state state)
     {
         if(interrupt_handlers[i].interrupt_number == state.interrupt_number && interrupt_handlers[i].handler != 0)
         {
-            interrupt_handlers[i].handler();
+            interrupt_handlers[i].handler(&state);
         }
     }
 
-    // This is temporary code which imitates software interrupt and handles sleep function (which is required for
-    // floppy driver). It will be moved to the separate files in da future.
-    if(state.interrupt_number == 48)
-    {
-        state.eax = timer_get_system_clock();
-    }
-
     state.interrupt_number - 32 < 8 ? pic_confirm_master() : pic_confirm_master_and_slave();
+}
+
+void syscalls_interrupt_handler(interrupt_state* state)
+{
+    switch(state->eax)
+    {
+        case 0x01: get_system_clock_call(state); break;
+    }
 }
