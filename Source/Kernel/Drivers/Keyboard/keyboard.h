@@ -1,5 +1,6 @@
 #ifndef KEYBOARD_H   /* Include guard */
 #define KEYBOARD_H
+#pragma pack(1)
 
 #include "../../Interrupts/IDT/idt.h"
 #include "../../Interrupts/PIC/pic.h"
@@ -21,7 +22,7 @@ typedef struct KeyboardStateFlags{
     char num_lock_pressed:1;
     char caps_lock_pressed:1;
     char insert_pressed:1;
-} __attribute__((packed)) KeyboardStateFlags;
+} KeyboardStateFlags;
 
 typedef struct KeyboardExtendedStateFlags{
     char last_E1h:1;
@@ -40,7 +41,7 @@ typedef struct KeyboardExtendedStateFlags{
     char sent_ack:1;
     char led_refresh_pending:1;
     char data_error:1;
-} __attribute__((packed)) KeyboardExtendedStateFlags;
+} KeyboardExtendedStateFlags;
 
 typedef struct ScanAsciiPair{
     unsigned char scancode;

@@ -1,5 +1,6 @@
 #ifndef GDT_ENTRY_H
 #define GDT_ENTRY_H
+#pragma pack(1)
 
 #include <stdint.h>
 
@@ -24,6 +25,6 @@ typedef struct gdt_entry
 
     uint8_t base_24_31;
 
-} __attribute__((packed)) gdt_entry;
+} gdt_entry;
 
 #endif
