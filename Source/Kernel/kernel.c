@@ -27,6 +27,14 @@ void startup()
     vga_init();
     log_info("MicrOS is starting...");
     log_ok("VGA Driver");
+    
+    physical_memory_init();
+    log_ok("Physical Memory");
+    
+    virtual_memory_set_base_page_index(774);
+    heap_set_base_page_index(774);
+    heap_clear();
+    log_ok("Virtual Memory");
 
     pic_init();
     log_ok("Programmable Interrupt Controller");
@@ -57,8 +65,6 @@ int kmain()
     log_ok("READY.");
 
     memory_map_dump();
-
-    physical_memory_init();
     physical_memory_dump();
 
     while(1)
