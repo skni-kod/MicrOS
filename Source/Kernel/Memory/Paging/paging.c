@@ -30,11 +30,13 @@ void paging_add_stack_guard()
 void paging_map_page(uint32_t physical_page_index, uint32_t virtual_page_index)
 {
     paging_table_entry* page_directory = PAGE_DIRECTORY_ADDRESS + (virtual_page_index * 4);
-    paging_table_entry* page_table = page_tables + (virtual_page_index * 1024);
+    paging_table_entry* page_table = (uint32_t)page_tables + (virtual_page_index << 12);
 
     for(int i=0; i<1024; i++)
     {
-        page_table[i].physical_page_address = (physical_page_index << 12) + i;
+        paging_table_entry asd = page_table[i];
+
+        page_table[i].physical_page_address = (physical_page_index * 1024) + i;
         page_table[i].present = 1;
         page_table[i].read_write = 1;
     }
@@ -50,7 +52,7 @@ void paging_unmap_page(uint32_t page_index)
     page_directory->present = 0;
 }
 
-int32_t paging_get_first_free_page_index(uint32_t from_index)
+uint32_t paging_get_first_free_page_index(uint32_t from_index)
 {
     for(int i=from_index; i<1024; i++)
     {
@@ -61,6 +63,7 @@ int32_t paging_get_first_free_page_index(uint32_t from_index)
     }
 
     showPanicScreen(0xA0, "Out of memory");
+    return 0;
 }
 
 uint32_t paging_get_physical_index_of_virtual_page(uint32_t page_index)

@@ -56,6 +56,7 @@ uint32_t physical_memory_alloc_page()
     }
 
     showPanicScreen(0xA0, "Out of memory");
+    return 0;
 }
 
 bool physical_memory_dealloc_page(uint32_t index)
