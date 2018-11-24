@@ -186,5 +186,7 @@ void syscalls_interrupt_handler(interrupt_state* state)
     switch(state->eax)
     {
         case 0x01: get_system_clock_call(state); break;
+        case 0x02: alloc_memory_call(state); break;
+        case 0x03: dealloc_memory_call(state); break;
     }
 }

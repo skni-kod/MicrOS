@@ -12,6 +12,7 @@
 #include "../PIC/pic.h"
 #include "../../Misc/panicScreen.h"
 #include "../Syscalls/time_calls.h"
+#include "../Syscalls/memory_calls.h"
 
 void idt_init();
 void idt_set(uint8_t index, uint32_t (*handler)());
