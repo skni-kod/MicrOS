@@ -26,7 +26,7 @@ void physical_memory_init()
 
         for(int x=start_index; x<=end_index; x++)
         {
-            if(memory_map_entries[i].type != free)
+            if(memory_map_entries[i].type != memory_map_free)
             {
                 physical_entries[x].type = physical_memory_reserved;
             }
