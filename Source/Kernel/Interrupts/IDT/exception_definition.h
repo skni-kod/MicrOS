@@ -8,9 +8,7 @@
 typedef struct exception_definition
 {
     char description[32];
-
-    uint8_t interrupt_number : 7;
-    uint8_t halt : 1;
+    uint8_t interrupt_number;
 } exception_definition;
 
 #endif
