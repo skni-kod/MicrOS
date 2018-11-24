@@ -79,20 +79,26 @@ char *itoa(int input, char *buffer, int base)
 
 void* malloc(size_t size)
 {
-    
+    return call_interrupt_1a(0x02, size);
 }
 
 void* calloc(size_t num, size_t size)
 {
+    void* ptr = malloc(num * size);
+    memset(ptr, 0, num * size);
 
+    return ptr;
 }
 
 void* realloc(void* ptr, size_t size)
 {
+    free(ptr);
+    void* new_ptr = malloc(size);
 
+    memcpy(new_ptr, ptr, size);
 }
 
 void free(void* ptr)
 {
-
+    return call_interrupt_1a(0x03, ptr);
 }
