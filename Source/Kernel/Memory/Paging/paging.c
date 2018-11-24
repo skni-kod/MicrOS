@@ -36,6 +36,7 @@ void paging_map_page(uint32_t physical_page_index, uint32_t virtual_page_index)
     {
         page_table[i].physical_page_address = (physical_page_index << 12) + i;
         page_table[i].present = 1;
+        page_table[i].read_write = 1;
     }
 
     page_directory->physical_page_address = ((uint32_t)page_table - 0xC0000000) >> 12;
