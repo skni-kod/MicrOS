@@ -1,5 +1,6 @@
 #ifndef FLOPPY_HEADER
 #define FLOPPY_HEADER
+#pragma pack(1)
 
 typedef struct floppy_header
 {
@@ -26,6 +27,6 @@ typedef struct floppy_header
     uint32_t volume_id;
     char volume_label[11];
     char system_identifier[8];
-} __attribute__((packed)) floppy_header;
+} floppy_header;
 
 #endif

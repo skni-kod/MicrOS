@@ -1,5 +1,6 @@
 #ifndef PAGE_TABLE_ENTRY_H
 #define PAGE_TABLE_ENTRY_H
+#pragma pack(1)
 
 #include <stdint.h>
 
@@ -17,6 +18,6 @@ typedef struct paging_table_entry
 
     uint8_t available : 3;
     uint32_t physical_page_address : 20;
-} __attribute__((packed)) paging_table_entry;
+} paging_table_entry;
 
 #endif

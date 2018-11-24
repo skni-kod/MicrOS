@@ -12,6 +12,8 @@
 #include "Logger/logger.h"
 #include "Memory/GDT/gdt.h"
 #include "Memory/Paging/paging.h"
+#include "Memory/Map/memory_map.h"
+#include "Memory/Manager/Physic/physical_memory_manager.h"
 #include "Misc/panicScreen.h"
 #include <stdint.h>
 
@@ -25,7 +27,7 @@ void startup()
     vga_init();
     log_info("MicrOS is starting...");
     log_ok("VGA Driver");
-    
+
     pic_init();
     log_ok("Programmable Interrupt Controller");
 
@@ -53,6 +55,11 @@ int kmain()
     log_info("Hello, World!");
     //whatIsLove();
     log_ok("READY.");
+
+    memory_map_dump();
+
+    physical_memory_init();
+    physical_memory_dump();
 
     while(1)
     {
@@ -83,6 +90,10 @@ int kmain()
             else if(c.scancode == 63)
             {
                 showPanicScreen(0x42, "Someone ask Question about Life, the Universe and Evertything");
+            }
+            else if(c.scancode == 64)
+            {
+                memoryViewer();
             }
             else
                 vga_printchar(c.ascii);

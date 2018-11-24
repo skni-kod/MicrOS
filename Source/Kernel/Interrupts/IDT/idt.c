@@ -7,38 +7,38 @@ volatile interrupt_handler_definition interrupt_handlers[IDT_MAX_INTERRUPT_HANDL
 
 exception_definition exceptions[] =
 {
-    { .interrupt_number = 0,  .halt = true, .description = "Divide-by-zero error", },
-    { .interrupt_number = 1,  .halt = true, .description = "Debug", },
-    { .interrupt_number = 2,  .halt = true, .description = "Non-maskable Interrupt", },
-    { .interrupt_number = 3,  .halt = true, .description = "Breakpoint", },
-    { .interrupt_number = 4,  .halt = true, .description = "Overflow", },
-    { .interrupt_number = 5,  .halt = true, .description = "Bound Range Exceeded", },
-    { .interrupt_number = 6,  .halt = true, .description = "Invalid Opcode", },
-    { .interrupt_number = 7,  .halt = true, .description = "Device Not Available", },
-    { .interrupt_number = 8,  .halt = true, .description = "Double Fault", },
-    { .interrupt_number = 9,  .halt = true, .description = "Coprocessor Segment Overrun", },
-    { .interrupt_number = 10, .halt = true, .description = "Invalid TSS", },
-    { .interrupt_number = 11, .halt = true, .description = "Segment Not Present", },
-    { .interrupt_number = 12, .halt = true, .description = "Stack-Segment Fault", },
-    { .interrupt_number = 13, .halt = true, .description = "General Protection Fault", },
-    { .interrupt_number = 14, .halt = true, .description = "Page Fault", },
-    { .interrupt_number = 15, .halt = true, .description = "Reserved", },
-    { .interrupt_number = 16, .halt = true, .description = "x87 Floating-Point Exception", },
-    { .interrupt_number = 17, .halt = true, .description = "Alignment Check", },
-    { .interrupt_number = 18, .halt = true, .description = "Machine Check", },
-    { .interrupt_number = 19, .halt = true, .description = "SIMD Floating-Point Exception", },
-    { .interrupt_number = 20, .halt = true, .description = "Virtualization Exception", },
-    { .interrupt_number = 21, .halt = true, .description = "Reserved", },
-    { .interrupt_number = 22, .halt = true, .description = "Reserved", },
-    { .interrupt_number = 23, .halt = true, .description = "Reserved", },
-    { .interrupt_number = 24, .halt = true, .description = "Reserved", },
-    { .interrupt_number = 25, .halt = true, .description = "Reserved", },
-    { .interrupt_number = 26, .halt = true, .description = "Reserved", },
-    { .interrupt_number = 27, .halt = true, .description = "Reserved", },
-    { .interrupt_number = 28, .halt = true, .description = "Reserved", },
-    { .interrupt_number = 29, .halt = true, .description = "Reserved", },
-    { .interrupt_number = 30, .halt = true, .description = "Security Exception", },
-    { .interrupt_number = 31, .halt = true, .description = "Reserved", }
+    { .interrupt_number = 0,  .description = "Divide-by-zero error", },
+    { .interrupt_number = 1,  .description = "Debug", },
+    { .interrupt_number = 2,  .description = "Non-maskable Interrupt", },
+    { .interrupt_number = 3,  .description = "Breakpoint", },
+    { .interrupt_number = 4,  .description = "Overflow", },
+    { .interrupt_number = 5,  .description = "Bound Range Exceeded", },
+    { .interrupt_number = 6,  .description = "Invalid Opcode", },
+    { .interrupt_number = 7,  .description = "Device Not Available", },
+    { .interrupt_number = 8,  .description = "Double Fault", },
+    { .interrupt_number = 9,  .description = "Coprocessor Segment Overrun", },
+    { .interrupt_number = 10, .description = "Invalid TSS", },
+    { .interrupt_number = 11, .description = "Segment Not Present", },
+    { .interrupt_number = 12, .description = "Stack-Segment Fault", },
+    { .interrupt_number = 13, .description = "General Protection Fault", },
+    { .interrupt_number = 14, .description = "Page Fault", },
+    { .interrupt_number = 15, .description = "Reserved", },
+    { .interrupt_number = 16, .description = "x87 Floating-Point Exception", },
+    { .interrupt_number = 17, .description = "Alignment Check", },
+    { .interrupt_number = 18, .description = "Machine Check", },
+    { .interrupt_number = 19, .description = "SIMD Floating-Point Exception", },
+    { .interrupt_number = 20, .description = "Virtualization Exception", },
+    { .interrupt_number = 21, .description = "Reserved", },
+    { .interrupt_number = 22, .description = "Reserved", },
+    { .interrupt_number = 23, .description = "Reserved", },
+    { .interrupt_number = 24, .description = "Reserved", },
+    { .interrupt_number = 25, .description = "Reserved", },
+    { .interrupt_number = 26, .description = "Reserved", },
+    { .interrupt_number = 27, .description = "Reserved", },
+    { .interrupt_number = 28, .description = "Reserved", },
+    { .interrupt_number = 29, .description = "Reserved", },
+    { .interrupt_number = 30, .description = "Security Exception", },
+    { .interrupt_number = 31, .description = "Reserved", }
 };
 
 void idt_init()
@@ -108,6 +108,9 @@ void idt_init()
 
     // Load Interrupt Descriptor Table to the register
     __asm__ ("lidt %0" :: "m"(idt_information));
+
+    // Add system calls interrupt handler
+    idt_attach_interrupt_handler(16, syscalls_interrupt_handler);
 }
 
 void idt_set(uint8_t index, uint32_t (*handler)())
@@ -155,11 +158,9 @@ void global_exc_handler(interrupt_state state, int error_code)
 {
     for(int i=0; i<32; i++)
     {
-        if(exceptions[i].halt && exceptions[i].interrupt_number == state.interrupt_number)
+        if(exceptions[i].interrupt_number == state.interrupt_number)
         {
             showPanicScreen(state.interrupt_number, exceptions[i].description);
-             __asm__ ( "hlt " );
-
             break;
         }
     }
@@ -171,16 +172,19 @@ void global_int_handler(interrupt_state state)
     {
         if(interrupt_handlers[i].interrupt_number == state.interrupt_number && interrupt_handlers[i].handler != 0)
         {
-            interrupt_handlers[i].handler();
+            interrupt_handlers[i].handler(&state);
         }
     }
 
-    // This is temporary code which imitates software interrupt and handles sleep function (which is required for
-    // floppy driver). It will be moved to the separate files in da future.
-    if(state.interrupt_number == 48)
-    {
-        state.eax = timer_get_system_clock();
-    }
-
     state.interrupt_number - 32 < 8 ? pic_confirm_master() : pic_confirm_master_and_slave();
+}
+
+void syscalls_interrupt_handler(interrupt_state* state)
+{
+    switch(state->eax)
+    {
+        case 0x01: get_system_clock_call(state); break;
+        case 0x02: alloc_memory_call(state); break;
+        case 0x03: dealloc_memory_call(state); break;
+    }
 }

@@ -1,6 +1,9 @@
 #ifndef FLOPPY_H
 #define FLOPPY_H
 
+#define DMA_ADDRESS 0x0500
+#define FLOPPY_HEADER_DATA 0xc0007c00
+
 #define DEVICE_NUMBER 0
 #define IDLE_TIME 3000
 
