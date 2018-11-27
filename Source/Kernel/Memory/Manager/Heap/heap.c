@@ -33,7 +33,7 @@ void* heap_alloc(uint32_t size)
                     while(size > current_entry->size + ENTRY_HEADER_SIZE)
                     {
                         virtual_memory_alloc_page();
-                        current_entry->size += 0x1000;
+                        current_entry->size += 4 * 1024 * 1024;
                     }
 
                     continue;
@@ -77,7 +77,7 @@ void heap_clear()
         heap = virtual_memory_alloc_page() * 1024 * 1024 * 4;
     }
 
-    heap->size = 0x1000;
+    heap->size = 4 * 1024 * 1024;
     heap->free = 1;
     heap->next = 0;
     heap->prev = 0;
