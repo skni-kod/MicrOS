@@ -2,6 +2,8 @@
 #define FLOPPY_HEADER
 #pragma pack(1)
 
+#include <stdint.h>
+
 typedef struct floppy_header
 {
     // Bios Parameter Block
