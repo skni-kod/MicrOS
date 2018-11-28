@@ -31,7 +31,7 @@
 #include "../../Timer/timer.h"
 
 void floppy_init();
-void floppy_lba_to_chs(uint8_t lba, uint8_t *head, uint8_t *track, uint8_t *sector);
+void floppy_lba_to_chs(uint16_t lba, uint8_t *head, uint8_t *track, uint8_t *sector);
 uint8_t floppy_reset();
 uint8_t floppy_wait_until_ready();
 uint8_t floppy_send_command(uint8_t cmd);
@@ -39,8 +39,8 @@ uint8_t floppy_read_data();
 void floppy_confirm_interrupt(uint32_t* st0, uint32_t* cylinder);
 void floppy_set_parameters(uint32_t step_rate, uint32_t head_load_time, uint32_t head_unload_time, bool dma);
 uint8_t floppy_calibrate();
-uint8_t* floppy_read_sector(uint8_t sector);
-void floppy_write_sector(uint8_t sector, uint8_t* content);
+uint8_t* floppy_read_sector(uint16_t sector);
+void floppy_write_sector(uint16_t sector, uint8_t* content);
 uint8_t* floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sector, bool read);
 void floppy_enable_motor();
 void floppy_disable_motor();
