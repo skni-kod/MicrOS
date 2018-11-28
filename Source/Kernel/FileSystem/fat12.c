@@ -21,20 +21,27 @@ void fat12_init()
 
 void fat12_load_fat()
 {
-    for(int i=0; i<fat_header_data->sectors_per_fat - 1; i++)
+    for(int i=1; i<fat_header_data->sectors_per_fat; i++)
     {
-        uint8_t* buffer = floppy_read_sector(33);
-        memcpy((uint32_t)fat + (i * 512), buffer, 512);
+        uint8_t* buffer = floppy_read_sector(i);
+        memcpy((uint32_t)fat + ((i - 1) * 512), buffer, 512);
     }
 }
 
 void fat12_load_root()
 {
-    uint8_t root_first_sector = 1 + (fat_header_data->sectors_per_fat / fat_header_data->bytes_per_sector * 2);
-    for(int i=root_first_sector; i<root_first_sector + fat_header_data->directory_entries; i++)
+    uint8_t root_first_sector = 1 + (fat_header_data->sectors_per_fat * 2);
+    uint8_t root_sectors_count = (fat_header_data->directory_entries * 32) / fat_header_data->bytes_per_sector;
+
+    for(int i=root_first_sector; i<root_first_sector + root_sectors_count; i++)
     {
         uint8_t* buffer = floppy_read_sector(i);
         memcpy((uint32_t)root + ((i - root_first_sector) * 512), buffer, 512);
+    }
+
+    for(int i=0; i<512; i++)
+    {
+        vga_printchar(root[i]);
     }
 }
 
