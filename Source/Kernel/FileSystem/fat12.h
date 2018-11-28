@@ -9,6 +9,7 @@
 
 void fat12_init();
 void fat12_load_fat();
+void fat12_load_root();
 uint16_t fat12_read_sector_value(uint32_t sector_number);
 
 #endif

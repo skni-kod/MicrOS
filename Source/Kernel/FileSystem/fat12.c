@@ -1,24 +1,40 @@
 #include "fat12.h"
 
 volatile floppy_header* fat_header_data = FLOPPY_HEADER_DATA;
-volatile char* fat;
+volatile uint8_t* fat;
+volatile uint8_t* root;
 
 uint32_t fat_length;
+uint32_t directory_length;
 
 void fat12_init()
 {
     fat_length = fat_header_data->bytes_per_sector * fat_header_data->sectors_per_fat;
     fat = malloc(fat_length);
 
+    directory_length = fat_header_data->directory_entries * 32;
+    root = malloc(directory_length);
+
     fat12_load_fat();
+    fat12_load_root();
 }
 
 void fat12_load_fat()
 {
-    for(int i=0; i<fat_header_data->sectors_per_fat; i++)
+    for(int i=0; i<fat_header_data->sectors_per_fat - 1; i++)
     {
-        uint8_t* buffer = floppy_read_sector(i + 1);
-        memcpy(fat + (i * 512), buffer, 512);
+        uint8_t* buffer = floppy_read_sector(33);
+        memcpy((uint32_t)fat + (i * 512), buffer, 512);
+    }
+}
+
+void fat12_load_root()
+{
+    uint8_t root_first_sector = 1 + (fat_header_data->sectors_per_fat / fat_header_data->bytes_per_sector * 2);
+    for(int i=root_first_sector; i<root_first_sector + fat_header_data->directory_entries; i++)
+    {
+        uint8_t* buffer = floppy_read_sector(i);
+        memcpy((uint32_t)root + ((i - root_first_sector) * 512), buffer, 512);
     }
 }
 
