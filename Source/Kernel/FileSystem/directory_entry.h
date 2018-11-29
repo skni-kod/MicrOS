@@ -61,8 +61,8 @@ typedef struct directory_entry_access_rights
 
 typedef struct directory_entry
 {
-    char filename[8];
-    char extension[3];
+    uint8_t filename[8];
+    uint8_t extension[3];
 
     directory_entry_file_attributes file_attributes;
     directory_entry_user_attribtes user_attributes;
