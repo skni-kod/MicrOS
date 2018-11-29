@@ -67,7 +67,7 @@ typedef struct directory_entry
     directory_entry_file_attributes file_attributes;
     directory_entry_user_attribtes user_attributes;
 
-    char first_character;
+    uint8_t first_character;
 
     directory_entry_time create_time;
     directory_entry_date create_date;

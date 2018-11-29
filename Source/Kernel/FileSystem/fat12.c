@@ -2,7 +2,7 @@
 
 volatile floppy_header* fat_header_data = FLOPPY_HEADER_DATA;
 volatile uint8_t* fat;
-volatile uint8_t* root;
+volatile directory_entry* root;
 
 uint32_t fat_length;
 uint32_t directory_length;
@@ -38,11 +38,6 @@ void fat12_load_root()
         uint8_t* buffer = floppy_read_sector(i);
         memcpy((uint32_t)root + ((i - root_first_sector) * 512), buffer, 512);
     }
-
-    for(int i=0; i<512; i++)
-    {
-        vga_printchar(root[i]);
-    }
 }
 
 uint16_t fat12_read_sector_value(uint32_t sector_number)
@@ -64,4 +59,37 @@ uint16_t fat12_read_sector_value(uint32_t sector_number)
 
         return high_byte << 4 | low_byte >> 4;
     }
+}
+
+vector* fat12_parse_path(char* path)
+{
+    vector* chunks = malloc(sizeof(vector));
+    uint8_t index = 0;
+
+    while(*path != 0)
+    {
+        if(*path == '/')
+        {
+            char* string = calloc(12, 1);
+            vector_add(chunks, string);
+
+            index = 0;
+        }
+        else
+        {
+            char* string = chunks->data[chunks->count - 1];
+            string[index] = *path;
+            index++;
+        }
+
+        path++;
+    }
+
+    if(index == 0)
+    {
+        free(chunks->data[chunks->count - 1]);
+        vector_remove(chunks, chunks->count - 1);
+    }
+
+    return chunks;
 }
