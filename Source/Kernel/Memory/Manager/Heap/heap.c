@@ -54,7 +54,11 @@ void heap_dealloc(uint32_t* ptr)
     {
         entry->prev->size += entry->size + ENTRY_HEADER_SIZE;
         entry->prev->next = entry->next;
-        entry->next->prev = entry->prev;
+
+        if(entry->next != 0)
+        {
+            entry->next->prev = entry->prev;
+        }
     }
 
     if(entry->next != 0 && entry->next->free)
