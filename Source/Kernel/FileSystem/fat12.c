@@ -93,3 +93,37 @@ vector* fat12_parse_path(char* path)
 
     return chunks;
 }
+
+vector* fat12_list(char* path)
+{
+    vector* chunks = fat12_parse_path(path);
+    directory_entry* current_file = root;
+    uint32_t current_chunk_index = 0;
+
+    /*for(int i=0; i<fat_header_data->directory_entries; i++)
+    {
+        uint8_t full_filename[12];
+        full_filename[9] = '.';
+
+        memcpy(full_filename, current_file->filename, 8);
+        memcpy(full_filename + 9, current_file->extension, 3);
+
+        current_file++;
+    }*/
+
+    vector* files = malloc(sizeof(vector));
+    for(int i=0; i<fat_header_data->directory_entries; i++)
+    {
+        uint8_t first_filename_char = current_file->filename[0];
+        if(first_filename_char != 0 && first_filename_char != 229)
+        {
+            vector_add(files, current_file);
+        }
+        current_file++;
+    }
+
+    vector_clear(chunks);
+    free(chunks);
+    
+    return files;
+}

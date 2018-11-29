@@ -15,5 +15,6 @@ void fat12_load_root();
 uint16_t fat12_read_sector_value(uint32_t sector_number);
 
 vector* fat12_parse_path(char* path);
+vector* fat12_list(char* path);
 
 #endif
