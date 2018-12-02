@@ -64,6 +64,8 @@ uint16_t fat12_read_sector_value(uint32_t sector_number)
 vector* fat12_parse_path(char* path)
 {
     vector* chunks = malloc(sizeof(vector));
+    vector_init(chunks);
+
     uint8_t index = 0;
 
     while(*path != 0)
@@ -71,6 +73,7 @@ vector* fat12_parse_path(char* path)
         if(*path == '/')
         {
             char* string = calloc(12, 1);
+            memset(string, ' ', 12);
             vector_add(chunks, string);
 
             index = 0;
@@ -85,6 +88,11 @@ vector* fat12_parse_path(char* path)
         path++;
     }
 
+    for(int i=0; i<chunks->count; i++)
+    {
+        fat12_normalise_filename(chunks->data[i]);
+    }
+
     if(index == 0)
     {
         free(chunks->data[chunks->count - 1]);
@@ -94,24 +102,57 @@ vector* fat12_parse_path(char* path)
     return chunks;
 }
 
+void fat12_normalise_filename(char* filename)
+{
+    char* ptr = filename;
+    for(int i=0; i<12; i++)
+    {
+        if(*ptr == '.')
+        {
+            if(i < 9)
+            {
+                memmove(filename + 8, ptr, 4);
+                memset(filename + i, ' ', 11 - i - 3);
+                break;
+            }
+        }
+
+        ptr++;
+    }
+}
+
 vector* fat12_list(char* path)
 {
     vector* chunks = fat12_parse_path(path);
     directory_entry* current_file = root;
     uint32_t current_chunk_index = 0;
 
-    /*for(int i=0; i<fat_header_data->directory_entries; i++)
+    for(int i=0; i<fat_header_data->directory_entries; i++)
     {
         uint8_t full_filename[12];
+        memset(full_filename, ' ', 12);
+
         full_filename[9] = '.';
 
         memcpy(full_filename, current_file->filename, 8);
         memcpy(full_filename + 9, current_file->extension, 3);
 
+        uint8_t first_filename_char = current_file->filename[0];
+        if(first_filename_char != 0 && first_filename_char != 229)
+        {
+            char* qwe = chunks->data[current_chunk_index];
+            if(memcmp(full_filename, chunks->data[current_chunk_index], 12) == 0)
+            {
+                
+            }
+        }
+
         current_file++;
-    }*/
+    }
 
     vector* files = malloc(sizeof(vector));
+    vector_init(files);
+
     for(int i=0; i<fat_header_data->directory_entries; i++)
     {
         uint8_t first_filename_char = current_file->filename[0];
