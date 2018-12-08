@@ -149,12 +149,15 @@ vector* fat12_list(char* path)
     for(int i=0; i<fat_header_data->directory_entries; i++)
     {
         uint8_t full_filename[12];
+
         memset(full_filename, ' ', 12);
-
-        //full_filename[8] = '.';
-
         memcpy(full_filename, current_file->filename, 8);
-        memcpy(full_filename + 9, current_file->extension, 3);
+
+        if(!current_file->file_attributes.subdirectory)
+        {
+            full_filename[8] = '.';
+            memcpy(full_filename + 9, current_file->extension, 3);
+        }
 
         uint8_t first_filename_char = current_file->filename[0];
         if(first_filename_char != 0 && first_filename_char != 229)
@@ -185,7 +188,7 @@ vector* fat12_list(char* path)
     for(int i=0; i<fat_header_data->directory_entries; i++)
     {
         uint8_t first_filename_char = current_file->filename[0];
-        if(first_filename_char != 0 && first_filename_char != 229)
+        if(first_filename_char != 0 && first_filename_char >= 32 && first_filename_char <= 126)
         {
             vector_add(files, current_file);
         }
