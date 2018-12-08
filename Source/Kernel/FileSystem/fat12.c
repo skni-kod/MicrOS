@@ -231,6 +231,11 @@ uint8_t* fat12_read_file(char* path, uint32_t read_sectors, uint32_t* read_size)
             }
         }
 
+        if(i + 1 == fat_header_data->directory_entries)
+        {
+            return NULL;
+        }
+
         current_file_ptr++;
     }
 
