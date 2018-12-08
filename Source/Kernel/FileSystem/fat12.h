@@ -12,7 +12,7 @@
 void fat12_init();
 void fat12_load_fat();
 void fat12_load_root();
-uint16_t fat12_read_sector_value(uint32_t sector_number);
+uint8_t* fat12_load_file_from_sector(uint16_t sector, uint16_t* read_sectors_count);
 
 vector* fat12_parse_path(char* path);
 vector* fat12_list(char* path);
