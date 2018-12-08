@@ -126,7 +126,7 @@ uint8_t* fat12_load_file_from_sector(uint16_t sector, uint16_t* read_sectors_cou
     uint8_t* buffer = malloc(512);
 
     *read_sectors_count = 0;
-    while(sector != 0xFFF)
+    while(sector != 0xFF && sector != 0xFFF)
     {
         buffer = realloc(buffer, 512 * (*read_sectors_count + 1));
 
@@ -140,41 +140,32 @@ uint8_t* fat12_load_file_from_sector(uint16_t sector, uint16_t* read_sectors_cou
     return buffer;
 }
 
-vector* fat12_list(char* path)
+directory_entry* fat12_get_directory(char* path)
 {
     vector* chunks = fat12_parse_path(path);
-    directory_entry* current_file = root;
-    directory_entry* current_file_ptr = current_file;
+    directory_entry* current_directory = root;
+    directory_entry* current_file_ptr = current_directory;
     uint32_t current_chunk_index = 0;
 
     for(int i=0; i<fat_header_data->directory_entries; i++)
     {
         uint8_t full_filename[12];
+        fat12_merge_filename_and_extension(current_file_ptr, full_filename);
 
-        memset(full_filename, ' ', 12);
-        memcpy(full_filename, current_file_ptr->filename, 8);
-
-        if(!current_file_ptr->file_attributes.subdirectory)
-        {
-            full_filename[8] = '.';
-            memcpy(full_filename + 9, current_file_ptr->extension, 3);
-        }
-
-        uint8_t first_filename_char = current_file_ptr->filename[0];
-        if(first_filename_char != 0 && first_filename_char != 229)
+        if(fat12_is_entry_valid(current_file_ptr) && current_file_ptr->file_attributes.subdirectory)
         {
             if(memcmp(full_filename, chunks->data[current_chunk_index], 12) == 0)
             {
-                if(current_file != root)
+                if(current_directory != root)
                 {
-                    free(current_file);
+                    free(current_directory);
                 }
 
                 uint16_t read_sectors_count = 0;
                 uint8_t* directory = fat12_load_file_from_sector(current_file_ptr->first_sector, &read_sectors_count);
 
-                current_file = directory;
-                current_file_ptr = current_file;
+                current_directory = directory;
+                current_file_ptr = current_directory;
                 if(current_chunk_index == chunks->count - 1)
                 {
                     break;
@@ -182,6 +173,7 @@ vector* fat12_list(char* path)
                 else
                 {
                     i = 0;
+                    current_chunk_index++;
                 }
             }
         }
@@ -194,21 +186,25 @@ vector* fat12_list(char* path)
         current_file_ptr++;
     }
 
-    vector* files = malloc(sizeof(vector));
-    vector_init(files);
-
-    for(int i=0; i<fat_header_data->directory_entries; i++)
-    {
-        uint8_t first_filename_char = current_file_ptr->filename[0];
-        if(first_filename_char != 0 && first_filename_char >= 32 && first_filename_char <= 126)
-        {
-            vector_add(files, current_file_ptr);
-        }
-        current_file_ptr++;
-    }
-
     vector_clear(chunks);
     free(chunks);
     
-    return files;
+    return current_directory;
+}
+
+bool fat12_is_entry_valid(directory_entry* entry)
+{
+    return entry->filename[0] >= 32 && entry->filename[0] <= 126;
+}
+
+void fat12_merge_filename_and_extension(directory_entry* entry, uint8_t* buffer)
+{
+    memset(buffer, ' ', 12);
+    memcpy(buffer, entry->filename, 8);
+
+    if(!entry->file_attributes.subdirectory)
+    {
+        buffer[8] = '.';
+        memcpy(buffer + 9, entry->extension, 3);
+    }
 }
