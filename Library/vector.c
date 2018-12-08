@@ -54,6 +54,11 @@ void vector_clear(vector* vector)
 {
 	if (vector->size > 0)
 	{
+		for(int i=0; i<vector->count; i++)
+		{
+			free(vector->data[i]);
+		}
+
 		free(vector->data);
 		vector->size = 0;
 		vector->count = 0;
