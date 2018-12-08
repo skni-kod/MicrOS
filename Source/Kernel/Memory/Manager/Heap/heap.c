@@ -86,3 +86,28 @@ void heap_clear()
     heap->next = 0;
     heap->prev = 0;
 }
+
+void heap_dump()
+{
+    heap_entry* current_entry = heap;
+
+    uint32_t index = 0;
+    char buffer[16];
+
+    while(current_entry != 0)
+    {
+        vga_printstring("Entry id=");
+        itoa(index, buffer, 10);
+        vga_printstring(buffer);
+        vga_printstring(", free=");
+        itoa(current_entry->free, buffer, 10);
+        vga_printstring(buffer);
+        vga_printstring(", size=");
+        itoa(current_entry->size, buffer, 10);
+        vga_printstring(buffer);
+        vga_printstring("\n");
+
+        current_entry = current_entry->next;
+        index++;
+    }
+}
