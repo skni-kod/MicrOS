@@ -112,7 +112,7 @@ int kmain()
     memory_map_dump();
 
     physical_memory_init();
-    physical_memory_dump();
+    //physical_memory_dump();
 
     while(1)
     {
