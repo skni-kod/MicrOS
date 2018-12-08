@@ -126,7 +126,7 @@ uint8_t* fat12_load_file_from_sector(uint16_t sector, uint16_t* read_sectors_cou
     uint8_t* buffer = malloc(512);
 
     *read_sectors_count = 0;
-    while(sector != 0xFF)
+    while(sector != 0xFFF)
     {
         buffer = realloc(buffer, 512 * (*read_sectors_count + 1));
 
@@ -138,4 +138,62 @@ uint8_t* fat12_load_file_from_sector(uint16_t sector, uint16_t* read_sectors_cou
     }
 
     return buffer;
+}
+
+vector* fat12_list(char* path)
+{
+    vector* chunks = fat12_parse_path(path);
+    directory_entry* current_file = root;
+    uint32_t current_chunk_index = 0;
+
+    for(int i=0; i<fat_header_data->directory_entries; i++)
+    {
+        uint8_t full_filename[12];
+        memset(full_filename, ' ', 12);
+
+        //full_filename[8] = '.';
+
+        memcpy(full_filename, current_file->filename, 8);
+        memcpy(full_filename + 9, current_file->extension, 3);
+
+        uint8_t first_filename_char = current_file->filename[0];
+        if(first_filename_char != 0 && first_filename_char != 229)
+        {
+            if(memcmp(full_filename, chunks->data[current_chunk_index], 12) == 0)
+            {
+                uint16_t read_sectors_count = 0;
+                uint8_t* directory = fat12_load_file_from_sector(current_file->first_sector, &read_sectors_count);
+
+                current_file = directory;
+                if(current_chunk_index == chunks->count - 1)
+                {
+                    break;
+                }
+                else
+                {
+                    i = 0;
+                }
+            }
+        }
+
+        current_file++;
+    }
+
+    vector* files = malloc(sizeof(vector));
+    vector_init(files);
+
+    for(int i=0; i<fat_header_data->directory_entries; i++)
+    {
+        uint8_t first_filename_char = current_file->filename[0];
+        if(first_filename_char != 0 && first_filename_char != 229)
+        {
+            vector_add(files, current_file);
+        }
+        current_file++;
+    }
+
+    vector_clear(chunks);
+    free(chunks);
+    
+    return files;
 }
