@@ -61,7 +61,7 @@ uint16_t fat12_read_sector_value(uint32_t sector_number)
     }
 }
 
-vector* fat12_parse_path(char* path, bool skip_filename)
+vector* fat12_parse_path(char* path)
 {
     vector* chunks = malloc(sizeof(vector));
     vector_init(chunks);
@@ -84,11 +84,6 @@ vector* fat12_parse_path(char* path, bool skip_filename)
             char* string = chunks->data[chunks->count - 1];
             string[index] = *path;
             index++;
-
-            if(*path == '.')
-            {
-                dot_detected = true;
-            }
         }
 
         path++;
@@ -99,7 +94,7 @@ vector* fat12_parse_path(char* path, bool skip_filename)
         fat12_normalise_filename(chunks->data[i]);
     }
 
-    if(index == 0 || (skip_filename && dot_detected))
+    if(index == 0)
     {
         free(chunks->data[chunks->count - 1]);
         vector_remove(chunks, chunks->count - 1);
@@ -148,7 +143,7 @@ uint8_t* fat12_load_file_from_sector(uint16_t sector, uint16_t* read_sectors_cou
 
 directory_entry* fat12_get_directory_from_path(char* path)
 {
-    vector* chunks = fat12_parse_path(path, false);
+    vector* chunks = fat12_parse_path(path);
     directory_entry* directory = fat12_get_directory_from_chunks(chunks);
     
     vector_clear(chunks);
@@ -209,9 +204,25 @@ directory_entry* fat12_get_directory_from_chunks(vector* chunks)
 
 uint8_t* fat12_read_file(char* path, uint32_t read_sectors, uint32_t* read_size)
 {
-    vector* chunks = fat12_parse_path(path, true);
-    vector* chunks_with_filename = fat12_parse_path(path, false);
-    uint8_t* file_content;
+    directory_entry* file_info = fat12_get_info(path, false);
+
+    if(file_info != NULL)
+    {
+        uint8_t* file_content = fat12_load_file_from_sector(file_info->first_sector, read_sectors);
+        *read_size = file_info->size;
+
+        return file_content;
+    }
+
+    return NULL;
+}
+
+directory_entry* fat12_get_info(char* path, bool is_directory)
+{
+    vector* chunks = fat12_parse_path(path);
+    char* target_filename = chunks->data[chunks->count - 1];
+
+    vector_remove(chunks, chunks->count - 1);
 
     directory_entry* directory = fat12_get_directory_from_chunks(chunks);
     directory_entry* current_file_ptr = directory;
@@ -221,13 +232,11 @@ uint8_t* fat12_read_file(char* path, uint32_t read_sectors, uint32_t* read_size)
         uint8_t full_filename[12];
         fat12_merge_filename_and_extension(current_file_ptr, full_filename);
 
-        if(fat12_is_entry_valid(current_file_ptr) && !current_file_ptr->file_attributes.subdirectory)
+        if((fat12_is_entry_valid(current_file_ptr) && current_file_ptr->file_attributes.subdirectory == is_directory))
         {
-            if(memcmp(full_filename, chunks_with_filename->data[chunks_with_filename->count - 1], 12) == 0)
+            if(memcmp(full_filename, target_filename, 12) == 0)
             {
-                file_content = fat12_load_file_from_sector(current_file_ptr->first_sector, read_sectors);
-                *read_size = current_file_ptr->size;
-                break;
+                return current_file_ptr;
             }
         }
 
@@ -239,7 +248,7 @@ uint8_t* fat12_read_file(char* path, uint32_t read_sectors, uint32_t* read_size)
         current_file_ptr++;
     }
 
-    return file_content;
+    return NULL;
 }
 
 bool fat12_is_entry_valid(directory_entry* entry)
