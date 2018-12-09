@@ -211,16 +211,18 @@ directory_entry* fat12_get_directory_from_chunks(vector* chunks)
 uint8_t* fat12_read_file(char* path, uint32_t read_sectors, uint32_t* read_size)
 {
     directory_entry* file_info = fat12_get_info(path, false);
+    uint8_t* result = NULL;
 
     if(file_info != NULL)
     {
         uint8_t* file_content = fat12_load_file_from_sector(file_info->first_sector, read_sectors);
         *read_size = file_info->size;
 
-        return file_content;
+        result = file_content;
     }
 
-    return NULL;
+    free(file_info);
+    return result;
 }
 
 directory_entry* fat12_get_info(char* path, bool is_directory)
