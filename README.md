@@ -45,3 +45,4 @@ The repository doesn't contain all files necessary to successful compilation - w
 
 ## Example
 ![MicrOS example screenshot](https://i.imgur.com/hbfc2xL.png)
+Boot sequence, floppy calibration, reading content of the example file and heap dump.
