@@ -18,7 +18,7 @@ The repository doesn't contain all files necessary to successful compilation - w
 * Physical/Virtual memory manager
 * Heap
 * FAT12 filesystem - partially, currently read-only
-* PCI (Peripheral Component Interconnect - partially
+* PCI (Peripheral Component Interconnect) - partially
 * Panic screen (because the OS can't be named as OS if there is no beautiful panic screen on a page fault exception)
 * Standard library for C - partially
 
