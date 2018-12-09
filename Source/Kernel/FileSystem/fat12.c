@@ -157,6 +157,8 @@ directory_entry* fat12_get_directory_from_chunks(vector* chunks)
     directory_entry* current_directory = malloc(directory_length);
     memcpy(current_directory, root, directory_length);
 
+    directory_entry* result = NULL;
+
     if(chunks->count == 0)
     {
         return current_directory;
@@ -177,10 +179,14 @@ directory_entry* fat12_get_directory_from_chunks(vector* chunks)
                 uint16_t read_sectors_count = 0;
                 uint8_t* directory = fat12_load_file_from_sector(current_file_ptr->first_sector, &read_sectors_count);
 
+                free(current_directory);
+
                 current_directory = directory;
                 current_file_ptr = current_directory;
+
                 if(current_chunk_index == chunks->count - 1)
                 {
+                    result = current_directory;
                     break;
                 }
                 else
@@ -193,13 +199,13 @@ directory_entry* fat12_get_directory_from_chunks(vector* chunks)
 
         if(i + 1 == fat_header_data->directory_entries)
         {
-            return NULL;
+            result = NULL;
         }
 
         current_file_ptr++;
     }
     
-    return current_directory;
+    return result;
 }
 
 uint8_t* fat12_read_file(char* path, uint32_t read_sectors, uint32_t* read_size)
@@ -226,6 +232,7 @@ directory_entry* fat12_get_info(char* path, bool is_directory)
 
     directory_entry* directory = fat12_get_directory_from_chunks(chunks);
     directory_entry* current_file_ptr = directory;
+    directory_entry* result = NULL;
 
     for(int i=0; i<fat_header_data->directory_entries; i++)
     {
@@ -236,19 +243,29 @@ directory_entry* fat12_get_info(char* path, bool is_directory)
         {
             if(memcmp(full_filename, target_filename, 12) == 0)
             {
-                return current_file_ptr;
+                result = current_file_ptr;
+                break;
             }
         }
 
         if(i + 1 == fat_header_data->directory_entries)
         {
-            return NULL;
+            result = NULL;
+            break;
         }
 
         current_file_ptr++;
     }
 
-    return NULL;
+    directory_entry* result_without_junk = malloc(sizeof(directory_entry));
+    memcpy(result_without_junk, result, sizeof(directory_entry));
+
+    vector_clear(chunks);
+    free(chunks);
+    free(directory); 
+    free(target_filename);
+
+    return result_without_junk;
 }
 
 bool fat12_is_entry_valid(directory_entry* entry)
