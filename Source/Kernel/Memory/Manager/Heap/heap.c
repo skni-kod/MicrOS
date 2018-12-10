@@ -33,7 +33,7 @@ void* heap_alloc(uint32_t size)
                     while(size > current_entry->size + ENTRY_HEADER_SIZE)
                     {
                         virtual_memory_alloc_page();
-                        current_entry->size += 0x1000;
+                        current_entry->size += 4 * 1024 * 1024;
                     }
 
                     continue;
@@ -54,7 +54,11 @@ void heap_dealloc(uint32_t* ptr)
     {
         entry->prev->size += entry->size + ENTRY_HEADER_SIZE;
         entry->prev->next = entry->next;
-        entry->next->prev = entry->prev;
+
+        if(entry->next != 0)
+        {
+            entry->next->prev = entry->prev;
+        }
     }
 
     if(entry->next != 0 && entry->next->free)
@@ -77,8 +81,33 @@ void heap_clear()
         heap = virtual_memory_alloc_page() * 1024 * 1024 * 4;
     }
 
-    heap->size = 0x1000;
+    heap->size = 4 * 1024 * 1024;
     heap->free = 1;
     heap->next = 0;
     heap->prev = 0;
+}
+
+void heap_dump()
+{
+    heap_entry* current_entry = heap;
+
+    uint32_t index = 0;
+    char buffer[16];
+
+    while(current_entry != 0)
+    {
+        vga_printstring("Entry id=");
+        itoa(index, buffer, 10);
+        vga_printstring(buffer);
+        vga_printstring(", free=");
+        itoa(current_entry->free, buffer, 10);
+        vga_printstring(buffer);
+        vga_printstring(", size=");
+        itoa(current_entry->size, buffer, 10);
+        vga_printstring(buffer);
+        vga_printstring("\n");
+
+        current_entry = current_entry->next;
+        index++;
+    }
 }

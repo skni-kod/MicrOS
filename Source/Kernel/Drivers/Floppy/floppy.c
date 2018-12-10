@@ -34,7 +34,7 @@ void floppy_init()
     log_info("[Floppy] Calibration done");
 }
 
-void floppy_lba_to_chs(uint8_t lba, uint8_t *head, uint8_t *track, uint8_t *sector)
+void floppy_lba_to_chs(uint16_t lba, uint8_t *head, uint8_t *track, uint8_t *sector)
 {
 	*head = (lba % ((*floppy_header_data).sectors_per_track * 2)) / (*floppy_header_data).sectors_per_track;
 	*track = lba / ((*floppy_header_data).sectors_per_track * 2);
@@ -204,7 +204,7 @@ void floppy_disable_motor()
     }
 }
 
-uint8_t* floppy_read_sector(uint8_t sector)
+uint8_t* floppy_read_sector(uint16_t sector)
 {
     uint8_t head, track;
     floppy_lba_to_chs(sector, &head, &track, &sector);
@@ -212,7 +212,7 @@ uint8_t* floppy_read_sector(uint8_t sector)
     return floppy_do_operation_on_sector(head, track, sector, true) + 0xc0000000;
 }
 
-void floppy_write_sector(uint8_t sector, uint8_t* content)
+void floppy_write_sector(uint16_t sector, uint8_t* content)
 {
     uint8_t head, track;
     floppy_lba_to_chs(sector, &head, &track, &sector);
