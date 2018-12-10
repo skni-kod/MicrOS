@@ -88,7 +88,7 @@ Main:
     mov es, bx
 
     ; Buffer offset
-    mov bx, 0x0500
+    mov bx, 0x7000
     mov di, bx
 
     call LoadMemoryMap

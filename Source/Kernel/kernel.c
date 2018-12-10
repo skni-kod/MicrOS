@@ -14,6 +14,7 @@
 #include "Memory/Paging/paging.h"
 #include "Memory/Map/memory_map.h"
 #include "Memory/Manager/Physic/physical_memory_manager.h"
+#include "FileSystem/fat12.h"
 #include "Misc/panicScreen.h"
 #include <stdint.h>
 
@@ -51,6 +52,9 @@ void startup()
     keyboard_init();
     log_ok("Keyboard");
 
+    fat12_init();
+    log_ok("FAT12");
+
     log_info("MicrOS ready");
     log_info("Created by Application Section of SKNI KOD");
     log_info("Version ... no version");
@@ -63,9 +67,6 @@ int kmain()
     log_info("Hello, World!");
     //whatIsLove();
     log_ok("READY.");
-
-    memory_map_dump();
-    physical_memory_dump();
 
     while(1)
     {
