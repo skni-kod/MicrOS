@@ -77,8 +77,8 @@ typedef union screen
 void vga_init();
 void vga_printchar(char c);
 void vga_printchar_color(char c, vga_color * color);
-void vga_printstring(char * str);
-void vga_printstring_color(char * str, vga_color * color);
+void vga_printstring(const char * str);
+void vga_printstring_color(const char * str, vga_color * color);
 void vga_set_char(uint16_t x, uint16_t y, char c);
 void vga_set_char_struct(vga_screen_pos spos, char c);
 char vga_get_char(uint16_t x, uint16_t y);

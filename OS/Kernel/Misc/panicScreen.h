@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-void showPanicScreen(uint32_t code, char * optString);
+void showPanicScreen(uint32_t code, const char * optString);
 
 
 #endif

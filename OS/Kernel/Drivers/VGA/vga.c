@@ -45,7 +45,7 @@ void vga_printchar_color(char c, vga_color * color)
     vga_update_cursor_struct(vga_cursor_pos);
 }
 
-void vga_printstring(char * str)
+void vga_printstring(const char * str)
 {
     char* ptr = str;
     while(*ptr != 0)
@@ -55,7 +55,7 @@ void vga_printstring(char * str)
     }
 }
 
-void vga_printstring_color(char * str, vga_color * color)
+void vga_printstring_color(const char * str, vga_color * color)
 {
     char* ptr = str;
     while(*ptr != 0)
