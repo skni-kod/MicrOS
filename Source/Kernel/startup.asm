@@ -88,7 +88,7 @@ Main:
     mov es, bx
 
     ; Buffer offset
-    mov bx, 0x7000
+    mov bx, 0x5C00
     mov di, bx
 
     call LoadMemoryMap
@@ -180,52 +180,52 @@ CreatePageDirectory:
     ; Add temporary identity entry (physical address: 0x00000000, virtual address: 0x00000000, 24 MB)
     ; 0 - 4 MB
     mov eax, 0x01100003
-    mov [0x00005000], eax
+    mov [0x00006000], eax
 
     ; 4 - 8 MB
     mov eax, 0x01101003
-    mov [0x00005000 + 4], eax
+    mov [0x00006000 + 4], eax
 
     ; 8 - 12 MB
     mov eax, 0x01102003
-    mov [0x00005000 + 8], eax
+    mov [0x00006000 + 8], eax
 
     ; 12 - 16 MB
     mov eax, 0x01103003
-    mov [0x00005000 + 12], eax
+    mov [0x00006000 + 12], eax
 
     ; 16 - 20 MB
     mov eax, 0x01104003
-    mov [0x00005000 + 16], eax
+    mov [0x00006000 + 16], eax
     
     ; 20 - 24 MB
     mov eax, 0x01105003
-    mov [0x00005000 + 20], eax
+    mov [0x00006000 + 20], eax
 
     ; Add kernel entry (physical address: 0x00000000, virtual address: 0xC0000000, 24 MB)
     ; 0 - 4 MB
     mov eax, 0x01400003
-    mov [0x00005000 + 0x300 * 4], eax
+    mov [0x00006000 + 0x300 * 4], eax
     
     ; 4 - 8 MB
     mov eax, 0x01401003
-    mov [0x00005000 + 0x301 * 4], eax
+    mov [0x00006000 + 0x301 * 4], eax
 
     ; 8 - 12 MB
     mov eax, 0x01402003
-    mov [0x00005000 + 0x302 * 4], eax
+    mov [0x00006000 + 0x302 * 4], eax
 
     ; 12 - 16 MB
     mov eax, 0x01403003
-    mov [0x00005000 + 0x303 * 4], eax
+    mov [0x00006000 + 0x303 * 4], eax
 
     ; 16 - 20 MB
     mov eax, 0x01404003
-    mov [0x00005000 + 0x304 * 4], eax
+    mov [0x00006000 + 0x304 * 4], eax
     
     ; 20 - 24 MB
     mov eax, 0x01405003
-    mov [0x00005000 + 0x305 * 4], eax
+    mov [0x00006000 + 0x305 * 4], eax
 
     ret
 
@@ -287,7 +287,7 @@ CreateKernelPageTable:
 ; Output: nothing
 EnablePaging:
     ; Set address of the directory table
-    mov eax, 0x00005000
+    mov eax, 0x00006000
     mov cr3, eax
 
     ; Enable paging
