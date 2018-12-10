@@ -12,11 +12,13 @@ void physical_memory_init()
     memory_map_entry* memory_map_entries = memory_map_get();
     uint8_t entries_count = memory_map_get_entries_count();
 
+    // Set all entries as not available
     for(int i=0; i<1024; i++)
     {
         physical_entries[i].type = physical_memory_not_available;
     }
 
+    // Mark entries if they are free or reserved (due to BIOS memory table)
     for(int i=0; i<entries_count; i++)
     {
         uint16_t start_index = memory_map_entries[i].base_address / 1024 / 1024 / 4;
@@ -24,7 +26,7 @@ void physical_memory_init()
 
         for(int x=start_index; x<=end_index; x++)
         {
-            if(memory_map_entries[i].type != 1)
+            if(memory_map_entries[i].type != memory_map_free)
             {
                 physical_entries[x].type = physical_memory_reserved;
             }
@@ -34,6 +36,38 @@ void physical_memory_init()
             }
         }
     }
+
+    // Mark first 24 megabytes as reserved
+    for(int i=0; i<6; i++)
+    {
+        physical_entries[i].type = physical_memory_reserved;
+    }
+}
+
+uint32_t physical_memory_alloc_page()
+{
+    for(int i=0; i<1024; i++)
+    {
+        if(physical_entries[i].type == physical_memory_free)
+        {
+            physical_entries[i].type = physical_memory_filled;
+            return i;
+        }
+    }
+
+    showPanicScreen(0xA0, "Out of memory");
+    return 0;
+}
+
+bool physical_memory_dealloc_page(uint32_t index)
+{
+    if(physical_entries[index].type == physical_memory_filled)
+    {
+        physical_entries[index].type = physical_memory_free;
+        return false;
+    }
+
+    return true;
 }
 
 void physical_memory_dump()

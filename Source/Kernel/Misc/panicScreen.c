@@ -44,4 +44,6 @@ void showPanicScreen(uint32_t code, char * optString)
     {
         vga_printstring(optString);
     }
+
+     __asm__ ( "hlt" );
 }

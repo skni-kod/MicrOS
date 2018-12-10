@@ -14,6 +14,7 @@
 #include "Memory/Paging/paging.h"
 #include "Memory/Map/memory_map.h"
 #include "Memory/Manager/Physic/physical_memory_manager.h"
+#include "FileSystem/fat12.h"
 #include "Misc/panicScreen.h"
 #include <stdint.h>
 
@@ -29,6 +30,14 @@ void startup()
     vga_init();
     log_info("MicrOS is starting...");
     log_ok("VGA Driver");
+    
+    physical_memory_init();
+    log_ok("Physical Memory");
+    
+    virtual_memory_set_base_page_index(774);
+    heap_set_base_page_index(774);
+    heap_clear();
+    log_ok("Virtual Memory");
 
     pic_init();
     log_ok("Programmable Interrupt Controller");
@@ -96,6 +105,9 @@ void startup()
     log_info(itoa(dev->class_code, buff, 16));
     log_info(itoa(dev->subclass, buff, 16));
     log_info(itoa(dev->prog_if, buff, 16));*/
+    fat12_init();
+    log_ok("FAT12");
+
     log_info("MicrOS ready");
     log_info("Created by Application Section of SKNI KOD");
     log_info("Version ... no version");
@@ -108,11 +120,6 @@ int kmain()
     log_info("Hello, World!");
     //whatIsLove();
     log_ok("READY.");
-
-    memory_map_dump();
-
-    physical_memory_init();
-    //physical_memory_dump();
 
     while(1)
     {

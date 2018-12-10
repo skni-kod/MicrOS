@@ -1,5 +1,6 @@
 #ifndef IDT_ENTRY_H
 #define IDT_ENTRY_H
+#pragma pack(1)
 
 #include <stdint.h>
 
@@ -27,6 +28,6 @@ typedef struct idt_entry {
     uint8_t privilege_level : 2;
     uint8_t present : 1;
     uint16_t offset_16_31;
-} __attribute__((packed)) idt_entry;
+} idt_entry;
 
 #endif
