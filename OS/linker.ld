@@ -10,7 +10,7 @@ SECTIONS
  
 	.boot :
 	{
-		Build\Kernel\startup.o
+		Build\OS\startup.o
 	}
 
 	. = KERNEL_PHYSICAL_ADDRESS;
