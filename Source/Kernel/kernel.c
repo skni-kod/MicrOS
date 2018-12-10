@@ -6,7 +6,7 @@
 #include "Drivers/Floppy/floppy.h"
 #include "Drivers/VGA/vga_gmode.h"
 #include "Drivers/PCSpeaker/pcspeaker.h"
-#include "Drivers/RTC/RTC.h"
+#include "Drivers/PCI/pci.h"
 #include "Misc/startupMisc.h"
 #include "Timer/timer.h"
 #include "Logger/logger.h"
@@ -17,6 +17,8 @@
 #include "FileSystem/fat12.h"
 #include "Misc/panicScreen.h"
 #include <stdint.h>
+
+char buff[50];
 
 void startup()
 {
@@ -52,6 +54,57 @@ void startup()
     keyboard_init();
     log_ok("Keyboard");
 
+    timer_init();
+    log_ok("Timer");
+
+    pci_init();
+    log_ok("PCI");
+    log_info("Number of devices: ");
+    uint8_t nd = get_number_of_devices();
+    log_info(itoa(nd, buff, 10));
+    log_info("Devices: ");
+    vga_color col;
+    col.color_without_blink.background = VGA_COLOR_BLACK;
+    col.color_without_blink.letter = VGA_COLOR_BLUE;
+    vga_printstring_color("vendor_id ", &col);
+    col.color_without_blink.letter = VGA_COLOR_GREEN;
+    vga_printstring_color("device_id ", &col);
+    col.color_without_blink.letter = VGA_COLOR_LIGHT_BLUE;
+    vga_printstring_color("header_type ", &col);
+    col.color_without_blink.letter = VGA_COLOR_LIGHT_RED;
+    vga_printstring_color("class_code ", &col);
+    col.color_without_blink.letter = VGA_COLOR_YELLOW;
+    vga_printstring_color("subclass ", &col);
+    col.color_without_blink.letter = VGA_COLOR_MAGENTA;
+    vga_printstring_color("prog_if\n", &col);
+    for(int i = 0; i < get_number_of_devices(); i++)
+    {
+        pci_dev* dev = get_device(i);
+        col.color_without_blink.letter = VGA_COLOR_BLUE;
+        vga_printstring_color(itoa(dev->vendor_id, buff, 16), &col);
+        vga_printchar(' ');
+        col.color_without_blink.letter = VGA_COLOR_GREEN;
+        vga_printstring_color(itoa(dev->device_id, buff, 16), &col);
+        vga_printchar(' ');
+        col.color_without_blink.letter = VGA_COLOR_LIGHT_BLUE;
+        vga_printstring_color(itoa(dev->header_type, buff, 16), &col);
+        vga_printchar(' ');
+        col.color_without_blink.letter = VGA_COLOR_LIGHT_RED;
+        vga_printstring_color(itoa(dev->class_code, buff, 16), &col);
+        vga_printchar(' ');
+        col.color_without_blink.letter = VGA_COLOR_YELLOW;
+        vga_printstring_color(itoa(dev->subclass, buff, 16), &col);
+        vga_printchar(' ');
+        col.color_without_blink.letter = VGA_COLOR_MAGENTA;
+        vga_printstring_color(itoa(dev->prog_if, buff, 16), &col);
+        vga_printchar('\n');
+    }
+    /*pci_dev* dev = get_device(0);
+    log_info(itoa(dev->vendor_id, buff, 16));
+    log_info(itoa(dev->header_type, buff, 16));
+    log_info(itoa(dev->class_code, buff, 16));
+    log_info(itoa(dev->subclass, buff, 16));
+    log_info(itoa(dev->prog_if, buff, 16));*/
     fat12_init();
     log_ok("FAT12");
 

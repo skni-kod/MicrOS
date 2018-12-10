@@ -423,16 +423,16 @@ void set3HVideoMode()
     setFont(g_8x16_font, 16);
     
     /* tell the BIOS what we've done, so BIOS text output works OK */
-	pokew(0x40, 0x4A, cols);	/* columns on screen */
-	pokew(0x40, 0x4C, cols * rows * 2); /* framebuffer size */
-	pokew(0x40, 0x50, 0);		/* cursor pos'n */
-	pokeb(0x40, 0x60, ht - 1);	/* cursor shape */
-	pokeb(0x40, 0x61, ht - 2);
-	pokeb(0x40, 0x84, rows - 1);	/* rows on screen - 1 */
-	pokeb(0x40, 0x85, ht);		/* char height */
+	pokew(0xC0000040, 0xC000004A, cols);	/* columns on screen */
+	pokew(0xC0000040, 0xC000004C, cols * rows * 2); /* framebuffer size */
+	pokew(0xC0000040, 0xC0000050, 0);		/* cursor pos'n */
+	pokeb(0xC0000040, 0xC0000060, ht - 1);	/* cursor shape */
+	pokeb(0xC0000040, 0xC0000061, ht - 2);
+	pokeb(0xC0000040, 0xC0000084, rows - 1);	/* rows on screen - 1 */
+	pokeb(0xC0000040, 0xC0000085, ht);		/* char height */
 /* set white-on-black attributes for all text */
 	for(i = 0; i < cols * rows; i++)
-		pokeb(0xB800, i * 2 + 1, 7);
+		pokeb(0xC00B8000, i * 2 + 1, 7);
 
     memcpy(VGA_BASE_ADDR, text_dump, 4000);
     mode = 3;
@@ -450,13 +450,13 @@ static unsigned get_fb_seg(void)
 	{
 	case 0:
 	case 1:
-		seg = 0xA000;
+		seg = 0xC00A000;
 		break;
 	case 2:
-		seg = 0xB000;
+		seg = 0xC00B000;
 		break;
 	case 3:
-		seg = 0xB800;
+		seg = 0xC00B800;
 		break;
 	}
 	return seg;
@@ -538,7 +538,7 @@ assume: chain-4 addressing already off */
 	outb(graphicsControllerDataPort, gc6);
 }
 
-#define VGA_VRAM 0xA0000
+#define VGA_VRAM 0xC00A0000
 #define PITCH 320
 void pixel_256 (unsigned char color, unsigned int x, unsigned int y) {
    unsigned char* fb       = (unsigned char*) VGA_VRAM;

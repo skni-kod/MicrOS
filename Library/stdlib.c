@@ -1,4 +1,5 @@
 #include "stdlib.h"
+#include "string.h"
 
 void sleep(uint32_t ms)
 {
