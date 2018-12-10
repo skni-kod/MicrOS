@@ -219,9 +219,9 @@ uint8_t* fat12_read_file(char* path, uint32_t read_sectors, uint32_t* read_size)
         *read_size = file_info->size;
 
         result = file_content;
+        free(file_info);
     }
 
-    free(file_info);
     return result;
 }
 
@@ -259,8 +259,12 @@ directory_entry* fat12_get_info(char* path, bool is_directory)
         current_file_ptr++;
     }
 
-    directory_entry* result_without_junk = malloc(sizeof(directory_entry));
-    memcpy(result_without_junk, result, sizeof(directory_entry));
+    directory_entry* result_without_junk = NULL;
+    if(result != NULL)
+    {
+        result_without_junk = malloc(sizeof(directory_entry));
+        memcpy(result_without_junk, result, sizeof(directory_entry));
+    }
 
     vector_clear(chunks);
     free(chunks);
