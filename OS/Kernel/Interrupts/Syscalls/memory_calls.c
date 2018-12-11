@@ -2,10 +2,10 @@
 
 void alloc_memory_call(interrupt_state* state)
 {
-    state->eax = heap_alloc(state->ebx);
+    state->eax = (uint32_t)heap_alloc(state->ebx);
 }
 
 void dealloc_memory_call(interrupt_state* state)
 {
-    heap_dealloc(state->ebx);
+    heap_dealloc((void*)state->ebx);
 }

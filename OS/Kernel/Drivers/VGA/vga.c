@@ -47,7 +47,7 @@ void vga_printchar_color(char c, vga_color * color)
 
 void vga_printstring(const char * str)
 {
-    char* ptr = str;
+    const char* ptr = str;
     while(*ptr != 0)
     {
         vga_printchar(*ptr);
@@ -57,7 +57,7 @@ void vga_printstring(const char * str)
 
 void vga_printstring_color(const char * str, vga_color * color)
 {
-    char* ptr = str;
+    const char* ptr = str;
     while(*ptr != 0)
     {
         vga_printchar_color(*ptr, color);

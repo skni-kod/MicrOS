@@ -8,7 +8,6 @@ void gdt_init()
     fill_entry(1,  true, 0);
     fill_entry(2, false, 0);
 
-    uint8_t test = sizeof(gdt_entry) * GDT_SIZE - 1;
     info.size = sizeof(gdt_entry) * GDT_SIZE - 1;
     info.offset = (uint32_t)&gdt;
 

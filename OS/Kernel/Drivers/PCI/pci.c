@@ -8,11 +8,9 @@ pci_in_data d;
 pci_dev dev;
 
 uint8_t number_of_devices = 0;
-static char boo[50];
 
 uint32_t get_register(pci_in_data* data)
 {
-    //log_warning(itoa(data->bits, boo, 2));
     outl(PCI_CONFIG_ADDRESS, data->bits);
     return inl(PCI_CONFIG_DATA);
 }
