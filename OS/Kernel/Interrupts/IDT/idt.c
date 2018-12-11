@@ -154,18 +154,6 @@ void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)())
     }
 }
 
-void global_exc_handler(interrupt_state state, int error_code)
-{
-    for(int i=0; i<32; i++)
-    {
-        if(exceptions[i].interrupt_number == state.interrupt_number)
-        {
-            showPanicScreen(state.interrupt_number, exceptions[i].description);
-            break;
-        }
-    }
-}
-
 void global_int_handler(interrupt_state state)
 {
     for(int i=0; i<IDT_MAX_INTERRUPT_HANDLERS; i++)
@@ -177,6 +165,34 @@ void global_int_handler(interrupt_state state)
     }
 
     state.interrupt_number - 32 < 8 ? pic_confirm_master() : pic_confirm_master_and_slave();
+}
+
+void global_exc_handler(interrupt_state state, uint32_t error_code)
+{
+    for(int i=0; i<32; i++)
+    {
+        if(exceptions[i].interrupt_number == state.interrupt_number)
+        {
+            char exception_string[64];
+            char error_code_msg[] = ". Error code: ";
+            char error_code_str[10];
+
+            memset(exception_string, 0, 64);
+            memset(error_code_str, 0, 10);
+
+            uint32_t description_length = strlen(exceptions[i].description);
+            uint32_t error_code_msg_length = strlen(error_code_msg);
+            
+            memcpy(exception_string, exceptions[i].description, description_length);
+            memcpy(exception_string + description_length, error_code_msg, error_code_msg_length);
+
+            itoa(error_code, error_code_str, 16);
+            memcpy(exception_string + description_length + error_code_msg_length, error_code_str, 10);
+
+            showPanicScreen(state.interrupt_number, exception_string);
+            break;
+        }
+    }
 }
 
 void syscalls_interrupt_handler(interrupt_state* state)

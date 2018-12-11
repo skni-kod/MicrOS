@@ -20,8 +20,8 @@ void idt_unset(uint8_t index);
 void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)());
 void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)());
 
-void global_int_handler();
-void global_exc_handler();
+void global_int_handler(interrupt_state state);
+void global_exc_handler(interrupt_state state, uint32_t error_code);
 void software_interrupt_handler();
 void syscalls_interrupt_handler(interrupt_state* state);
 
