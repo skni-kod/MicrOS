@@ -1,7 +1,7 @@
 #include "floppy.h"
 
-volatile floppy_header* floppy_header_data = FLOPPY_HEADER_DATA;
-volatile uint8_t* dma_buffer = DMA_ADDRESS;
+volatile floppy_header* floppy_header_data = (floppy_header*)FLOPPY_HEADER_DATA;
+volatile uint8_t* dma_buffer = (uint8_t*)DMA_ADDRESS;
 volatile uint32_t time_of_last_activity = 0;
 volatile bool motor_enabled = false;
 
@@ -161,7 +161,7 @@ uint8_t floppy_calibrate()
         uint32_t st0, cylinder;
 
         floppy_confirm_interrupt(&st0, &cylinder);
-        if(st0 & 0x20 == 0)
+        if((st0 & 0x20) == 0)
         {
             log_error("[Floppy] Invalid ST0 after calibration");
         }
@@ -206,19 +206,19 @@ void floppy_disable_motor()
 
 uint8_t* floppy_read_sector(uint16_t sector)
 {
-    uint8_t head, track;
-    floppy_lba_to_chs(sector, &head, &track, &sector);
+    uint8_t head, track, true_sector;
+    floppy_lba_to_chs(sector, &head, &track, &true_sector);
 
-    return floppy_do_operation_on_sector(head, track, sector, true) + 0xc0000000;
+    return floppy_do_operation_on_sector(head, track, true_sector, true) + 0xc0000000;
 }
 
 void floppy_write_sector(uint16_t sector, uint8_t* content)
 {
-    uint8_t head, track;
-    floppy_lba_to_chs(sector, &head, &track, &sector);
+    uint8_t head, track, true_sector;
+    floppy_lba_to_chs(sector, &head, &track, &true_sector);
 
-    memcpy(dma_buffer, content, 512);
-    floppy_do_operation_on_sector(head, track, sector, false);
+    memcpy((void*)dma_buffer, content, 512);
+    floppy_do_operation_on_sector(head, track, true_sector, false);
 }
 
 uint8_t* floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sector, bool read)
@@ -330,7 +330,7 @@ uint8_t* floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
 	// Confirm interrupt
 	floppy_confirm_interrupt(&st0, &cylinder_data);
 
-    return dma_buffer;
+    return (uint8_t*)dma_buffer;
 }
 
 int floppy_seek(uint32_t cylinder, uint32_t head)
@@ -347,7 +347,7 @@ int floppy_seek(uint32_t cylinder, uint32_t head)
 		// Wait for interrupt
 		floppy_wait_for_interrupt();
 		floppy_confirm_interrupt(&st0, &interrupt_cylinder);
-        if(st0 & 0x20 == 0)
+        if((st0 & 0x20) == 0)
         {
             log_error("[Floppy] Invalid ST0 after seek");
         }
@@ -372,8 +372,8 @@ void floppy_dma_init(bool read)
 	outb(DMA_FLIP_FLOP_RESET_REGISTER, 0xff);
 
     // Set buffer to the specified address
-	outb(DMA_START_ADDRESS_REGISTER, (uint16_t)dma_buffer & 0xff);
-	outb(DMA_START_ADDRESS_REGISTER, (uint16_t)dma_buffer >> 8);
+	outb(DMA_START_ADDRESS_REGISTER, (uint8_t)((uint32_t)dma_buffer & 0xff));
+	outb(DMA_START_ADDRESS_REGISTER, (uint8_t)((uint32_t)dma_buffer >> 8));
 
     // Reset Flip-Flop register
 	outb(DMA_FLIP_FLOP_RESET_REGISTER, 0xff);

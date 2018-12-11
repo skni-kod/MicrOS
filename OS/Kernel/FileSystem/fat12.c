@@ -1,6 +1,6 @@
 #include "fat12.h"
 
-volatile floppy_header* fat_header_data = FLOPPY_HEADER_DATA;
+volatile floppy_header* fat_header_data = (floppy_header*)FLOPPY_HEADER_DATA;
 volatile uint8_t* fat;
 volatile directory_entry* root;
 
