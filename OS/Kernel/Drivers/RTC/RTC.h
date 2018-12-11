@@ -14,15 +14,15 @@ typedef struct rtc_time
     unsigned int year;
 } rtc_time;
 
-void read_rtc(rtc_time* time);
-uint8_t read_second();
-uint8_t read_minute();
-uint8_t read_hour();
-uint8_t read_day();
-uint8_t read_month();
-uint32_t read_year();
+void rtc_read(rtc_time *time);
+uint8_t rtc_read_second();
+uint8_t rtc_read_minute();
+uint8_t rtc_read_hour();
+uint8_t rtc_read_day();
+uint8_t rtc_read_month();
+uint32_t rtc_read_year();
 
-void set_rtc(rtc_time* time);
+void rtc_set(rtc_time *time);
 void rtc_enable_IRQ8();
 void rtc_disable_IRQ8();
 void rtc_change_interrupt_rate(uint8_t rate);

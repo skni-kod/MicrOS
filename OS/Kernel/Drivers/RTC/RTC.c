@@ -35,7 +35,7 @@ unsigned char get_RTC_register(int reg)
       return inb(cmos_data);
 }
 
-void read_rtc(rtc_time *time)
+void rtc_read(rtc_time *time)
 {
       unsigned char century;
       unsigned char last_second;
@@ -128,7 +128,7 @@ void read_rtc(rtc_time *time)
       }
 }
 
-uint8_t read_second()
+uint8_t rtc_read_second()
 {
       unsigned char last_second;
       unsigned char second;
@@ -163,7 +163,7 @@ uint8_t read_second()
       return second;
 }
 
-uint8_t read_minute()
+uint8_t rtc_read_minute()
 {
       unsigned char last_minute;
       unsigned char minute;
@@ -198,7 +198,7 @@ uint8_t read_minute()
       return minute;
 }
 
-uint8_t read_hour()
+uint8_t rtc_read_hour()
 {
       unsigned char last_hour;
       unsigned char hour;
@@ -237,7 +237,7 @@ uint8_t read_hour()
       return hour;
 }
 
-uint8_t read_day()
+uint8_t rtc_read_day()
 {
       unsigned char last_day;
       unsigned char day;
@@ -271,7 +271,7 @@ uint8_t read_day()
       return day;
 }
 
-uint8_t read_month()
+uint8_t rtc_read_month()
 {
       unsigned char last_month;
       unsigned char month;
@@ -305,7 +305,7 @@ uint8_t read_month()
       return month;
 }
 
-uint32_t read_year()
+uint32_t rtc_read_year()
 {
       unsigned char century;
       unsigned char last_century;
@@ -376,7 +376,7 @@ uint8_t BINtoBCD(uint8_t n)
       return value;
 }
 
-void set_rtc(rtc_time *time)
+void rtc_set(rtc_time *time)
 {
       //Disable interrupts
       disable();
