@@ -24,7 +24,7 @@ void fat12_load_fat()
     for(int i=1; i<fat_header_data->sectors_per_fat; i++)
     {
         uint8_t* buffer = floppy_read_sector(i);
-        memcpy((uint32_t)fat + ((i - 1) * 512), buffer, 512);
+        memcpy((void*)((uint32_t)fat + ((i - 1) * 512)), buffer, 512);
     }
 }
 
@@ -36,7 +36,7 @@ void fat12_load_root()
     for(int i=root_first_sector; i<root_first_sector + root_sectors_count; i++)
     {
         uint8_t* buffer = floppy_read_sector(i);
-        memcpy((uint32_t)root + ((i - root_first_sector) * 512), buffer, 512);
+        memcpy((void*)((uint32_t)root + ((i - root_first_sector) * 512)), buffer, 512);
     }
 }
 
@@ -67,7 +67,6 @@ vector* fat12_parse_path(char* path)
     vector_init(chunks);
 
     uint8_t index = 0;
-    bool dot_detected = false;
 
     while(*path != 0)
     {
@@ -89,7 +88,7 @@ vector* fat12_parse_path(char* path)
         path++;
     }
 
-    for(int i=0; i<chunks->count; i++)
+    for(uint32_t i=0; i<chunks->count; i++)
     {
         fat12_normalise_filename(chunks->data[i]);
     }
@@ -155,7 +154,7 @@ directory_entry* fat12_get_directory_from_path(char* path)
 directory_entry* fat12_get_directory_from_chunks(vector* chunks)
 {
     directory_entry* current_directory = malloc(directory_length);
-    memcpy(current_directory, root, directory_length);
+    memcpy(current_directory, (void*)root, directory_length);
 
     directory_entry* result = NULL;
 
@@ -181,7 +180,7 @@ directory_entry* fat12_get_directory_from_chunks(vector* chunks)
 
                 free(current_directory);
 
-                current_directory = directory;
+                current_directory = (directory_entry*)directory;
                 current_file_ptr = current_directory;
 
                 if(current_chunk_index == chunks->count - 1)
@@ -208,7 +207,7 @@ directory_entry* fat12_get_directory_from_chunks(vector* chunks)
     return result;
 }
 
-uint8_t* fat12_read_file(char* path, uint32_t read_sectors, uint32_t* read_size)
+uint8_t* fat12_read_file(char* path, uint16_t* read_sectors, uint16_t* read_size)
 {
     directory_entry* file_info = fat12_get_info(path, false);
     uint8_t* result = NULL;

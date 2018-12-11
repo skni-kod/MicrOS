@@ -6,8 +6,8 @@
 typedef struct vector
 {
 	void** data;
-	int size;
-	int count;
+	uint32_t size;
+	uint32_t count;
 } vector;
 
 void vector_init(vector* vector);
