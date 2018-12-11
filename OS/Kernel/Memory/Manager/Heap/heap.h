@@ -8,7 +8,7 @@
 #include "../Virtual/virtual_memory_manager.h"
 
 void* heap_alloc(uint32_t size);
-void heap_dealloc(uint32_t* ptr);
+void heap_dealloc(void* ptr);
 void heap_set_base_page_index(uint32_t index);
 void heap_clear();
 void heap_dump();
