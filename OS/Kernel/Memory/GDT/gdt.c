@@ -5,16 +5,16 @@ gdt_info info;
 
 void gdt_init()
 {
-    fill_entry(1,  true, 0);
-    fill_entry(2, false, 0);
+    gdt_fill_entry(1, true, 0);
+    gdt_fill_entry(2, false, 0);
 
     info.size = sizeof(gdt_entry) * GDT_SIZE - 1;
     info.offset = (uint32_t)&gdt;
 
-    __asm__ ("lgdt %0" :: "m"(info));
+    __asm__("lgdt %0" ::"m"(info));
 }
 
-void fill_entry(int index, bool executable, uint8_t privilege_level)
+void gdt_fill_entry(int index, bool executable, uint8_t privilege_level)
 {
     gdt[index].limit_0_15 = 0xFFFF;
     gdt[index].base_0_15 = 0x0000;

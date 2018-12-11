@@ -9,7 +9,7 @@ typedef struct gdt_entry
     uint16_t limit_0_15;
     uint16_t base_0_15;
     uint8_t base_16_23;
-    
+
     uint8_t accessed : 1;
     uint8_t read_write : 1;
     uint8_t direction : 1;

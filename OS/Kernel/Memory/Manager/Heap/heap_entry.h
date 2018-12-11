@@ -9,8 +9,8 @@ typedef struct heap_entry
     uint32_t size;
     uint8_t free;
 
-    struct heap_entry* next;
-    struct heap_entry* prev;
+    struct heap_entry *next;
+    struct heap_entry *prev;
 } heap_entry;
 
 #endif

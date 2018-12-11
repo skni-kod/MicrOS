@@ -8,6 +8,6 @@
 #include "gdt_info.h"
 
 void gdt_init();
-void fill_entry(int index, bool executable, uint8_t privilege_level);
+void gdt_fill_entry(int index, bool executable, uint8_t privilege_level);
 
 #endif
