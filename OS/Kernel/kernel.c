@@ -15,7 +15,7 @@
 #include "Memory/Map/memory_map.h"
 #include "Memory/Manager/Physic/physical_memory_manager.h"
 #include "FileSystem/fat12.h"
-#include "Misc/panicScreen.h"
+#include "Panic/panic_screen.h"
 #include <stdint.h>
 
 char buff[50];
@@ -149,7 +149,7 @@ int kmain()
             }
             else if(c.scancode == 63)
             {
-                showPanicScreen(0x42, "Someone ask Question about Life, the Universe and Evertything");
+                panic_screen_show(0x42, "Someone ask Question about Life, the Universe and Evertything");
             }
             else if(c.scancode == 64)
             {

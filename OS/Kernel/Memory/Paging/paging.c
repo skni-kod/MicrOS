@@ -60,7 +60,7 @@ uint32_t paging_get_first_free_page_index(uint32_t from_index)
         }
     }
 
-    showPanicScreen(0xA0, "Out of memory");
+    panic_screen_show(0xA0, "Out of memory");
     return 0;
 }
 

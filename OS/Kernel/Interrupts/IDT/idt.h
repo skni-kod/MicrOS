@@ -10,7 +10,7 @@
 #include "interrupt_handler_definition.h"
 #include "exception_definition.h"
 #include "../PIC/pic.h"
-#include "../../Misc/panicScreen.h"
+#include "../../Panic/panic_screen.h"
 #include "../Syscalls/time_calls.h"
 #include "../Syscalls/memory_calls.h"
 

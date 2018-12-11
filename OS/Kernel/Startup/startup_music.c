@@ -46,7 +46,7 @@ void startup_music_play()
     startup_music_play_note(FS5_NOTE, startup_music_eighth_note());
     startup_music_play_note(GS5_NOTE, startup_music_eighth_note() + startup_music_half_note());
     startup_music_play_note(DS5_NOTE, startup_music_eighth_note());
-    startup_music_play_note(E5_NOTE,  startup_music_eighth_note());
+    startup_music_play_note(E5_NOTE, startup_music_eighth_note());
     startup_music_play_note(DS5_NOTE, startup_music_eighth_note());
     startup_music_play_note(FS5_NOTE, startup_music_eighth_note() + startup_music_eighth_note());
     startup_music_play_note(DS5_NOTE, startup_music_half_note() + startup_music_eighth_note());
