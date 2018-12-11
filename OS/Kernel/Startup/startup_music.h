@@ -1,7 +1,9 @@
-#ifndef STARTUP_MISC_H
-#define STARTUP_MISC_H
+#ifndef STARTUP_MUSIC_H
+#define STARTUP_MUSIC_H
 
 #include <stdint.h>
+#include "../Drivers/PCSpeaker/pc_speaker.h"
+#include "../../../Library/stdlib.h"
 
 #define C4_NOTE 262
 #define CS4_NOTE 277
@@ -26,11 +28,13 @@
 #define GS5_NOTE 831
 #define A5_NOTE 880
 
-
-
-void setBPM(uint8_t new_bpm);
-void playNote(uint32_t freq, uint32_t time);
-void whatIsLove();
-
+uint32_t startup_music_quater_note();
+uint32_t startup_music_half_note();
+uint32_t startup_music_whole_note();
+uint32_t startup_music_eighth_note();
+uint32_t startup_music_sixteenth_note();
+void startup_music_set_bmp(uint8_t new_bpm);
+void startup_music_play_note(uint32_t freq, uint32_t time);
+void startup_music_play();
 
 #endif

@@ -5,9 +5,9 @@
 #include "Drivers/Keyboard/keyboard.h"
 #include "Drivers/Floppy/floppy.h"
 #include "Drivers/VGA/vga_gmode.h"
-#include "Drivers/PCSpeaker/pcspeaker.h"
+#include "Drivers/PCSpeaker/pc_speaker.h"
 #include "Drivers/PCI/pci.h"
-#include "Misc/startupMisc.h"
+#include "Startup/startup_music.h"
 #include "Timer/timer.h"
 #include "Logger/logger.h"
 #include "Memory/GDT/gdt.h"
@@ -118,7 +118,7 @@ int kmain()
     startup();
 
     log_info("Hello, World!");
-    //whatIsLove();
+    startup_music_play();
     log_ok("READY.");
 
     while(1)
@@ -141,11 +141,11 @@ int kmain()
             }
             else if(c.scancode == 61)
             {
-                sound(1000);
+                pc_speaker_sound(1000);
             }
             else if(c.scancode == 62)
             {
-                nosound();
+                pc_speaker_no_sound();
             }
             else if(c.scancode == 63)
             {
