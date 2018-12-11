@@ -41,7 +41,7 @@ void floppy_lba_to_chs(uint16_t lba, uint8_t *head, uint8_t *track, uint8_t *sec
 	*sector = lba % (*floppy_header_data).sectors_per_track + 1;
 }
 
-uint8_t floppy_reset()
+int8_t floppy_reset()
 {
     // Disable floppy controller
     outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0);
@@ -53,12 +53,13 @@ uint8_t floppy_reset()
     floppy_wait_for_interrupt();
 
     // Tell all connected devices that we catched the interrupt (SENSE_INTERRUPT command)
-    uint32_t st0, cylinder;
+    uint8_t st0, cylinder;
 
     floppy_confirm_interrupt(&st0, &cylinder);
     if(st0 != 0xC0)
     {
         log_error("[Floppy] Invalid ST0 after reset");
+        return -1;
     }
 
     // Set transfer speed to 500 kb/s
@@ -74,9 +75,11 @@ uint8_t floppy_reset()
     //  head unload time = 240 ms
     //  DMA = yes
     floppy_set_parameters(3, 16, 240, true);
+
+    return 0;
 }
 
-uint8_t floppy_wait_until_ready()
+int8_t floppy_wait_until_ready()
 {
     for(int i=0; i<1000; i++)
     {
@@ -94,7 +97,7 @@ uint8_t floppy_wait_until_ready()
     return -1;
 }
 
-uint8_t floppy_send_command(uint8_t cmd)
+int8_t floppy_send_command(uint8_t cmd)
 {
     if(floppy_wait_until_ready() == -1)
     {
@@ -103,6 +106,8 @@ uint8_t floppy_send_command(uint8_t cmd)
     }
 
     outb(FLOPPY_DATA_REGISTER, cmd);
+
+    return 0;
 }
  
 uint8_t floppy_read_data()
@@ -110,13 +115,13 @@ uint8_t floppy_read_data()
 	if(floppy_wait_until_ready() == -1)
     {
         log_error("[Floppy] Timeout while waiting for data read");
-        return -1;
+        return 0xFF;
     }
 
 	return inb(FLOPPY_DATA_REGISTER);
 }
 
-void floppy_confirm_interrupt(uint32_t* st0, uint32_t* cylinder)
+void floppy_confirm_interrupt(uint8_t* st0, uint8_t* cylinder)
 {
     // Send SENSE_INTERRUPT command
 	floppy_send_command(0x08);
@@ -144,7 +149,7 @@ void floppy_set_parameters(uint32_t step_rate, uint32_t head_load_time, uint32_t
 	floppy_send_command(data);
 }
 
-uint8_t floppy_calibrate()
+int8_t floppy_calibrate()
 {
     floppy_enable_motor();
 
@@ -158,7 +163,7 @@ uint8_t floppy_calibrate()
 
         floppy_wait_for_interrupt();
 
-        uint32_t st0, cylinder;
+        uint8_t st0, cylinder;
 
         floppy_confirm_interrupt(&st0, &cylinder);
         if((st0 & 0x20) == 0)
@@ -232,7 +237,7 @@ uint8_t* floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
     if(floppy_seek(0, head) == -1)
     {
         log_error("[Floppy] Seek failure");
-        return -1;
+        return NULL;
     }
  
 	// Send command to read sector
@@ -276,55 +281,66 @@ uint8_t* floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
     uint8_t st1 = floppy_read_data();
     uint8_t st2 = floppy_read_data();
     uint8_t cylinder_data = floppy_read_data();
-    uint8_t head_data = floppy_read_data();
-    uint8_t sector_data = floppy_read_data();
+    /*uint8_t head_data = */ floppy_read_data();
+    /*uint8_t sector_data = */ floppy_read_data();
     uint8_t bps = floppy_read_data();
 
     if(st1 & 0x80)
     {
         log_error("[Floppy] End of cylinder");
+        return NULL;
     }
     if(st1 & 0x20)
     {
         log_error("[Floppy] Data error");
+        return NULL;
     }
     if(st1 & 0x04)
     {
         log_error("[Floppy] No data");
+        return NULL;
     }
     if(st1 & 0x02)
     {
         log_error("[Floppy] Not writable");
+        return NULL;
     }
     if(st1 & 0x01)
     {
         log_error("[Floppy] Missing address mark");
+        return NULL;
     }
 
     if(st2 & 0x40)
     {
         log_error("[Floppy] Control mask");
+        return NULL;
     }
     if(st2 & 0x20)
     {
         log_error("[Floppy] Data error in data field");
+        return NULL;
     }
     if(st2 & 0x10)
     {
         log_error("[Floppy] Wrong cylinder");
+        return NULL;
     }
     if(st2 & 0x02)
     {
-        log_error("[Floppy] Bad cylinder");  
+        log_error("[Floppy] Bad cylinder");
+        return NULL;
     }
     if(st2 & 0x01)
     {
-        log_error("[Floppy] Missing data address mark");  
+        log_error("[Floppy] Missing data address mark");
+        return NULL;
     }
 
     if(bps != 0x2)
     {
-        log_error("[Floppy] Invalid bps");   
+        log_error("[Floppy] Invalid bps");
+        return NULL;
     }
 
 	// Confirm interrupt
@@ -335,7 +351,7 @@ uint8_t* floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
 
 int floppy_seek(uint32_t cylinder, uint32_t head)
 {
-	uint32_t st0, interrupt_cylinder;
+	uint8_t st0, interrupt_cylinder;
  
 	for(int i=0; i<1000; i++)
     {
