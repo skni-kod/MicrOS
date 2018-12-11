@@ -28,41 +28,41 @@ void startup()
 
     //Don't use VGA before calling VGA init
     vga_init();
-    log_info("MicrOS is starting...");
-    log_ok("VGA Driver");
-    
+    logger_log_info("MicrOS is starting...");
+    logger_log_ok("VGA Driver");
+
     physical_memory_init();
-    log_ok("Physical Memory");
-    
+    logger_log_ok("Physical Memory");
+
     virtual_memory_set_base_page_index(774);
     heap_set_base_page_index(774);
     heap_clear();
-    log_ok("Virtual Memory");
+    logger_log_ok("Virtual Memory");
 
     pic_init();
-    log_ok("Programmable Interrupt Controller");
+    logger_log_ok("Programmable Interrupt Controller");
 
     idt_init();
-    log_ok("Interrupt Descriptor Table");
+    logger_log_ok("Interrupt Descriptor Table");
 
     timer_init();
-    log_ok("Timer");
+    logger_log_ok("Timer");
 
     floppy_init();
-    log_ok("Floppy");
-    
+    logger_log_ok("Floppy");
+
     keyboard_init();
-    log_ok("Keyboard");
+    logger_log_ok("Keyboard");
 
     timer_init();
-    log_ok("Timer");
+    logger_log_ok("Timer");
 
     pci_init();
-    log_ok("PCI");
-    log_info("Number of devices: ");
+    logger_log_ok("PCI");
+    logger_log_info("Number of devices: ");
     uint8_t nd = get_number_of_devices();
-    log_info(itoa(nd, buff, 10));
-    log_info("Devices: ");
+    logger_log_info(itoa(nd, buff, 10));
+    logger_log_info("Devices: ");
     vga_color col;
     col.color_without_blink.background = VGA_COLOR_BLACK;
     col.color_without_blink.letter = VGA_COLOR_BLUE;
@@ -77,9 +77,9 @@ void startup()
     vga_printstring_color("subclass ", &col);
     col.color_without_blink.letter = VGA_COLOR_MAGENTA;
     vga_printstring_color("prog_if\n", &col);
-    for(int i = 0; i < get_number_of_devices(); i++)
+    for (int i = 0; i < get_number_of_devices(); i++)
     {
-        pci_dev* dev = get_device(i);
+        pci_dev *dev = get_device(i);
         col.color_without_blink.letter = VGA_COLOR_BLUE;
         vga_printstring_color(itoa(dev->vendor_id, buff, 16), &col);
         vga_printchar(' ');
@@ -106,52 +106,52 @@ void startup()
     log_info(itoa(dev->subclass, buff, 16));
     log_info(itoa(dev->prog_if, buff, 16));*/
     fat12_init();
-    log_ok("FAT12");
+    logger_log_ok("FAT12");
 
-    log_info("MicrOS ready");
-    log_info("Created by Application Section of SKNI KOD");
-    log_info("Version ... no version");
+    logger_log_info("MicrOS ready");
+    logger_log_info("Created by Application Section of SKNI KOD");
+    logger_log_info("Version ... no version");
 }
 
 int kmain()
 {
     startup();
 
-    log_info("Hello, World!");
+    logger_log_info("Hello, World!");
     startup_music_play();
-    log_ok("READY.");
+    logger_log_ok("READY.");
 
-    while(1)
+    while (1)
     {
-        if(!isBufferEmpty())
+        if (!isBufferEmpty())
         {
             ScanAsciiPair c = get_key_from_buffer();
-            if(c.scancode == 59)
+            if (c.scancode == 59)
             {
-                if(getMode() != 3)
+                if (getMode() != 3)
                     set3HVideoMode();
             }
-            else if(c.scancode == 60)
+            else if (c.scancode == 60)
             {
-                if(getMode() != 0x13)
+                if (getMode() != 0x13)
                 {
                     set13HVideoMode();
                     drawDupaIn13H(10);
                 }
             }
-            else if(c.scancode == 61)
+            else if (c.scancode == 61)
             {
                 pc_speaker_sound(1000);
             }
-            else if(c.scancode == 62)
+            else if (c.scancode == 62)
             {
                 pc_speaker_no_sound();
             }
-            else if(c.scancode == 63)
+            else if (c.scancode == 63)
             {
                 panic_screen_show(0x42, "Someone ask Question about Life, the Universe and Evertything");
             }
-            else if(c.scancode == 64)
+            else if (c.scancode == 64)
             {
                 memoryViewer();
             }

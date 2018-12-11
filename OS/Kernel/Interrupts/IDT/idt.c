@@ -6,40 +6,135 @@ volatile idt_info idt_information;
 volatile interrupt_handler_definition interrupt_handlers[IDT_MAX_INTERRUPT_HANDLERS];
 
 exception_definition exceptions[] =
-{
-    { .interrupt_number = 0,  .description = "Divide-by-zero error", },
-    { .interrupt_number = 1,  .description = "Debug", },
-    { .interrupt_number = 2,  .description = "Non-maskable Interrupt", },
-    { .interrupt_number = 3,  .description = "Breakpoint", },
-    { .interrupt_number = 4,  .description = "Overflow", },
-    { .interrupt_number = 5,  .description = "Bound Range Exceeded", },
-    { .interrupt_number = 6,  .description = "Invalid Opcode", },
-    { .interrupt_number = 7,  .description = "Device Not Available", },
-    { .interrupt_number = 8,  .description = "Double Fault", },
-    { .interrupt_number = 9,  .description = "Coprocessor Segment Overrun", },
-    { .interrupt_number = 10, .description = "Invalid TSS", },
-    { .interrupt_number = 11, .description = "Segment Not Present", },
-    { .interrupt_number = 12, .description = "Stack-Segment Fault", },
-    { .interrupt_number = 13, .description = "General Protection Fault", },
-    { .interrupt_number = 14, .description = "Page Fault", },
-    { .interrupt_number = 15, .description = "Reserved", },
-    { .interrupt_number = 16, .description = "x87 Floating-Point Exception", },
-    { .interrupt_number = 17, .description = "Alignment Check", },
-    { .interrupt_number = 18, .description = "Machine Check", },
-    { .interrupt_number = 19, .description = "SIMD Floating-Point Exception", },
-    { .interrupt_number = 20, .description = "Virtualization Exception", },
-    { .interrupt_number = 21, .description = "Reserved", },
-    { .interrupt_number = 22, .description = "Reserved", },
-    { .interrupt_number = 23, .description = "Reserved", },
-    { .interrupt_number = 24, .description = "Reserved", },
-    { .interrupt_number = 25, .description = "Reserved", },
-    { .interrupt_number = 26, .description = "Reserved", },
-    { .interrupt_number = 27, .description = "Reserved", },
-    { .interrupt_number = 28, .description = "Reserved", },
-    { .interrupt_number = 29, .description = "Reserved", },
-    { .interrupt_number = 30, .description = "Security Exception", },
-    { .interrupt_number = 31, .description = "Reserved", }
-};
+    {
+        {
+            .interrupt_number = 0,
+            .description = "Divide-by-zero error",
+        },
+        {
+            .interrupt_number = 1,
+            .description = "Debug",
+        },
+        {
+            .interrupt_number = 2,
+            .description = "Non-maskable Interrupt",
+        },
+        {
+            .interrupt_number = 3,
+            .description = "Breakpoint",
+        },
+        {
+            .interrupt_number = 4,
+            .description = "Overflow",
+        },
+        {
+            .interrupt_number = 5,
+            .description = "Bound Range Exceeded",
+        },
+        {
+            .interrupt_number = 6,
+            .description = "Invalid Opcode",
+        },
+        {
+            .interrupt_number = 7,
+            .description = "Device Not Available",
+        },
+        {
+            .interrupt_number = 8,
+            .description = "Double Fault",
+        },
+        {
+            .interrupt_number = 9,
+            .description = "Coprocessor Segment Overrun",
+        },
+        {
+            .interrupt_number = 10,
+            .description = "Invalid TSS",
+        },
+        {
+            .interrupt_number = 11,
+            .description = "Segment Not Present",
+        },
+        {
+            .interrupt_number = 12,
+            .description = "Stack-Segment Fault",
+        },
+        {
+            .interrupt_number = 13,
+            .description = "General Protection Fault",
+        },
+        {
+            .interrupt_number = 14,
+            .description = "Page Fault",
+        },
+        {
+            .interrupt_number = 15,
+            .description = "Reserved",
+        },
+        {
+            .interrupt_number = 16,
+            .description = "x87 Floating-Point Exception",
+        },
+        {
+            .interrupt_number = 17,
+            .description = "Alignment Check",
+        },
+        {
+            .interrupt_number = 18,
+            .description = "Machine Check",
+        },
+        {
+            .interrupt_number = 19,
+            .description = "SIMD Floating-Point Exception",
+        },
+        {
+            .interrupt_number = 20,
+            .description = "Virtualization Exception",
+        },
+        {
+            .interrupt_number = 21,
+            .description = "Reserved",
+        },
+        {
+            .interrupt_number = 22,
+            .description = "Reserved",
+        },
+        {
+            .interrupt_number = 23,
+            .description = "Reserved",
+        },
+        {
+            .interrupt_number = 24,
+            .description = "Reserved",
+        },
+        {
+            .interrupt_number = 25,
+            .description = "Reserved",
+        },
+        {
+            .interrupt_number = 26,
+            .description = "Reserved",
+        },
+        {
+            .interrupt_number = 27,
+            .description = "Reserved",
+        },
+        {
+            .interrupt_number = 28,
+            .description = "Reserved",
+        },
+        {
+            .interrupt_number = 29,
+            .description = "Reserved",
+        },
+        {
+            .interrupt_number = 30,
+            .description = "Security Exception",
+        },
+        {
+            .interrupt_number = 31,
+            .description = "Reserved",
+        }};
 
 void idt_init()
 {
@@ -82,22 +177,22 @@ void idt_init()
     idt_set(31, exc31);
 
     // Hardware interrupts (IRQ)
-    idt_set(32, int32);      // Programmable Interrupt Timer 
-    idt_set(33, int33);      // Keyboard
-    idt_set(34, int34);      // Cascade
-    idt_set(35, int35);      // COM2
-    idt_set(36, int36);      // COM1
-    idt_set(37, int37);      // LPT2
-    idt_set(38, int38);      // Floppy
-    idt_set(39, int39);      // LPT1
-    idt_set(40, int40);      // CMOS
-    idt_set(41, int41);      // Free
-    idt_set(42, int42);      // Free
-    idt_set(43, int43);      // Free
-    idt_set(44, int44);      // Mouse
-    idt_set(45, int45);      // FPU
-    idt_set(46, int46);      // Primary ATA Hard Disk
-    idt_set(47, int47);      // Secondary ATA Hard Disk
+    idt_set(32, int32); // Programmable Interrupt Timer
+    idt_set(33, int33); // Keyboard
+    idt_set(34, int34); // Cascade
+    idt_set(35, int35); // COM2
+    idt_set(36, int36); // COM1
+    idt_set(37, int37); // LPT2
+    idt_set(38, int38); // Floppy
+    idt_set(39, int39); // LPT1
+    idt_set(40, int40); // CMOS
+    idt_set(41, int41); // Free
+    idt_set(42, int42); // Free
+    idt_set(43, int43); // Free
+    idt_set(44, int44); // Mouse
+    idt_set(45, int45); // FPU
+    idt_set(46, int46); // Primary ATA Hard Disk
+    idt_set(47, int47); // Secondary ATA Hard Disk
 
     // Software interrupts
     idt_set(48, int48);
@@ -107,7 +202,7 @@ void idt_init()
     idt_set(52, int52);
 
     // Load Interrupt Descriptor Table to the register
-    __asm__ ("lidt %0" :: "m"(idt_information));
+    __asm__("lidt %0" ::"m"(idt_information));
 
     // Add system calls interrupt handler
     idt_attach_interrupt_handler(16, syscalls_interrupt_handler);
@@ -131,9 +226,9 @@ void idt_unset(uint8_t index)
 
 void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)())
 {
-    for(int i=0; i<IDT_MAX_INTERRUPT_HANDLERS; i++)
+    for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
     {
-        if(interrupt_handlers[i].handler == 0)
+        if (interrupt_handlers[i].handler == 0)
         {
             interrupt_handlers[i].interrupt_number = interrupt_number + 32;
             interrupt_handlers[i].handler = handler;
@@ -144,9 +239,9 @@ void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)())
 
 void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)())
 {
-    for(int i=0; i<IDT_MAX_INTERRUPT_HANDLERS; i++)
+    for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
     {
-        if(interrupt_handlers[i].interrupt_number == interrupt_number + 32 && interrupt_handlers[i].handler == handler)
+        if (interrupt_handlers[i].interrupt_number == interrupt_number + 32 && interrupt_handlers[i].handler == handler)
         {
             interrupt_handlers[i].handler = 0;
             break;
@@ -156,9 +251,9 @@ void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)())
 
 void global_int_handler(interrupt_state state)
 {
-    for(int i=0; i<IDT_MAX_INTERRUPT_HANDLERS; i++)
+    for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
     {
-        if(interrupt_handlers[i].interrupt_number == state.interrupt_number && interrupt_handlers[i].handler != 0)
+        if (interrupt_handlers[i].interrupt_number == state.interrupt_number && interrupt_handlers[i].handler != 0)
         {
             interrupt_handlers[i].handler(&state);
         }
@@ -169,9 +264,9 @@ void global_int_handler(interrupt_state state)
 
 void global_exc_handler(interrupt_state state, uint32_t error_code)
 {
-    for(int i=0; i<32; i++)
+    for (int i = 0; i < 32; i++)
     {
-        if(exceptions[i].interrupt_number == state.interrupt_number)
+        if (exceptions[i].interrupt_number == state.interrupt_number)
         {
             char exception_string[64];
             char error_code_msg[] = ". Error code: ";
@@ -182,7 +277,7 @@ void global_exc_handler(interrupt_state state, uint32_t error_code)
 
             uint32_t description_length = strlen(exceptions[i].description);
             uint32_t error_code_msg_length = strlen(error_code_msg);
-            
+
             memcpy(exception_string, exceptions[i].description, description_length);
             memcpy(exception_string + description_length, error_code_msg, error_code_msg_length);
 
@@ -195,12 +290,18 @@ void global_exc_handler(interrupt_state state, uint32_t error_code)
     }
 }
 
-void syscalls_interrupt_handler(interrupt_state* state)
+void syscalls_interrupt_handler(interrupt_state *state)
 {
-    switch(state->eax)
+    switch (state->eax)
     {
-        case 0x01: get_system_clock_call(state); break;
-        case 0x02: alloc_memory_call(state); break;
-        case 0x03: dealloc_memory_call(state); break;
+    case 0x01:
+        syscall_get_system_clock_call(state);
+        break;
+    case 0x02:
+        syscall_alloc_memory_call(state);
+        break;
+    case 0x03:
+        syscall_dealloc_memory_call(state);
+        break;
     }
 }
