@@ -12,7 +12,7 @@ void vector_add(vector* vector, void* data)
 	vector_insert(vector, data, vector->count);
 }
 
-void vector_insert(vector* vector, void* data, int index)
+void vector_insert(vector* vector, void* data, uint32_t index)
 {
 	if (vector->size == 0)
 	{
@@ -26,7 +26,7 @@ void vector_insert(vector* vector, void* data, int index)
 		vector->data = realloc(vector->data, sizeof(void*) * vector->size);
 	}
 
-	for (int i = vector->count; i >= index; i--)
+	for (uint32_t i = vector->count; i >= index; i--)
 	{
 		vector->data[i] = vector->data[i - 1];
 	}
@@ -35,14 +35,14 @@ void vector_insert(vector* vector, void* data, int index)
 	vector->count++;
 }
 
-void vector_remove(vector* vector, int index)
+void vector_remove(vector* vector, uint32_t index)
 {
 	if (index >= vector->count)
 	{
 		return;
 	}
 
-	for (int i = index; i < vector->count - 1; i++)
+	for (uint32_t i = index; i < vector->count - 1; i++)
 	{
 		vector->data[i] = vector->data[i + 1];
 	}
@@ -54,7 +54,7 @@ void vector_clear(vector* vector)
 {
 	if (vector->size > 0)
 	{
-		for(int i=0; i<vector->count; i++)
+		for(uint32_t i=0; i<vector->count; i++)
 		{
 			free(vector->data[i]);
 		}
