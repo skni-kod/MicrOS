@@ -1,7 +1,7 @@
 #include "memory_map.h"
 
-uint8_t* memory_map_entries_count = MEMORY_MAP_ENTRIES_COUNT;
-memory_map_entry* memory_map = MEMORY_MAP_BUFFER;
+uint8_t* memory_map_entries_count = (uint8_t*)MEMORY_MAP_ENTRIES_COUNT;
+memory_map_entry* memory_map = (memory_map_entry*)(MEMORY_MAP_BUFFER);
 
 memory_map_entry* memory_map_get()
 {
