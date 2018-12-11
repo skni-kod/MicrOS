@@ -61,7 +61,7 @@ void timer_interrupt()
     system_clock++;
     system_clock_fractions += expected_clock_fraction;
 
-    if(system_clock_fractions > TARGET_FREQUENCY)
+    if (system_clock_fractions > TARGET_FREQUENCY)
     {
         system_clock++;
         system_clock_fractions -= TARGET_FREQUENCY;

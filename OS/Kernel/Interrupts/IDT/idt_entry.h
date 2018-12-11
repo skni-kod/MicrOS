@@ -10,7 +10,8 @@ IDF entry gate types:
  - interrupt - jump to the specified function
  - trap - similar to interrupt, but without disabling other interrupts
 */
-typedef enum idt_entrygatetype {
+typedef enum idt_entrygatetype
+{
     Task_16Bit = 0x5,
     Interrupt_16Bit = 0x6,
     Trap_16Bit = 0x7,
@@ -19,7 +20,8 @@ typedef enum idt_entrygatetype {
     Trap_32Bit = 0xF
 } idt_entrygatetype;
 
-typedef struct idt_entry {
+typedef struct idt_entry
+{
     uint16_t offset_0_15;
     uint16_t selector;
     uint8_t reserved;
