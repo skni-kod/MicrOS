@@ -47,8 +47,8 @@ void read_rtc(rtc_time *time)
       unsigned char last_century;
       unsigned char registerB;
 
-      // Note: This uses the "read registers until you get the same values twice in a row" technique
-      //       to avoid getting dodgy/inconsistent values due to RTC updates
+      // This uses the "read registers until you get the same values twice in a row" technique
+      // to avoid getting dodgy/inconsistent values due to RTC updates
 
       while (get_update_in_progress_flag())
             ; // Make sure an update isn't in progress
@@ -134,8 +134,8 @@ uint8_t read_second()
       unsigned char second;
       unsigned char registerB;
 
-      // Note: This uses the "read registers until you get the same values twice in a row" technique
-      //       to avoid getting dodgy/inconsistent values due to RTC updates
+      // This uses the "read registers until you get the same values twice in a row" technique
+      // to avoid getting dodgy/inconsistent values due to RTC updates
 
       while (get_update_in_progress_flag())
             ; // Make sure an update isn't in progress
@@ -169,8 +169,8 @@ uint8_t read_minute()
       unsigned char minute;
       unsigned char registerB;
 
-      // Note: This uses the "read registers until you get the same values twice in a row" technique
-      //       to avoid getting dodgy/inconsistent values due to RTC updates
+      // This uses the "read registers until you get the same values twice in a row" technique
+      // to avoid getting dodgy/inconsistent values due to RTC updates
 
       while (get_update_in_progress_flag())
             ; // Make sure an update isn't in progress
@@ -204,8 +204,8 @@ uint8_t read_hour()
       unsigned char hour;
       unsigned char registerB;
 
-      // Note: This uses the "read registers until you get the same values twice in a row" technique
-      //       to avoid getting dodgy/inconsistent values due to RTC updates
+      // This uses the "read registers until you get the same values twice in a row" technique
+      // to avoid getting dodgy/inconsistent values due to RTC updates
 
       while (get_update_in_progress_flag())
             ; // Make sure an update isn't in progress
@@ -243,8 +243,8 @@ uint8_t read_day()
       unsigned char day;
       unsigned char registerB;
 
-      // Note: This uses the "read registers until you get the same values twice in a row" technique
-      //       to avoid getting dodgy/inconsistent values due to RTC updates
+      // This uses the "read registers until you get the same values twice in a row" technique
+      // to avoid getting dodgy/inconsistent values due to RTC updates
 
       while (get_update_in_progress_flag())
             ; // Make sure an update isn't in progress
@@ -277,8 +277,8 @@ uint8_t read_month()
       unsigned char month;
       unsigned char registerB;
 
-      // Note: This uses the "read registers until you get the same values twice in a row" technique
-      //       to avoid getting dodgy/inconsistent values due to RTC updates
+      // This uses the "read registers until you get the same values twice in a row" technique
+      // to avoid getting dodgy/inconsistent values due to RTC updates
 
       while (get_update_in_progress_flag())
             ; // Make sure an update isn't in progress
@@ -313,8 +313,8 @@ uint32_t read_year()
       uint32_t year;
       unsigned char registerB;
 
-      // Note: This uses the "read registers until you get the same values twice in a row" technique
-      //       to avoid getting dodgy/inconsistent values due to RTC updates
+      // This uses the "read registers until you get the same values twice in a row" technique
+      // to avoid getting dodgy/inconsistent values due to RTC updates
 
       while (get_update_in_progress_flag())
             ; // Make sure an update isn't in progress
