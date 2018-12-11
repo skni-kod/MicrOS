@@ -81,12 +81,12 @@ unsigned char kbdusB[128] =
     0,	/* All other keys are undefined */
 };	
 
-volatile KeyboardStateFlags* const kb_state = 0xc0000417;
-volatile KeyboardExtendedStateFlags* const kb_estate = 0xc0000496;
-volatile uint16_t* const buffer_start = 0xc0000480;
-volatile uint16_t* const buffer_end = 0xc0000482;
-volatile uint16_t* const buffer_write = 0xc000041C;
-volatile uint16_t* const buffer_read = 0xc000041A;
+volatile KeyboardStateFlags* const kb_state = (KeyboardStateFlags*)0xc0000417;
+volatile KeyboardExtendedStateFlags* const kb_estate = (KeyboardExtendedStateFlags*)0xc0000496;
+volatile uint16_t* const buffer_start = (uint16_t*)0xc0000480;
+volatile uint16_t* const buffer_end = (uint16_t*)0xc0000482;
+volatile uint16_t* const buffer_write = (uint16_t*)0xc000041C;
+volatile uint16_t* const buffer_read = (uint16_t*)0xc000041A;
 
 void keyboard_init()
 {
@@ -121,13 +121,13 @@ void put_key_to_buffor(unsigned char scancode, unsigned char ascii)
   if(!ableToWrite())
   {
     vga_printstring("\n _._     _,-'\"\"`-._       YEAH OKAY WE GET IT CRUMPY CAT IS FUNNY LOOKING\n");
-    vga_printstring("(,-.`._,'(       |\`-/|                                                  \n");
-    vga_printstring("    `-.-' \ )-`( , o o)                                                  \n");
-    vga_printstring("-bf-      `-    \`_`\"'-   WE FUCKING GET IT ALREADY. WE PLUG THE BUFFER  \n");
+    vga_printstring("(,-.`._,'(       |\\`-/|                                                  \n");
+    vga_printstring("    `-.-' \\ )-`( , o o)                                                  \n");
+    vga_printstring("-bf-      `-    \\`_`\"'-   WE FUCKING GET IT ALREADY. WE PLUG THE BUFFER  \n");
     return;
   }
     
-  volatile ScanAsciiPair* character = (0xc0000000 + (0x0040 * 0x10)) + (*buffer_write);
+  volatile ScanAsciiPair* character = (ScanAsciiPair*)((0xc0000000 + (0x0040 * 0x10)) + (*buffer_write));
   character->ascii = ascii;
   character->scancode = scancode;
   incrementBufferPointer(buffer_write);
@@ -142,7 +142,7 @@ ScanAsciiPair get_key_from_buffer()
     c.scancode = 255;
     return c;
   }
-  ScanAsciiPair* tmp = (0xc0000000 + (0x0040 * 0x10)) + (*buffer_read);
+  ScanAsciiPair* tmp = (ScanAsciiPair*)((0xc0000000 + (0x0040 * 0x10)) + (*buffer_read));
   c.ascii = tmp->ascii;
   c.scancode = tmp->scancode;
   incrementBufferPointer(buffer_read);
@@ -157,7 +157,6 @@ unsigned char get_scancode()
 void keyboard_handler()
 { 
      unsigned char scancode; 
-     unsigned int shift_key = 0;
      scancode = get_scancode();
      //scancode = d;
 
