@@ -60,7 +60,7 @@ void startup()
     pci_init();
     logger_log_ok("PCI");
     logger_log_info("Number of devices: ");
-    uint8_t nd = get_number_of_devices();
+    uint8_t nd = pci_get_number_of_devices();
     logger_log_info(itoa(nd, buff, 10));
     logger_log_info("Devices: ");
     vga_color col;
@@ -77,9 +77,9 @@ void startup()
     vga_printstring_color("subclass ", &col);
     col.color_without_blink.letter = VGA_COLOR_MAGENTA;
     vga_printstring_color("prog_if\n", &col);
-    for (int i = 0; i < get_number_of_devices(); i++)
+    for (int i = 0; i < pci_get_number_of_devices(); i++)
     {
-        pci_dev *dev = get_device(i);
+        pci_device *dev = pci_get_device(i);
         col.color_without_blink.letter = VGA_COLOR_BLUE;
         vga_printstring_color(itoa(dev->vendor_id, buff, 16), &col);
         vga_printchar(' ');
