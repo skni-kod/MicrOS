@@ -44,10 +44,10 @@ void floppy_lba_to_chs(uint16_t lba, uint8_t *head, uint8_t *track, uint8_t *sec
 int8_t floppy_reset()
 {
     // Disable floppy controller
-    outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0);
+    io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0);
 
     // Enable floppy controller (reset (0x04) | DMA (0x08))
-    outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04 | 0x08);
+    io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04 | 0x08);
 
     // Wait for interrupt and continue reset sequence
     floppy_wait_for_interrupt();
@@ -67,7 +67,7 @@ int8_t floppy_reset()
     //  01 - 250 Kb/s
     //  10 - 100 Kb/s
     //  11 - 1 Mb/s
-    outb(FLOPPY_CONTROL_REGISTER, 0);
+    io_out_byte(FLOPPY_CONTROL_REGISTER, 0);
 
     // Set floppy parameters
     //  step rate = 3 ms
@@ -85,7 +85,7 @@ int8_t floppy_wait_until_ready()
     {
         // Get main status register and check if the last bit is set
         // If yes, data register is ready for data transfer
-        if (inb(FLOPPY_MAIN_STAUTS_REGISTER) & 0x80)
+        if (io_in_byte(FLOPPY_MAIN_STAUTS_REGISTER) & 0x80)
         {
             return 0;
         }
@@ -105,7 +105,7 @@ int8_t floppy_send_command(uint8_t cmd)
         return -1;
     }
 
-    outb(FLOPPY_DATA_REGISTER, cmd);
+    io_out_byte(FLOPPY_DATA_REGISTER, cmd);
 
     return 0;
 }
@@ -118,7 +118,7 @@ uint8_t floppy_read_data()
         return 0xFF;
     }
 
-    return inb(FLOPPY_DATA_REGISTER);
+    return io_in_byte(FLOPPY_DATA_REGISTER);
 }
 
 void floppy_confirm_interrupt(uint8_t *st0, uint8_t *cylinder)
@@ -187,7 +187,7 @@ void floppy_enable_motor()
     if (!motor_enabled)
     {
         // Enable floppy motor (reset (0x04) | Drive 0 Motor (0x10))
-        outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04 | 0x08 | 0x10);
+        io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04 | 0x08 | 0x10);
         sleep(300);
 
         logger_log_info("[Floppy] Motor enabled");
@@ -202,7 +202,7 @@ void floppy_disable_motor()
     if (motor_enabled)
     {
         // Disable floppy motor (reset (0x04))
-        outb(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04);
+        io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04);
 
         logger_log_info("[Floppy] Motor disabled");
         motor_enabled = false;
@@ -382,24 +382,24 @@ int floppy_seek(uint32_t cylinder, uint32_t head)
 void floppy_dma_init(bool read)
 {
     // Tell DMA that we want to configure floppy (channel 2)
-    outb(DMA_SINGLE_CHANNEL_MASK_REGISTER, 0x06);
+    io_out_byte(DMA_SINGLE_CHANNEL_MASK_REGISTER, 0x06);
 
     // Reset Flip-Flop register
-    outb(DMA_FLIP_FLOP_RESET_REGISTER, 0xff);
+    io_out_byte(DMA_FLIP_FLOP_RESET_REGISTER, 0xff);
 
     // Set buffer to the specified address
-    outb(DMA_START_ADDRESS_REGISTER, (uint8_t)((uint32_t)dma_buffer & 0xff));
-    outb(DMA_START_ADDRESS_REGISTER, (uint8_t)((uint32_t)dma_buffer >> 8));
+    io_out_byte(DMA_START_ADDRESS_REGISTER, (uint8_t)((uint32_t)dma_buffer & 0xff));
+    io_out_byte(DMA_START_ADDRESS_REGISTER, (uint8_t)((uint32_t)dma_buffer >> 8));
 
     // Reset Flip-Flop register
-    outb(DMA_FLIP_FLOP_RESET_REGISTER, 0xff);
+    io_out_byte(DMA_FLIP_FLOP_RESET_REGISTER, 0xff);
 
     // Count to 0x23ff (number of bytes in a 3.5" floppy disk track)
-    outb(DMA_COUNT_REGISTER_CHANNEL, (0xff));
-    outb(DMA_COUNT_REGISTER_CHANNEL, 0x23);
+    io_out_byte(DMA_COUNT_REGISTER_CHANNEL, (0xff));
+    io_out_byte(DMA_COUNT_REGISTER_CHANNEL, 0x23);
 
     // We don't want to have external page register
-    outb(DMA_EXTERNAL_PAGE_REGISTER, 0);
+    io_out_byte(DMA_EXTERNAL_PAGE_REGISTER, 0);
 
     // | MOD1 | MOD0 | DOWN | AUTO | TRA1 | TRA0 | SEL1 | SEL0 |
     // |  0   |  1   |  0   |  1   |  x   |  x   |  1   |  0   | = 0x56
@@ -416,10 +416,10 @@ void floppy_dma_init(bool read)
     //  10 - writing to memory
     //  11 - invalid
     // SEL0, SEL1 - channel to change
-    outb(DMA_MODE_REGISTER, 0x52 | (read ? 0x04 : 0x08));
+    io_out_byte(DMA_MODE_REGISTER, 0x52 | (read ? 0x04 : 0x08));
 
     // Release channel
-    outb(DMA_SINGLE_CHANNEL_MASK_REGISTER, 0x02);
+    io_out_byte(DMA_SINGLE_CHANNEL_MASK_REGISTER, 0x02);
 }
 
 void floppy_wait_for_interrupt()

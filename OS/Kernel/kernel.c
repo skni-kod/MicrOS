@@ -118,7 +118,7 @@ int kmain()
     startup();
 
     logger_log_info("Hello, World!");
-    startup_music_play();
+    //startup_music_play();
     logger_log_ok("READY.");
 
     while (1)

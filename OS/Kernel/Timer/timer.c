@@ -31,13 +31,13 @@ void timer_init()
     //  100 - mode 4 - software triggered strobe
     //  101 - mode 5 - hardware triggered strobe
     // BCD - use BCD format or binary
-    outb(MODE_COMMAND_REGISTER, 0x36);
+    io_out_byte(MODE_COMMAND_REGISTER, 0x36);
 
     reload_time = timer_get_reload_value();
     expected_clock_fraction = timer_get_expected_clock_fraction();
 
-    outb(CHANNEL0_PORT, reload_time & 0xFF);
-    outb(CHANNEL0_PORT, reload_time >> 8);
+    io_out_byte(CHANNEL0_PORT, reload_time & 0xFF);
+    io_out_byte(CHANNEL0_PORT, reload_time >> 8);
 }
 
 uint16_t timer_get_reload_value()

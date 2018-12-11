@@ -24,15 +24,15 @@ enum
 
 int get_update_in_progress_flag()
 {
-      outb(cmos_address, 0x0A);
-      return (inb(cmos_data) & 0x80);
+      io_out_byte(cmos_address, 0x0A);
+      return (io_in_byte(cmos_data) & 0x80);
 }
 
 unsigned char get_RTC_register(int reg)
 {
-      uint8_t NMI_bit = inb(cmos_address) & 0x80;
-      outb(cmos_address, reg | NMI_bit);
-      return inb(cmos_data);
+      uint8_t NMI_bit = io_in_byte(cmos_address) & 0x80;
+      io_out_byte(cmos_address, reg | NMI_bit);
+      return io_in_byte(cmos_data);
 }
 
 void rtc_read(rtc_time *time)
@@ -379,7 +379,7 @@ uint8_t BINtoBCD(uint8_t n)
 void rtc_set(rtc_time *time)
 {
       //Disable interrupts
-      disable();
+      io_disable_interrupts();
 
       uint8_t registerB = get_RTC_register(0x0B);
       //change values to BCD
@@ -395,61 +395,61 @@ void rtc_set(rtc_time *time)
 
       //Setting 0x80 byte to disable NMI
 
-      outb(0x70, 0x80);
-      outb(0x71, time->second);
+      io_out_byte(0x70, 0x80);
+      io_out_byte(0x71, time->second);
 
-      outb(0x70, 0x82);
-      outb(0x71, time->minute);
+      io_out_byte(0x70, 0x82);
+      io_out_byte(0x71, time->minute);
 
-      outb(0x70, 0x84);
-      outb(0x71, time->hour);
+      io_out_byte(0x70, 0x84);
+      io_out_byte(0x71, time->hour);
 
-      outb(0x70, 0x87);
-      outb(0x71, time->day);
+      io_out_byte(0x70, 0x87);
+      io_out_byte(0x71, time->day);
 
-      outb(0x70, 0x88);
-      outb(0x71, time->month);
+      io_out_byte(0x70, 0x88);
+      io_out_byte(0x71, time->month);
 
-      outb(0x70, 0x89);
-      outb(0x71, time->year);
+      io_out_byte(0x70, 0x89);
+      io_out_byte(0x71, time->year);
 
       //enable interrupts
-      enable();
+      io_enable_interrupts();
 
       //enable NMI
-      outb(0x70, inb(0x70) & 0x7F);
+      io_out_byte(0x70, io_in_byte(0x70) & 0x7F);
 }
 
 void rtc_enable_IRQ8()
 {
-      disable();               // disable interrupts
-      outb(0x70, 0x8B);        // select register B, and disable NMI
-      char prev = inb(0x71);   // read the current value of register B
-      outb(0x70, 0x8B);        // set the index again (a read will reset the index to register D)
-      outb(0x71, prev | 0x40); // write the previous value ORed with 0x40. This turns on bit 6 of register B
-      enable();
-      outb(0x70, inb(0x70) & 0x7F); // enable NMI
+      io_disable_interrupts();        // disable interrupts
+      io_out_byte(0x70, 0x8B);        // select register B, and disable NMI
+      char prev = io_in_byte(0x71);   // read the current value of register B
+      io_out_byte(0x70, 0x8B);        // set the index again (a read will reset the index to register D)
+      io_out_byte(0x71, prev | 0x40); // write the previous value ORed with 0x40. This turns on bit 6 of register B
+      io_enable_interrupts();
+      io_out_byte(0x70, io_in_byte(0x70) & 0x7F); // enable NMI
 }
 
 void rtc_disable_IRQ8()
 {
-      disable();               // disable interrupts
-      outb(0x70, 0x8B);        // select register B, and disable NMI
-      char prev = inb(0x71);   // read the current value of register B
-      outb(0x70, 0x8B);        // set the index again (a read will reset the index to register D)
-      outb(0x71, prev & 0xBF); // write the previous value ORed with 0xBF. This turns off bit 6 of register B
-      enable();
-      outb(0x70, inb(0x70) & 0x7F); // enable NMI
+      io_disable_interrupts();        // disable interrupts
+      io_out_byte(0x70, 0x8B);        // select register B, and disable NMI
+      char prev = io_in_byte(0x71);   // read the current value of register B
+      io_out_byte(0x70, 0x8B);        // set the index again (a read will reset the index to register D)
+      io_out_byte(0x71, prev & 0xBF); // write the previous value ORed with 0xBF. This turns off bit 6 of register B
+      io_enable_interrupts();
+      io_out_byte(0x70, io_in_byte(0x70) & 0x7F); // enable NMI
 }
 
 void rtc_change_interrupt_rate(uint8_t rate)
 {
       rate &= 0x0F; // rate must be above 2 and not over 15 to get proper result
-      disable();
-      outb(0x70, 0x8A);                 // set index to register A, disable NMI
-      char prev = inb(0x71);            // get initial value of register A
-      outb(0x70, 0x8A);                 // reset index to A
-      outb(0x71, (prev & 0xF0) | rate); //write only our rate to A. Note, rate is the bottom 4 bits.
-      enable();
-      outb(0x70, inb(0x70) & 0x7F); // enable NMI
+      io_disable_interrupts();
+      io_out_byte(0x70, 0x8A);                 // set index to register A, disable NMI
+      char prev = io_in_byte(0x71);            // get initial value of register A
+      io_out_byte(0x70, 0x8A);                 // reset index to A
+      io_out_byte(0x71, (prev & 0xF0) | rate); //write only our rate to A. Note, rate is the bottom 4 bits.
+      io_enable_interrupts();
+      io_out_byte(0x70, io_in_byte(0x70) & 0x7F); // enable NMI
 }

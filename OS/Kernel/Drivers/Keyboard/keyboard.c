@@ -151,7 +151,7 @@ ScanAsciiPair get_key_from_buffer()
 
 unsigned char get_scancode()
 {
-    return inb(0x60);
+    return io_in_byte(0x60);
 }
 
 void keyboard_handler()

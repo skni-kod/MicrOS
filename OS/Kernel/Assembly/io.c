@@ -1,6 +1,6 @@
 #include "io.h"
 
-uint8_t inb(uint16_t port)
+uint8_t io_in_byte(uint16_t port)
 {
     uint8_t value;
 
@@ -12,7 +12,7 @@ uint8_t inb(uint16_t port)
     return value;
 }
 
-void outb(uint16_t port, uint8_t val)
+void io_out_byte(uint16_t port, uint8_t val)
 {
     __asm__("outb %0, %1"
             :
@@ -20,7 +20,7 @@ void outb(uint16_t port, uint8_t val)
     io_wait();
 }
 
-uint16_t inw(uint16_t port)
+uint16_t io_in_word(uint16_t port)
 {
     uint16_t value;
 
@@ -31,14 +31,14 @@ uint16_t inw(uint16_t port)
 
     return value;
 }
-void outw(uint16_t port, uint16_t val)
+void io_out_word(uint16_t port, uint16_t val)
 {
     __asm__("outw %0, %1"
             :
             : "a"(val), "Nd"(port));
     io_wait();
 }
-uint32_t inl(uint16_t port)
+uint32_t io_in_long(uint16_t port)
 {
     uint32_t value;
 
@@ -49,7 +49,7 @@ uint32_t inl(uint16_t port)
 
     return value;
 }
-void outl(uint16_t port, uint32_t val)
+void io_out_long(uint16_t port, uint32_t val)
 {
     __asm__("outl %0, %1"
             :
@@ -57,12 +57,12 @@ void outl(uint16_t port, uint32_t val)
     io_wait();
 }
 
-void enable()
+void io_enable_interrupts()
 {
     __asm__("sti" ::);
 }
 
-void disable()
+void io_disable_interrupts()
 {
     __asm__("cli" ::);
 }
