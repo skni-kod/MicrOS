@@ -60,7 +60,9 @@ uint32_t paging_get_first_free_page_index(uint32_t from_index)
         }
     }
 
+    // TODO: Malloc should return 0 instead of panic screen.
     panic_screen_show(0xA0, "Out of memory");
+
     return 0;
 }
 

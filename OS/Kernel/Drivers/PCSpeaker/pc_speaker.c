@@ -5,15 +5,15 @@ uint16_t old_value = 0;
 
 void pc_speaker_sound(uint32_t freq)
 {
-	uint32_t Div;
+	uint32_t div;
 	uint8_t tmp;
 
-	Div = 1193180 / freq;
+	div = 1193180 / freq;
 	io_out_byte(0x43, 0xb6);
 	old_value = io_in_byte(0x42);
 	old_value |= ((uint16_t)io_in_byte(0x42)) << 8;
-	io_out_byte(0x42, (uint8_t)(Div));
-	io_out_byte(0x42, (uint8_t)(Div >> 8));
+	io_out_byte(0x42, (uint8_t)(div));
+	io_out_byte(0x42, (uint8_t)(div >> 8));
 
 	tmp = io_in_byte(0x61);
 	if (tmp != (tmp | 3))

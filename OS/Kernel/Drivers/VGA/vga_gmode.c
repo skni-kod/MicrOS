@@ -8,6 +8,8 @@
 #define pokew(S, O, V) *(unsigned short *)(16uL * (S) + (O)) = (V)
 #define _vmemwr(DS, DO, S, N) memcpy((char *)((DS)*16 + (DO)), S, N)
 
+// TODO: Set some prefix for functions.
+
 static char mode = 3;
 
 uint8_t g_320x200x256[] =
@@ -513,6 +515,8 @@ assume: chain-4 addressing already off */
 		vmemwr(16384u * 0 + i * 32, buf, font_height);
 		buf += font_height;
 	}
+
+	// TODO: Check if this block is necessary.
 #if 0
 /* write font 1 */
 	for(i = 0; i < 256; i++)
@@ -534,8 +538,6 @@ assume: chain-4 addressing already off */
 	io_out_byte(graphicsControllerDataPort, gc6);
 }
 
-#define VGA_VRAM 0xC00A0000
-#define PITCH 320
 void pixel_256(unsigned char color, unsigned int x, unsigned int y)
 {
 	unsigned char *fb = (unsigned char *)VGA_VRAM;

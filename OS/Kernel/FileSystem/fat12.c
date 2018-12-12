@@ -1,5 +1,7 @@
 #include "fat12.h"
 
+// TODO: Add functions related with saving/renaming/other important stuff.
+
 volatile floppy_header *fat_header_data = (floppy_header *)FLOPPY_HEADER_DATA;
 volatile uint8_t *fat;
 volatile directory_entry *root;

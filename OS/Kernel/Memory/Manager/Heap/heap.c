@@ -3,6 +3,7 @@
 heap_entry *heap;
 uint32_t tail_page_index;
 
+// TODO: This function should return 0 if there is no available memory to allocate instead of panic screen.
 void *heap_alloc(uint32_t size)
 {
     heap_entry *current_entry = heap;
@@ -89,6 +90,7 @@ void heap_set_base_page_index(uint32_t index)
     tail_page_index = index;
 }
 
+// TODO: This shouldn't be named as "clear", set something better in the future.
 void heap_clear()
 {
     uint32_t allocated_virtual_pages = virtual_memory_get_allocated_pages_count();

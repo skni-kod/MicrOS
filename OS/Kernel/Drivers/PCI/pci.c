@@ -11,6 +11,7 @@ uint8_t number_of_devices = 0;
 
 void pci_init()
 {
+    // TODO: Check if these commented lines are necessary.
     /*d.enable = 1;
     for(uint16_t bus = 0; bus < 256; bus++)
     {

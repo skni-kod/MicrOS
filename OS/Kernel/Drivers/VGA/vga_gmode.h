@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+#define VGA_VRAM 0xC00A0000
+#define PITCH 320
+
 #define miscPort 0x3c2
 #define crtcIndexPort 0x3d4
 #define crtcDataPort 0x3d5

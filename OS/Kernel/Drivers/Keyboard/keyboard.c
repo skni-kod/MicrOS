@@ -262,6 +262,8 @@ void keyboard_handler()
         kb_estate->last_E0h = 0;
         kb_estate->last_E1h = 0;
     }
+
+    // TODO: Check if these commented lines are necessary.
     /*if(scancode == 0xE0)
     {
       kb_estate->last_E0h = 1;
