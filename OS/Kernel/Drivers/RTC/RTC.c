@@ -1,4 +1,4 @@
-#include "RTC.h"
+#include "rtc.h"
 
 #define CURRENT_YEAR 2018 // Change this each year!
 

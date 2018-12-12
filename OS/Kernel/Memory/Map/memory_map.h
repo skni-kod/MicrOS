@@ -9,7 +9,7 @@
 #include "../../../../Library/stdlib.h"
 #include "memory_map_entry.h"
 
-memory_map_entry* memory_map_get();
+memory_map_entry *memory_map_get();
 uint8_t memory_map_get_entries_count();
 void memory_map_dump();
 

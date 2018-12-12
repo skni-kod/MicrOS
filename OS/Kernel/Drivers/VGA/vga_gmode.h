@@ -17,14 +17,14 @@
 #define attributeControllerWritePort 0x3c0
 #define attributeControllerResetPort 0x3da
 
-void writeRegisters(uint8_t* registers);
-void writeRegistersText(uint8_t* registers);
+void writeRegisters(uint8_t *registers);
+void writeRegistersText(uint8_t *registers);
 void set13HVideoMode();
 void set3HVideoMode();
-void pixel_256 (unsigned char color, unsigned int x, unsigned int y);
+void pixel_256(unsigned char color, unsigned int x, unsigned int y);
 void drawDupaIn13H(int color);
 
-void setFont(uint8_t* buf, uint8_t font_height);
+void setFont(uint8_t *buf, uint8_t font_height);
 char getMode();
 
 #endif

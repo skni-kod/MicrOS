@@ -40,21 +40,20 @@ typedef struct vga_screen_pos
 // Color with blinking bit
 typedef struct vga_color_with_blink
 {
-    unsigned char letter :4;
-    unsigned char background :3;
-    unsigned char blikning :1;
+    unsigned char letter : 4;
+    unsigned char background : 3;
+    unsigned char blikning : 1;
 } vga_color_with_blink;
 
 // Color without blinking bit
 typedef struct vga_color_without_blink
 {
-    unsigned char letter :4;
-    unsigned char background :4;
+    unsigned char letter : 4;
+    unsigned char background : 4;
 } vga_color_without_blink;
 
 // Color
-typedef union vga_color
-{
+typedef union vga_color {
     vga_color_with_blink color_with_blink;
     vga_color_without_blink color_without_blink;
 } vga_color;
@@ -67,8 +66,7 @@ typedef struct vga_character
 } vga_character;
 
 // Screen
-typedef union screen
-{
+typedef union screen {
     uint16_t value;
     vga_character c;
 } screen;
@@ -76,9 +74,9 @@ typedef union screen
 // Functions for users
 void vga_init();
 void vga_printchar(char c);
-void vga_printchar_color(char c, vga_color * color);
-void vga_printstring(const char * str);
-void vga_printstring_color(const char * str, vga_color * color);
+void vga_printchar_color(char c, vga_color *color);
+void vga_printstring(const char *str);
+void vga_printstring_color(const char *str, vga_color *color);
 void vga_set_char(uint16_t x, uint16_t y, char c);
 void vga_set_char_struct(vga_screen_pos spos, char c);
 char vga_get_char(uint16_t x, uint16_t y);
@@ -99,7 +97,6 @@ void vga_change_printing_screen(uint8_t a);
 void vga_copy_screen(uint8_t from, uint8_t to);
 void vga_cursor_on();
 void vga_cursor_off();
-
 
 // Helpers
 void vga_newline();
