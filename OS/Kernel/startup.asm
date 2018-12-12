@@ -10,17 +10,17 @@
 
 [BITS 16]
 
-jmp Main
+jmp main
 
 ; Entry frame: https://wiki.osdev.org/GDT
-GDT:
+gdt_begin:
 ; Null segment, reserved by CPU
-GDT_Null:
+gdt_null:
     dd 0x00000000
     dd 0x00000000
 
 ; Code segment
-GDT_Code:
+gdt_code:
     ; Segment limit (4 GiB)
     dw 0xFFFF
 
@@ -49,7 +49,7 @@ GDT_Code:
     db 0x00
 
 ; Data segment
-GDT_Data:
+gdt_data:
     ; Segment limit (4 GiB)
     dw 0xFFFF
 
@@ -76,12 +76,12 @@ GDT_Data:
 
     ; Segment base address (8 bits)
     db 0x00
-GDT_End:
-GDT_Desc:
-    dw GDT_End - GDT - 1
-    dd GDT
+gdt_end:
+gdt_description:
+    dw gdt_end - gdt_begin - 1
+    dd gdt_begin
 
-Main:
+main:
     ; Load memory map before we will switch to the protected mode
     ; Buffer segment
     mov bx, 0x0000
@@ -91,13 +91,13 @@ Main:
     mov bx, 0x5C00
     mov di, bx
 
-    call LoadMemoryMap
+    call load_memory_map
 
     ; Disable interrupts
     cli
 
     ; Load GDT table
-    lgdt [dword GDT_Desc]
+    lgdt [dword gdt_description]
 
     ; Set protected mode flag
     mov eax, cr0
@@ -105,12 +105,12 @@ Main:
     mov cr0, eax
 
     ; Jump to protected area 
-    jmp dword 0x08:Main_ProtectedArea
+    jmp dword 0x08:main_protected_area
 
 ; Input:
 ;   es - buffer segment
 ;   di - buffer offset
-LoadMemoryMap:
+load_memory_map:
     xor ebx, ebx
 
     ; Push initial buffer address
@@ -120,7 +120,7 @@ LoadMemoryMap:
     mov eax, 0
     push eax
 
-    LoadMemoryMap_Loop:
+    load_memory_map_loop:
     ; Increment pointer in buffer
     add di, 24
 
@@ -141,7 +141,7 @@ LoadMemoryMap:
 
     ; Exit if ebx is equal to zero (reading has ended)
     cmp ebx, 0
-    jne LoadMemoryMap_Loop
+    jne load_memory_map_loop
 
     ; Store entries count at the begin of the buffer
     pop eax
@@ -151,17 +151,16 @@ LoadMemoryMap:
     ret
     
 [BITS 32]
-    Main_ProtectedArea:
-
+main_protected_area:
     ; Set data and stack segments to the third GDI descriptor
     mov ax, 0x10
     mov ds, ax
     mov ss, ax
 
-    call CreatePageDirectory
-    call CreateIdentityPageTable
-    call CreateKernelPageTable
-    call EnablePaging
+    call create_page_directory
+    call create_identity_page_table
+    call create_kernel_page_table
+    call enable_paging
 
     ; Set new stack with virtual address
     mov eax, 0xC1100000
@@ -176,7 +175,7 @@ LoadMemoryMap:
 
 ; Input: nothing
 ; Output: nothing
-CreatePageDirectory:
+create_page_directory:
     ; Add temporary identity entry (physical address: 0x00000000, virtual address: 0x00000000, 24 MB)
     ; 0 - 4 MB
     mov eax, 0x01100003
@@ -231,7 +230,7 @@ CreatePageDirectory:
 
 ; Input: nothing
 ; Output: nothing
-CreateIdentityPageTable:
+create_identity_page_table:
     ; Entry index
     mov eax, 0
 
@@ -258,7 +257,7 @@ CreateIdentityPageTable:
 
 ; Input: nothing
 ; Output: nothing
-CreateKernelPageTable:
+create_kernel_page_table:
     ; Entry index
     mov eax, 0
 
@@ -285,7 +284,7 @@ CreateKernelPageTable:
 
 ; Input: nothing
 ; Output: nothing
-EnablePaging:
+enable_paging:
     ; Set address of the directory table
     mov eax, 0x00006000
     mov cr3, eax
@@ -295,15 +294,4 @@ EnablePaging:
     or ebx, 0x80000001
     mov cr0, ebx
 
-    ret
-
-; Input: nothing
-; Output: nothing
-InitFPU:
-    mov eax, cr0
-
-    ; Set NE bit (force to use PIC)
-    or eax, 00100000b
-
-    mov cr0, eax
     ret
