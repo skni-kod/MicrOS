@@ -123,9 +123,9 @@ int kmain()
 
     while (1)
     {
-        if (!isBufferEmpty())
+        if (!keyboard_is_buffer_empty())
         {
-            ScanAsciiPair c = get_key_from_buffer();
+            keyboard_scan_ascii_pair c = keyboard_get_key_from_buffer();
             if (c.scancode == 59)
             {
                 if (getMode() != 3)

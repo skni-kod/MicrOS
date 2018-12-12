@@ -9,28 +9,28 @@ int between_or_eq(uint64_t number, uint64_t a, uint64_t b);
 
 void physical_memory_init()
 {
-    memory_map_entry* memory_map_entries = memory_map_get();
+    memory_map_entry *memory_map_entries = memory_map_get();
     uint8_t entries_count = memory_map_get_entries_count();
 
     // Set all entries as not available
-    for(int i=0; i<1024; i++)
+    for (int i = 0; i < 1024; i++)
     {
         physical_entries[i].type = physical_memory_not_available;
     }
 
     // Mark entries if they are free or reserved (due to BIOS memory table)
-    for(int i=0; i<entries_count; i++)
+    for (int i = 0; i < entries_count; i++)
     {
         uint16_t start_index = memory_map_entries[i].base_address / 1024 / 1024 / 4;
         uint16_t end_index = start_index + (memory_map_entries[i].length / 1024 / 1024 / 4);
 
-        for(int x=start_index; x<=end_index; x++)
+        for (int x = start_index; x <= end_index; x++)
         {
-            if(memory_map_entries[i].type != memory_map_free)
+            if (memory_map_entries[i].type != memory_map_free)
             {
                 physical_entries[x].type = physical_memory_reserved;
             }
-            else if(physical_entries[x].type == physical_memory_not_available)
+            else if (physical_entries[x].type == physical_memory_not_available)
             {
                 physical_entries[x].type = physical_memory_free;
             }
@@ -38,7 +38,7 @@ void physical_memory_init()
     }
 
     // Mark first 24 megabytes as reserved
-    for(int i=0; i<6; i++)
+    for (int i = 0; i < 6; i++)
     {
         physical_entries[i].type = physical_memory_reserved;
     }
@@ -46,9 +46,9 @@ void physical_memory_init()
 
 uint32_t physical_memory_alloc_page()
 {
-    for(int i=0; i<1024; i++)
+    for (int i = 0; i < 1024; i++)
     {
-        if(physical_entries[i].type == physical_memory_free)
+        if (physical_entries[i].type == physical_memory_free)
         {
             physical_entries[i].type = physical_memory_filled;
             return i;
@@ -61,7 +61,7 @@ uint32_t physical_memory_alloc_page()
 
 bool physical_memory_dealloc_page(uint32_t index)
 {
-    if(physical_entries[index].type == physical_memory_filled)
+    if (physical_entries[index].type == physical_memory_filled)
     {
         physical_entries[index].type = physical_memory_free;
         return false;
@@ -75,14 +75,22 @@ void physical_memory_dump()
     vga_color col;
     col.color_without_blink.letter = VGA_COLOR_WHITE;
 
-    for(int i=0; i<1024; i++)
+    for (int i = 0; i < 1024; i++)
     {
-        switch(physical_entries[i].type)
+        switch (physical_entries[i].type)
         {
-            case physical_memory_free:          col.color_without_blink.background = VGA_COLOR_GREEN; break;
-            case physical_memory_reserved:      col.color_without_blink.background = VGA_COLOR_BLUE; break;
-            case physical_memory_filled:        col.color_without_blink.background = VGA_COLOR_RED; break;
-            case physical_memory_not_available: col.color_without_blink.background = VGA_COLOR_DARK_GRAY; break;
+        case physical_memory_free:
+            col.color_without_blink.background = VGA_COLOR_GREEN;
+            break;
+        case physical_memory_reserved:
+            col.color_without_blink.background = VGA_COLOR_BLUE;
+            break;
+        case physical_memory_filled:
+            col.color_without_blink.background = VGA_COLOR_RED;
+            break;
+        case physical_memory_not_available:
+            col.color_without_blink.background = VGA_COLOR_DARK_GRAY;
+            break;
         }
 
         vga_printchar_color(' ', &col);
@@ -96,31 +104,31 @@ void draw_4MB_array(uint64_t number_of_sector)
     uint64_t begin_addr = number_of_sector * 1024 * 1024 * 4;
     uint64_t end_addr = begin_addr + 1024 * 4;
 
-    memory_map_entry* memory_map_entries = memory_map_get();
+    memory_map_entry *memory_map_entries = memory_map_get();
     uint8_t entries_count = memory_map_get_entries_count();
 
-    for(int i=0; i<1024; i++)
+    for (int i = 0; i < 1024; i++)
     {
         mem_entries[i].type = physical_memory_not_available;
     }
 
-    for(int i=0; i<entries_count; i++)
+    for (int i = 0; i < entries_count; i++)
     {
         uint64_t start_index = memory_map_entries[i].base_address;
         uint64_t end_index = start_index + (memory_map_entries[i].length);
 
-        if((begin_addr <= start_index) && (end_addr <= end_index))
+        if ((begin_addr <= start_index) && (end_addr <= end_index))
         {
             uint64_t a = (start_index - begin_addr) / 1024 / 4;
             uint64_t b = (end_index - begin_addr) / 1024 / 4;
 
-            for(; a<b; a++)
+            for (; a < b; a++)
             {
-                if(memory_map_entries[i].type != 1)
+                if (memory_map_entries[i].type != 1)
                 {
                     mem_entries[a].type = physical_memory_reserved;
                 }
-                else if(mem_entries[a].type == physical_memory_not_available)
+                else if (mem_entries[a].type == physical_memory_not_available)
                 {
                     mem_entries[a].type = physical_memory_free;
                 }
@@ -128,18 +136,18 @@ void draw_4MB_array(uint64_t number_of_sector)
             continue;
         }
 
-        if((start_index < begin_addr) && between_or_eq(end_index, begin_addr, end_addr))
+        if ((start_index < begin_addr) && between_or_eq(end_index, begin_addr, end_addr))
         {
             uint64_t a = 0;
             uint64_t b = (end_index - begin_addr) / 1024 / 4;
 
-            for(; a<b; a++)
+            for (; a < b; a++)
             {
-                if(memory_map_entries[i].type != 1)
+                if (memory_map_entries[i].type != 1)
                 {
                     mem_entries[a].type = physical_memory_reserved;
                 }
-                else if(mem_entries[a].type == physical_memory_not_available)
+                else if (mem_entries[a].type == physical_memory_not_available)
                 {
                     mem_entries[a].type = physical_memory_free;
                 }
@@ -147,18 +155,18 @@ void draw_4MB_array(uint64_t number_of_sector)
             continue;
         }
 
-        if(between_or_eq(start_index, begin_addr, end_addr) && (end_index > end_addr))
+        if (between_or_eq(start_index, begin_addr, end_addr) && (end_index > end_addr))
         {
             uint64_t a = (start_index - begin_addr) / 1024 / 4;
             uint64_t b = 1024;
 
-            for(; a<b; a++)
+            for (; a < b; a++)
             {
-                if(memory_map_entries[i].type != 1)
+                if (memory_map_entries[i].type != 1)
                 {
                     mem_entries[a].type = physical_memory_reserved;
                 }
-                else if(mem_entries[a].type == physical_memory_not_available)
+                else if (mem_entries[a].type == physical_memory_not_available)
                 {
                     mem_entries[a].type = physical_memory_free;
                 }
@@ -166,15 +174,15 @@ void draw_4MB_array(uint64_t number_of_sector)
             continue;
         }
 
-        if((start_index < begin_addr) && (end_index > end_addr))
+        if ((start_index < begin_addr) && (end_index > end_addr))
         {
-            for(int a = 0; a<1024; a++)
+            for (int a = 0; a < 1024; a++)
             {
-                if(memory_map_entries[i].type != 1)
+                if (memory_map_entries[i].type != 1)
                 {
                     mem_entries[a].type = physical_memory_reserved;
                 }
-                else if(mem_entries[a].type == physical_memory_not_available)
+                else if (mem_entries[a].type == physical_memory_not_available)
                 {
                     mem_entries[a].type = physical_memory_free;
                 }
@@ -186,16 +194,24 @@ void draw_4MB_array(uint64_t number_of_sector)
     vga_color col;
     //col.color_without_blink.letter = VGA_COLOR_WHITE;
 
-    for(int i=0; i<1024; i++)
+    for (int i = 0; i < 1024; i++)
     {
-        switch(mem_entries[i].type)
+        switch (mem_entries[i].type)
         {
-            case physical_memory_free:          col.color_without_blink.letter = VGA_COLOR_GREEN; break;
-            case physical_memory_reserved:      col.color_without_blink.letter = VGA_COLOR_BLUE; break;
-            case physical_memory_filled:        col.color_without_blink.letter = VGA_COLOR_RED; break;
-            case physical_memory_not_available: col.color_without_blink.letter = VGA_COLOR_DARK_GRAY; break;
+        case physical_memory_free:
+            col.color_without_blink.letter = VGA_COLOR_GREEN;
+            break;
+        case physical_memory_reserved:
+            col.color_without_blink.letter = VGA_COLOR_BLUE;
+            break;
+        case physical_memory_filled:
+            col.color_without_blink.letter = VGA_COLOR_RED;
+            break;
+        case physical_memory_not_available:
+            col.color_without_blink.letter = VGA_COLOR_DARK_GRAY;
+            break;
         }
-        if(i%2)
+        if (i % 2)
         {
             col.color_without_blink.background = VGA_COLOR_BLACK;
             vga_printchar_color(178, &col);
@@ -213,14 +229,14 @@ void draw_4MB_array(uint64_t number_of_sector)
 
 int between(uint64_t number, uint64_t a, uint64_t b)
 {
-    if((a < number) && (number < b))
+    if ((a < number) && (number < b))
         return 1;
     return 0;
 }
 
 int between_or_eq(uint64_t number, uint64_t a, uint64_t b)
 {
-    if((a <= number) && (number <= b))
+    if ((a <= number) && (number <= b))
         return 1;
     return 0;
 }
@@ -240,9 +256,9 @@ void drawInVGA(uint64_t i)
     vga_printstring(" (");
     vga_printstring(itoa(i * 4, buffer, 10));
     vga_printstring(" MiB)\nEnd address of watching memory: 0x");
-    vga_printstring(itoa((i+1) * 4 * 1024 * 1024, buffer, 16));
+    vga_printstring(itoa((i + 1) * 4 * 1024 * 1024, buffer, 16));
     vga_printstring(" (");
-    vga_printstring(itoa((i+1) * 4, buffer, 10));
+    vga_printstring(itoa((i + 1) * 4, buffer, 10));
     vga_printstring(" MiB)\n");
     vga_color col;
     col.color_without_blink.letter = VGA_COLOR_WHITE;
@@ -260,40 +276,39 @@ void drawInVGA(uint64_t i)
     vga_printstring(" - no access\n");
     vga_printstring("F1 - previous sector, F2 - next sector, F3 - prev 100 sect, F4 - next 100 sect\n");
     vga_printstring("ESC - quit");
-
 }
 
 void memoryViewer()
 {
     uint64_t i = 0;
-    
+
     drawInVGA(i);
-    while(1)
+    while (1)
     {
-        if(!isBufferEmpty())
+        if (!keyboard_is_buffer_empty())
         {
-            ScanAsciiPair c = get_key_from_buffer();
-            if(c.scancode == 60)
+            keyboard_scan_ascii_pair c = keyboard_get_key_from_buffer();
+            if (c.scancode == 60)
             {
                 i++;
                 drawInVGA(i);
             }
-            else if(c.scancode == 59)
+            else if (c.scancode == 59)
             {
                 i--;
                 drawInVGA(i);
             }
-            if(c.scancode == 62)
+            if (c.scancode == 62)
             {
                 i += 100;
                 drawInVGA(i);
             }
-            else if(c.scancode == 61)
+            else if (c.scancode == 61)
             {
                 i -= 100;
                 drawInVGA(i);
             }
-            else if(c.scancode == 1)
+            else if (c.scancode == 1)
             {
                 vga_clear_screen();
                 return;
