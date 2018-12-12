@@ -1,6 +1,7 @@
 #include "heap.h"
 
 heap_entry *heap;
+uint32_t tail_page_index;
 
 void *heap_alloc(uint32_t size)
 {
@@ -32,7 +33,7 @@ void *heap_alloc(uint32_t size)
                 {
                     while (size > current_entry->size + ENTRY_HEADER_SIZE)
                     {
-                        virtual_memory_alloc_page();
+                        tail_page_index = virtual_memory_alloc_page();
                         current_entry->size += 4 * 1024 * 1024;
                     }
 
@@ -59,18 +60,33 @@ void heap_dealloc(void *ptr)
         {
             entry->next->prev = entry->prev;
         }
+
+        entry = entry->prev;
     }
 
-    if (entry->next != 0 && entry->next->free)
+    if (entry->next != 0)
     {
-        void *next_entry = (void *)((uint32_t)entry->next + ENTRY_HEADER_SIZE);
-        heap_dealloc(next_entry);
+        if (entry->next->free)
+        {
+            void *next_entry = (void *)((uint32_t)entry->next + ENTRY_HEADER_SIZE);
+            heap_dealloc(next_entry);
+        }
+    }
+    else
+    {
+        while ((float)entry->size / 1024 / 1024 > 4)
+        {
+            virtual_memory_dealloc_page(tail_page_index);
+            entry->size -= 4 * 1024 * 1024;
+            tail_page_index--;
+        }
     }
 }
 
 void heap_set_base_page_index(uint32_t index)
 {
     heap = (heap_entry *)(index * 1024 * 1024 * 4);
+    tail_page_index = index;
 }
 
 void heap_clear()
