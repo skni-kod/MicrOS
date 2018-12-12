@@ -47,14 +47,14 @@ void pci_get_device_info(pci_in_data *data, pci_device *info)
     }
 }
 
-uint8_t pci_get_number_of_devices()
-{
-    return number_of_devices;
-}
-
 pci_device *pci_get_device(uint8_t index)
 {
     return &devices[index];
+}
+
+uint8_t pci_get_number_of_devices()
+{
+    return number_of_devices;
 }
 
 void pci_insert_device(pci_device *dev)
