@@ -1,5 +1,6 @@
 #ifndef ELF_HEADER_H
 #define ELF_HEADER_H
+#pragma pack(1)
 
 #include <stdint.h>
 
@@ -54,15 +55,15 @@ typedef struct elf_header
     elf_architecture architecture;
     uint32_t version_32;
     uint32_t entry_position;
-    uint32_t header_header_table_position;
+    uint32_t program_header_table_position;
     uint32_t section_header_table_position;
     uint32_t flags;
     uint16_t header_size;
-    uint16_t header_table_entry_size;
-    uint16_t header_table_entries_count;
-    uint16_t header_table_entry_in_section_size;
-    uint16_t header_table_entries_in_section_count;
-    uint16_t header_table_section_names_index;
+    uint16_t program_header_table_entry_size;
+    uint16_t program_header_table_entries_count;
+    uint16_t section_header_table_entry_in_section_size;
+    uint16_t section_header_table_entries_in_section_count;
+    uint16_t section_header_table_section_names_index;
 } elf_header;
 
 #endif
