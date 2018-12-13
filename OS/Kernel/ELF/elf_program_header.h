@@ -1,5 +1,6 @@
 #ifndef ELF_PROGRAM_HEADER_H
 #define ELF_PROGRAM_HEADER_H
+#pragma pack(1)
 
 #include <stdint.h>
 
