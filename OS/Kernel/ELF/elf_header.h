@@ -50,7 +50,7 @@ typedef struct elf_header
     elf_endian endian;
     uint8_t version_8;
     uint8_t os_abi;
-    uint8_t unused[8];
+    uint64_t reserved;
     elf_type type;
     elf_architecture architecture;
     uint32_t version_32;
