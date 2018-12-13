@@ -26,7 +26,7 @@ void vector_insert(vector *vector, void *data, uint32_t index)
 		vector->data = realloc(vector->data, sizeof(void *) * vector->size);
 	}
 
-	for (uint32_t i = vector->count; i >= index; i--)
+	for (uint32_t i = vector->count; i > index; i--)
 	{
 		vector->data[i] = vector->data[i - 1];
 	}
