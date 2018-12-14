@@ -37,3 +37,28 @@ void gdt_fill_entry(int index, bool executable, uint8_t privilege_level)
 
     gdt[index].base_24_31 = 0x00;
 }
+
+void gdt_fill_entry_as_tss(int index, tss_entry *tss)
+{
+    uint32_t tss_entry_size = sizeof(tss_entry);
+    uint32_t tss_entry_address = (uint32_t)tss;
+
+    gdt[index].limit_0_15 = tss_entry_size;
+    gdt[index].base_0_15 = tss_entry_address;
+    gdt[index].base_16_23 = tss_entry_address >> 16;
+
+    gdt[index].accessed = 1;
+    gdt[index].read_write = 0;
+    gdt[index].direction = 0;
+    gdt[index].executable = 1;
+    gdt[index].reserved_1 = 0;
+    gdt[index].privilege_level = 3;
+    gdt[index].present = 1;
+
+    gdt[index].limit_16_19 = tss_entry_size >> 16;
+    gdt[index].reserved_2 = 0;
+    gdt[index].size = 0;
+    gdt[index].granularity = 0;
+
+    gdt[index].base_24_31 = tss_entry_address >> 24;
+}
