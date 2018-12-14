@@ -1,7 +1,7 @@
 #ifndef GDT_H
 #define GDT_H
 
-#define GDT_SIZE 3
+#define GDT_SIZE 5
 
 #include <stdbool.h>
 #include "gdt_entry.h"
