@@ -13,8 +13,8 @@ void paging_init();
 void paging_remove_identity();
 void paging_add_stack_guard();
 
-void paging_map_page(uint32_t physical_address, uint32_t virtual_address);
-void paging_unmap_page(uint32_t virtual_address);
+void paging_map_page(uint32_t physical_page_index, uint32_t virtual_page_index);
+void paging_unmap_page(uint32_t page_index);
 uint32_t paging_get_first_free_page_index(uint32_t from_index);
 uint32_t paging_get_physical_index_of_virtual_page(uint32_t virtual_index);
 bool paging_is_page_mapped(uint32_t page_index);
