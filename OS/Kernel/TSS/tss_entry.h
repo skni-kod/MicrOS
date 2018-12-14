@@ -2,6 +2,8 @@
 #define TSS_ENTRY_H
 #pragma pack(1)
 
+#include <stdint.h>
+
 typedef struct tss_entry
 {
     uint32_t previous_tss;
