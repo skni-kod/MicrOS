@@ -1,5 +1,4 @@
 global enter_user_space
-extern userspace
 
 enter_user_space:
     mov ax, 0x23
@@ -13,5 +12,5 @@ enter_user_space:
     push eax
     pushf
     push 0x1B
-    push userspace
+    push dword [esp + 20]
     iret
