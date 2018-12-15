@@ -4,7 +4,7 @@ int test_array[1024];
 
 int main()
 {
-    uint8_t *vga = 0xc00b8000;
+    uint8_t *vga = (uint8_t *)0xc00b8000;
 
     for (int i = 0; i < 1024; i++)
     {
