@@ -6,7 +6,7 @@
 #include "../../Map/memory_map_entry.h"
 #include "../../../Drivers/VGA/vga.h"
 #include "../../../Drivers/Keyboard/keyboard.h"
-#include "../../../../../Library/stdlib.h"
+#include <stdlib.h>
 #include "physical_memory_entry.h"
 #include "physical_memory_entry_type.h"
 

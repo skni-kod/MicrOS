@@ -1,7 +1,7 @@
 #include "pci.h"
 #include "../../Assembly/io.h"
 #include "../../Logger/logger.h"
-#include "../../../../Library/stdlib.h"
+#include <stdlib.h>
 
 static pci_device devices[32];
 pci_in_data d;

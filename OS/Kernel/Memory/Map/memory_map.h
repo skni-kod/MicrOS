@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 #include "../../Drivers/VGA/vga.h"
-#include "../../../../Library/stdlib.h"
+#include <stdlib.h>
 #include "memory_map_entry.h"
 
 memory_map_entry *memory_map_get();
