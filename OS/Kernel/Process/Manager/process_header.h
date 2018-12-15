@@ -7,9 +7,10 @@ typedef struct process_header
     char name[32];
 
     uint32_t size_in_memory;
-    uint32_t stack_address;
-    uint32_t page_directory_address;
     uint32_t base_heap_page_index;
+
+    void *stack;
+    void *page_directory;
 } process_header;
 
 #endif

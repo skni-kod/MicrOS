@@ -37,7 +37,7 @@ void paging_set_page_directory(uint32_t address)
     __asm__("mov %0, %%eax\n"
             "mov %%eax, %%cr3"
             :
-            : "m"(address)
+            : "g"(address)
             : "eax");
 }
 

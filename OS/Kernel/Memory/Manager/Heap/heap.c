@@ -43,7 +43,7 @@ void *heap_alloc(uint32_t size, uint32_t align)
             {
                 if (current_entry->next == 0)
                 {
-                    while (size > current_entry->size + ENTRY_HEADER_SIZE)
+                    while (current_entry->size < size + align_fix + ENTRY_HEADER_SIZE)
                     {
                         tail_page_index = virtual_memory_alloc_page();
                         current_entry->size += 4 * 1024 * 1024;
