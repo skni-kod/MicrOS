@@ -27,6 +27,20 @@ void paging_add_stack_guard()
     page_with_stack->present = 0;
 }
 
+paging_table_entry *paging_get_page_directory()
+{
+    return page_directory;
+}
+
+void paging_set_page_directory(uint32_t address)
+{
+    __asm__("mov %0, %%eax\n"
+            "mov %%eax, %%cr3"
+            :
+            : "m"(address)
+            : "eax");
+}
+
 void paging_map_page(uint32_t physical_page_index, uint32_t virtual_page_index)
 {
     paging_table_entry *page_directory = (paging_table_entry *)(PAGE_DIRECTORY_ADDRESS + (virtual_page_index * 4));
