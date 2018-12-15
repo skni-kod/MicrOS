@@ -80,7 +80,12 @@ char *itoa(int input, char *buffer, int base)
 
 void *malloc(size_t size)
 {
-    return (void *)call_interrupt_1a(0x02, size);
+    return (void *)call_interrupt_2a(0x02, size, 0);
+}
+
+void *malloc_align(size_t size, uint32_t align)
+{
+    return (void *)call_interrupt_2a(0x02, size, align);
 }
 
 void *calloc(size_t num, size_t size)

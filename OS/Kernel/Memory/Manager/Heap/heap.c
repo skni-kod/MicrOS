@@ -4,7 +4,7 @@ heap_entry *heap;
 uint32_t tail_page_index;
 
 // TODO: This function should return 0 if there is no available memory to allocate instead of panic screen.
-void *heap_alloc(uint32_t size)
+void *heap_alloc(uint32_t size, uint32_t align)
 {
     heap_entry *current_entry = heap;
 
@@ -12,11 +12,22 @@ void *heap_alloc(uint32_t size)
     {
         if (current_entry->free)
         {
-            if (current_entry->size > size + ENTRY_HEADER_SIZE)
+            uint32_t align_fix = align == 0 ? 0 : align - (((uint32_t)current_entry) % align);
+            if (current_entry->size > size + align_fix + ENTRY_HEADER_SIZE)
             {
                 heap_entry *next_entry = current_entry->next;
 
-                uint32_t updated_free_size = current_entry->size - size - ENTRY_HEADER_SIZE;
+                uint32_t updated_free_size = current_entry->size - size - align_fix - ENTRY_HEADER_SIZE;
+                if (align_fix != 0)
+                {
+                    current_entry->next = (heap_entry *)((uint32_t)current_entry + align_fix - ENTRY_HEADER_SIZE);
+                    current_entry->next->prev = current_entry;
+                    current_entry->size = align_fix - ENTRY_HEADER_SIZE;
+                    current_entry->free = 1;
+
+                    current_entry = current_entry->next;
+                }
+
                 current_entry->next = (heap_entry *)((uint32_t)current_entry + size + ENTRY_HEADER_SIZE);
                 current_entry->size = size;
                 current_entry->free = 0;
