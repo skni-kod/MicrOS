@@ -41,7 +41,7 @@ void paging_set_page_directory(uint32_t address)
             : "eax");
 }
 
-void paging_map_page(uint32_t physical_page_index, uint32_t virtual_page_index)
+void paging_map_page(uint32_t physical_page_index, uint32_t virtual_page_index, bool supervisor)
 {
     paging_table_entry *page_directory_entry = (paging_table_entry *)((uint32_t)page_directory + (virtual_page_index * 4));
     paging_table_entry *page_table = (paging_table_entry *)((uint32_t)page_tables + (virtual_page_index << 12));
@@ -51,11 +51,13 @@ void paging_map_page(uint32_t physical_page_index, uint32_t virtual_page_index)
         page_table[i].physical_page_address = (physical_page_index * 1024) + i;
         page_table[i].present = 1;
         page_table[i].read_write = 1;
+        page_table[i].user_supervisor = !supervisor;
     }
 
     page_directory_entry->physical_page_address = ((uint32_t)page_table - 0xC0000000) >> 12;
     page_directory_entry->present = 1;
     page_directory_entry->read_write = 1;
+    page_directory_entry->user_supervisor = !supervisor;
 }
 
 void paging_unmap_page(uint32_t page_index)

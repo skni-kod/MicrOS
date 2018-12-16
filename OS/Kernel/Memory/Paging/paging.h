@@ -15,7 +15,7 @@ void paging_add_stack_guard();
 paging_table_entry *paging_get_page_directory();
 void paging_set_page_directory(uint32_t address);
 
-void paging_map_page(uint32_t physical_page_index, uint32_t virtual_page_index);
+void paging_map_page(uint32_t physical_page_index, uint32_t virtual_page_index, bool supervisor);
 void paging_unmap_page(uint32_t page_index);
 uint32_t paging_get_first_free_page_index(uint32_t from_index);
 uint32_t paging_get_physical_index_of_virtual_page(uint32_t virtual_index);

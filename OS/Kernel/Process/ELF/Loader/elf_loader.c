@@ -12,7 +12,7 @@ void elf_loader_load(uint8_t *content)
     for (uint32_t i = 0; i < pages_count; i++)
     {
         uint32_t physical_address = physical_memory_alloc_page();
-        paging_map_page(physical_address, initial_page + i);
+        paging_map_page(physical_address, initial_page + i, false);
     }
 
     for (uint32_t i = 0; i < header->section_header_table_entries_in_section_count; i++)
