@@ -1,6 +1,6 @@
 #include "paging.h"
 
-paging_table_entry *page_directory = (paging_table_entry *)PAGE_DIRECTORY_ADDRESS;
+paging_table_entry *page_directory = (paging_table_entry *)KERNEL_PAGE_DIRECTORY_ADDRESS;
 paging_table_entry *page_tables = (paging_table_entry *)PAGE_TABLES_ADDRESS;
 
 void paging_init()
@@ -20,8 +20,8 @@ void paging_remove_identity()
 
 void paging_add_stack_guard()
 {
-    paging_table_entry page_definition_with_stack = page_directory[768 + 4];
-    uint32_t *page_address = (uint32_t *)((page_definition_with_stack.physical_page_address << 12) + 0xC0000000);
+    paging_table_entry *page_directory_entry_with_stack = &page_directory[768 + 4];
+    uint32_t *page_address = (uint32_t *)((page_directory_entry_with_stack->physical_page_address << 12) + 0xC0000000);
 
     paging_table_entry *page_with_stack = (paging_table_entry *)page_address;
     page_with_stack->present = 0;
@@ -43,7 +43,7 @@ void paging_set_page_directory(uint32_t address)
 
 void paging_map_page(uint32_t physical_page_index, uint32_t virtual_page_index)
 {
-    paging_table_entry *page_directory = (paging_table_entry *)(PAGE_DIRECTORY_ADDRESS + (virtual_page_index * 4));
+    paging_table_entry *page_directory_entry = (paging_table_entry *)((uint32_t)page_directory + (virtual_page_index * 4));
     paging_table_entry *page_table = (paging_table_entry *)((uint32_t)page_tables + (virtual_page_index << 12));
 
     for (int i = 0; i < 1024; i++)
@@ -53,15 +53,15 @@ void paging_map_page(uint32_t physical_page_index, uint32_t virtual_page_index)
         page_table[i].read_write = 1;
     }
 
-    page_directory->physical_page_address = ((uint32_t)page_table - 0xC0000000) >> 12;
-    page_directory->present = 1;
-    page_directory->read_write = 1;
+    page_directory_entry->physical_page_address = ((uint32_t)page_table - 0xC0000000) >> 12;
+    page_directory_entry->present = 1;
+    page_directory_entry->read_write = 1;
 }
 
 void paging_unmap_page(uint32_t page_index)
 {
-    paging_table_entry *page_directory = (paging_table_entry *)(PAGE_DIRECTORY_ADDRESS + (page_index * 4));
-    page_directory->present = 0;
+    paging_table_entry *page_directory_entry = (paging_table_entry *)((uint32_t)page_directory + (page_index * 4));
+    page_directory_entry->present = 0;
 }
 
 uint32_t paging_get_first_free_page_index(uint32_t from_index)
@@ -82,14 +82,14 @@ uint32_t paging_get_first_free_page_index(uint32_t from_index)
 
 uint32_t paging_get_physical_index_of_virtual_page(uint32_t page_index)
 {
-    paging_table_entry *page_directory = (paging_table_entry *)(PAGE_DIRECTORY_ADDRESS + (page_index * 4));
-    paging_table_entry *page_table = (paging_table_entry *)(0xC0000000 + ((uint32_t)page_directory->physical_page_address << 12));
+    paging_table_entry *page_directory_entry = (paging_table_entry *)((uint32_t)page_directory + (page_index * 4));
+    paging_table_entry *page_table = (paging_table_entry *)(0xC0000000 + ((uint32_t)page_directory_entry->physical_page_address << 12));
 
     return page_table->physical_page_address;
 }
 
 bool paging_is_page_mapped(uint32_t page_index)
 {
-    paging_table_entry *page_directory = (paging_table_entry *)(PAGE_DIRECTORY_ADDRESS + (page_index * 4));
-    return page_directory->present;
+    paging_table_entry *page_directory_entry = (paging_table_entry *)((uint32_t)page_directory + (page_index * 4));
+    return page_directory_entry->present;
 }
