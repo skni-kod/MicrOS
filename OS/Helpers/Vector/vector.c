@@ -17,13 +17,13 @@ void vector_insert(vector *vector, void *data, uint32_t index)
 	if (vector->size == 0)
 	{
 		vector->size = 8;
-		vector->data = malloc(sizeof(void *) * vector->size);
+		vector->data = heap_kernel_alloc(sizeof(void *) * vector->size, 0);
 	}
 
 	if (vector->count + 1 > vector->size)
 	{
 		vector->size *= 2;
-		vector->data = realloc(vector->data, sizeof(void *) * vector->size);
+		vector->data = heap_kernel_realloc(vector->data, sizeof(void *) * vector->size, 0);
 	}
 
 	for (uint32_t i = vector->count; i > index; i--)
@@ -56,10 +56,10 @@ void vector_clear(vector *vector)
 	{
 		for (uint32_t i = 0; i < vector->count; i++)
 		{
-			free(vector->data[i]);
+			heap_kernel_dealloc(vector->data[i]);
 		}
 
-		free(vector->data);
+		heap_kernel_dealloc(vector->data);
 		vector->size = 0;
 		vector->count = 0;
 	}

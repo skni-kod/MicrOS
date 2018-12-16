@@ -68,17 +68,17 @@ void *heap_alloc(uint32_t size, uint32_t align, bool supervisor)
     }
 }
 
-void heap_kernel_dealloc(void *ptr)
+heap_entry *heap_kernel_dealloc(void *ptr)
 {
-    heap_dealloc(ptr, true);
+    return heap_dealloc(ptr, true);
 }
 
-void heap_user_dealloc(void *ptr)
+heap_entry *heap_user_dealloc(void *ptr)
 {
-    heap_dealloc(ptr, false);
+    return heap_dealloc(ptr, false);
 }
 
-void heap_dealloc(void *ptr, bool supervisor)
+heap_entry *heap_dealloc(void *ptr, bool supervisor)
 {
     heap_entry *entry = (heap_entry *)((uint32_t)ptr - ENTRY_HEADER_SIZE);
     entry->free = 1;
@@ -112,6 +112,27 @@ void heap_dealloc(void *ptr, bool supervisor)
             entry->size -= 4 * 1024 * 1024;
         }
     }
+
+    return entry;
+}
+
+void *heap_kernel_realloc(void *ptr, uint32_t size, uint32_t align)
+{
+    return heap_realloc(ptr, size, align, true);
+}
+
+void *heap_user_realloc(void *ptr, uint32_t size, uint32_t align)
+{
+    return heap_realloc(ptr, size, align, false);
+}
+
+void *heap_realloc(void *ptr, uint32_t size, uint32_t align, bool supervisor)
+{
+    heap_entry *old_entry = heap_dealloc(ptr, supervisor);
+    void *new_ptr = heap_alloc(size, align, supervisor);
+
+    memcpy(new_ptr, ptr, old_entry->size);
+    return new_ptr;
 }
 
 void heap_set_kernel_heap(void *heap_address)

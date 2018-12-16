@@ -74,7 +74,7 @@ vector *fat12_parse_path(char *path)
     {
         if (*path == '/')
         {
-            char *string = calloc(12, 1);
+            char *string = heap_kernel_alloc(12, 0);
             memset(string, ' ', 12);
             vector_add(chunks, string);
 
@@ -97,7 +97,7 @@ vector *fat12_parse_path(char *path)
 
     if (index == 0)
     {
-        free(chunks->data[chunks->count - 1]);
+        heap_kernel_dealloc(chunks->data[chunks->count - 1]);
         vector_remove(chunks, chunks->count - 1);
     }
 
@@ -130,7 +130,7 @@ uint8_t *fat12_load_file_from_sector(uint16_t sector, uint16_t *read_sectors_cou
     *read_sectors_count = 0;
     while (sector != 0xFF && sector != 0xFFF)
     {
-        buffer = realloc(buffer, 512 * (*read_sectors_count + 1));
+        buffer = heap_kernel_realloc(buffer, 512 * (*read_sectors_count + 1), 0);
 
         uint8_t *read_data = floppy_read_sector(sector + 31);
         sector = fat12_read_sector_value(sector);
@@ -148,7 +148,7 @@ directory_entry *fat12_get_directory_from_path(char *path)
     directory_entry *directory = fat12_get_directory_from_chunks(chunks);
 
     vector_clear(chunks);
-    free(chunks);
+    heap_kernel_dealloc(chunks);
 
     return directory;
 }
@@ -180,7 +180,7 @@ directory_entry *fat12_get_directory_from_chunks(vector *chunks)
                 uint16_t read_sectors_count = 0;
                 uint8_t *directory = fat12_load_file_from_sector(current_file_ptr->first_sector, &read_sectors_count);
 
-                free(current_directory);
+                heap_kernel_dealloc(current_directory);
 
                 current_directory = (directory_entry *)directory;
                 current_file_ptr = current_directory;
@@ -220,7 +220,7 @@ uint8_t *fat12_read_file(char *path, uint16_t *read_sectors, uint16_t *read_size
         *read_size = file_info->size;
 
         result = file_content;
-        free(file_info);
+        heap_kernel_dealloc(file_info);
     }
 
     return result;
@@ -268,9 +268,9 @@ directory_entry *fat12_get_info(char *path, bool is_directory)
     }
 
     vector_clear(chunks);
-    free(chunks);
-    free(directory);
-    free(target_filename);
+    heap_kernel_dealloc(chunks);
+    heap_kernel_dealloc(directory);
+    heap_kernel_dealloc(target_filename);
 
     return result_without_junk;
 }
