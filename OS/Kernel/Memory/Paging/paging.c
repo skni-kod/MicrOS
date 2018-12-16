@@ -34,10 +34,11 @@ paging_table_entry *paging_get_page_directory()
 
 void paging_set_page_directory(uint32_t address)
 {
+    page_directory = address;
     __asm__("mov %0, %%eax\n"
             "mov %%eax, %%cr3"
             :
-            : "g"(address)
+            : "g"(address - 0xC0000000)
             : "eax");
 }
 

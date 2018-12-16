@@ -5,6 +5,6 @@
 #include "../../../Memory/Paging/paging.h"
 #include "../../../Memory/Manager/Physic/physical_memory_manager.h"
 
-void elf_loader_load(uint8_t *content);
+uint32_t elf_loader_load(uint8_t *content);
 
 #endif

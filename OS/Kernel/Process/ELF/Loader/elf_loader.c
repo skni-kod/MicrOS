@@ -1,6 +1,6 @@
 #include "elf_loader.h"
 
-void elf_loader_load(uint8_t *content)
+uint32_t elf_loader_load(uint8_t *content)
 {
     elf_header *header = elf_get_header(content);
 
@@ -23,4 +23,6 @@ void elf_loader_load(uint8_t *content)
             memcpy((void *)section_header->virtual_address, content + section_header->file_offset, section_header->size);
         }
     }
+
+    return initial_page;
 }
