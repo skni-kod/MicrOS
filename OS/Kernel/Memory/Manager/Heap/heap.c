@@ -1,7 +1,6 @@
 #include "heap.h"
 
 heap_entry *heap;
-uint32_t tail_page_index;
 
 // TODO: This function should return 0 if there is no available memory to allocate instead of panic screen.
 void *heap_alloc(uint32_t size, uint32_t align)
@@ -45,7 +44,7 @@ void *heap_alloc(uint32_t size, uint32_t align)
                 {
                     while (current_entry->size < size + align_fix + ENTRY_HEADER_SIZE)
                     {
-                        tail_page_index = virtual_memory_alloc_page();
+                        virtual_memory_alloc_page();
                         current_entry->size += 4 * 1024 * 1024;
                     }
 
@@ -88,21 +87,19 @@ void heap_dealloc(void *ptr)
     {
         while ((float)entry->size / 1024 / 1024 > 4)
         {
-            virtual_memory_dealloc_page(tail_page_index);
+            virtual_memory_dealloc_last_page();
             entry->size -= 4 * 1024 * 1024;
-            tail_page_index--;
         }
     }
 }
 
-void heap_set_base_page_index(uint32_t index)
+void heap_set_root_address(void *heap_root_address)
 {
-    heap = (heap_entry *)(index * 1024 * 1024 * 4);
-    tail_page_index = index;
+    heap = heap_root_address;
+    virtual_memory_set_base_page_index((uint32_t)heap_root_address / 1024 / 1024 / 4);
 }
 
-// TODO: This shouldn't be named as "clear", set something better in the future.
-void heap_clear()
+void heap_init_root()
 {
     uint32_t allocated_virtual_pages = virtual_memory_get_allocated_pages_count();
 

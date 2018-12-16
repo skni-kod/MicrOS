@@ -9,8 +9,8 @@
 
 void *heap_alloc(uint32_t size, uint32_t align);
 void heap_dealloc(void *ptr);
-void heap_set_base_page_index(uint32_t index);
-void heap_clear();
+void heap_set_root_address(void *heap_root_address);
+void heap_init_root();
 void heap_dump();
 
 #endif

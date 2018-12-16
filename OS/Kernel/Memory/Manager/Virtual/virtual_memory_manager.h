@@ -8,6 +8,7 @@
 
 uint32_t virtual_memory_alloc_page();
 bool virtual_memory_dealloc_page(uint32_t index);
+bool virtual_memory_dealloc_last_page();
 void virtual_memory_set_base_page_index(uint32_t index);
 uint32_t virtual_memory_get_allocated_pages_count();
 
