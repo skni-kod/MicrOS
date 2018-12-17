@@ -5,8 +5,10 @@ int test_array[1024];
 
 int main()
 {
-    uint32_t test_clock = clock();
-
+    uint32_t start_time = clock();
     while (1)
-        ;
+    {
+        uint32_t test_clock = clock();
+        test_clock++;
+    }
 }

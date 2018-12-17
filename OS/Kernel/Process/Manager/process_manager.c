@@ -4,7 +4,7 @@ vector processes;
 uint32_t current_process_id = 0;
 uint32_t next_process_id = 0;
 
-extern void enter_user_space(uint32_t address);
+extern void enter_user_space(interrupt_state address, uint32_t code_segment, uint32_t data_segment);
 
 void process_manager_init()
 {
@@ -33,6 +33,17 @@ uint32_t process_manager_create_process(char *path)
 
     process->stack = heap_user_alloc(1024 * 1024, 0) + 1024 * 1024;
 
+    process->state.eax = 0;
+    process->state.ebp = 0;
+    process->state.ecx = 0;
+    process->state.edx = 0;
+    process->state.esp = (uint32_t)process->stack;
+    process->state.ebp = (uint32_t)process->stack;
+    process->state.esi = 0;
+    process->state.edi = 0;
+    process->state.eip = app_header->entry_position;
+    process->state.eflags = 0;
+
     if (processes.count == 0)
     {
         current_process_id = process->id;
@@ -40,14 +51,6 @@ uint32_t process_manager_create_process(char *path)
 
     vector_add(&processes, process);
     heap_kernel_dealloc(content);
-
-    __asm__("mov %0, %%eax\n"
-            "mov %%eax, %%esp"
-            :
-            : "g"(process->stack)
-            : "eax");
-
-    enter_user_space(app_header->entry_position);
 
     return process->id;
 }
@@ -65,9 +68,10 @@ process_header *process_manager_get_process(uint32_t process_id)
 
 void process_manager_interrupt_handler(interrupt_state *state)
 {
-    io_disable_interrupts();
+    //io_disable_interrupts();
+    pic_confirm_master_and_slave();
 
-    /*if (idt_get_interrupts_count() == 1 && processes.count > 0)
+    if (processes.count > 0)
     {
         uint32_t old_process_id = current_process_id;
         uint32_t new_process_id = (current_process_id + 1) % processes.count;
@@ -75,34 +79,15 @@ void process_manager_interrupt_handler(interrupt_state *state)
         process_header *old_process = processes.data[old_process_id];
         process_header *new_process = processes.data[new_process_id];
 
-        old_process->state.eax = state->eax;
-        old_process->state.ebp = state->ebp;
-        old_process->state.ecx = state->ecx;
-        old_process->state.edx = state->edx;
-        old_process->state.esp = state->esp;
-        old_process->state.ebp = state->ebp;
-        old_process->state.esi = state->esi;
-        old_process->state.edi = state->edi;
+        __asm__("mov %0, %%eax\n"
+                "mov %%eax, %%esp"
+                :
+                : "g"(new_process->stack)
+                : "eax");
 
-        old_process->state.cs = state->cs;
-        old_process->state.eip = state->eip;
-        old_process->state.eflags = state->eflags;
+        enter_user_space(new_process->state, 0x1B, 0x23);
+        old_process = 0;
+    }
 
-        state->eax = new_process->state.eax;
-        state->ebx = new_process->state.ebx;
-        state->ecx = new_process->state.ecx;
-        state->edx = new_process->state.edx;
-        state->esp = new_process->state.esp;
-        state->ebp = new_process->state.ebp;
-        state->esi = new_process->state.esi;
-        state->edi = new_process->state.edi;
-
-        state->cs = new_process->state.cs;
-        state->eip = new_process->state.eip;
-        state->eflags = new_process->state.eflags;
-
-        paging_set_page_directory((uint32_t)new_process->page_directory);
-    }*/
-
-    io_enable_interrupts();
+    //io_enable_interrupts();
 }
