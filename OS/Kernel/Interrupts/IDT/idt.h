@@ -15,7 +15,7 @@
 #include "../Syscalls/memory_calls.h"
 
 void idt_init();
-void idt_set(uint8_t index, uint32_t (*handler)());
+void idt_set(uint8_t index, uint32_t (*handler)(), bool user_interrupt);
 void idt_unset(uint8_t index);
 void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)());
 void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)());
