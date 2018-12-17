@@ -7,6 +7,7 @@
 #include "../ELF/Parser/elf_header.h"
 #include "../ELF/Loader/elf_loader.h"
 #include "../../../Helpers/Vector/vector.h"
+#include "../../FileSystem/fat12.h"
 
 void process_manager_init();
 void process_manager_start_process(char *path);

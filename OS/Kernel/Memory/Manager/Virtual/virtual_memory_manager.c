@@ -33,6 +33,8 @@ bool virtual_memory_dealloc_last_page(bool supervisor)
             return physical_memory_dealloc_page(i);
         }
     }
+
+    return false;
 }
 
 uint32_t virtual_memory_get_allocated_pages_count(bool supervisor)

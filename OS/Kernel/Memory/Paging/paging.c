@@ -34,7 +34,7 @@ paging_table_entry *paging_get_page_directory()
 
 void paging_set_page_directory(uint32_t address)
 {
-    page_directory = address;
+    page_directory = (paging_table_entry *)address;
     __asm__("mov %0, %%eax\n"
             "mov %%eax, %%cr3"
             :
