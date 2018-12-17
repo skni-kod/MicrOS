@@ -1,6 +1,6 @@
 #include "panic_screen.h"
 #include "../Drivers/VGA/vga.h"
-#include "../../../Library/stdlib.h"
+#include <stdlib.h>
 
 const char *img[] =
     {

@@ -16,6 +16,10 @@
 #include "Memory/Manager/Physic/physical_memory_manager.h"
 #include "FileSystem/fat12.h"
 #include "Panic/panic_screen.h"
+#include "Process/ELF/Parser/elf_parser.h"
+#include "Process/ELF/Loader/elf_loader.h"
+#include "Process/Manager/process_manager.h"
+#include "TSS/tss.h"
 #include <stdint.h>
 
 char buff[50];
@@ -34,9 +38,8 @@ void startup()
     physical_memory_init();
     logger_log_ok("Physical Memory");
 
-    virtual_memory_set_base_page_index(774);
-    heap_set_base_page_index(774);
-    heap_clear();
+    heap_set_kernel_heap((void *)((uint32_t)774 * 1024 * 1024 * 4));
+    heap_init_kernel_heap();
     logger_log_ok("Virtual Memory");
 
     pic_init();
@@ -56,6 +59,12 @@ void startup()
 
     timer_init();
     logger_log_ok("Timer");
+
+    tss_init();
+    logger_log_ok("TSS");
+
+    process_manager_init();
+    logger_log_ok("Process manager");
 
     pci_init();
     logger_log_ok("PCI");
@@ -116,10 +125,12 @@ void startup()
 int kmain()
 {
     startup();
-
     logger_log_info("Hello, World!");
     //startup_music_play();
     logger_log_ok("READY.");
+
+    //process_manager_start_process("/ENV/SHELL.ELF");
+    //heap_kernel_dump();
 
     while (1)
     {

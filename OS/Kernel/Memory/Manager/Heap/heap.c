@@ -1,22 +1,43 @@
 #include "heap.h"
 
-heap_entry *heap;
-uint32_t tail_page_index;
+heap_entry *kernel_heap;
+heap_entry *user_heap;
+
+void *heap_kernel_alloc(uint32_t size, uint32_t align)
+{
+    return heap_alloc(size, align, true);
+}
+
+void *heap_user_alloc(uint32_t size, uint32_t align)
+{
+    return heap_alloc(size, align, false);
+}
 
 // TODO: This function should return 0 if there is no available memory to allocate instead of panic screen.
-void *heap_alloc(uint32_t size)
+void *heap_alloc(uint32_t size, uint32_t align, bool supervisor)
 {
-    heap_entry *current_entry = heap;
+    heap_entry *current_entry = supervisor ? kernel_heap : user_heap;
 
     while (true)
     {
         if (current_entry->free)
         {
-            if (current_entry->size > size + ENTRY_HEADER_SIZE)
+            uint32_t align_fix = align == 0 ? 0 : align - (((uint32_t)current_entry) % align);
+            if (current_entry->size > size + align_fix + ENTRY_HEADER_SIZE)
             {
                 heap_entry *next_entry = current_entry->next;
 
-                uint32_t updated_free_size = current_entry->size - size - ENTRY_HEADER_SIZE;
+                uint32_t updated_free_size = current_entry->size - size - align_fix - ENTRY_HEADER_SIZE;
+                if (align_fix != 0)
+                {
+                    current_entry->next = (heap_entry *)((uint32_t)current_entry + align_fix - ENTRY_HEADER_SIZE);
+                    current_entry->next->prev = current_entry;
+                    current_entry->size = align_fix - ENTRY_HEADER_SIZE;
+                    current_entry->free = 1;
+
+                    current_entry = current_entry->next;
+                }
+
                 current_entry->next = (heap_entry *)((uint32_t)current_entry + size + ENTRY_HEADER_SIZE);
                 current_entry->size = size;
                 current_entry->free = 0;
@@ -32,9 +53,9 @@ void *heap_alloc(uint32_t size)
             {
                 if (current_entry->next == 0)
                 {
-                    while (size > current_entry->size + ENTRY_HEADER_SIZE)
+                    while (current_entry->size < size + align_fix + ENTRY_HEADER_SIZE)
                     {
-                        tail_page_index = virtual_memory_alloc_page();
+                        virtual_memory_alloc_page(supervisor);
                         current_entry->size += 4 * 1024 * 1024;
                     }
 
@@ -47,7 +68,17 @@ void *heap_alloc(uint32_t size)
     }
 }
 
-void heap_dealloc(void *ptr)
+heap_entry *heap_kernel_dealloc(void *ptr)
+{
+    return heap_dealloc(ptr, true);
+}
+
+heap_entry *heap_user_dealloc(void *ptr)
+{
+    return heap_dealloc(ptr, false);
+}
+
+heap_entry *heap_dealloc(void *ptr, bool supervisor)
 {
     heap_entry *entry = (heap_entry *)((uint32_t)ptr - ENTRY_HEADER_SIZE);
     entry->free = 1;
@@ -70,34 +101,70 @@ void heap_dealloc(void *ptr)
         if (entry->next->free)
         {
             void *next_entry = (void *)((uint32_t)entry->next + ENTRY_HEADER_SIZE);
-            heap_dealloc(next_entry);
+            heap_dealloc(next_entry, supervisor);
         }
     }
     else
     {
         while ((float)entry->size / 1024 / 1024 > 4)
         {
-            virtual_memory_dealloc_page(tail_page_index);
+            virtual_memory_dealloc_last_page(supervisor);
             entry->size -= 4 * 1024 * 1024;
-            tail_page_index--;
         }
     }
+
+    return entry;
 }
 
-void heap_set_base_page_index(uint32_t index)
+void *heap_kernel_realloc(void *ptr, uint32_t size, uint32_t align)
 {
-    heap = (heap_entry *)(index * 1024 * 1024 * 4);
-    tail_page_index = index;
+    return heap_realloc(ptr, size, align, true);
 }
 
-// TODO: This shouldn't be named as "clear", set something better in the future.
-void heap_clear()
+void *heap_user_realloc(void *ptr, uint32_t size, uint32_t align)
 {
-    uint32_t allocated_virtual_pages = virtual_memory_get_allocated_pages_count();
+    return heap_realloc(ptr, size, align, false);
+}
+
+void *heap_realloc(void *ptr, uint32_t size, uint32_t align, bool supervisor)
+{
+    heap_entry *old_entry = heap_dealloc(ptr, supervisor);
+    void *new_ptr = heap_alloc(size, align, supervisor);
+
+    memcpy(new_ptr, ptr, old_entry->size);
+    return new_ptr;
+}
+
+void heap_set_kernel_heap(void *heap_address)
+{
+    kernel_heap = heap_address;
+    virtual_memory_set_kernel_base_page_index((uint32_t)kernel_heap / 1024 / 1024 / 4);
+}
+
+void heap_set_user_heap(void *heap_address)
+{
+    user_heap = heap_address;
+    virtual_memory_set_user_base_page_index((uint32_t)user_heap / 1024 / 1024 / 4);
+}
+
+void heap_init_kernel_heap()
+{
+    heap_init_heap(true);
+}
+
+void heap_init_user_heap()
+{
+    heap_init_heap(false);
+}
+
+void heap_init_heap(bool supervisor)
+{
+    heap_entry *heap = supervisor ? kernel_heap : user_heap;
+    uint32_t allocated_virtual_pages = virtual_memory_get_allocated_pages_count(supervisor);
 
     if (allocated_virtual_pages == 0)
     {
-        heap = (heap_entry *)(virtual_memory_alloc_page() * 1024 * 1024 * 4);
+        heap = (heap_entry *)(virtual_memory_alloc_page(supervisor) * 1024 * 1024 * 4);
     }
 
     heap->size = 4 * 1024 * 1024;
@@ -106,9 +173,19 @@ void heap_clear()
     heap->prev = 0;
 }
 
-void heap_dump()
+void heap_kernel_dump()
 {
-    heap_entry *current_entry = heap;
+    heap_dump(true);
+}
+
+void heap_user_dump()
+{
+    heap_dump(false);
+}
+
+void heap_dump(bool supervisor)
+{
+    heap_entry *current_entry = supervisor ? kernel_heap : user_heap;
 
     uint32_t index = 0;
     char buffer[16];

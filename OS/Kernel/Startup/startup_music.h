@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include "../Drivers/PCSpeaker/pc_speaker.h"
-#include "../../../Library/stdlib.h"
+#include <stdlib.h>
 
 #define C4_NOTE 262
 #define CS4_NOTE 277

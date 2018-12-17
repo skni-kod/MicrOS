@@ -1,6 +1,6 @@
 #include "vga_gmode.h"
 #include "../../Assembly/io.h"
-#include "../../../../Library/string.h"
+#include <string.h>
 #include "vga.h"
 
 #define peekb(S, O) *(unsigned char *)(16uL * (S) + (O))

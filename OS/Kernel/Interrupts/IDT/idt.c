@@ -143,63 +143,63 @@ void idt_init()
     idt_information.offset = (uint32_t)&idt_entries;
 
     // Exceptions
-    idt_set(0, idt_exc0);
-    idt_set(1, idt_exc1);
-    idt_set(2, idt_exc2);
-    idt_set(3, idt_exc3);
-    idt_set(4, idt_exc4);
-    idt_set(5, idt_exc5);
-    idt_set(6, idt_exc6);
-    idt_set(7, idt_exc7);
-    idt_set(8, idt_exc8);
-    idt_set(9, idt_exc9);
-    idt_set(10, idt_exc10);
-    idt_set(11, idt_exc11);
-    idt_set(12, idt_exc12);
-    idt_set(13, idt_exc13);
-    idt_set(14, idt_exc14);
-    idt_set(15, idt_exc15);
-    idt_set(16, idt_exc16);
-    idt_set(17, idt_exc17);
-    idt_set(18, idt_exc18);
-    idt_set(19, idt_exc19);
-    idt_set(20, idt_exc20);
-    idt_set(21, idt_exc21);
-    idt_set(22, idt_exc22);
-    idt_set(23, idt_exc23);
-    idt_set(24, idt_exc24);
-    idt_set(25, idt_exc25);
-    idt_set(26, idt_exc26);
-    idt_set(27, idt_exc27);
-    idt_set(28, idt_exc28);
-    idt_set(29, idt_exc29);
-    idt_set(30, idt_exc30);
-    idt_set(31, idt_exc31);
+    idt_set(0, idt_exc0, false);
+    idt_set(1, idt_exc1, false);
+    idt_set(2, idt_exc2, false);
+    idt_set(3, idt_exc3, false);
+    idt_set(4, idt_exc4, false);
+    idt_set(5, idt_exc5, false);
+    idt_set(6, idt_exc6, false);
+    idt_set(7, idt_exc7, false);
+    idt_set(8, idt_exc8, false);
+    idt_set(9, idt_exc9, false);
+    idt_set(10, idt_exc10, false);
+    idt_set(11, idt_exc11, false);
+    idt_set(12, idt_exc12, false);
+    idt_set(13, idt_exc13, false);
+    idt_set(14, idt_exc14, false);
+    idt_set(15, idt_exc15, false);
+    idt_set(16, idt_exc16, false);
+    idt_set(17, idt_exc17, false);
+    idt_set(18, idt_exc18, false);
+    idt_set(19, idt_exc19, false);
+    idt_set(20, idt_exc20, false);
+    idt_set(21, idt_exc21, false);
+    idt_set(22, idt_exc22, false);
+    idt_set(23, idt_exc23, false);
+    idt_set(24, idt_exc24, false);
+    idt_set(25, idt_exc25, false);
+    idt_set(26, idt_exc26, false);
+    idt_set(27, idt_exc27, false);
+    idt_set(28, idt_exc28, false);
+    idt_set(29, idt_exc29, false);
+    idt_set(30, idt_exc30, false);
+    idt_set(31, idt_exc31, false);
 
     // Hardware interrupts (IRQ)
-    idt_set(32, idt_int32); // Programmable Interrupt Timer
-    idt_set(33, idt_int33); // Keyboard
-    idt_set(34, idt_int34); // Cascade
-    idt_set(35, idt_int35); // COM2
-    idt_set(36, idt_int36); // COM1
-    idt_set(37, idt_int37); // LPT2
-    idt_set(38, idt_int38); // Floppy
-    idt_set(39, idt_int39); // LPT1
-    idt_set(40, idt_int40); // CMOS
-    idt_set(41, idt_int41); // Free
-    idt_set(42, idt_int42); // Free
-    idt_set(43, idt_int43); // Free
-    idt_set(44, idt_int44); // Mouse
-    idt_set(45, idt_int45); // FPU
-    idt_set(46, idt_int46); // Primary ATA Hard Disk
-    idt_set(47, idt_int47); // Secondary ATA Hard Disk
+    idt_set(32, idt_int32, false); // Programmable Interrupt Timer
+    idt_set(33, idt_int33, false); // Keyboard
+    idt_set(34, idt_int34, false); // Cascade
+    idt_set(35, idt_int35, false); // COM2
+    idt_set(36, idt_int36, false); // COM1
+    idt_set(37, idt_int37, false); // LPT2
+    idt_set(38, idt_int38, false); // Floppy
+    idt_set(39, idt_int39, false); // LPT1
+    idt_set(40, idt_int40, false); // CMOS
+    idt_set(41, idt_int41, false); // Free
+    idt_set(42, idt_int42, false); // Free
+    idt_set(43, idt_int43, false); // Free
+    idt_set(44, idt_int44, false); // Mouse
+    idt_set(45, idt_int45, false); // FPU
+    idt_set(46, idt_int46, false); // Primary ATA Hard Disk
+    idt_set(47, idt_int47, false); // Secondary ATA Hard Disk
 
     // Software interrupts
-    idt_set(48, idt_int48);
-    idt_set(49, idt_int49);
-    idt_set(50, idt_int50);
-    idt_set(51, idt_int51);
-    idt_set(52, idt_int52);
+    idt_set(48, idt_int48, true);
+    idt_set(49, idt_int49, true);
+    idt_set(50, idt_int50, true);
+    idt_set(51, idt_int51, true);
+    idt_set(52, idt_int52, true);
 
     // Load Interrupt Descriptor Table to the register
     __asm__("lidt %0" ::"m"(idt_information));
@@ -208,7 +208,7 @@ void idt_init()
     idt_attach_interrupt_handler(16, idt_syscalls_interrupt_handler);
 }
 
-void idt_set(uint8_t index, uint32_t (*handler)())
+void idt_set(uint8_t index, uint32_t (*handler)(), bool user_interrupt)
 {
     uint32_t handler_address = (uint32_t)handler;
 
@@ -216,6 +216,7 @@ void idt_set(uint8_t index, uint32_t (*handler)())
     idt_entries[index].offset_16_31 = (handler_address >> 16) & 0xFFFF;
     idt_entries[index].present = 1;
     idt_entries[index].selector = 8;
+    idt_entries[index].privilege_level = user_interrupt ? 3 : 1;
     idt_entries[index].type = Interrupt_32Bit;
 }
 

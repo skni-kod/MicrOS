@@ -5,8 +5,8 @@
 
 #include "../Drivers/Floppy/floppy_header.h"
 #include "../Drivers/Floppy/floppy.h"
-#include "../../../Library/stdlib.h"
-#include "../../../Library/Custom/vector.h"
+#include "../../Helpers/Vector/vector.h"
+#include <stdlib.h>
 #include "directory_entry.h"
 
 void fat12_init();

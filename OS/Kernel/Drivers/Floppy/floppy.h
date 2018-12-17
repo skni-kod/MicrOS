@@ -25,8 +25,8 @@
 #include "../../Interrupts/PIC/pic.h"
 #include "../../Interrupts/IDT/idt.h"
 #include "../../Assembly/io.h"
-#include "../../../../Library/stdlib.h"
-#include "../../../../Library/string.h"
+#include <stdlib.h>
+#include <string.h>
 #include "../../Logger/logger.h"
 #include "../../Timer/timer.h"
 

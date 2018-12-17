@@ -1,7 +1,8 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
-#include "../stdlib.h"
+#include <string.h>
+#include "../../Kernel/Memory/Manager/Heap/heap.h"
 
 typedef struct vector
 {
