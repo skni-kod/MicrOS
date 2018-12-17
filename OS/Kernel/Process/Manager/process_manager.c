@@ -1,16 +1,19 @@
 #include "process_manager.h"
 
-extern void enter_user_space(uint32_t address);
 vector processes;
+uint32_t next_process_id = 0;
+
+extern void enter_user_space(uint32_t address);
 
 void process_manager_init()
 {
     vector_init(&processes);
 }
 
-void process_manager_start_process(char *path)
+uint32_t process_manager_create_process(char *path)
 {
     process_header *process = (process_header *)heap_kernel_alloc(sizeof(process_header), 0);
+    process->id = next_process_id++;
     process->page_directory = heap_kernel_alloc(1024 * 4, 1024 * 4);
 
     paging_table_entry *page_directory = paging_get_page_directory();
@@ -30,11 +33,19 @@ void process_manager_start_process(char *path)
 
     process->stack = heap_user_alloc(1024 * 1024, 0) + 1024 * 1024;
 
-    __asm__("mov %0, %%eax\n"
-            "mov %%eax, %%esp"
-            :
-            : "g"(process->stack)
-            : "eax");
+    vector_add(&processes, process);
+    heap_kernel_dealloc(content);
 
-    enter_user_space(app_header->entry_position);
+    return process->id;
+}
+
+process_header *process_manager_get_process(uint32_t process_id)
+{
+    for (int i = 0; i < processes.count; i++)
+    {
+        if (((process_header *)processes.data[i])->id == process_id)
+        {
+            return (process_header *)processes.data[i];
+        }
+    }
 }

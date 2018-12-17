@@ -10,6 +10,7 @@
 #include "../../FileSystem/fat12.h"
 
 void process_manager_init();
-void process_manager_start_process(char *path);
+uint32_t process_manager_create_process(char *path);
+process_header *process_manager_get_process(uint32_t process_id);
 
 #endif
