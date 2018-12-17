@@ -7,6 +7,7 @@
 #include "idt_entry.h"
 #include "idt_info.h"
 #include "interrupt_state.h"
+#include "exception_state.h"
 #include "interrupt_handler_definition.h"
 #include "exception_definition.h"
 #include "../PIC/pic.h"
@@ -21,9 +22,10 @@ void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)());
 void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)());
 
 void idt_global_int_handler(interrupt_state state);
-void idt_global_exc_handler(interrupt_state state, uint32_t error_code);
+void idt_global_exc_handler(exception_state state);
 void idt_software_interrupt_handler();
 void idt_syscalls_interrupt_handler(interrupt_state *state);
+uint32_t idt_get_interrupts_count();
 
 // Exceptions
 extern uint32_t idt_exc0();

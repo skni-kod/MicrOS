@@ -1,9 +1,7 @@
-#ifndef INTERRUPT_STATE_H
-#define INTERRUPT_STATE_H
+#ifndef EXCEPTION_STATE_H
+#define EXCEPTION_STATE_H
 
-#include <stdint.h>
-
-typedef struct interrupt_state
+typedef struct exception_state
 {
     uint32_t eax;
     uint32_t ebx;
@@ -16,9 +14,10 @@ typedef struct interrupt_state
 
     uint32_t interrupt_number;
 
+    uint32_t error_code;
     uint32_t eip;
     uint32_t cs;
     uint32_t eflags;
-} interrupt_state;
+} exception_state;
 
 #endif

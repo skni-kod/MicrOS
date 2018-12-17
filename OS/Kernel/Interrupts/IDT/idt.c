@@ -267,7 +267,7 @@ void idt_global_int_handler(interrupt_state state)
     interrupts_counter--;
 }
 
-void idt_global_exc_handler(interrupt_state state, uint32_t error_code)
+void idt_global_exc_handler(exception_state state)
 {
     interrupts_counter++;
     for (int i = 0; i < 32; i++)
@@ -287,7 +287,7 @@ void idt_global_exc_handler(interrupt_state state, uint32_t error_code)
             memcpy(exception_string, exceptions[i].description, description_length);
             memcpy(exception_string + description_length, error_code_msg, error_code_msg_length);
 
-            itoa(error_code, error_code_str, 16);
+            itoa(state.error_code, error_code_str, 16);
             memcpy(exception_string + description_length + error_code_msg_length, error_code_str, 10);
 
             panic_screen_show(state.interrupt_number, exception_string);
@@ -312,4 +312,9 @@ void idt_syscalls_interrupt_handler(interrupt_state *state)
         syscall_dealloc_memory_call(state);
         break;
     }
+}
+
+uint32_t idt_get_interrupts_count()
+{
+    return interrupts_counter;
 }
