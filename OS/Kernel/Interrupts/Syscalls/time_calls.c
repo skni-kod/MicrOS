@@ -2,5 +2,5 @@
 
 void syscall_get_system_clock_call(interrupt_state *state)
 {
-    state->eax = timer_get_system_clock();
+    state->registers.eax = timer_get_system_clock();
 }

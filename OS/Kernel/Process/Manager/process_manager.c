@@ -14,7 +14,7 @@ void process_manager_init()
 
 uint32_t process_manager_create_process(char *path)
 {
-    process_header *process = (process_header *)heap_kernel_alloc(sizeof(process_header), 0);
+    /*process_header *process = (process_header *)heap_kernel_alloc(sizeof(process_header), 0);
     process->id = next_process_id++;
     process->page_directory = heap_kernel_alloc(1024 * 4, 1024 * 4);
 
@@ -52,7 +52,7 @@ uint32_t process_manager_create_process(char *path)
     vector_add(&processes, process);
     heap_kernel_dealloc(content);
 
-    return process->id;
+    return process->id;*/
 }
 
 process_header *process_manager_get_process(uint32_t process_id)
@@ -69,7 +69,7 @@ process_header *process_manager_get_process(uint32_t process_id)
 void process_manager_interrupt_handler(interrupt_state *state)
 {
     //io_disable_interrupts();
-    pic_confirm_master_and_slave();
+    /*pic_confirm_master_and_slave();
 
     if (processes.count > 0)
     {
@@ -87,7 +87,7 @@ void process_manager_interrupt_handler(interrupt_state *state)
 
         enter_user_space(new_process->state, 0x1B, 0x23);
         old_process = 0;
-    }
+    }*/
 
     //io_enable_interrupts();
 }

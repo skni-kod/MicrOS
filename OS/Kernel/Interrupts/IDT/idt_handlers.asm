@@ -269,50 +269,30 @@ idt_int52:
   jmp idt_int_wrapper
 
 idt_exc_wrapper:
-  push edi
-  push esi
-  push ebp
+  pusha
+  pushf
   push esp
-  push edx
-  push ecx
-  push ebx
-  push eax
 
   call idt_global_exc_handler
 
-  pop eax
-  pop ebx
-  pop ecx
-  pop edx
   pop esp
-  pop ebp
-  pop esi
-  pop edi
+  popf
+  popa
   
   ; Skip interrupt number and error code
   add esp, 8
   iret
 
 idt_int_wrapper:
-  push edi
-  push esi
-  push ebp
+  pusha
+  pushf
   push esp
-  push edx
-  push ecx
-  push ebx
-  push eax
 
   call idt_global_int_handler
 
-  pop eax
-  pop ebx
-  pop ecx
-  pop edx
   pop esp
-  pop ebp
-  pop esi
-  pop edi
+  popf
+  popa
   
   ; Skip interrupt number
   add esp, 4
