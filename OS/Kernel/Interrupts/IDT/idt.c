@@ -311,6 +311,9 @@ void idt_syscalls_interrupt_handler(interrupt_state *state)
     case 0x03:
         syscall_dealloc_memory_call(state);
         break;
+    case 0x04:
+        syscall_print_line_call(state);
+        break;
     }
 }
 
