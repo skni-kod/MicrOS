@@ -26,7 +26,6 @@ void idt_global_int_handler(interrupt_state *state);
 void idt_global_exc_handler(exception_state *state);
 void idt_software_interrupt_handler();
 void idt_syscalls_interrupt_handler(interrupt_state *state);
-uint32_t idt_get_interrupts_count();
 
 // Exceptions
 extern uint32_t idt_exc0();

@@ -5,8 +5,6 @@ volatile idt_entry idt_entries[IDT_INTERRUPT_DESCRIPTOR_TABLE_LENGTH];
 volatile idt_info idt_information;
 volatile interrupt_handler_definition interrupt_handlers[IDT_MAX_INTERRUPT_HANDLERS];
 
-volatile uint32_t interrupts_counter = 0;
-
 exception_definition exceptions[] =
     {
         {
@@ -254,7 +252,6 @@ void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)())
 
 void idt_global_int_handler(interrupt_state *state)
 {
-    interrupts_counter++;
     for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
     {
         if (interrupt_handlers[i].interrupt_number == state->interrupt_number && interrupt_handlers[i].handler != 0)
@@ -264,12 +261,10 @@ void idt_global_int_handler(interrupt_state *state)
     }
 
     state->interrupt_number - 32 < 8 ? pic_confirm_master() : pic_confirm_master_and_slave();
-    interrupts_counter--;
 }
 
 void idt_global_exc_handler(exception_state *state)
 {
-    interrupts_counter++;
     for (int i = 0; i < 32; i++)
     {
         if (exceptions[i].interrupt_number == state->interrupt_number)
@@ -294,8 +289,6 @@ void idt_global_exc_handler(exception_state *state)
             break;
         }
     }
-
-    interrupts_counter--;
 }
 
 void idt_syscalls_interrupt_handler(interrupt_state *state)
@@ -315,9 +308,4 @@ void idt_syscalls_interrupt_handler(interrupt_state *state)
         syscall_print_line_call(state);
         break;
     }
-}
-
-uint32_t idt_get_interrupts_count()
-{
-    return interrupts_counter;
 }
