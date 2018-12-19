@@ -26,6 +26,9 @@ extern idt_global_int_handler
 ; Global declarations for idt_exc_wrapper
 %macro idt_exc 1
 idt_exc%1:
+  %if i != 8 && i != 10 && i != 11 && i != 12 && i != 13 && i != 14 && i != 17 && i != 30
+    push 0
+  %endif
   push %1
   jmp idt_exc_wrapper
 %endmacro
