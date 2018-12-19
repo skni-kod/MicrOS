@@ -11,13 +11,13 @@ void floppy_init()
 {
     // Enable timer interrupt (to check if floppy can be shut down after some time of inactivity)
     pic_enable_irq(0);
-    idt_attach_interrupt_handler(0, floppy_timer_interrupt);
+    idt_attach_interrupt_handler(0, floppy_timer_interrupt, false);
 
     time_of_last_activity = timer_get_system_clock();
 
     // Enable floppy interrupts
     pic_enable_irq(6);
-    idt_attach_interrupt_handler(6, floppy_interrupt);
+    idt_attach_interrupt_handler(6, floppy_interrupt, false);
 
     if (floppy_reset() == -1)
     {
