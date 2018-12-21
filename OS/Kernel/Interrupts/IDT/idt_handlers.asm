@@ -54,13 +54,11 @@ idt_int%1:
 
 idt_exc_wrapper:
   pusha
-  pushf
   push esp
 
   call idt_global_exc_handler
 
   pop esp
-  popf
   popa
   
   ; Skip interrupt number and error code
@@ -69,16 +67,13 @@ idt_exc_wrapper:
 
 idt_int_wrapper:
   pusha
-  pushf
   push esp
 
   call idt_global_int_handler
 
   pop esp
-  popf
   popa
   
   ; Skip interrupt number
   add esp, 4
-
   iret

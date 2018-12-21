@@ -3,7 +3,6 @@
 
 typedef struct registers_state
 {
-    uint32_t eflags;
     uint32_t edi;
     uint32_t esi;
     uint32_t ebp;
