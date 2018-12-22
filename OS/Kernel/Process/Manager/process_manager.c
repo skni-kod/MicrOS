@@ -19,6 +19,7 @@ uint32_t process_manager_create_process(char *path)
 {
     process_header *process = (process_header *)heap_kernel_alloc(sizeof(process_header), 0);
     process->id = next_process_id++;
+
     process->page_directory = heap_kernel_alloc(1024 * 4, 1024 * 4);
 
     paging_table_entry *page_directory = paging_get_page_directory();
@@ -36,20 +37,23 @@ uint32_t process_manager_create_process(char *path)
     heap_set_user_heap((void *)(process->base_heap_page_index * 1024 * 1024 * 4));
     heap_init_user_heap();
 
-    process->stack = heap_user_alloc(1024 * 1024, 4) + 1024 * 1024;
+    process->stack = heap_user_alloc(1024 * 1024, 32) + (1024 * 1024);
     process->state.eip = app_header->entry_position;
-    process->state.esp = (uint32_t)process->stack;
+    process->state.esp = (uint32_t)process->stack - 4;
     process->state.interrupt_number = 0;
     process->state.eflags = 0x200;
     process->state.cs = 0x1B;
     process->state.ss = 0x23;
     process->initialized = false;
 
+    uint32_t *qwe = (uint32_t)process->stack;
+    *qwe = process->id;
+
     process->state.registers.eax = 0;
     process->state.registers.ebx = 0;
     process->state.registers.ecx = 0;
     process->state.registers.edx = 0;
-    process->state.registers.esp_unused = (uint32_t)process->stack;
+    process->state.registers.esp_unused = (uint32_t)process->state.esp;
     process->state.registers.ebp = 0;
     process->state.registers.esi = 0;
     process->state.registers.edi = 0;
@@ -79,7 +83,7 @@ process_header *process_manager_get_process(uint32_t process_id)
 
 void process_manager_interrupt_handler(interrupt_state *state)
 {
-    if (processes.count > 0 && timer_get_system_clock() - last_task_switch >= 100)
+    if (processes.count > 4 && timer_get_system_clock() - last_task_switch >= 100)
     {
         last_task_switch = timer_get_system_clock();
 
