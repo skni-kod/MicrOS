@@ -275,7 +275,6 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
 
     // Wait for interrupt
     floppy_wait_for_interrupt();
-
     // Read command status
     uint8_t st0 = floppy_read_data();
     uint8_t st1 = floppy_read_data();
@@ -342,9 +341,6 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
         logger_log_error("[Floppy] Invalid bps");
         return NULL;
     }
-
-    // Confirm interrupt
-    floppy_confirm_interrupt(&st0, &cylinder_data);
 
     return (uint8_t *)dma_buffer;
 }
