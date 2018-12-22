@@ -20,17 +20,19 @@ void *heap_alloc(uint32_t size, uint32_t align, bool supervisor)
 
     while (true)
     {
+        uint32_t align_fix = align == 0 ? 0 : align - (((uint32_t)current_entry) % align) - ENTRY_HEADER_SIZE;
+        uint32_t headers_size = align == 0 ? ENTRY_HEADER_SIZE : 2 * ENTRY_HEADER_SIZE;
+
         if (current_entry->free)
         {
-            uint32_t align_fix = align == 0 ? 0 : align - (((uint32_t)current_entry) % align);
-            if (current_entry->size > size + align_fix + ENTRY_HEADER_SIZE)
+            if (current_entry->size > size + align_fix + headers_size)
             {
                 heap_entry *next_entry = current_entry->next;
 
-                uint32_t updated_free_size = current_entry->size - size - align_fix - ENTRY_HEADER_SIZE;
+                uint32_t updated_free_size = current_entry->size - size - align_fix - headers_size;
                 if (align_fix != 0)
                 {
-                    current_entry->next = (heap_entry *)((uint32_t)current_entry + align_fix - ENTRY_HEADER_SIZE);
+                    current_entry->next = (heap_entry *)((uint32_t)current_entry + align_fix);
                     current_entry->next->prev = current_entry;
                     current_entry->size = align_fix - ENTRY_HEADER_SIZE;
                     current_entry->free = 1;
@@ -206,4 +208,35 @@ void heap_dump(bool supervisor)
         current_entry = current_entry->next;
         index++;
     }
+}
+
+bool heap_kernel_check_integrity()
+{
+    return heap_check_integrity(true);
+}
+
+bool heap_user_check_integrity()
+{
+    return heap_check_integrity(false);
+}
+
+bool heap_check_integrity(bool supervisor)
+{
+    heap_entry *current_entry = supervisor ? kernel_heap : user_heap;
+    while (true)
+    {
+        if (current_entry->next != 0 && (uint32_t)current_entry->next - (uint32_t)current_entry != current_entry->size + ENTRY_HEADER_SIZE)
+        {
+            return false;
+        }
+
+        if (current_entry->next == 0)
+        {
+            break;
+        }
+
+        current_entry = current_entry->next;
+    }
+
+    return true;
 }
