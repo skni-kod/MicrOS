@@ -44,7 +44,6 @@ uint32_t process_manager_create_process(char *path)
     process->state.eflags = 0x200;
     process->state.cs = 0x1B;
     process->state.ss = 0x23;
-    process->initialized = false;
 
     uint32_t *qwe = (uint32_t)process->stack;
     *qwe = process->id;
@@ -94,13 +93,9 @@ void process_manager_interrupt_handler(interrupt_state *state)
         process_header *new_process = processes.data[new_process_id];
 
         current_process_id = new_process_id;
-        if (new_process->initialized)
+        if (state->cs == 0x1B)
         {
             memcpy(&old_process->state, state, sizeof(interrupt_state));
-        }
-        else
-        {
-            new_process->initialized = true;
         }
 
         paging_set_page_directory(new_process->page_directory);

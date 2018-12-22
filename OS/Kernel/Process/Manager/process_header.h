@@ -14,7 +14,6 @@ typedef struct process_header
 
     void *stack;
     void *page_directory;
-    bool initialized;
 
     interrupt_state state;
 } process_header;
