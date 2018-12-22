@@ -166,6 +166,9 @@ main_protected_area:
     mov eax, 0xC1100000
     mov esp, eax
 
+    ; Init FPU
+    finit
+
     ; Jump to kmain and start kernel work
     extern kmain
     call kmain
