@@ -45,7 +45,7 @@ void paging_set_page_directory(uint32_t address)
 void paging_map_page(uint32_t physical_page_index, uint32_t virtual_page_index, bool supervisor)
 {
     paging_table_entry *page_directory_entry = (paging_table_entry *)((uint32_t)page_directory + (virtual_page_index * 4));
-    paging_table_entry *page_table = (paging_table_entry *)((uint32_t)page_tables + (virtual_page_index << 12));
+    paging_table_entry *page_table = (paging_table_entry *)((uint32_t)page_tables + (physical_page_index << 12));
 
     for (int i = 0; i < 1024; i++)
     {
