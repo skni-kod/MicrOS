@@ -31,4 +31,8 @@ void heap_kernel_dump();
 void heap_user_dump();
 void heap_dump(bool supervisor);
 
+bool heap_kernel_check_integrity();
+bool heap_user_check_integrity();
+bool heap_check_integrity(bool supervisor);
+
 #endif

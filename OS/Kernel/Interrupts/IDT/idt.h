@@ -7,21 +7,23 @@
 #include "idt_entry.h"
 #include "idt_info.h"
 #include "interrupt_state.h"
+#include "exception_state.h"
 #include "interrupt_handler_definition.h"
 #include "exception_definition.h"
 #include "../PIC/pic.h"
 #include "../../Panic/panic_screen.h"
 #include "../Syscalls/time_calls.h"
 #include "../Syscalls/memory_calls.h"
+#include "../Syscalls/vga_calls.h"
 
 void idt_init();
 void idt_set(uint8_t index, uint32_t (*handler)(), bool user_interrupt);
 void idt_unset(uint8_t index);
-void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)());
+void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)(), bool last);
 void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)());
 
-void idt_global_int_handler(interrupt_state state);
-void idt_global_exc_handler(interrupt_state state, uint32_t error_code);
+void idt_global_int_handler(interrupt_state *state);
+void idt_global_exc_handler(exception_state *state);
 void idt_software_interrupt_handler();
 void idt_syscalls_interrupt_handler(interrupt_state *state);
 

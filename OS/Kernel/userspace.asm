@@ -7,10 +7,10 @@ enter_user_space:
     mov fs, ax 
     mov gs, ax
 
-    mov eax, esp
-    push 0x23
-    push eax
-    pushf
-    push 0x1B
-    push dword [esp + 20]
+    mov eax, [esp + 4]
+    mov esp, eax
+
+    popa
+    add esp, 4
+    
     iret

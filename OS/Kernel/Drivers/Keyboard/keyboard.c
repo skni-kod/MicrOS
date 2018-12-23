@@ -91,7 +91,7 @@ volatile uint16_t *const buffer_read = (uint16_t *)0xc000041A;
 void keyboard_init()
 {
     pic_enable_irq(1);
-    idt_attach_interrupt_handler(1, keyboard_handler);
+    idt_attach_interrupt_handler(1, keyboard_handler, false);
 }
 
 unsigned char keyboard_able_to_write()

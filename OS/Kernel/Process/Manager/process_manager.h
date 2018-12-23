@@ -8,8 +8,13 @@
 #include "../ELF/Loader/elf_loader.h"
 #include "../../../Helpers/Vector/vector.h"
 #include "../../FileSystem/fat12.h"
+#include "../../Assembly/io.h"
+#include "../../Interrupts/IDT/idt.h"
 
 void process_manager_init();
-void process_manager_start_process(char *path);
+uint32_t process_manager_create_process(char *path);
+process_header *process_manager_get_process(uint32_t process_id);
+
+void process_manager_interrupt_handler(interrupt_state *state);
 
 #endif

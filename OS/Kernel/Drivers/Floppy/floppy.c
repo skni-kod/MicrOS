@@ -11,13 +11,13 @@ void floppy_init()
 {
     // Enable timer interrupt (to check if floppy can be shut down after some time of inactivity)
     pic_enable_irq(0);
-    idt_attach_interrupt_handler(0, floppy_timer_interrupt);
+    idt_attach_interrupt_handler(0, floppy_timer_interrupt, false);
 
     time_of_last_activity = timer_get_system_clock();
 
     // Enable floppy interrupts
     pic_enable_irq(6);
-    idt_attach_interrupt_handler(6, floppy_interrupt);
+    idt_attach_interrupt_handler(6, floppy_interrupt, false);
 
     if (floppy_reset() == -1)
     {
@@ -275,7 +275,6 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
 
     // Wait for interrupt
     floppy_wait_for_interrupt();
-
     // Read command status
     uint8_t st0 = floppy_read_data();
     uint8_t st1 = floppy_read_data();
@@ -342,9 +341,6 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
         logger_log_error("[Floppy] Invalid bps");
         return NULL;
     }
-
-    // Confirm interrupt
-    floppy_confirm_interrupt(&st0, &cylinder_data);
 
     return (uint8_t *)dma_buffer;
 }

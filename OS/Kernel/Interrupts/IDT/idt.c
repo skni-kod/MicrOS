@@ -205,7 +205,7 @@ void idt_init()
     __asm__("lidt %0" ::"m"(idt_information));
 
     // Add system calls interrupt handler
-    idt_attach_interrupt_handler(16, idt_syscalls_interrupt_handler);
+    idt_attach_interrupt_handler(16, idt_syscalls_interrupt_handler, false);
 }
 
 void idt_set(uint8_t index, uint32_t (*handler)(), bool user_interrupt)
@@ -225,14 +225,15 @@ void idt_unset(uint8_t index)
     idt_entries[index].present = 0;
 }
 
-void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)())
+void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)(), bool last)
 {
     for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
     {
-        if (interrupt_handlers[i].handler == 0)
+        int fixed_index = last ? IDT_MAX_INTERRUPT_HANDLERS - i - 1 : i;
+        if (interrupt_handlers[fixed_index].handler == 0)
         {
-            interrupt_handlers[i].interrupt_number = interrupt_number + 32;
-            interrupt_handlers[i].handler = handler;
+            interrupt_handlers[fixed_index].interrupt_number = interrupt_number + 32;
+            interrupt_handlers[fixed_index].handler = handler;
             break;
         }
     }
@@ -250,24 +251,24 @@ void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)())
     }
 }
 
-void idt_global_int_handler(interrupt_state state)
+void idt_global_int_handler(interrupt_state *state)
 {
     for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
     {
-        if (interrupt_handlers[i].interrupt_number == state.interrupt_number && interrupt_handlers[i].handler != 0)
+        if (interrupt_handlers[i].interrupt_number == state->interrupt_number && interrupt_handlers[i].handler != 0)
         {
-            interrupt_handlers[i].handler(&state);
+            interrupt_handlers[i].handler(state);
         }
     }
 
-    state.interrupt_number - 32 < 8 ? pic_confirm_master() : pic_confirm_master_and_slave();
+    state->interrupt_number - 32 < 8 ? pic_confirm_master() : pic_confirm_master_and_slave();
 }
 
-void idt_global_exc_handler(interrupt_state state, uint32_t error_code)
+void idt_global_exc_handler(exception_state *state)
 {
     for (int i = 0; i < 32; i++)
     {
-        if (exceptions[i].interrupt_number == state.interrupt_number)
+        if (exceptions[i].interrupt_number == state->interrupt_number)
         {
             char exception_string[64];
             char error_code_msg[] = ". Error code: ";
@@ -282,10 +283,10 @@ void idt_global_exc_handler(interrupt_state state, uint32_t error_code)
             memcpy(exception_string, exceptions[i].description, description_length);
             memcpy(exception_string + description_length, error_code_msg, error_code_msg_length);
 
-            itoa(error_code, error_code_str, 16);
+            itoa(state->error_code, error_code_str, 16);
             memcpy(exception_string + description_length + error_code_msg_length, error_code_str, 10);
 
-            panic_screen_show(state.interrupt_number, exception_string);
+            panic_screen_show(state->interrupt_number, exception_string);
             break;
         }
     }
@@ -293,7 +294,7 @@ void idt_global_exc_handler(interrupt_state state, uint32_t error_code)
 
 void idt_syscalls_interrupt_handler(interrupt_state *state)
 {
-    switch (state->eax)
+    switch (state->registers.eax)
     {
     case 0x01:
         syscall_get_system_clock_call(state);
@@ -303,6 +304,9 @@ void idt_syscalls_interrupt_handler(interrupt_state *state)
         break;
     case 0x03:
         syscall_dealloc_memory_call(state);
+        break;
+    case 0x04:
+        syscall_print_line_call(state);
         break;
     }
 }

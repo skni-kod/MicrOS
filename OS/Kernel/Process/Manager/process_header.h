@@ -1,6 +1,9 @@
 #ifndef PROCESS_HEADER_H
 #define PROCESS_HEADER_H
 
+#include <stdbool.h>
+#include "../../Interrupts/IDT/interrupt_state.h"
+
 typedef struct process_header
 {
     uint32_t id;
@@ -11,6 +14,8 @@ typedef struct process_header
 
     void *stack;
     void *page_directory;
+
+    interrupt_state state;
 } process_header;
 
 #endif

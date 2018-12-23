@@ -63,9 +63,6 @@ void startup()
     tss_init();
     logger_log_ok("TSS");
 
-    process_manager_init();
-    logger_log_ok("Process manager");
-
     pci_init();
     logger_log_ok("PCI");
     logger_log_info("Number of devices: ");
@@ -129,8 +126,9 @@ int kmain()
     //startup_music_play();
     logger_log_ok("READY.");
 
-    //process_manager_start_process("/ENV/SHELL.ELF");
-    //heap_kernel_dump();
+    process_manager_init();
+    process_manager_create_process("/ENV/SHELL.ELF");
+    logger_log_ok("Process manager");
 
     while (1)
     {
