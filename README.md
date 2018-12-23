@@ -45,7 +45,11 @@ The repository doesn't contain all files necessary to successful compilation - w
 * ImDisk - managing floppy images
 * dd - writing bootloader to the image
 
-## Example
-![MicrOS example screenshot](https://i.imgur.com/Y200tKQ.png)
+## Examples
+![MicrOS boot sequence](https://i.imgur.com/Y200tKQ.png)
 
 Boot sequence, floppy calibration, reading content of the example file and heap dump.
+
+![MicrOS multitasking](https://i.imgur.com/tKVWytt.png)
+
+Multitasking with five processes incrementing internal counters and printing them on the console.
