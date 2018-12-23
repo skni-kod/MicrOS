@@ -82,7 +82,7 @@ process_header *process_manager_get_process(uint32_t process_id)
 
 void process_manager_interrupt_handler(interrupt_state *state)
 {
-    if (processes.count > 4 && timer_get_system_clock() - last_task_switch >= 100)
+    if (processes.count > 0 && timer_get_system_clock() - last_task_switch >= 100)
     {
         last_task_switch = timer_get_system_clock();
 

@@ -128,10 +128,6 @@ int kmain()
 
     process_manager_init();
     process_manager_create_process("/ENV/SHELL.ELF");
-    process_manager_create_process("/ENV/SHELL.ELF");
-    process_manager_create_process("/ENV/SHELL.ELF");
-    process_manager_create_process("/ENV/SHELL.ELF");
-    process_manager_create_process("/ENV/SHELL.ELF");
     logger_log_ok("Process manager");
 
     while (1)
