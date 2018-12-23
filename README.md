@@ -20,14 +20,16 @@ The repository doesn't contain all files necessary to successful compilation - w
 * FAT12 filesystem - partially, currently read-only
 * PCI (Peripheral Component Interconnect) - partially
 * Panic screen (because the OS can't be named as OS if there is no beautiful panic screen on a page fault exception)
+* User space
+* ELF executing
+* Multitasking (with primitive round-rubin scheduler, but it will be changed for something better)
 * Standard library for C - partially
 
 ## TODO
 * Full support for the FAT12, FAT16 and FAT32 filesystems
-* User space (and basic apps like shell)
-* ELF executing
-* Multitasking
 * Hard disk drive support
+* Shell and other important applications
+* More advanced scheduler with priorites and IO blocking
 * Rest of the C standard library functions
 
 ## TODO (?)
