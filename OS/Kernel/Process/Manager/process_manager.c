@@ -37,9 +37,9 @@ uint32_t process_manager_create_process(char *path)
     heap_set_user_heap((void *)(process->base_heap_page_index * 1024 * 1024 * 4));
     heap_init_user_heap();
 
-    process->stack = heap_user_alloc(1024 * 1024, 32) + (1024 * 1024);
+    process->stack = heap_user_alloc(1024 * 1024, 32) + (1024 * 1024) - 4;
     process->state.eip = app_header->entry_position;
-    process->state.esp = (uint32_t)process->stack - 4;
+    process->state.esp = (uint32_t)process->stack - 8;
     process->state.interrupt_number = 0;
     process->state.eflags = 0x200;
     process->state.cs = 0x1B;
@@ -82,7 +82,7 @@ process_header *process_manager_get_process(uint32_t process_id)
 
 void process_manager_interrupt_handler(interrupt_state *state)
 {
-    /*if (processes.count > 0 && timer_get_system_clock() - last_task_switch >= 100)
+    if (processes.count > 0 && timer_get_system_clock() - last_task_switch >= 100)
     {
         last_task_switch = timer_get_system_clock();
 
@@ -109,5 +109,5 @@ void process_manager_interrupt_handler(interrupt_state *state)
                 : "eax");
 
         enter_user_space(&new_process->state);
-    }*/
+    }
 }

@@ -21,11 +21,11 @@ void *heap_alloc(uint32_t size, uint32_t align, bool supervisor)
     while (true)
     {
         uint32_t align_fix = align == 0 ? 0 : align - (((uint32_t)current_entry) % align) - ENTRY_HEADER_SIZE;
-        uint32_t headers_size = align == 0 ? ENTRY_HEADER_SIZE : 2 * ENTRY_HEADER_SIZE;
+        uint32_t headers_size = align == 0 ? 0 : ENTRY_HEADER_SIZE;
 
         if (current_entry->free)
         {
-            if (current_entry->size > size + align_fix + headers_size)
+            if (current_entry->size >= size + align_fix + headers_size)
             {
                 heap_entry *next_entry = current_entry->next;
 
@@ -41,13 +41,17 @@ void *heap_alloc(uint32_t size, uint32_t align, bool supervisor)
                 }
 
                 current_entry->next = (heap_entry *)((uint32_t)current_entry + size + ENTRY_HEADER_SIZE);
+
+                if (current_entry->size != size + align_fix + headers_size)
+                {
+                    current_entry->next->next = next_entry;
+                    current_entry->next->prev = current_entry;
+                    current_entry->next->size = updated_free_size;
+                    current_entry->next->free = 1;
+                }
+
                 current_entry->size = size;
                 current_entry->free = 0;
-
-                current_entry->next->next = next_entry;
-                current_entry->next->prev = current_entry;
-                current_entry->next->size = updated_free_size;
-                current_entry->next->free = 1;
 
                 return (void *)((uint32_t)current_entry + ENTRY_HEADER_SIZE);
             }
