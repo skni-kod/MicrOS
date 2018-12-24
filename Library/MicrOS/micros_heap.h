@@ -7,6 +7,6 @@
 void *micros_heap_alloc(uint32_t size, uint32_t align);
 void *micros_heap_realloc(void *ptr, uint32_t size);
 void micros_heap_dealloc(void *ptr);
-bool micros_verify_heap();
+bool micros_verify_integrity();
 
 #endif

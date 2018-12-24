@@ -220,17 +220,17 @@ void heap_dump(bool supervisor)
     }
 }
 
-bool heap_kernel_verify_heap()
+bool heap_kernel_verify_integrity()
 {
-    return heap_verify_heap(true);
+    return heap_verify_integrity(true);
 }
 
-bool heap_user_verify_heap()
+bool heap_user_verify_integrity()
 {
-    return heap_verify_heap(false);
+    return heap_verify_integrity(false);
 }
 
-bool heap_verify_heap(bool supervisor)
+bool heap_verify_integrity(bool supervisor)
 {
     heap_entry *current_entry = supervisor ? kernel_heap : user_heap;
 

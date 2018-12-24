@@ -15,7 +15,7 @@ void syscall_dealloc_memory_call(interrupt_state *state)
     heap_user_dealloc((void *)state->registers.ebx);
 }
 
-void syscall_verify_heap(interrupt_state *state)
+void syscall_verify_integrity(interrupt_state *state)
 {
-    state->registers.eax = heap_verify_heap(false);
+    state->registers.eax = heap_verify_integrity(false);
 }
