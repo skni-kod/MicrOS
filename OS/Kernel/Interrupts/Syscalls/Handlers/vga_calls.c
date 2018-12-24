@@ -2,5 +2,5 @@
 
 void syscall_print_line_call(interrupt_state *state)
 {
-    vga_printstring(state->registers.ebx);
+    vga_printstring((const char *)state->registers.ebx);
 }

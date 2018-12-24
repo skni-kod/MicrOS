@@ -7,7 +7,7 @@ void syscall_alloc_memory_call(interrupt_state *state)
 
 void syscall_realloc_memory_call(interrupt_state *state)
 {
-    state->registers.eax = heap_user_realloc((void *)state->registers.ebx, state->registers.ecx, state->registers.edx);
+    state->registers.eax = (uint32_t)heap_user_realloc((void *)state->registers.ebx, state->registers.ecx, state->registers.edx);
 }
 
 void syscall_dealloc_memory_call(interrupt_state *state)

@@ -1,6 +1,6 @@
 #include "process_manager.h"
 
-volatile kvector processes;
+kvector processes;
 volatile uint32_t current_process_id = 0;
 volatile uint32_t next_process_id = 0;
 volatile uint32_t last_task_switch = 0;
@@ -39,14 +39,11 @@ uint32_t process_manager_create_process(char *path)
 
     process->stack = heap_user_alloc(1024 * 1024, 32) + (1024 * 1024) - 4;
     process->state.eip = app_header->entry_position;
-    process->state.esp = (uint32_t)process->stack - 8;
+    process->state.esp = (uint32_t)process->stack - 4;
     process->state.interrupt_number = 0;
     process->state.eflags = 0x200;
     process->state.cs = 0x1B;
     process->state.ss = 0x23;
-
-    uint32_t *qwe = (uint32_t)process->stack;
-    *qwe = process->id;
 
     process->state.registers.eax = 0;
     process->state.registers.ebx = 0;
@@ -71,13 +68,15 @@ uint32_t process_manager_create_process(char *path)
 
 process_header *process_manager_get_process(uint32_t process_id)
 {
-    for (int i = 0; i < processes.count; i++)
+    for (uint32_t i = 0; i < processes.count; i++)
     {
         if (((process_header *)processes.data[i])->id == process_id)
         {
             return (process_header *)processes.data[i];
         }
     }
+
+    return NULL;
 }
 
 void process_manager_interrupt_handler(interrupt_state *state)

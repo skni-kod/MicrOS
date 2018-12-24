@@ -33,7 +33,7 @@ void syscalls_manager_attach_handler(uint8_t function_number, void (*handler)())
     syscall_handlers[function_number] = handler;
 }
 
-void syscalls_manager_detach_handler(uint8_t function_number, void (*handler)())
+void syscalls_manager_detach_handler(uint8_t function_number)
 {
     syscall_handlers[function_number] = 0;
 }

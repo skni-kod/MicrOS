@@ -2,6 +2,7 @@
 #define MICROS_TIMER_H
 
 #include <stdint.h>
+#include "micros_interrupts.h"
 
 uint32_t micros_get_system_clock();
 
