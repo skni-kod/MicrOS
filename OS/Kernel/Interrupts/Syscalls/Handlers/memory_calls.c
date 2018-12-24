@@ -15,6 +15,11 @@ void syscall_dealloc_memory_call(interrupt_state *state)
     heap_user_dealloc((void *)state->registers.ebx);
 }
 
+void syscall_get_object_size(interrupt_state *state)
+{
+    state->registers.eax = (uint32_t)heap_get_object_size((void *)state->registers.ebx);
+}
+
 void syscall_verify_integrity(interrupt_state *state)
 {
     state->registers.eax = heap_verify_integrity(false);

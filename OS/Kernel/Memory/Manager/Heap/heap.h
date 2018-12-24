@@ -20,6 +20,8 @@ void *heap_kernel_realloc(void *ptr, uint32_t size, uint32_t align);
 void *heap_user_realloc(void *ptr, uint32_t size, uint32_t align);
 void *heap_realloc(void *ptr, uint32_t size, uint32_t align, bool supervisor);
 
+uint32_t heap_get_object_size(void *ptr);
+
 void heap_set_kernel_heap(void *heap_address);
 void heap_set_user_heap(void *heap_address);
 

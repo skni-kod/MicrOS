@@ -138,6 +138,12 @@ void *heap_user_realloc(void *ptr, uint32_t size, uint32_t align)
     return heap_realloc(ptr, size, align, false);
 }
 
+uint32_t heap_get_object_size(void *ptr)
+{
+    heap_entry *entry = (heap_entry *)((uint32_t)ptr - ENTRY_HEADER_SIZE);
+    return entry->size;
+}
+
 void *heap_realloc(void *ptr, uint32_t size, uint32_t align, bool supervisor)
 {
     heap_entry *old_entry = heap_dealloc(ptr, supervisor);

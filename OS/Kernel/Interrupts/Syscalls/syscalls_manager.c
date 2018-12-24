@@ -8,7 +8,8 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0x00, syscall_alloc_memory_call);
     syscalls_manager_attach_handler(0x01, syscall_realloc_memory_call);
     syscalls_manager_attach_handler(0x02, syscall_dealloc_memory_call);
-    syscalls_manager_attach_handler(0x03, syscall_verify_integrity);
+    syscalls_manager_attach_handler(0x03, syscall_get_object_size);
+    syscalls_manager_attach_handler(0x04, syscall_verify_integrity);
 
     // 0x1X - VGA
 
