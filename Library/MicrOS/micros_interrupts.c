@@ -1,6 +1,6 @@
-#include "interrupt_helper.h"
+#include "micros_interrupts.h"
 
-uint32_t call_interrupt_0a(uint32_t function_number)
+uint32_t micros_interrupt_0a(uint32_t function_number)
 {
     uint32_t result;
     __asm__(
@@ -15,7 +15,7 @@ uint32_t call_interrupt_0a(uint32_t function_number)
     return result;
 }
 
-uint32_t call_interrupt_1a(uint32_t function_number, uint32_t a)
+uint32_t micros_interrupt_1a(uint32_t function_number, uint32_t a)
 {
     uint32_t result;
     __asm__(
@@ -31,7 +31,7 @@ uint32_t call_interrupt_1a(uint32_t function_number, uint32_t a)
     return result;
 }
 
-uint32_t call_interrupt_2a(uint32_t function_number, uint32_t a, uint32_t b)
+uint32_t micros_interrupt_2a(uint32_t function_number, uint32_t a, uint32_t b)
 {
     uint32_t result;
     __asm__(
@@ -48,7 +48,7 @@ uint32_t call_interrupt_2a(uint32_t function_number, uint32_t a, uint32_t b)
     return result;
 }
 
-uint32_t call_interrupt_3a(uint32_t function_number, uint32_t a, uint32_t b, uint32_t c)
+uint32_t micros_interrupt_3a(uint32_t function_number, uint32_t a, uint32_t b, uint32_t c)
 {
     uint32_t result;
     __asm__(
