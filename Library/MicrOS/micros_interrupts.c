@@ -5,7 +5,7 @@ uint32_t micros_interrupt_0a(uint32_t function_number)
     uint32_t result;
     __asm__(
         "mov %1, %%eax\n"
-        "int $48\n"
+        "int $50\n"
         "mov %%eax, %0\n"
 
         : "=g"(result)
@@ -21,7 +21,7 @@ uint32_t micros_interrupt_1a(uint32_t function_number, uint32_t a)
     __asm__(
         "mov %1, %%eax\n"
         "mov %2, %%ebx\n"
-        "int $48\n"
+        "int $50\n"
         "mov %%eax, %0\n"
 
         : "=g"(result)
@@ -38,7 +38,7 @@ uint32_t micros_interrupt_2a(uint32_t function_number, uint32_t a, uint32_t b)
         "mov %1, %%eax\n"
         "mov %2, %%ebx\n"
         "mov %3, %%ecx\n"
-        "int $48\n"
+        "int $50\n"
         "mov %%eax, %0\n"
 
         : "=g"(result)
@@ -56,7 +56,7 @@ uint32_t micros_interrupt_3a(uint32_t function_number, uint32_t a, uint32_t b, u
         "mov %2, %%ebx\n"
         "mov %3, %%ecx\n"
         "mov %4, %%edx\n"
-        "int $48\n"
+        "int $50\n"
         "mov %%eax, %0\n"
 
         : "=g"(result)
