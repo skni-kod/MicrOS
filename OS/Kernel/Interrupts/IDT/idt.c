@@ -195,17 +195,13 @@ void idt_init()
     idt_set(47, idt_int47, false); // Secondary ATA Hard Disk
 
     // Software interrupts
-    idt_set(48, idt_int48, true);
-    idt_set(49, idt_int49, true);
     idt_set(50, idt_int50, true);
-    idt_set(51, idt_int51, true);
-    idt_set(52, idt_int52, true);
 
     // Load Interrupt Descriptor Table to the register
     __asm__("lidt %0" ::"m"(idt_information));
 
     // Add system calls interrupt handler
-    idt_attach_interrupt_handler(16, idt_syscalls_interrupt_handler, false);
+    idt_attach_interrupt_handler(18, idt_syscalls_interrupt_handler, false);
 }
 
 void idt_set(uint8_t index, uint32_t (*handler)(), bool user_interrupt)
@@ -296,17 +292,14 @@ void idt_syscalls_interrupt_handler(interrupt_state *state)
 {
     switch (state->registers.eax)
     {
-    case 0x01:
-        syscall_get_system_clock_call(state);
-        break;
-    case 0x02:
+    case 0x00:
         syscall_alloc_memory_call(state);
         break;
-    case 0x03:
-        syscall_dealloc_memory_call(state);
+    case 0x01:
+        syscall_realloc_memory_call(state);
         break;
-    case 0x04:
-        syscall_print_line_call(state);
+    case 0x02:
+        syscall_dealloc_memory_call(state);
         break;
     }
 }

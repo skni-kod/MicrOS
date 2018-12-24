@@ -3,8 +3,8 @@
 
 #include "micros_interrupts.h"
 
-void *micros_heap_alloc(size_t size, uint32_t align);
-void *micros_heap_realloc(void *ptr, size_t size);
+void *micros_heap_alloc(uint32_t size, uint32_t align);
+void *micros_heap_realloc(void *ptr, uint32_t size);
 void micros_heap_dealloc(void *ptr);
 
 #endif

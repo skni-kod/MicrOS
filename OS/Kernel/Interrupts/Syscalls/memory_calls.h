@@ -5,6 +5,7 @@
 #include "../../Memory/Manager/Heap/heap.h"
 
 void syscall_alloc_memory_call(interrupt_state *state);
+void syscall_realloc_memory_call(interrupt_state *state);
 void syscall_dealloc_memory_call(interrupt_state *state);
 
 #endif

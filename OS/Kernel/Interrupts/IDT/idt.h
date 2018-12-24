@@ -80,10 +80,6 @@ extern uint32_t idt_int46();
 extern uint32_t idt_int47();
 
 // Software interrupts
-extern uint32_t idt_int48();
-extern uint32_t idt_int49();
 extern uint32_t idt_int50();
-extern uint32_t idt_int51();
-extern uint32_t idt_int52();
 
 #endif

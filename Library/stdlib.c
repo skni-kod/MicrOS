@@ -101,7 +101,7 @@ void *calloc(size_t num, size_t size)
 void *realloc(void *ptr, size_t size)
 {
     micros_heap_dealloc(ptr);
-    void *new_ptr = micros_heap_alloc(size);
+    void *new_ptr = micros_heap_alloc(size, 0);
 
     return memcpy(new_ptr, ptr, size);
 }
