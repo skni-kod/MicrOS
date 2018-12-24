@@ -10,11 +10,9 @@
 #include "exception_state.h"
 #include "interrupt_handler_definition.h"
 #include "exception_definition.h"
+#include "../Syscalls/syscalls_manager.h"
 #include "../PIC/pic.h"
 #include "../../Panic/panic_screen.h"
-#include "../Syscalls/time_calls.h"
-#include "../Syscalls/memory_calls.h"
-#include "../Syscalls/vga_calls.h"
 
 void idt_init();
 void idt_set(uint8_t index, uint32_t (*handler)(), bool user_interrupt);

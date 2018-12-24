@@ -290,19 +290,5 @@ void idt_global_exc_handler(exception_state *state)
 
 void idt_syscalls_interrupt_handler(interrupt_state *state)
 {
-    switch (state->registers.eax)
-    {
-    case 0x00:
-        syscall_alloc_memory_call(state);
-        break;
-    case 0x01:
-        syscall_realloc_memory_call(state);
-        break;
-    case 0x02:
-        syscall_dealloc_memory_call(state);
-        break;
-    case 0x03:
-        syscall_verify_heap(state);
-        break;
-    }
+    syscalls_manager_call(state);
 }
