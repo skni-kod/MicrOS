@@ -7,5 +7,6 @@
 void syscall_alloc_memory_call(interrupt_state *state);
 void syscall_realloc_memory_call(interrupt_state *state);
 void syscall_dealloc_memory_call(interrupt_state *state);
+void syscall_verify_heap(interrupt_state *state);
 
 #endif

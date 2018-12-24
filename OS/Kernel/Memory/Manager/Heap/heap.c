@@ -220,21 +220,27 @@ void heap_dump(bool supervisor)
     }
 }
 
-bool heap_kernel_check_integrity()
+bool heap_kernel_verify_heap()
 {
-    return heap_check_integrity(true);
+    return heap_verify_heap(true);
 }
 
-bool heap_user_check_integrity()
+bool heap_user_verify_heap()
 {
-    return heap_check_integrity(false);
+    return heap_verify_heap(false);
 }
 
-bool heap_check_integrity(bool supervisor)
+bool heap_verify_heap(bool supervisor)
 {
     heap_entry *current_entry = supervisor ? kernel_heap : user_heap;
+
+    uint32_t total_size = 0;
+    uint32_t allocated_pages = virtual_memory_get_allocated_pages_count(supervisor);
+
     while (true)
     {
+        total_size += current_entry->size + ENTRY_HEADER_SIZE;
+
         if (current_entry->next != 0 && (uint32_t)current_entry->next - (uint32_t)current_entry != current_entry->size + ENTRY_HEADER_SIZE)
         {
             return false;
@@ -248,5 +254,5 @@ bool heap_check_integrity(bool supervisor)
         current_entry = current_entry->next;
     }
 
-    return true;
+    return (total_size / 1024 / 1024 / 4) + 1 == allocated_pages;
 }

@@ -14,3 +14,8 @@ void micros_heap_dealloc(void *ptr)
 {
     return (void *)micros_interrupt_1a(0x02, ptr);
 }
+
+bool micros_verify_heap()
+{
+    return (bool *)micros_interrupt_0a(0x03);
+}
