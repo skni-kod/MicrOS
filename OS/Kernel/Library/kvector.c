@@ -1,18 +1,18 @@
-#include "vector.h"
+#include "kvector.h"
 
-void vector_init(vector *vector)
+void kvector_init(kvector *vector)
 {
 	vector->data = 0;
 	vector->size = 0;
 	vector->count = 0;
 }
 
-void vector_add(vector *vector, void *data)
+void kvector_add(kvector *vector, void *data)
 {
-	vector_insert(vector, data, vector->count);
+	kvector_insert(vector, data, vector->count);
 }
 
-void vector_insert(vector *vector, void *data, uint32_t index)
+void kvector_insert(kvector *vector, void *data, uint32_t index)
 {
 	if (vector->size == 0)
 	{
@@ -35,7 +35,7 @@ void vector_insert(vector *vector, void *data, uint32_t index)
 	vector->count++;
 }
 
-void vector_remove(vector *vector, uint32_t index)
+void kvector_remove(kvector *vector, uint32_t index)
 {
 	if (index >= vector->count)
 	{
@@ -50,7 +50,7 @@ void vector_remove(vector *vector, uint32_t index)
 	vector->count--;
 }
 
-void vector_clear(vector *vector)
+void kvector_clear(kvector *vector)
 {
 	if (vector->size > 0)
 	{

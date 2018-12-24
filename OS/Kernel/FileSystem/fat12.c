@@ -63,10 +63,10 @@ uint16_t fat12_read_sector_value(uint32_t sector_number)
     }
 }
 
-vector *fat12_parse_path(char *path)
+kvector *fat12_parse_path(char *path)
 {
-    vector *chunks = heap_kernel_alloc(sizeof(vector), 0);
-    vector_init(chunks);
+    kvector *chunks = heap_kernel_alloc(sizeof(kvector), 0);
+    kvector_init(chunks);
 
     uint8_t index = 0;
 
@@ -76,7 +76,7 @@ vector *fat12_parse_path(char *path)
         {
             char *string = heap_kernel_alloc(12, 0);
             memset(string, ' ', 12);
-            vector_add(chunks, string);
+            kvector_add(chunks, string);
 
             index = 0;
         }
@@ -98,7 +98,7 @@ vector *fat12_parse_path(char *path)
     if (index == 0)
     {
         heap_kernel_dealloc(chunks->data[chunks->count - 1]);
-        vector_remove(chunks, chunks->count - 1);
+        kvector_remove(chunks, chunks->count - 1);
     }
 
     return chunks;
@@ -144,16 +144,16 @@ uint8_t *fat12_load_file_from_sector(uint16_t sector, uint16_t *read_sectors_cou
 
 directory_entry *fat12_get_directory_from_path(char *path)
 {
-    vector *chunks = fat12_parse_path(path);
+    kvector *chunks = fat12_parse_path(path);
     directory_entry *directory = fat12_get_directory_from_chunks(chunks);
 
-    vector_clear(chunks);
+    kvector_clear(chunks);
     heap_kernel_dealloc(chunks);
 
     return directory;
 }
 
-directory_entry *fat12_get_directory_from_chunks(vector *chunks)
+directory_entry *fat12_get_directory_from_chunks(kvector *chunks)
 {
     directory_entry *current_directory = heap_kernel_alloc(directory_length, 0);
     memcpy(current_directory, (void *)root, directory_length);
@@ -228,10 +228,10 @@ uint8_t *fat12_read_file(char *path, uint16_t *read_sectors, uint16_t *read_size
 
 directory_entry *fat12_get_info(char *path, bool is_directory)
 {
-    vector *chunks = fat12_parse_path(path);
+    kvector *chunks = fat12_parse_path(path);
     char *target_filename = chunks->data[chunks->count - 1];
 
-    vector_remove(chunks, chunks->count - 1);
+    kvector_remove(chunks, chunks->count - 1);
 
     directory_entry *directory = fat12_get_directory_from_chunks(chunks);
     directory_entry *current_file_ptr = directory;
@@ -267,7 +267,7 @@ directory_entry *fat12_get_info(char *path, bool is_directory)
         memcpy(result_without_junk, result, sizeof(directory_entry));
     }
 
-    vector_clear(chunks);
+    kvector_clear(chunks);
     heap_kernel_dealloc(chunks);
     heap_kernel_dealloc(directory);
     heap_kernel_dealloc(target_filename);

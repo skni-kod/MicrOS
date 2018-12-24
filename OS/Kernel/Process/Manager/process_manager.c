@@ -1,6 +1,6 @@
 #include "process_manager.h"
 
-volatile vector processes;
+volatile kvector processes;
 volatile uint32_t current_process_id = 0;
 volatile uint32_t next_process_id = 0;
 volatile uint32_t last_task_switch = 0;
@@ -11,7 +11,7 @@ void process_manager_init()
 {
     last_task_switch = timer_get_system_clock();
 
-    vector_init(&processes);
+    kvector_init(&processes);
     idt_attach_interrupt_handler(0, process_manager_interrupt_handler, true);
 }
 
@@ -62,7 +62,7 @@ uint32_t process_manager_create_process(char *path)
         current_process_id = process->id;
     }
 
-    vector_add(&processes, process);
+    kvector_add(&processes, process);
     heap_kernel_dealloc(content);
 
     paging_set_page_directory(page_directory);
@@ -82,7 +82,7 @@ process_header *process_manager_get_process(uint32_t process_id)
 
 void process_manager_interrupt_handler(interrupt_state *state)
 {
-    if (processes.count > 0 && timer_get_system_clock() - last_task_switch >= 100)
+    /*if (processes.count > 0 && timer_get_system_clock() - last_task_switch >= 100)
     {
         last_task_switch = timer_get_system_clock();
 
@@ -109,5 +109,5 @@ void process_manager_interrupt_handler(interrupt_state *state)
                 : "eax");
 
         enter_user_space(&new_process->state);
-    }
+    }*/
 }
