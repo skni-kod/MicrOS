@@ -1,20 +1,6 @@
 #include "stdlib.h"
 #include "string.h"
 
-void sleep(uint32_t ms)
-{
-    // Temporary implementation, for testing purposes
-    uint32_t current_system_clock = clock();
-    uint32_t target_system_clock;
-
-    target_system_clock = current_system_clock + ms;
-
-    while (current_system_clock < target_system_clock)
-    {
-        current_system_clock = clock();
-    }
-}
-
 int32_t atoi(const char *string)
 {
     size_t len = strlen(string);
@@ -100,10 +86,7 @@ void *calloc(size_t num, size_t size)
 
 void *realloc(void *ptr, size_t size)
 {
-    micros_heap_dealloc(ptr);
-    void *new_ptr = micros_heap_alloc(size, 0);
-
-    return memcpy(new_ptr, ptr, size);
+    return micros_heap_realloc(ptr, size);
 }
 
 void free(void *ptr)
