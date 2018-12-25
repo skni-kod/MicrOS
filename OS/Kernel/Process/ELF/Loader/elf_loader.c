@@ -20,7 +20,14 @@ uint32_t elf_loader_load(uint8_t *content)
         elf_section_header *section_header = elf_get_section_header_with_index(content, i);
         if (section_header->virtual_address != 0)
         {
-            memcpy((void *)section_header->virtual_address, content + section_header->file_offset, section_header->size);
+            if (section_header->type == elf_section_header_type_program_data)
+            {
+                memcpy((void *)section_header->virtual_address, content + section_header->file_offset, section_header->size);
+            }
+            else if (section_header->type == elf_section_header_type_bss)
+            {
+                memset((void *)section_header->virtual_address, 0, section_header->size);
+            }
         }
     }
 

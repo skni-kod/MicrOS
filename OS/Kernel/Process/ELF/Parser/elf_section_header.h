@@ -12,7 +12,7 @@ typedef enum elf_section_header_type
     elf_section_header_type_symbol_hash_table = 0x05,
     elf_section_header_type_dynamic_linking_information = 0x06,
     elf_section_header_type_notes = 0x07,
-    elf_section_header_type_program_space_with_no_data = 0x08,
+    elf_section_header_type_bss = 0x08,
     elf_section_header_type_relocation_entries_without_addens = 0x09,
     elf_section_header_type_reserved = 0x0A,
     elf_section_header_type_dynamic_linker_symbol_table = 0x0B,
