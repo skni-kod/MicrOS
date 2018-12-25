@@ -1,7 +1,7 @@
 #include "micros_console.h"
 
-int foreground_color = 7;
-int background_color = 0;
+micros_console_color foreground_color = micros_console_color_light_gray;
+micros_console_color background_color = micros_console_color_black;
 
 void micros_console_print_char(char c)
 {
@@ -41,4 +41,9 @@ void micros_console_get_cursor_position(micros_console_position *micros_console_
 void micros_console_clear()
 {
     micros_interrupt_0a(0x15);
+}
+
+void micros_console_set_cursor_visibility(bool visibility)
+{
+    micros_interrupt_1a(0x16, (uint32_t)visibility);
 }

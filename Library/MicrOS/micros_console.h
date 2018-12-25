@@ -2,6 +2,7 @@
 #define MICROS_CONSOLE_H
 
 #include <stdint.h>
+#include <stdbool.h>
 #include "micros_interrupts.h"
 
 typedef struct micros_console_position
@@ -38,5 +39,6 @@ void micros_console_set_background_color(micros_console_color color);
 void micros_console_set_cursor_position(micros_console_position position);
 void micros_console_get_cursor_position(micros_console_position *micros_console_position);
 void micros_console_clear();
+void micros_console_set_cursor_visibility(bool visibility);
 
 #endif

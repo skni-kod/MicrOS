@@ -19,6 +19,7 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0x13, syscall_vga_set_cursor_position);
     syscalls_manager_attach_handler(0x14, syscall_vga_get_cursor_position);
     syscalls_manager_attach_handler(0x15, syscall_vga_clear);
+    syscalls_manager_attach_handler(0x16, syscall_vga_set_cursor_visibility);
 
     // 0x2X - Keyboard
 

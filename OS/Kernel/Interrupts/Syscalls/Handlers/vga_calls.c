@@ -37,7 +37,12 @@ void syscall_vga_get_cursor_position(interrupt_state *state)
     passed_position_structure->y = current_cursor_position.y;
 }
 
-void syscall_vga_clear()
+void syscall_vga_clear(interrupt_state *state)
 {
     vga_clear_screen();
+}
+
+void syscall_vga_set_cursor_visibility(interrupt_state *state)
+{
+    state->registers.ebx ? vga_cursor_on() : vga_cursor_off();
 }
