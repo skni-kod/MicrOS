@@ -4,6 +4,6 @@
 #include "../../IDT/interrupt_state.h"
 #include "../../../Drivers/VGA/vga.h"
 
-void syscall_print_line_call(interrupt_state *state);
+void syscall_print_line(interrupt_state *state);
 
 #endif

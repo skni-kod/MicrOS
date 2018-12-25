@@ -4,6 +4,6 @@
 #include "../../IDT/interrupt_state.h"
 #include "../../../Timer/timer.h"
 
-void syscall_get_system_clock_call(interrupt_state *state);
+void syscall_get_system_clock(interrupt_state *state);
 
 #endif
