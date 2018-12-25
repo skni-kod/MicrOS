@@ -5,12 +5,12 @@ void (*syscall_handlers[SYSCALLS_MANAGER_MAX_HANDLERS])(interrupt_state *state);
 void syscalls_manager_init()
 {
     // 0x0X - Heap
-    syscalls_manager_attach_handler(0x00, syscall_alloc_memory);
-    syscalls_manager_attach_handler(0x01, syscall_realloc_memory);
-    syscalls_manager_attach_handler(0x02, syscall_dealloc_memory);
-    syscalls_manager_attach_handler(0x03, syscall_get_object_size);
-    syscalls_manager_attach_handler(0x04, syscall_verify_heap_integrity);
-    syscalls_manager_attach_handler(0x05, syscall_get_process_heap);
+    syscalls_manager_attach_handler(0x00, syscall_heap_alloc_memory);
+    syscalls_manager_attach_handler(0x01, syscall_heap_realloc_memory);
+    syscalls_manager_attach_handler(0x02, syscall_heap_dealloc_memory);
+    syscalls_manager_attach_handler(0x03, syscall_heap_get_object_size);
+    syscalls_manager_attach_handler(0x04, syscall_heap_verify_integrity);
+    syscalls_manager_attach_handler(0x05, syscall_heap_get_process_heap);
 
     // 0x1X - VGA
 
@@ -23,7 +23,7 @@ void syscalls_manager_init()
     // 0x5X - File system
 
     // 0x6X - Timer
-    syscalls_manager_attach_handler(0x60, syscall_get_system_clock);
+    syscalls_manager_attach_handler(0x60, syscall_timer_get_system_clock);
 
     // 0x7X - Power
 
