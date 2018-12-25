@@ -20,7 +20,12 @@ void syscall_get_object_size(interrupt_state *state)
     state->registers.eax = (uint32_t)heap_get_object_size((void *)state->registers.ebx);
 }
 
-void syscall_verify_integrity(interrupt_state *state)
+void syscall_verify_heap_integrity(interrupt_state *state)
 {
     state->registers.eax = heap_verify_integrity(false);
+}
+
+void syscall_get_process_heap(interrupt_state *state)
+{
+    state->registers.eax = (uint32_t)heap_get_user_heap();
 }

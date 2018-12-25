@@ -4,7 +4,6 @@
 #define ENTRY_HEADER_SIZE 13
 
 #include <stdint.h>
-#include <string.h>
 #include "heap_entry.h"
 #include "../Virtual/virtual_memory_manager.h"
 
@@ -21,6 +20,9 @@ void *heap_user_realloc(void *ptr, uint32_t size, uint32_t align);
 void *heap_realloc(void *ptr, uint32_t size, uint32_t align, bool supervisor);
 
 uint32_t heap_get_object_size(void *ptr);
+
+heap_entry *heap_get_kernel_heap();
+heap_entry *heap_get_user_heap();
 
 void heap_set_kernel_heap(void *heap_address);
 void heap_set_user_heap(void *heap_address);

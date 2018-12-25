@@ -17,10 +17,15 @@ void micros_heap_dealloc(void *ptr)
 
 uint32_t micros_heap_get_object_size(void *ptr)
 {
-    micros_interrupt_1a(0x03, (uint32_t)ptr);
+    return micros_interrupt_1a(0x03, (uint32_t)ptr);
 }
 
 bool micros_heap_verify_integrity()
 {
     return (bool *)micros_interrupt_0a(0x04);
+}
+
+micros_heap_entry *micros_heap_get_process_heap()
+{
+    return (micros_heap_entry *)micros_interrupt_0a(0x05);
 }

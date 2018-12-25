@@ -153,6 +153,16 @@ void *heap_realloc(void *ptr, uint32_t size, uint32_t align, bool supervisor)
     return new_ptr;
 }
 
+heap_entry *heap_get_kernel_heap()
+{
+    return kernel_heap;
+}
+
+heap_entry *heap_get_user_heap()
+{
+    return user_heap;
+}
+
 void heap_set_kernel_heap(void *heap_address)
 {
     kernel_heap = heap_address;
