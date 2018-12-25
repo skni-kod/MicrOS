@@ -119,8 +119,22 @@ void startup()
     logger_log_info("Version ... no version");
 }
 
+void clear_bss()
+{
+    extern uint32_t BSS_SECTION_START;
+    extern uint32_t BSS_SECTION_END;
+
+    void *bss_start_addr = &BSS_SECTION_START;
+    void *bss_end_addr = &BSS_SECTION_END;
+    uint32_t bss_length = bss_end_addr - bss_start_addr;
+
+    memset(bss_start_addr, 0, bss_length);
+}
+
 int kmain()
 {
+    clear_bss();
+
     startup();
     logger_log_info("Hello, World!");
     //startup_music_play();
