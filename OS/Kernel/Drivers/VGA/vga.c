@@ -142,6 +142,7 @@ void vga_set_cursor_pos_struct(vga_screen_pos spos)
     vga_cursor_pos = spos;
 }
 
+// TODO: Returned position is not valid after printing some string.
 vga_screen_pos vga_get_cursor_pos()
 {
     return vga_cursor_pos;
