@@ -26,6 +26,7 @@ void syscalls_manager_init()
     // 0x3X - PCI
 
     // 0x4X - RTC
+    syscalls_manager_attach_handler(0x40, syscall_rtc_get_time);
 
     // 0x5X - File system
 
