@@ -35,9 +35,11 @@ void syscalls_manager_init()
     // 0x7X - Power
 
     // 0x8X - PC Speaker
+    syscalls_manager_attach_handler(0x80, syscall_pc_speaker_enable_sound);
+    syscalls_manager_attach_handler(0x81, syscall_pc_speaker_disable_sound);
 }
 
-void syscalls_manager_attach_handler(uint8_t function_number, void (*handler)())
+void syscalls_manager_attach_handler(uint8_t function_number, void (*handler)(interrupt_state *state))
 {
     syscall_handlers[function_number] = handler;
 }

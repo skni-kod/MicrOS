@@ -3,7 +3,7 @@
 
 uint16_t old_value = 0;
 
-void pc_speaker_sound(uint32_t freq)
+void pc_speaker_enable_sound(uint32_t freq)
 {
 	uint32_t div;
 	uint8_t tmp;
@@ -22,7 +22,7 @@ void pc_speaker_sound(uint32_t freq)
 	}
 }
 
-void pc_speaker_no_sound()
+void pc_speaker_disable_sound()
 {
 	uint8_t tmp = io_in_byte(0x61) & 0xFC;
 	io_out_byte(0x61, tmp);
