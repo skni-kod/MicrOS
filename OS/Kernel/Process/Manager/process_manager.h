@@ -7,7 +7,7 @@
 #include "../ELF/Parser/elf_header.h"
 #include "../ELF/Loader/elf_loader.h"
 #include "kvector.h"
-#include "../../FileSystem/fat12.h"
+#include "../../FileSystems/FAT/fat.h"
 #include "../../Assembly/io.h"
 #include "../../Interrupts/IDT/idt.h"
 

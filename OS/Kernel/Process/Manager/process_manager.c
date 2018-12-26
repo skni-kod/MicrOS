@@ -28,7 +28,7 @@ uint32_t process_manager_create_process(char *path)
     paging_set_page_directory(process->page_directory);
 
     uint16_t sectors, size;
-    uint8_t *content = fat12_read_file(path, &sectors, &size);
+    uint8_t *content = fat_read_file(path, &sectors, &size);
 
     elf_header *app_header = elf_get_header(content);
     uint32_t initial_page = elf_loader_load(content);
