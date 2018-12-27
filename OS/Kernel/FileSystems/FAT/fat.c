@@ -324,7 +324,7 @@ bool fat_generic_get_directory_info(char *path, filesystem_directory_info *gener
         return false;
     }
 
-    uint8_t filename_length = fat_generic_copy_filename_to_generic(fat_directory_info->filename, generic_directory_info->name);
+    fat_generic_copy_filename_to_generic(fat_directory_info->filename, generic_directory_info->name);
     memcpy(generic_directory_info->path, path, strlen(path));
 
     fat_generic_convert_date_fat_to_generic(&fat_directory_info->create_date, &fat_directory_info->create_time, &generic_directory_info->create_time);

@@ -5,5 +5,7 @@
 #include "MicrOS/micros_timer.h"
 #include "MicrOS/micros_console.h"
 #include "MicrOS/micros_pc_speaker.h"
+#include "MicrOS/micros_rtc.h"
+#include "MicrOS/micros_filesystem.h"
 
 #endif
