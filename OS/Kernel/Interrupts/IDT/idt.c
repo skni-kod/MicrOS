@@ -213,7 +213,7 @@ void idt_set(uint8_t index, uint32_t (*handler)(), bool user_interrupt)
     idt_entries[index].present = 1;
     idt_entries[index].selector = 8;
     idt_entries[index].privilege_level = user_interrupt ? 3 : 1;
-    idt_entries[index].type = Interrupt_32Bit;
+    idt_entries[index].type = Trap_32Bit;
 }
 
 void idt_unset(uint8_t index)
