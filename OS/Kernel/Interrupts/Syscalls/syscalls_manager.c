@@ -29,6 +29,8 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0x40, syscall_rtc_get_time);
 
     // 0x5X - File system
+    syscalls_manager_attach_handler(0x50, syscall_filesystem_get_file_info);
+    syscalls_manager_attach_handler(0x51, syscall_filesystem_get_directory_info);
 
     // 0x6X - Timer
     syscalls_manager_attach_handler(0x60, syscall_timer_get_system_clock);

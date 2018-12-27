@@ -293,7 +293,7 @@ void fat_merge_filename_and_extension(fat_directory_entry *entry, uint8_t *buffe
 }
 
 // Generic filesystem functions
-bool fat_generic_get_file_info(char *path, fs_file_info *generic_file_info)
+bool fat_generic_get_file_info(char *path, filesystem_file_info *generic_file_info)
 {
     fat_directory_entry *fat_file_info = fat_get_info(path, false);
     if (fat_file_info == NULL)
@@ -312,10 +312,11 @@ bool fat_generic_get_file_info(char *path, fs_file_info *generic_file_info)
     fat_generic_convert_date_fat_to_generic(&fat_file_info->modify_date, &fat_file_info->modify_time, &generic_file_info->modify_time);
     fat_generic_convert_date_fat_to_generic(&fat_file_info->last_access_date, NULL, &generic_file_info->access_time);
 
+    heap_kernel_dealloc(fat_file_info);
     return true;
 }
 
-bool fat_generic_get_directory_info(char *path, fs_directory_info *generic_directory_info)
+bool fat_generic_get_directory_info(char *path, filesystem_directory_info *generic_directory_info)
 {
     fat_directory_entry *fat_directory_info = fat_get_info(path, true);
     if (fat_directory_info == NULL)
@@ -328,6 +329,7 @@ bool fat_generic_get_directory_info(char *path, fs_directory_info *generic_direc
 
     fat_generic_convert_date_fat_to_generic(&fat_directory_info->create_date, &fat_directory_info->create_time, &generic_directory_info->create_time);
 
+    heap_kernel_dealloc(fat_directory_info);
     return true;
 }
 
@@ -348,7 +350,7 @@ uint8_t fat_generic_copy_filename_to_generic(char *fat_filename, char *generic_f
     return filename_length;
 }
 
-void fat_generic_convert_date_fat_to_generic(fat_directory_entry_date *fat_date, fat_directory_entry_time *fat_time, fs_time *generic_time)
+void fat_generic_convert_date_fat_to_generic(fat_directory_entry_date *fat_date, fat_directory_entry_time *fat_time, filesystem_time *generic_time)
 {
     if (fat_date != NULL)
     {

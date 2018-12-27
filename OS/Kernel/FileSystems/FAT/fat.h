@@ -3,13 +3,13 @@
 
 #define FLOPPY_HEADER_DATA 0xc0007c00
 
+#include <stdlib.h>
+#include <kvector.h>
+#include "fat_directory_entry.h"
 #include "../Drivers/Floppy/floppy_header.h"
 #include "../Drivers/Floppy/floppy.h"
-#include "kvector.h"
-#include <stdlib.h>
-#include "fat_directory_entry.h"
-#include "../Generic/fs_file_info.h"
-#include "../Generic/fs_directory_info.h"
+#include "../Generic/filesystem_file_info.h"
+#include "../Generic/filesystem_directory_info.h"
 
 void fat_init();
 void fat_load_fat();
@@ -27,10 +27,10 @@ bool fat_is_entry_valid(fat_directory_entry *entry);
 void fat_merge_filename_and_extension(fat_directory_entry *entry, uint8_t *buffer);
 
 // Generic filesystem functions
-bool fat_generic_get_file_info(char *path, fs_file_info *generic_file_info);
-bool fat_generic_get_directory_info(char *path, fs_directory_info *generic_directory_info);
+bool fat_generic_get_file_info(char *path, filesystem_file_info *generic_file_info);
+bool fat_generic_get_directory_info(char *path, filesystem_directory_info *generic_directory_info);
 
 uint8_t fat_generic_copy_filename_to_generic(char *fat_filename, char *generic_filename);
-void fat_generic_convert_date_fat_to_generic(fat_directory_entry_date *fat_date, fat_directory_entry_time *fat_time, fs_time *generic_time);
+void fat_generic_convert_date_fat_to_generic(fat_directory_entry_date *fat_date, fat_directory_entry_time *fat_time, filesystem_time *generic_time);
 
 #endif
