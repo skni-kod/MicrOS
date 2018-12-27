@@ -291,3 +291,75 @@ void fat_merge_filename_and_extension(fat_directory_entry *entry, uint8_t *buffe
         memcpy(buffer + 9, entry->extension, 3);
     }
 }
+
+// Generic filesystem functions
+bool fat_generic_get_file_info(char *path, fs_file_info *generic_file_info)
+{
+    fat_directory_entry *fat_file_info = fat_get_info(path, false);
+    if (fat_file_info == NULL)
+    {
+        return false;
+    }
+
+    memcpy(generic_file_info->path, path, strlen(path));
+    generic_file_info->size = fat_file_info->size;
+
+    uint8_t filename_length = fat_generic_copy_filename_to_generic(fat_file_info->filename, generic_file_info->name);
+    generic_file_info->name[filename_length] = '.';
+    memcpy(generic_file_info->name + filename_length + 1, fat_file_info->extension, 3);
+
+    fat_generic_convert_date_fat_to_generic(&fat_file_info->create_date, &fat_file_info->create_time, &generic_file_info->create_time);
+    fat_generic_convert_date_fat_to_generic(&fat_file_info->modify_date, &fat_file_info->modify_time, &generic_file_info->modify_time);
+    fat_generic_convert_date_fat_to_generic(&fat_file_info->last_access_date, NULL, &generic_file_info->access_time);
+
+    return true;
+}
+
+bool fat_generic_get_directory_info(char *path, fs_directory_info *generic_directory_info)
+{
+    fat_directory_entry *fat_directory_info = fat_get_info(path, true);
+    if (fat_directory_info == NULL)
+    {
+        return false;
+    }
+
+    uint8_t filename_length = fat_generic_copy_filename_to_generic(fat_directory_info->filename, generic_directory_info->name);
+    memcpy(generic_directory_info->path, path, strlen(path));
+
+    fat_generic_convert_date_fat_to_generic(&fat_directory_info->create_date, &fat_directory_info->create_time, &generic_directory_info->create_time);
+
+    return true;
+}
+
+uint8_t fat_generic_copy_filename_to_generic(char *fat_filename, char *generic_filename)
+{
+    uint8_t filename_length = 0;
+    for (filename_length = 0; filename_length < 8; filename_length++)
+    {
+        char c = fat_filename[filename_length];
+        if (c == ' ')
+        {
+            break;
+        }
+
+        generic_filename[filename_length] = c;
+    }
+
+    return filename_length;
+}
+
+void fat_generic_convert_date_fat_to_generic(fat_directory_entry_date *fat_date, fat_directory_entry_time *fat_time, fs_time *generic_time)
+{
+    if (fat_date != NULL)
+    {
+        generic_time->year = fat_date->year;
+        generic_time->month = fat_date->month;
+        generic_time->day = fat_date->day;
+    }
+
+    if (fat_time != NULL)
+    {
+        generic_time->hour = fat_time->hours;
+        generic_time->minute = fat_time->minutes;
+    }
+}

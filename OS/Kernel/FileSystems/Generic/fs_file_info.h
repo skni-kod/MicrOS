@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "fs_time.h"
 
-typedef struct file_info
+typedef struct fs_file_info
 {
     char name[32];
     char path[256];
@@ -13,6 +13,6 @@ typedef struct file_info
     fs_time create_time;
     fs_time modify_time;
     fs_time access_time;
-} file_info;
+} fs_file_info;
 
 #endif
