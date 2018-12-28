@@ -7,5 +7,6 @@
 #include "MicrOS/micros_pc_speaker.h"
 #include "MicrOS/micros_rtc.h"
 #include "MicrOS/micros_filesystem.h"
+#include "MicrOS/micros_process.h"
 
 #endif

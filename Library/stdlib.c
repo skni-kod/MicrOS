@@ -93,3 +93,8 @@ void free(void *ptr)
 {
     micros_heap_dealloc(ptr);
 }
+
+void exit(int status)
+{
+    micros_process_exit(status);
+}
