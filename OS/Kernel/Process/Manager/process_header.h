@@ -12,7 +12,7 @@ typedef struct process_header
     uint32_t size_in_memory;
     uint32_t base_heap_page_index;
 
-    void *stack;
+    void *user_stack;
     void *page_directory;
 
     interrupt_state state;

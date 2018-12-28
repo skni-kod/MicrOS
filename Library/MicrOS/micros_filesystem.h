@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include "micros_interrupts.h"
 
 typedef struct micros_filesystem_time
 {
