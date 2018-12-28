@@ -80,36 +80,63 @@ process_header *process_manager_get_process(uint32_t process_id)
     return NULL;
 }
 
+void process_manager_save_current_process_state(interrupt_state *state)
+{
+    process_header *old_process = processes.data[current_process_id];
+    memcpy(&old_process->state, state, sizeof(interrupt_state));
+}
+
+void process_manager_switch_to_next_process(interrupt_state *state)
+{
+    uint32_t new_process_id = (current_process_id + 1) % processes.count;
+    process_header *new_process = processes.data[new_process_id];
+    current_process_id = new_process_id;
+
+    paging_set_page_directory(new_process->page_directory);
+    heap_set_user_heap((void *)(new_process->base_heap_page_index * 1024 * 1024 * 4));
+
+    pic_confirm_master_and_slave();
+    __asm__("mov %0, %%eax\n"
+            "mov %%eax, %%esp"
+            :
+            : "g"(new_process->state.esp)
+            : "eax");
+
+    enter_user_space(&new_process->state);
+}
+
+void process_manager_close_current_process(interrupt_state *state)
+{
+    // TODO: release process memory
+    kvector_remove(&processes, current_process_id);
+
+    if (processes.count > 0)
+    {
+        current_process_id--;
+        process_manager_switch_to_next_process(state);
+    }
+    else
+    {
+        // TODO: do something better
+        io_disable_interrupts();
+        __asm__("hlt");
+    }
+}
+
 void process_manager_interrupt_handler(interrupt_state *state)
 {
-    if ((run_scheduler_on_next_interrupt || state->cs == 0x1B) && timer_get_system_clock() - last_task_switch >= 10)
+    // TODO: processes.count > 0 is temporary here, idle process will be always present
+    if ((run_scheduler_on_next_interrupt || state->cs == 0x1B) && processes.count > 0 && timer_get_system_clock() - last_task_switch >= 10)
     {
         run_scheduler_on_next_interrupt = false;
         last_task_switch = timer_get_system_clock();
 
-        uint32_t old_process_id = current_process_id;
-        uint32_t new_process_id = (current_process_id + 1) % processes.count;
-
-        process_header *old_process = processes.data[old_process_id];
-        process_header *new_process = processes.data[new_process_id];
-
-        current_process_id = new_process_id;
         if (state->cs == 0x1B)
         {
-            memcpy(&old_process->state, state, sizeof(interrupt_state));
+            process_manager_save_current_process_state(state);
         }
 
-        paging_set_page_directory(new_process->page_directory);
-        heap_set_user_heap((void *)(new_process->base_heap_page_index * 1024 * 1024 * 4));
-
-        pic_confirm_master_and_slave();
-        __asm__("mov %0, %%eax\n"
-                "mov %%eax, %%esp"
-                :
-                : "g"(new_process->state.esp)
-                : "eax");
-
-        enter_user_space(&new_process->state);
+        process_manager_switch_to_next_process(state);
     }
 }
 
