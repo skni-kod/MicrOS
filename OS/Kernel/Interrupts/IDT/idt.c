@@ -5,6 +5,8 @@ volatile idt_entry idt_entries[IDT_INTERRUPT_DESCRIPTOR_TABLE_LENGTH];
 volatile idt_info idt_information;
 volatile interrupt_handler_definition interrupt_handlers[IDT_MAX_INTERRUPT_HANDLERS];
 
+void (*process_manager_handler)();
+
 exception_definition exceptions[] =
     {
         {
@@ -201,7 +203,7 @@ void idt_init()
     __asm__("lidt %0" ::"m"(idt_information));
 
     // Add system calls interrupt handler
-    idt_attach_interrupt_handler(18, idt_syscalls_interrupt_handler, false);
+    idt_attach_interrupt_handler(18, idt_syscalls_interrupt_handler);
 }
 
 void idt_set(uint8_t index, uint32_t (*handler)(), bool user_interrupt)
@@ -221,15 +223,14 @@ void idt_unset(uint8_t index)
     idt_entries[index].present = 0;
 }
 
-void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)(), bool last)
+void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)())
 {
     for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
     {
-        int fixed_index = last ? IDT_MAX_INTERRUPT_HANDLERS - i - 1 : i;
-        if (interrupt_handlers[fixed_index].handler == 0)
+        if (interrupt_handlers[i].handler == 0)
         {
-            interrupt_handlers[fixed_index].interrupt_number = interrupt_number + 32;
-            interrupt_handlers[fixed_index].handler = handler;
+            interrupt_handlers[i].interrupt_number = interrupt_number + 32;
+            interrupt_handlers[i].handler = handler;
             break;
         }
     }
@@ -247,6 +248,11 @@ void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)())
     }
 }
 
+void idt_attach_process_manager(void (*handler)())
+{
+    process_manager_handler = handler;
+}
+
 void idt_global_int_handler(interrupt_state *state)
 {
     for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
@@ -255,6 +261,11 @@ void idt_global_int_handler(interrupt_state *state)
         {
             interrupt_handlers[i].handler(state);
         }
+    }
+
+    if (process_manager_handler != 0)
+    {
+        process_manager_handler(state);
     }
 
     state->interrupt_number - 32 < 8 ? pic_confirm_master() : pic_confirm_master_and_slave();

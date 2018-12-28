@@ -17,8 +17,10 @@
 void idt_init();
 void idt_set(uint8_t index, uint32_t (*handler)(), bool user_interrupt);
 void idt_unset(uint8_t index);
-void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)(), bool last);
+void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)());
 void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)());
+
+void idt_attach_process_manager(void (*handler)());
 
 void idt_global_int_handler(interrupt_state *state);
 void idt_global_exc_handler(exception_state *state);

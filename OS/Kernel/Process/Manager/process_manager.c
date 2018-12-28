@@ -13,7 +13,7 @@ void process_manager_init()
     last_task_switch = timer_get_system_clock();
 
     kvector_init(&processes);
-    idt_attach_interrupt_handler(0, process_manager_interrupt_handler, true);
+    idt_attach_process_manager(process_manager_interrupt_handler);
 }
 
 uint32_t process_manager_create_process(char *path)
