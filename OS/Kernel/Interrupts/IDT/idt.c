@@ -1,11 +1,11 @@
 #include "idt.h"
-#include "../../Drivers/Keyboard/keyboard.h"
 
 volatile idt_entry idt_entries[IDT_INTERRUPT_DESCRIPTOR_TABLE_LENGTH];
 volatile idt_info idt_information;
 volatile interrupt_handler_definition interrupt_handlers[IDT_MAX_INTERRUPT_HANDLERS];
 
 void (*process_manager_handler)(interrupt_state *state);
+void (*syscalls_manager_handler)(interrupt_state *state);
 
 exception_definition exceptions[] =
     {
@@ -253,6 +253,11 @@ void idt_attach_process_manager(void (*handler)(interrupt_state *state))
     process_manager_handler = handler;
 }
 
+void idt_attach_syscalls_manager(void (*handler)(interrupt_state *state))
+{
+    syscalls_manager_handler = handler;
+}
+
 void idt_global_int_handler(interrupt_state *state)
 {
     for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
@@ -301,5 +306,5 @@ void idt_global_exc_handler(exception_state *state)
 
 void idt_syscalls_interrupt_handler(interrupt_state *state)
 {
-    syscalls_manager_call(state);
+    syscalls_manager_handler(state);
 }

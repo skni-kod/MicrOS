@@ -2,6 +2,7 @@
 #define FILESYSTEM_H
 
 #include <stdbool.h>
+#include "FAT/fat.h"
 #include "Generic/filesystem_file_info.h"
 #include "Generic/filesystem_directory_info.h"
 

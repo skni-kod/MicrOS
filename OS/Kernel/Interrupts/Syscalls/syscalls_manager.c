@@ -4,6 +4,8 @@ void (*syscall_handlers[SYSCALLS_MANAGER_MAX_HANDLERS])(interrupt_state *state);
 
 void syscalls_manager_init()
 {
+    idt_attach_syscalls_manager(syscalls_manager_call);
+
     // 0x0X - Heap
     syscalls_manager_attach_handler(0x00, syscall_heap_alloc_memory);
     syscalls_manager_attach_handler(0x01, syscall_heap_realloc_memory);

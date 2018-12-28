@@ -86,7 +86,7 @@ void process_manager_save_current_process_state(interrupt_state *state)
     memcpy(&old_process->state, state, sizeof(interrupt_state));
 }
 
-void process_manager_switch_to_next_process(interrupt_state *state)
+void process_manager_switch_to_next_process()
 {
     uint32_t new_process_id = (current_process_id + 1) % processes.count;
     process_header *new_process = processes.data[new_process_id];
@@ -105,7 +105,7 @@ void process_manager_switch_to_next_process(interrupt_state *state)
     enter_user_space(&new_process->state);
 }
 
-void process_manager_close_current_process(interrupt_state *state)
+void process_manager_close_current_process()
 {
     // TODO: release process memory
     kvector_remove(&processes, current_process_id);
@@ -113,7 +113,7 @@ void process_manager_close_current_process(interrupt_state *state)
     if (processes.count > 0)
     {
         current_process_id--;
-        process_manager_switch_to_next_process(state);
+        process_manager_switch_to_next_process();
     }
     else
     {
