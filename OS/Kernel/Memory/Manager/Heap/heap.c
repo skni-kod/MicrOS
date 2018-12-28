@@ -20,8 +20,21 @@ void *heap_alloc(uint32_t size, uint32_t align, bool supervisor)
 
     while (true)
     {
-        uint32_t align_fix = align == 0 ? 0 : align - (((uint32_t)current_entry) % align) - ENTRY_HEADER_SIZE;
-        uint32_t extra_headers_size = align == 0 ? 0 : ENTRY_HEADER_SIZE;
+        uint32_t align_fix = 0;
+        uint32_t extra_headers_size = 0;
+
+        if (align != 0)
+        {
+            align_fix = align - (((uint32_t)current_entry) % align);
+            extra_headers_size = ENTRY_HEADER_SIZE;
+
+            if (align_fix < ENTRY_HEADER_SIZE)
+            {
+                align_fix += align;
+            }
+
+            align_fix -= ENTRY_HEADER_SIZE;
+        }
 
         if (current_entry->free)
         {
