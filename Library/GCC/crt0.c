@@ -1,6 +1,6 @@
 #include "crt0.h"
 
-void _start(int argc, char *argv[])
+void _start(char *path, char *parameters)
 {
-    exit(main(argc, argv));
+    exit(main(0, NULL));
 }

@@ -12,7 +12,7 @@
 #include "../../Interrupts/IDT/idt.h"
 
 void process_manager_init();
-uint32_t process_manager_create_process(char *path);
+uint32_t process_manager_create_process(char *path, char *parameters);
 process_header *process_manager_get_process(uint32_t process_id);
 
 void process_manager_save_current_process_state(interrupt_state *state);

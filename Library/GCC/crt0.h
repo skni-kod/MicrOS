@@ -3,7 +3,7 @@
 
 #include "../stdlib.h"
 
-void _start(int argc, char *argv[]);
+void _start(char *path, char *parameters);
 extern int main(int argc, char *argv[]);
 
 #endif
