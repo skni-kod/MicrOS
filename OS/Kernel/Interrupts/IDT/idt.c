@@ -5,7 +5,7 @@ volatile idt_entry idt_entries[IDT_INTERRUPT_DESCRIPTOR_TABLE_LENGTH];
 volatile idt_info idt_information;
 volatile interrupt_handler_definition interrupt_handlers[IDT_MAX_INTERRUPT_HANDLERS];
 
-void (*process_manager_handler)();
+void (*process_manager_handler)(interrupt_state *state);
 
 exception_definition exceptions[] =
     {
@@ -206,7 +206,7 @@ void idt_init()
     idt_attach_interrupt_handler(18, idt_syscalls_interrupt_handler);
 }
 
-void idt_set(uint8_t index, uint32_t (*handler)(), bool user_interrupt)
+void idt_set(uint8_t index, uint32_t (*handler)(interrupt_state *state), bool user_interrupt)
 {
     uint32_t handler_address = (uint32_t)handler;
 
@@ -223,7 +223,7 @@ void idt_unset(uint8_t index)
     idt_entries[index].present = 0;
 }
 
-void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)())
+void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)(interrupt_state *state))
 {
     for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
     {
@@ -236,7 +236,7 @@ void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)())
     }
 }
 
-void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)())
+void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)(interrupt_state *state))
 {
     for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
     {
@@ -248,7 +248,7 @@ void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)())
     }
 }
 
-void idt_attach_process_manager(void (*handler)())
+void idt_attach_process_manager(void (*handler)(interrupt_state *state))
 {
     process_manager_handler = handler;
 }

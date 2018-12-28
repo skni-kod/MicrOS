@@ -28,6 +28,7 @@ const char *img[] =
 
 void panic_screen_show(uint32_t code, const char *optString)
 {
+    io_disable_interrupts();
     char buff[100];
 
     vga_clear_screen();
