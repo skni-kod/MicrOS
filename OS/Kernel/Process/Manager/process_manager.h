@@ -16,5 +16,6 @@ uint32_t process_manager_create_process(char *path);
 process_header *process_manager_get_process(uint32_t process_id);
 
 void process_manager_interrupt_handler(interrupt_state *state);
+void process_manager_run();
 
 #endif

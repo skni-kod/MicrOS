@@ -4,6 +4,7 @@ kvector processes;
 volatile uint32_t current_process_id = 0;
 volatile uint32_t next_process_id = 0;
 volatile uint32_t last_task_switch = 0;
+volatile bool run_scheduler_on_next_interrupt = false;
 
 extern void enter_user_space(interrupt_state *address);
 
@@ -81,8 +82,9 @@ process_header *process_manager_get_process(uint32_t process_id)
 
 void process_manager_interrupt_handler(interrupt_state *state)
 {
-    if (processes.count > 0 && timer_get_system_clock() - last_task_switch >= 100)
+    if ((run_scheduler_on_next_interrupt || state->cs == 0x1B) && timer_get_system_clock() - last_task_switch >= 10)
     {
+        run_scheduler_on_next_interrupt = false;
         last_task_switch = timer_get_system_clock();
 
         uint32_t old_process_id = current_process_id;
@@ -109,4 +111,9 @@ void process_manager_interrupt_handler(interrupt_state *state)
 
         enter_user_space(&new_process->state);
     }
+}
+
+void process_manager_run()
+{
+    run_scheduler_on_next_interrupt = true;
 }
