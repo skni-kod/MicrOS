@@ -5,6 +5,6 @@
 #include "../../../Drivers/PCSpeaker/pc_speaker.h"
 
 void syscall_pc_speaker_enable_sound(interrupt_state *state);
-void syscall_pc_speaker_disable_sound(interrupt_state *state);
+void syscall_pc_speaker_disable_sound();
 
 #endif
