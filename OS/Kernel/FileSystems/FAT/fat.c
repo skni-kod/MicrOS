@@ -123,12 +123,22 @@ void fat_normalise_filename(char *filename)
     }
 }
 
-uint8_t *fat_load_file_from_sector(uint16_t sector)
+uint8_t *fat_load_file_from_sector(uint16_t initial_sector, uint16_t sector_offset, uint16_t sectors_count)
 {
+    uint8_t sector = initial_sector;
+    for (int i = 0; i < sector_offset; i++)
+    {
+        sector = fat_read_sector_value(sector);
+        if (sector == 0xFF || sector == 0xFFF)
+        {
+            return NULL;
+        }
+    }
+
     uint8_t *buffer = heap_kernel_alloc(512, 0);
     uint32_t read_sectors = 0;
 
-    while (sector != 0xFF && sector != 0xFFF)
+    while (read_sectors < sectors_count && sector != 0xFF && sector != 0xFFF)
     {
         buffer = heap_kernel_realloc(buffer, 512 * (read_sectors + 1), 0);
 
@@ -140,6 +150,22 @@ uint8_t *fat_load_file_from_sector(uint16_t sector)
     }
 
     return buffer;
+}
+
+uint8_t *fat_read_file(char *path)
+{
+    fat_directory_entry *file_info = fat_get_info(path, false);
+
+    uint32_t sectors_count = file_info->size / 512 + 1;
+    uint8_t *result = NULL;
+
+    if (file_info != NULL)
+    {
+        result = fat_load_file_from_sector(file_info->first_sector, 0, sectors_count);
+    }
+
+    heap_kernel_dealloc(file_info);
+    return result;
 }
 
 fat_directory_entry *fat_get_directory_from_path(char *path)
@@ -177,7 +203,8 @@ fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks)
         {
             if (memcmp(full_filename, chunks->data[current_chunk_index], 12) == 0)
             {
-                uint8_t *directory = fat_load_file_from_sector(current_file_ptr->first_sector);
+                uint32_t sectors_to_load = fat_header_data->directory_entries * 32 / 512;
+                uint8_t *directory = fat_load_file_from_sector(current_file_ptr->first_sector, 0, sectors_to_load);
 
                 heap_kernel_dealloc(current_directory);
 
@@ -205,20 +232,6 @@ fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks)
         current_file_ptr++;
     }
 
-    return result;
-}
-
-uint8_t *fat_read_file(char *path)
-{
-    fat_directory_entry *file_info = fat_get_info(path, false);
-    uint8_t *result = NULL;
-
-    if (file_info != NULL)
-    {
-        result = fat_load_file_from_sector(file_info->first_sector);
-    }
-
-    heap_kernel_dealloc(file_info);
     return result;
 }
 
