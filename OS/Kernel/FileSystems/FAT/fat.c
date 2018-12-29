@@ -374,7 +374,7 @@ void fat_generic_convert_date_fat_to_generic(fat_directory_entry_date *fat_date,
 {
     if (fat_date != NULL)
     {
-        generic_time->year = fat_date->year;
+        generic_time->year = fat_date->year + 1980;
         generic_time->month = fat_date->month;
         generic_time->day = fat_date->day;
     }
