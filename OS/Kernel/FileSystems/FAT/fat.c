@@ -125,7 +125,7 @@ void fat_normalise_filename(char *filename)
 
 uint8_t *fat_load_file_from_sector(uint16_t initial_sector, uint16_t sector_offset, uint16_t sectors_count)
 {
-    uint8_t sector = initial_sector;
+    uint16_t sector = initial_sector;
     for (int i = 0; i < sector_offset; i++)
     {
         sector = fat_read_sector_value(sector);
@@ -152,20 +152,25 @@ uint8_t *fat_load_file_from_sector(uint16_t initial_sector, uint16_t sector_offs
     return buffer;
 }
 
-uint8_t *fat_read_file(char *path)
+bool fat_read_file(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length)
 {
     fat_directory_entry *file_info = fat_get_info(path, false);
 
-    uint32_t sectors_count = file_info->size / 512 + 1;
-    uint8_t *result = NULL;
-
-    if (file_info != NULL)
+    if (file_info == NULL)
     {
-        result = fat_load_file_from_sector(file_info->first_sector, 0, sectors_count);
+        return false;
     }
 
+    uint16_t initial_sector = start_index / 512;
+    uint16_t sectors_count = length == 0 ? file_info->size / 512 + 1 : length / 512 + 1;
+
+    uint8_t *result = fat_load_file_from_sector(file_info->first_sector, initial_sector, sectors_count);
+    memcpy(buffer, result + (start_index % 512), length);
+
+    heap_kernel_dealloc(result);
     heap_kernel_dealloc(file_info);
-    return result;
+
+    return true;
 }
 
 fat_directory_entry *fat_get_directory_from_path(char *path)

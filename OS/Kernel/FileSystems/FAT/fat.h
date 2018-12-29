@@ -17,7 +17,7 @@ void fat_load_root();
 void fat_normalise_filename(char *filename);
 
 uint8_t *fat_load_file_from_sector(uint16_t initial_sector, uint16_t sector_offset, uint16_t sectors_count);
-uint8_t *fat_read_file(char *path);
+bool fat_read_file(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length);
 
 fat_directory_entry *fat_get_directory_from_path(char *path);
 fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks);

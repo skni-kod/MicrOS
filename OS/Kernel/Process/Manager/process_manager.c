@@ -28,10 +28,14 @@ uint32_t process_manager_create_process(char *path, char *parameters)
 
     paging_set_page_directory(process->page_directory);
 
-    uint8_t *content = fat_read_file(path);
+    filesystem_file_info process_file_info;
+    fat_generic_get_file_info(path, &process_file_info);
 
-    elf_header *app_header = elf_get_header(content);
-    uint32_t initial_page = elf_loader_load(content);
+    uint8_t *process_content = heap_kernel_alloc(process_file_info.size, 0);
+    fat_read_file(path, process_content, 0, process_file_info.size);
+
+    elf_header *app_header = elf_get_header(process_content);
+    uint32_t initial_page = elf_loader_load(process_content);
 
     process->base_heap_page_index = initial_page + 1;
     heap_set_user_heap((void *)(process->base_heap_page_index * 1024 * 1024 * 4));
@@ -73,7 +77,7 @@ uint32_t process_manager_create_process(char *path, char *parameters)
     }
 
     kvector_add(&processes, process);
-    heap_kernel_dealloc(content);
+    heap_kernel_dealloc(process_content);
 
     paging_set_page_directory(page_directory);
     return process->id;
