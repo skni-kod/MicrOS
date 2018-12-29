@@ -123,20 +123,20 @@ void fat_normalise_filename(char *filename)
     }
 }
 
-uint8_t *fat_load_file_from_sector(uint16_t sector, uint16_t *read_sectors_count)
+uint8_t *fat_load_file_from_sector(uint16_t sector)
 {
     uint8_t *buffer = heap_kernel_alloc(512, 0);
+    uint32_t read_sectors = 0;
 
-    *read_sectors_count = 0;
     while (sector != 0xFF && sector != 0xFFF)
     {
-        buffer = heap_kernel_realloc(buffer, 512 * (*read_sectors_count + 1), 0);
+        buffer = heap_kernel_realloc(buffer, 512 * (read_sectors + 1), 0);
 
         uint8_t *read_data = floppy_read_sector(sector + 31);
         sector = fat_read_sector_value(sector);
 
-        memcpy(buffer + (*read_sectors_count * 512), read_data, 512);
-        (*read_sectors_count)++;
+        memcpy(buffer + (read_sectors * 512), read_data, 512);
+        read_sectors++;
     }
 
     return buffer;
@@ -177,8 +177,7 @@ fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks)
         {
             if (memcmp(full_filename, chunks->data[current_chunk_index], 12) == 0)
             {
-                uint16_t read_sectors_count = 0;
-                uint8_t *directory = fat_load_file_from_sector(current_file_ptr->first_sector, &read_sectors_count);
+                uint8_t *directory = fat_load_file_from_sector(current_file_ptr->first_sector);
 
                 heap_kernel_dealloc(current_directory);
 
@@ -209,20 +208,17 @@ fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks)
     return result;
 }
 
-uint8_t *fat_read_file(char *path, uint16_t *read_sectors, uint16_t *read_size)
+uint8_t *fat_read_file(char *path)
 {
     fat_directory_entry *file_info = fat_get_info(path, false);
     uint8_t *result = NULL;
 
     if (file_info != NULL)
     {
-        uint8_t *file_content = fat_load_file_from_sector(file_info->first_sector, read_sectors);
-        *read_size = file_info->size;
-
-        result = file_content;
-        heap_kernel_dealloc(file_info);
+        result = fat_load_file_from_sector(file_info->first_sector);
     }
 
+    heap_kernel_dealloc(file_info);
     return result;
 }
 
