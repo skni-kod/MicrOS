@@ -123,12 +123,18 @@ void fat_normalise_filename(char *filename)
     }
 }
 
-uint8_t *fat_load_file_from_sector(uint16_t sector, uint16_t *read_sectors_count)
+uint8_t *fat_load_file(uint16_t initial_sector, uint16_t sectors_count, uint16_t *read_sectors_count)
 {
     uint8_t *buffer = heap_kernel_alloc(512, 0);
+    uint8_t sector = initial_sector;
+
+    if (sectors_count == 0)
+    {
+        sectors_count = UINT16_MAX;
+    }
 
     *read_sectors_count = 0;
-    while (sector != 0xFF && sector != 0xFFF)
+    while (*read_sectors_count <= sectors_count && sector != 0xFF && sector != 0xFFF)
     {
         buffer = heap_kernel_realloc(buffer, 512 * (*read_sectors_count + 1), 0);
 
@@ -140,6 +146,11 @@ uint8_t *fat_load_file_from_sector(uint16_t sector, uint16_t *read_sectors_count
     }
 
     return buffer;
+}
+
+uint8_t *fat_load_all_file(uint16_t initial_sector, uint16_t *read_sectors_count)
+{
+    return fat_load_file(initial_sector, UINT16_MAX, read_sectors_count);
 }
 
 fat_directory_entry *fat_get_directory_from_path(char *path)
@@ -178,7 +189,7 @@ fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks)
             if (memcmp(full_filename, chunks->data[current_chunk_index], 12) == 0)
             {
                 uint16_t read_sectors_count = 0;
-                uint8_t *directory = fat_load_file_from_sector(current_file_ptr->first_sector, &read_sectors_count);
+                uint8_t *directory = fat_load_all_file(current_file_ptr->first_sector, &read_sectors_count);
 
                 heap_kernel_dealloc(current_directory);
 
@@ -209,14 +220,15 @@ fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks)
     return result;
 }
 
-uint8_t *fat_read_file(char *path, uint16_t *read_sectors, uint16_t *read_size)
+uint8_t *fat_read_file(char *path, uint16_t first_sector, uint16_t last_sector, uint16_t *read_sectors, uint16_t *read_size)
 {
     fat_directory_entry *file_info = fat_get_info(path, false);
+    uint16_t sectors_count = last_sector - first_sector + 1;
     uint8_t *result = NULL;
 
     if (file_info != NULL)
     {
-        uint8_t *file_content = fat_load_file_from_sector(file_info->first_sector, read_sectors);
+        uint8_t *file_content = fat_load_file(file_info->first_sector, sectors_count, read_sectors);
         *read_size = file_info->size;
 
         result = file_content;
@@ -224,6 +236,11 @@ uint8_t *fat_read_file(char *path, uint16_t *read_sectors, uint16_t *read_size)
     }
 
     return result;
+}
+
+uint8_t *fat_read_all_file(char *path, uint16_t *read_sectors, uint16_t *read_size)
+{
+    return fat_read_file(path, 0, UINT16_MAX, read_sectors, read_size);
 }
 
 fat_directory_entry *fat_get_info(char *path, bool is_directory)
@@ -330,6 +347,26 @@ bool fat_generic_get_directory_info(char *path, filesystem_directory_info *gener
     fat_generic_convert_date_fat_to_generic(&fat_directory_info->create_date, &fat_directory_info->create_time, &generic_directory_info->create_time);
 
     heap_kernel_dealloc(fat_directory_info);
+    return true;
+}
+
+bool fat_generic_read_file(char *path, uint8_t *buffer, uint32_t offset, uint32_t length)
+{
+    fat_directory_entry *fat_file_info = fat_get_info(path, false);
+    if (fat_file_info == NULL)
+    {
+        return false;
+    }
+
+    if (offset + length >= fat_file_info->size)
+    {
+        return false;
+    }
+
+    uint32_t first_sector = offset / fat_header_data->bytes_per_sector;
+    uint32_t last_sector = (offset + length) / fat_header_data->bytes_per_sector;
+
+    heap_kernel_dealloc(fat_file_info);
     return true;
 }
 
