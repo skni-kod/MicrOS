@@ -31,6 +31,7 @@ void fat_merge_filename_and_extension(fat_directory_entry *entry, uint8_t *buffe
 // Generic filesystem functions
 bool fat_generic_get_file_info(char *path, filesystem_file_info *generic_file_info);
 bool fat_generic_get_directory_info(char *path, filesystem_directory_info *generic_directory_info);
+bool fat_generic_read_file(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length);
 
 uint8_t fat_generic_copy_filename_to_generic(char *fat_filename, char *generic_filename);
 void fat_generic_convert_date_fat_to_generic(fat_directory_entry_date *fat_date, fat_directory_entry_time *fat_time, filesystem_time *generic_time);

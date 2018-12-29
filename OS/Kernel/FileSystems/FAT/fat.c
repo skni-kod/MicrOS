@@ -162,7 +162,8 @@ bool fat_read_file(char *path, uint8_t *buffer, uint32_t start_index, uint32_t l
     }
 
     uint16_t initial_sector = start_index / 512;
-    uint16_t sectors_count = length == 0 ? file_info->size / 512 + 1 : length / 512 + 1;
+    uint16_t last_sector = (start_index + length) / 512;
+    uint16_t sectors_count = length == 0 ? file_info->size / 512 + 1 : last_sector - initial_sector + 1;
 
     uint8_t *result = fat_load_file_from_sector(file_info->first_sector, initial_sector, sectors_count);
     memcpy(buffer, result + (start_index % 512), length);
@@ -345,6 +346,11 @@ bool fat_generic_get_directory_info(char *path, filesystem_directory_info *gener
 
     heap_kernel_dealloc(fat_directory_info);
     return true;
+}
+
+bool fat_generic_read_file(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length)
+{
+    return fat_read_file(path, buffer, start_index, length);
 }
 
 uint8_t fat_generic_copy_filename_to_generic(char *fat_filename, char *generic_filename)
