@@ -9,7 +9,8 @@ typedef struct filesystem_time
     uint8_t month;
     uint8_t day;
     uint8_t hour;
-    uint8_t minute;
-} filesystem_time;
+    uint8_t minutes;
+    uint8_t seconds;
+} __attribute__((packed)) filesystem_time;
 
 #endif

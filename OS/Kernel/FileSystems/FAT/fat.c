@@ -382,6 +382,7 @@ void fat_generic_convert_date_fat_to_generic(fat_directory_entry_date *fat_date,
     if (fat_time != NULL)
     {
         generic_time->hour = fat_time->hours;
-        generic_time->minute = fat_time->minutes;
+        generic_time->minutes = fat_time->minutes;
+        generic_time->seconds = fat_time->seconds * 2;
     }
 }

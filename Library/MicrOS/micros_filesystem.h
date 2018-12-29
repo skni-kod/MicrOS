@@ -11,8 +11,9 @@ typedef struct micros_filesystem_time
     uint8_t month;
     uint8_t day;
     uint8_t hour;
-    uint8_t minute;
-} micros_filesystem_time;
+    uint8_t minutes;
+    uint8_t seconds;
+} __attribute__((packed)) micros_filesystem_time;
 
 typedef struct micros_filesystem_file_info
 {
