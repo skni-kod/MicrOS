@@ -35,5 +35,6 @@ typedef struct fmicros_s_directory_info
 
 bool micros_filesystem_get_file_info(char *path, micros_filesystem_file_info *file_info);
 bool micros_filesystem_get_directory_info(char *path, micros_filesystem_directory_info *directory_info);
+bool micros_filesystem_read_file(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length);
 
 #endif

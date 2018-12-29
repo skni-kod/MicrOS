@@ -8,5 +8,6 @@
 
 void syscall_filesystem_get_file_info(interrupt_state *state);
 void syscall_filesystem_get_directory_info(interrupt_state *state);
+void syscall_filesystem_read_file(interrupt_state *state);
 
 #endif
