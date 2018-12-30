@@ -10,6 +10,7 @@ typedef struct micros_process_user_info
     char name[32];
 
     float cpu_usage;
+    uint32_t memory_usage;
 } micros_process_user_info;
 
 void micros_process_exit(int status);

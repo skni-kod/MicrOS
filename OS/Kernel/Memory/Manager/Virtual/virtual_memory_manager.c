@@ -57,6 +57,16 @@ uint32_t virtual_memory_get_allocated_pages_count(bool supervisor)
     return count;
 }
 
+uint32_t virtual_memory_get_kernel_base_page_index()
+{
+    return kernel_base_page_index;
+}
+
+uint32_t virtual_memory_get_user_base_page_index()
+{
+    return user_base_page_index;
+}
+
 void virtual_memory_set_kernel_base_page_index(uint32_t index)
 {
     kernel_base_page_index = index;

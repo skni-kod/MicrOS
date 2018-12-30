@@ -20,6 +20,7 @@ uint32_t process_manager_create_process(char *path, char *parameters)
 {
     process_info *process = (process_info *)heap_kernel_alloc(sizeof(process_info), 0);
     process->id = next_process_id++;
+    process->cpu_usage = 0;
 
     process->page_directory = heap_kernel_alloc(1024 * 4, 1024 * 4);
 
@@ -204,6 +205,20 @@ void process_manager_convert_process_info_to_user_info(process_info *process, pr
     memcpy(user_info->name, process->name, 32);
 
     user_info->cpu_usage = process->cpu_usage;
+    user_info->memory_usage = process_manager_get_process_memory_usage(process);
+}
+
+uint32_t process_manager_get_process_memory_usage(process_info *process)
+{
+    void *old_page_directory = paging_get_page_directory();
+    uint32_t old_base_page_index = virtual_memory_get_user_base_page_index();
+
+    paging_set_page_directory(process->page_directory);
+    virtual_memory_set_user_base_page_index(process->base_heap_page_index);
+    uint32_t allocated_pages = virtual_memory_get_allocated_pages_count(false);
+
+    paging_set_page_directory(old_page_directory);
+    return allocated_pages * 4;
 }
 
 void process_manager_interrupt_handler(interrupt_state *state)
