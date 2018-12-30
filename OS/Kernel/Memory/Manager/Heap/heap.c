@@ -21,24 +21,19 @@ void *heap_alloc(uint32_t size, uint32_t align, bool supervisor)
     while (true)
     {
         uint32_t align_fix = 0;
-        uint32_t extra_headers_size = 0;
 
         if (align != 0)
         {
             align_fix = align - (((uint32_t)current_entry) % align);
-            extra_headers_size = ENTRY_HEADER_SIZE;
-
             if (align_fix < ENTRY_HEADER_SIZE)
             {
                 align_fix += align;
             }
-
-            align_fix -= ENTRY_HEADER_SIZE;
         }
 
         if (current_entry->free)
         {
-            uint32_t required_size = size + align_fix + extra_headers_size;
+            uint32_t required_size = size + align_fix;
             if (current_entry->size > required_size)
             {
                 required_size += ENTRY_HEADER_SIZE;
@@ -51,7 +46,7 @@ void *heap_alloc(uint32_t size, uint32_t align, bool supervisor)
                 uint32_t updated_free_size = current_entry->size - required_size;
                 if (align_fix != 0)
                 {
-                    current_entry->next = (heap_entry *)((uint32_t)current_entry + align_fix);
+                    current_entry->next = (heap_entry *)((uint32_t)current_entry + align_fix - ENTRY_HEADER_SIZE);
                     current_entry->next->prev = current_entry;
                     current_entry->size = align_fix - ENTRY_HEADER_SIZE;
                     current_entry->free = 1;
@@ -71,6 +66,12 @@ void *heap_alloc(uint32_t size, uint32_t align, bool supervisor)
 
                 current_entry->size = size;
                 current_entry->free = 0;
+
+                if (!heap_kernel_verify_integrity())
+                {
+                    int a = 1;
+                    a++;
+                }
 
                 return (void *)((uint32_t)current_entry + ENTRY_HEADER_SIZE);
             }
@@ -208,7 +209,7 @@ void heap_init_heap(bool supervisor)
         heap = (heap_entry *)(virtual_memory_alloc_page(supervisor) * 1024 * 1024 * 4);
     }
 
-    heap->size = 4 * 1024 * 1024;
+    heap->size = 4 * 1024 * 1024 - ENTRY_HEADER_SIZE;
     heap->free = 1;
     heap->next = 0;
     heap->prev = 0;
@@ -283,5 +284,5 @@ bool heap_verify_integrity(bool supervisor)
         current_entry = current_entry->next;
     }
 
-    return (total_size / 1024 / 1024 / 4) + 1 == allocated_pages;
+    return total_size == allocated_pages * 1024 * 1024 * 4;
 }
