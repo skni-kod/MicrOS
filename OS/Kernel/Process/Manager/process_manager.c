@@ -18,7 +18,7 @@ void process_manager_init()
 
 uint32_t process_manager_create_process(char *path, char *parameters)
 {
-    process_header *process = (process_header *)heap_kernel_alloc(sizeof(process_header), 0);
+    process_info *process = (process_info *)heap_kernel_alloc(sizeof(process_info), 0);
     process->id = next_process_id++;
 
     process->page_directory = heap_kernel_alloc(1024 * 4, 1024 * 4);
@@ -83,13 +83,13 @@ uint32_t process_manager_create_process(char *path, char *parameters)
     return process->id;
 }
 
-process_header *process_manager_get_process(uint32_t process_id)
+process_info *process_manager_get_process(uint32_t process_id)
 {
     for (uint32_t i = 0; i < processes.count; i++)
     {
-        if (((process_header *)processes.data[i])->id == process_id)
+        if (((process_info *)processes.data[i])->id == process_id)
         {
-            return (process_header *)processes.data[i];
+            return (process_info *)processes.data[i];
         }
     }
 
@@ -98,14 +98,14 @@ process_header *process_manager_get_process(uint32_t process_id)
 
 void process_manager_save_current_process_state(interrupt_state *state)
 {
-    process_header *old_process = processes.data[current_process_id];
+    process_info *old_process = processes.data[current_process_id];
     memcpy(&old_process->state, state, sizeof(interrupt_state));
 }
 
 void process_manager_switch_to_next_process()
 {
     uint32_t new_process_id = (current_process_id + 1) % processes.count;
-    process_header *new_process = processes.data[new_process_id];
+    process_info *new_process = processes.data[new_process_id];
     current_process_id = new_process_id;
 
     paging_set_page_directory(new_process->page_directory);
