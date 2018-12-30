@@ -10,12 +10,17 @@ uint32_t micros_process_get_processes_count()
     return micros_interrupt_0a(0x91);
 }
 
+void micros_process_get_current_process_info(micros_process_user_info *user_info)
+{
+    micros_interrupt_1a(0x92, user_info);
+}
+
 bool micros_process_get_process_info(uint32_t id, micros_process_user_info *user_info)
 {
-    return micros_interrupt_2a(0x92, id, user_info);
+    return micros_interrupt_2a(0x93, id, user_info);
 }
 
 void micros_process_set_current_process_name(char *name)
 {
-    micros_interrupt_1a(0x93, name);
+    micros_interrupt_1a(0x94, name);
 }

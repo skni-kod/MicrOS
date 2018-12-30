@@ -158,6 +158,11 @@ process_info *process_manager_get_process_info(uint32_t id)
     return NULL;
 }
 
+void process_manager_get_current_process_user_info(process_user_info *user_info)
+{
+    process_manager_get_process_user_info(current_process_id, user_info);
+}
+
 bool process_manager_get_process_user_info(uint32_t id, process_user_info *user_info)
 {
     process_info *process = process_manager_get_process_info(id);
