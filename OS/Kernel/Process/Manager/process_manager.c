@@ -139,6 +139,11 @@ void process_manager_close_current_process()
     }
 }
 
+uint32_t process_manager_get_processes_count()
+{
+    return processes.count;
+}
+
 void process_manager_interrupt_handler(interrupt_state *state)
 {
     // TODO: processes.count > 0 is temporary here, idle process will be always present

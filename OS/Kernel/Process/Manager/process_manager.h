@@ -18,6 +18,7 @@ process_header *process_manager_get_process(uint32_t process_id);
 void process_manager_save_current_process_state(interrupt_state *state);
 void process_manager_switch_to_next_process();
 void process_manager_close_current_process();
+uint32_t process_manager_get_processes_count();
 
 void process_manager_interrupt_handler(interrupt_state *state);
 void process_manager_run();

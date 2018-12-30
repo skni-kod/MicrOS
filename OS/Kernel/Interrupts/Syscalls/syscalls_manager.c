@@ -46,6 +46,7 @@ void syscalls_manager_init()
 
     // 0x9X - Processes
     syscalls_manager_attach_handler(0x90, syscall_process_exit);
+    syscalls_manager_attach_handler(0x91, syscall_process_get_processes_count);
 }
 
 void syscalls_manager_attach_handler(uint8_t function_number, void (*handler)(interrupt_state *state))
