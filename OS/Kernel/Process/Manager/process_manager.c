@@ -144,18 +144,41 @@ uint32_t process_manager_get_processes_count()
     return processes.count;
 }
 
-bool process_manager_get_process_user_info(uint32_t id, process_user_info *user_info)
+process_info *process_manager_get_process_info(uint32_t id)
 {
     for (int i = 0; i < processes.count; i++)
     {
         process_info *process = processes.data[i];
         if (process->id == id)
         {
-            user_info->id = process->id;
-            memcpy(user_info->name, process->name, 32);
-
-            return true;
+            return process;
         }
+    }
+
+    return NULL;
+}
+
+bool process_manager_get_process_user_info(uint32_t id, process_user_info *user_info)
+{
+    process_info *process = process_manager_get_process_info(id);
+    if (process == NULL)
+    {
+        return false;
+    }
+
+    user_info->id = process->id;
+    memcpy(user_info->name, process->name, 32);
+
+    return true;
+}
+
+bool process_manager_set_current_process_name(char *name)
+{
+    process_info *process = process_manager_get_process_info(current_process_id);
+    if (process != NULL)
+    {
+        memcpy(process->name, name, 32);
+        return true;
     }
 
     return false;

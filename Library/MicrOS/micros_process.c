@@ -14,3 +14,8 @@ bool micros_process_get_process_info(uint32_t id, micros_process_user_info *user
 {
     return micros_interrupt_2a(0x92, id, user_info);
 }
+
+void micros_process_set_current_process_name(char *name)
+{
+    micros_interrupt_1a(0x93, name);
+}

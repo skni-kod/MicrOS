@@ -20,7 +20,9 @@ void process_manager_save_current_process_state(interrupt_state *state);
 void process_manager_switch_to_next_process();
 void process_manager_close_current_process();
 uint32_t process_manager_get_processes_count();
+process_info *process_manager_get_process_info(uint32_t id);
 bool process_manager_get_process_user_info(uint32_t id, process_user_info *user_info);
+bool process_manager_set_current_process_name(char *name);
 
 void process_manager_interrupt_handler(interrupt_state *state);
 void process_manager_run();

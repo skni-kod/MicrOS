@@ -48,6 +48,7 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0x90, syscall_process_exit);
     syscalls_manager_attach_handler(0x91, syscall_process_get_processes_count);
     syscalls_manager_attach_handler(0x92, syscall_process_get_process_info);
+    syscalls_manager_attach_handler(0x93, syscall_process_set_current_process_name);
 }
 
 void syscalls_manager_attach_handler(uint8_t function_number, void (*handler)(interrupt_state *state))

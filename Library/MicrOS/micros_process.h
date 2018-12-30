@@ -13,5 +13,6 @@ typedef struct micros_process_user_info
 void micros_process_exit(int status);
 uint32_t micros_process_get_processes_count();
 bool micros_process_get_process_info(uint32_t id, micros_process_user_info *user_info);
+void micros_process_set_current_process_name(char *name);
 
 #endif
