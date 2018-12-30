@@ -96,10 +96,12 @@ process_info *process_manager_get_process(uint32_t process_id)
     return NULL;
 }
 
-void process_manager_save_current_process_state(interrupt_state *state)
+void process_manager_save_current_process_state(interrupt_state *state, uint32_t delta)
 {
     process_info *old_process = processes.data[current_process_id];
     memcpy(&old_process->state, state, sizeof(interrupt_state));
+
+    old_process->cpu_usage = (old_process->cpu_usage + delta) / 2;
 }
 
 void process_manager_switch_to_next_process()
@@ -200,19 +202,23 @@ void process_manager_convert_process_info_to_user_info(process_info *process, pr
 {
     user_info->id = process->id;
     memcpy(user_info->name, process->name, 32);
+
+    user_info->cpu_usage = process->cpu_usage;
 }
 
 void process_manager_interrupt_handler(interrupt_state *state)
 {
+    uint32_t delta = timer_get_system_clock() - last_task_switch;
+
     // TODO: processes.count > 0 is temporary here, idle process will be always present
-    if ((run_scheduler_on_next_interrupt || state->cs == 0x1B) && processes.count > 0 && timer_get_system_clock() - last_task_switch >= 10)
+    if ((run_scheduler_on_next_interrupt || state->cs == 0x1B) && processes.count > 0 && delta >= 10)
     {
         run_scheduler_on_next_interrupt = false;
         last_task_switch = timer_get_system_clock();
 
         if (state->cs == 0x1B)
         {
-            process_manager_save_current_process_state(state);
+            process_manager_save_current_process_state(state, delta);
         }
 
         process_manager_switch_to_next_process(state);

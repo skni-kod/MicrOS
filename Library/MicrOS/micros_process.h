@@ -8,6 +8,8 @@ typedef struct micros_process_user_info
 {
     uint32_t id;
     char name[32];
+
+    float cpu_usage;
 } micros_process_user_info;
 
 void micros_process_exit(int status);

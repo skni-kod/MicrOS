@@ -5,6 +5,8 @@ typedef struct process_user_info
 {
     uint32_t id;
     char name[32];
+
+    float cpu_usage;
 } process_user_info;
 
 #endif

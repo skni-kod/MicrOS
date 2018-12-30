@@ -15,6 +15,8 @@ typedef struct process_info
     void *user_stack;
     void *page_directory;
 
+    float cpu_usage;
+
     interrupt_state state;
 } process_info;
 
