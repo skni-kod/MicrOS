@@ -144,6 +144,23 @@ uint32_t process_manager_get_processes_count()
     return processes.count;
 }
 
+bool process_manager_get_process_user_info(uint32_t id, process_user_info *user_info)
+{
+    for (int i = 0; i < processes.count; i++)
+    {
+        process_info *process = processes.data[i];
+        if (process->id == id)
+        {
+            user_info->id = process->id;
+            memcpy(user_info->name, process->name, 32);
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void process_manager_interrupt_handler(interrupt_state *state)
 {
     // TODO: processes.count > 0 is temporary here, idle process will be always present

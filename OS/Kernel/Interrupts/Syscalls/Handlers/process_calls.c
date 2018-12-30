@@ -9,3 +9,8 @@ void syscall_process_get_processes_count(interrupt_state *state)
 {
     state->registers.eax = process_manager_get_processes_count();
 }
+
+void syscall_process_get_process_info(interrupt_state *state)
+{
+    state->registers.eax = process_manager_get_process_user_info(state->registers.ebx, state->registers.ecx);
+}
