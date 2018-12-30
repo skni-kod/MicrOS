@@ -20,6 +20,11 @@ void syscall_process_get_process_info(interrupt_state *state)
     state->registers.eax = process_manager_get_process_user_info(state->registers.ebx, state->registers.ecx);
 }
 
+void syscall_process_get_all_processes_info(interrupt_state *state)
+{
+    process_manager_get_all_processes_user_info(state->registers.ebx);
+}
+
 void syscall_process_set_current_process_name(interrupt_state *state)
 {
     state->registers.eax = process_manager_set_current_process_name(state->registers.ebx);

@@ -171,10 +171,17 @@ bool process_manager_get_process_user_info(uint32_t id, process_user_info *user_
         return false;
     }
 
-    user_info->id = process->id;
-    memcpy(user_info->name, process->name, 32);
-
+    process_manager_convert_process_info_to_user_info(process, user_info);
     return true;
+}
+
+bool process_manager_get_all_processes_user_info(process_user_info *user_info)
+{
+    for (int i = 0; i < processes.count; i++)
+    {
+        process_info *process = processes.data[i];
+        process_manager_convert_process_info_to_user_info(process, &user_info[i]);
+    }
 }
 
 bool process_manager_set_current_process_name(char *name)
@@ -187,6 +194,12 @@ bool process_manager_set_current_process_name(char *name)
     }
 
     return false;
+}
+
+void process_manager_convert_process_info_to_user_info(process_info *process, process_user_info *user_info)
+{
+    user_info->id = process->id;
+    memcpy(user_info->name, process->name, 32);
 }
 
 void process_manager_interrupt_handler(interrupt_state *state)
