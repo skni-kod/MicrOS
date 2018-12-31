@@ -1,7 +1,7 @@
 #include "heap.h"
 
-heap_entry *kernel_heap;
-heap_entry *user_heap;
+volatile heap_entry *kernel_heap;
+volatile heap_entry *user_heap;
 
 void *heap_kernel_alloc(uint32_t size, uint32_t align)
 {
