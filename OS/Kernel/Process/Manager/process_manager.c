@@ -39,7 +39,7 @@ uint32_t process_manager_create_process(char *path, char *parameters)
     uint32_t initial_page = elf_loader_load(process_content);
     process->size_in_memory = elf_get_total_size_in_memory(process_content);
 
-    process->heap = initial_page * 1024 * 1024 * 4 + process->size_in_memory;
+    process->heap = (void *)(initial_page * 1024 * 1024 * 4 + process->size_in_memory);
     heap_set_user_heap((void *)(process->heap));
     heap_init_user_heap();
 
@@ -150,7 +150,7 @@ uint32_t process_manager_get_processes_count()
 
 process_info *process_manager_get_process_info(uint32_t id)
 {
-    for (int i = 0; i < processes.count; i++)
+    for (uint32_t i = 0; i < processes.count; i++)
     {
         process_info *process = processes.data[i];
         if (process->id == id)
@@ -179,9 +179,9 @@ bool process_manager_get_process_user_info(uint32_t id, process_user_info *user_
     return true;
 }
 
-bool process_manager_get_all_processes_user_info(process_user_info *user_info)
+void process_manager_get_all_processes_user_info(process_user_info *user_info)
 {
-    for (int i = 0; i < processes.count; i++)
+    for (uint32_t i = 0; i < processes.count; i++)
     {
         process_info *process = processes.data[i];
         process_manager_convert_process_info_to_user_info(process, &user_info[i]);
