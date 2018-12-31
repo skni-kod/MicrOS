@@ -14,11 +14,12 @@
 #include "Memory/Paging/paging.h"
 #include "Memory/Map/memory_map.h"
 #include "Memory/Manager/Physic/physical_memory_manager.h"
-#include "FileSystem/fat12.h"
+#include "FileSystems/filesystem.h"
 #include "Panic/panic_screen.h"
 #include "Process/ELF/Parser/elf_parser.h"
 #include "Process/ELF/Loader/elf_loader.h"
 #include "Process/Manager/process_manager.h"
+#include "Interrupts/Syscalls/syscalls_manager.h"
 #include "TSS/tss.h"
 #include <stdint.h>
 
@@ -63,7 +64,10 @@ void startup()
     tss_init();
     logger_log_ok("TSS");
 
-    pci_init();
+    syscalls_manager_init();
+    logger_log_ok("Syscalls manager");
+
+    /*pci_init();
     logger_log_ok("PCI");
     logger_log_info("Number of devices: ");
     uint8_t nd = pci_get_number_of_devices();
@@ -105,13 +109,13 @@ void startup()
         vga_printstring_color(itoa(dev->prog_if, buff, 16), &col);
         vga_printchar('\n');
     }
-    /*pci_dev* dev = get_device(0);
+    pci_dev* dev = get_device(0);
     log_info(itoa(dev->vendor_id, buff, 16));
     log_info(itoa(dev->header_type, buff, 16));
     log_info(itoa(dev->class_code, buff, 16));
     log_info(itoa(dev->subclass, buff, 16));
     log_info(itoa(dev->prog_if, buff, 16));*/
-    fat12_init();
+    fat_init();
     logger_log_ok("FAT12");
 
     logger_log_info("MicrOS ready");
@@ -141,7 +145,20 @@ int kmain()
     logger_log_ok("READY.");
 
     process_manager_init();
-    process_manager_create_process("/ENV/SHELL.ELF");
+    process_manager_create_process("/ENV/TASKS.ELF", "QWE");
+    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
+    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
+    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
+    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
+    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
+    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
+    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
+    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
+    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
+    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
+    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
+    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
+    process_manager_run();
     logger_log_ok("Process manager");
 
     while (1)
@@ -164,11 +181,11 @@ int kmain()
             }
             else if (c.scancode == 61)
             {
-                pc_speaker_sound(1000);
+                pc_speaker_enable_sound(1000);
             }
             else if (c.scancode == 62)
             {
-                pc_speaker_no_sound();
+                pc_speaker_disable_sound();
             }
             else if (c.scancode == 63)
             {
