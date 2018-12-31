@@ -39,26 +39,27 @@ uint32_t process_manager_create_process(char *path, char *parameters)
     uint32_t initial_page = elf_loader_load(process_content);
     process->size_in_memory = elf_get_total_size_in_memory(process_content);
 
-    process->heap = (void *)(initial_page * 1024 * 1024 * 4 + process->size_in_memory);
+    uint32_t stack_align = 4 - (process->size_in_memory % 4);
+    process->user_stack = (void *)(initial_page * 1024 * 1024 * 4 + process->size_in_memory + stack_align) + 1024 * 1024;
+    process->heap = (void *)((uint32_t)process->user_stack) + 4;
+
     heap_set_user_heap((void *)(process->heap));
     heap_init_user_heap();
 
-    //uint32_t path_length = strlen(path) + 1;
-    //uint32_t parameters_length = strlen(parameters) + 1;
+    uint32_t path_length = strlen(path) + 1;
+    uint32_t parameters_length = strlen(parameters) + 1;
 
-    //void *path_in_user_heap = heap_user_alloc(path_length, 0);
-    //void *parameters_in_user_heap = heap_user_alloc(path_length, 0);
+    void *path_in_user_heap = heap_user_alloc(path_length, 0);
+    void *parameters_in_user_heap = heap_user_alloc(path_length, 0);
 
-    //memcpy(path_in_user_heap, path, path_length);
-    //memcpy(parameters_in_user_heap, parameters, parameters_length);
+    memcpy(path_in_user_heap, path, path_length);
+    memcpy(parameters_in_user_heap, parameters, parameters_length);
 
-    process->user_stack = heap_user_alloc(1024 * 1024, 32) + (1024 * 1024);
-
-    //*((uint32_t *)process->user_stack - 3) = (uint32_t)parameters_in_user_heap;
-    //*((uint32_t *)process->user_stack - 4) = (uint32_t)path_in_user_heap;
+    *((uint32_t *)process->user_stack - 0) = (uint32_t)parameters_in_user_heap;
+    *((uint32_t *)process->user_stack - 1) = (uint32_t)path_in_user_heap;
 
     process->state.eip = app_header->entry_position;
-    process->state.esp = (uint32_t)process->user_stack - 32;
+    process->state.esp = (uint32_t)process->user_stack - 8;
     process->state.interrupt_number = 0;
     process->state.eflags = 0x200;
     process->state.cs = 0x1B;
