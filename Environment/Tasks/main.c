@@ -50,11 +50,23 @@ int main(int argc, char *argv[])
             micros_console_print_string("\n");
         }
 
+        micros_physical_memory_stats memory_stats;
+        micros_memory_get_physical_memory_stats(&memory_stats);
+
         micros_console_print_string("\n");
         micros_console_print_string("Total memory usage: ");
-        itoa(total_memory_usage, buffer, 10);
+        itoa((memory_stats.reserved_entries + memory_stats.allocated_entries) * 4, buffer, 10);
         micros_console_print_string(buffer);
-        micros_console_print_string(" MB");
+        micros_console_print_string(" MB (");
+        itoa(memory_stats.allocated_entries * 4, buffer, 10);
+        micros_console_print_string(buffer);
+        micros_console_print_string(" MB allocated, ");
+        itoa(memory_stats.reserved_entries * 4, buffer, 10);
+        micros_console_print_string(buffer);
+        micros_console_print_string(" MB reserved, ");
+        itoa(memory_stats.free_entries * 4, buffer, 10);
+        micros_console_print_string(buffer);
+        micros_console_print_string(" MB free).");
 
         free(processes);
 

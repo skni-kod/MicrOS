@@ -8,5 +8,6 @@
 #include "MicrOS/micros_rtc.h"
 #include "MicrOS/micros_filesystem.h"
 #include "MicrOS/micros_process.h"
+#include "MicrOS/micros_memory.h"
 
 #endif
