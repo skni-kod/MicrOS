@@ -1,5 +1,5 @@
-#ifndef MEMORY_CALLS_H
-#define MEMORY_CALLS_H
+#ifndef HEAP_CALLS_H
+#define HEAP_CALLS_H
 
 #include "../../IDT/interrupt_state.h"
 #include "../../../Memory/Manager/Heap/heap.h"

@@ -1,4 +1,4 @@
-#include "memory_calls.h"
+#include "heap_calls.h"
 
 void syscall_heap_alloc_memory(interrupt_state *state)
 {
