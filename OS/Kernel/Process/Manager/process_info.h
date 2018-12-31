@@ -10,10 +10,10 @@ typedef struct process_info
     char name[32];
 
     uint32_t size_in_memory;
-    uint32_t base_heap_page_index;
 
     void *user_stack;
     void *page_directory;
+    void *heap;
 
     float cpu_usage;
 

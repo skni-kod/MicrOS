@@ -37,9 +37,10 @@ uint32_t process_manager_create_process(char *path, char *parameters)
 
     elf_header *app_header = elf_get_header(process_content);
     uint32_t initial_page = elf_loader_load(process_content);
+    process->size_in_memory = elf_get_total_size_in_memory(process_content);
 
-    process->base_heap_page_index = initial_page + 1;
-    heap_set_user_heap((void *)(process->base_heap_page_index * 1024 * 1024 * 4));
+    process->heap = initial_page * 1024 * 1024 * 4 + process->size_in_memory;
+    heap_set_user_heap((void *)(process->heap));
     heap_init_user_heap();
 
     uint32_t path_length = strlen(path) + 1;
@@ -112,7 +113,7 @@ void process_manager_switch_to_next_process()
     current_process_id = new_process_id;
 
     paging_set_page_directory(new_process->page_directory);
-    heap_set_user_heap((void *)(new_process->base_heap_page_index * 1024 * 1024 * 4));
+    heap_set_user_heap((void *)(new_process->heap));
 
     pic_confirm_master_and_slave();
     __asm__("mov %0, %%eax\n"
@@ -211,13 +212,15 @@ void process_manager_convert_process_info_to_user_info(process_info *process, pr
 uint32_t process_manager_get_process_memory_usage(process_info *process)
 {
     void *old_page_directory = paging_get_page_directory();
-    uint32_t old_base_page_index = virtual_memory_get_user_base_page_index();
+    void *old_heap = heap_get_user_heap();
 
     paging_set_page_directory(process->page_directory);
-    virtual_memory_set_user_base_page_index(process->base_heap_page_index);
+    heap_set_user_heap((void *)process->heap);
     uint32_t allocated_pages = virtual_memory_get_allocated_pages_count(false);
 
+    heap_set_user_heap(old_heap);
     paging_set_page_directory(old_page_directory);
+
     return allocated_pages * 4;
 }
 

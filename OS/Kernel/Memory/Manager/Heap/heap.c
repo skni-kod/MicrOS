@@ -204,7 +204,7 @@ void heap_init_heap(bool supervisor)
         heap = (heap_entry *)(virtual_memory_alloc_page(supervisor) * 1024 * 1024 * 4);
     }
 
-    heap->size = 4 * 1024 * 1024 - ENTRY_HEADER_SIZE;
+    heap->size = (4 * 1024 * 1024) - ((uint32_t)heap % (4 * 1024 * 1024)) - ENTRY_HEADER_SIZE;
     heap->free = 1;
     heap->next = 0;
     heap->prev = 0;
