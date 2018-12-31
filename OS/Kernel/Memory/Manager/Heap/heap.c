@@ -25,7 +25,7 @@ void *heap_alloc(uint32_t size, uint32_t align, bool supervisor)
         if (align != 0)
         {
             align_fix = align - (((uint32_t)current_entry) % align);
-            if (align_fix < ENTRY_HEADER_SIZE)
+            if (align_fix < ENTRY_HEADER_SIZE * 2)
             {
                 align_fix += align;
             }
