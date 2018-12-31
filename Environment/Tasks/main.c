@@ -8,6 +8,8 @@ int main(int argc, char *argv[])
 
     while (1)
     {
+        char buffer[32];
+
         micros_console_clear();
         micros_console_print_string("TASKS v1.0 @ MicrOS\n");
         micros_console_print_string("_______________________________________________\n");
@@ -18,16 +20,17 @@ int main(int argc, char *argv[])
 
         micros_process_get_all_processes_info(processes);
         uint32_t total_cpu_usage = 0;
+        uint32_t total_memory_usage = 0;
 
         for (int i = 0; i < processes_count; i++)
         {
             micros_process_user_info *process = &processes[i];
             total_cpu_usage += process->cpu_usage;
+            total_memory_usage += process->memory_usage;
         }
 
         for (int i = 0; i < processes_count; i++)
         {
-            char buffer[32];
             micros_process_user_info *process = &processes[i];
             micros_console_print_string(process->name);
             micros_console_print_string(" - ");
@@ -46,6 +49,12 @@ int main(int argc, char *argv[])
             micros_console_print_string(" MB");
             micros_console_print_string("\n");
         }
+
+        micros_console_print_string("\n");
+        micros_console_print_string("Total memory usage: ");
+        itoa(total_memory_usage, buffer, 10);
+        micros_console_print_string(buffer);
+        micros_console_print_string(" MB");
 
         free(processes);
 
