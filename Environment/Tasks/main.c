@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
             micros_console_print_string("");
 
             micros_console_print_string(", CPU: ");
-            itoa((process->cpu_usage * 100) / total_cpu_usage, buffer, 10);
+            itoa(process->cpu_usage / 10, buffer, 10);
             micros_console_print_string(buffer);
             micros_console_print_string(" %");
 
