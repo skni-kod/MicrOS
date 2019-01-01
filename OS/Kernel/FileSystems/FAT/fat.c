@@ -138,7 +138,7 @@ uint8_t *fat_load_file_from_sector(uint16_t initial_sector, uint16_t sector_offs
     uint8_t *buffer = heap_kernel_alloc(512, 0);
     uint32_t read_sectors = 0;
 
-    while (read_sectors < sectors_count && sector != 0xFF && sector != 0xFFF)
+    while (read_sectors < sectors_count && sector < 0xFF0)
     {
         buffer = heap_kernel_realloc(buffer, 512 * (read_sectors + 1), 0);
 
