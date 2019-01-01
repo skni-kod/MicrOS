@@ -8,7 +8,7 @@ typedef enum process_status
 {
     process_status_ready,
     process_status_working,
-    process_status_waiting
+    process_status_waiting_sleep
 } process_status;
 
 typedef struct process_info
@@ -24,6 +24,7 @@ typedef struct process_info
     void *heap;
 
     float cpu_usage;
+    uint32_t sleep_deadline;
 
     interrupt_state state;
 } process_info;

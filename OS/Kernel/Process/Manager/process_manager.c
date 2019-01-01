@@ -22,6 +22,7 @@ uint32_t process_manager_create_process(char *path, char *parameters)
     process->id = next_process_id++;
     process->status = process_status_ready;
     process->cpu_usage = 0;
+    process->sleep_deadline = 0;
 
     process->page_directory = heap_kernel_alloc(1024 * 4, 1024 * 4);
 
@@ -110,13 +111,41 @@ void process_manager_save_current_process_state(interrupt_state *state, uint32_t
 
 void process_manager_switch_to_next_process()
 {
-    uint32_t new_process_id = (current_process_id + 1) % processes.count;
+    uint32_t new_process_id = current_process_id;
+    process_info *new_process = NULL;
+
+    uint32_t current_time = timer_get_system_clock();
+    while (1)
+    {
+        new_process_id = (new_process_id + 1) % processes.count;
+        new_process = processes.data[new_process_id];
+
+        if (new_process->status == process_status_waiting_sleep)
+        {
+            if (current_time >= new_process->sleep_deadline)
+            {
+                new_process->status = process_status_ready;
+                break;
+            }
+            else
+            {
+                new_process->cpu_usage /= 2;
+            }
+        }
+
+        if (new_process->status == process_status_ready)
+        {
+            break;
+        }
+    }
 
     process_info *old_process = processes.data[current_process_id];
-    process_info *new_process = processes.data[new_process_id];
 
     current_process_id = new_process_id;
-    old_process->status = process_status_ready;
+    if (old_process->status == process_status_working)
+    {
+        old_process->status = process_status_ready;
+    }
     new_process->status = process_status_working;
 
     paging_set_page_directory(new_process->page_directory);
@@ -207,6 +236,15 @@ bool process_manager_set_current_process_name(char *name)
     return false;
 }
 
+void process_manager_current_process_sleep(uint32_t milliseconds)
+{
+    process_info *process = process_manager_get_process_info(current_process_id);
+    process->status = process_status_waiting_sleep;
+    process->sleep_deadline = timer_get_system_clock() + milliseconds;
+
+    run_scheduler_on_next_interrupt = true;
+}
+
 void process_manager_convert_process_info_to_user_info(process_info *process, process_user_info *user_info)
 {
     user_info->id = process->id;
@@ -237,7 +275,7 @@ void process_manager_interrupt_handler(interrupt_state *state)
     uint32_t delta = timer_get_system_clock() - last_task_switch;
 
     // TODO: processes.count > 0 is temporary here, idle process will be always present
-    if ((run_scheduler_on_next_interrupt || state->cs == 0x1B) && processes.count > 0 && delta >= 10)
+    if (run_scheduler_on_next_interrupt || (state->cs == 0x1B && processes.count > 0 && delta >= 10))
     {
         run_scheduler_on_next_interrupt = false;
         last_task_switch = timer_get_system_clock();

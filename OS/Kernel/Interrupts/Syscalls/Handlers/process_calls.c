@@ -29,3 +29,8 @@ void syscall_process_set_current_process_name(interrupt_state *state)
 {
     state->registers.eax = process_manager_set_current_process_name((char *)state->registers.ebx);
 }
+
+void syscall_process_current_process_sleep(interrupt_state *state)
+{
+    process_manager_current_process_sleep(state->registers.ebx);
+}

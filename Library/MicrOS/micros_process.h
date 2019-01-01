@@ -8,7 +8,7 @@ typedef enum micros_process_status
 {
     micros_process_status_ready,
     micros_process_status_working,
-    micros_process_status_waiting
+    micros_process_status_waiting_sleep
 } micros_process_status;
 
 typedef struct micros_process_user_info
@@ -27,5 +27,6 @@ void micros_process_get_current_process_info(micros_process_user_info *user_info
 bool micros_process_get_process_info(uint32_t id, micros_process_user_info *user_info);
 void micros_process_get_all_processes_info(micros_process_user_info *user_info);
 void micros_process_set_current_process_name(char *name);
+void micros_process_current_process_sleep(uint32_t milliseconds);
 
 #endif

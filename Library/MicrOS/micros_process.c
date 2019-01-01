@@ -29,3 +29,8 @@ void micros_process_set_current_process_name(char *name)
 {
     micros_interrupt_1a(0x95, (uint32_t)name);
 }
+
+void micros_process_current_process_sleep(uint32_t milliseconds)
+{
+    micros_interrupt_1a(0x96, milliseconds);
+}

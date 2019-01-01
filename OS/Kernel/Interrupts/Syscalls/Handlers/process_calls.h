@@ -9,5 +9,6 @@ void syscall_process_get_current_process_info(interrupt_state *state);
 void syscall_process_get_process_info(interrupt_state *state);
 void syscall_process_get_all_processes_info(interrupt_state *state);
 void syscall_process_set_current_process_name(interrupt_state *state);
+void syscall_process_current_process_sleep(interrupt_state *state);
 
 #endif
