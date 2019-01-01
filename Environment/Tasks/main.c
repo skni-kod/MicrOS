@@ -61,6 +61,12 @@ int main(int argc, char *argv[])
         micros_memory_get_physical_memory_stats(&memory_stats);
 
         micros_console_print_string("\n");
+        micros_console_print_string("Total CPU usage: ");
+        itoa(total_cpu_usage / 10, buffer, 10);
+        micros_console_print_string(buffer);
+        micros_console_print_string(" %");
+
+        micros_console_print_string("\n");
         micros_console_print_string("Total memory usage: ");
         itoa((memory_stats.reserved_entries + memory_stats.allocated_entries) * 4, buffer, 10);
         micros_console_print_string(buffer);
@@ -76,10 +82,7 @@ int main(int argc, char *argv[])
         micros_console_print_string(" MB free).");
 
         free(processes);
-
-        while (last_update_time + 1000 >= micros_timer_get_system_clock())
-            ;
-        last_update_time = micros_timer_get_system_clock();
+        micros_process_current_process_sleep(1000);
     }
     return 0;
 }

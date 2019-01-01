@@ -23,7 +23,8 @@ typedef struct process_info
     void *page_directory;
     void *heap;
 
-    float cpu_usage;
+    uint32_t current_cpu_usage;
+    uint32_t last_cpu_usage;
     uint32_t sleep_deadline;
 
     interrupt_state state;

@@ -4,6 +4,7 @@ kvector processes;
 volatile uint32_t current_process_id = 0;
 volatile uint32_t next_process_id = 0;
 volatile uint32_t last_task_switch = 0;
+volatile uint32_t last_cpu_recalculation = 0;
 volatile bool run_scheduler_on_next_interrupt = false;
 
 extern void enter_user_space(interrupt_state *address);
@@ -11,6 +12,7 @@ extern void enter_user_space(interrupt_state *address);
 void process_manager_init()
 {
     last_task_switch = timer_get_system_clock();
+    last_cpu_recalculation = timer_get_system_clock();
 
     kvector_init(&processes);
     idt_attach_process_manager(process_manager_interrupt_handler);
@@ -21,7 +23,8 @@ uint32_t process_manager_create_process(char *path, char *parameters)
     process_info *process = (process_info *)heap_kernel_alloc(sizeof(process_info), 0);
     process->id = next_process_id++;
     process->status = process_status_ready;
-    process->cpu_usage = 0;
+    process->current_cpu_usage = 0;
+    process->last_cpu_usage = 0;
     process->sleep_deadline = 0;
 
     process->page_directory = heap_kernel_alloc(1024 * 4, 1024 * 4);
@@ -106,7 +109,7 @@ void process_manager_save_current_process_state(interrupt_state *state, uint32_t
     process_info *old_process = processes.data[current_process_id];
     memcpy(&old_process->state, state, sizeof(interrupt_state));
 
-    old_process->cpu_usage = (old_process->cpu_usage + delta) / 2;
+    old_process->current_cpu_usage += delta;
 }
 
 void process_manager_switch_to_next_process()
@@ -126,10 +129,6 @@ void process_manager_switch_to_next_process()
             {
                 new_process->status = process_status_ready;
                 break;
-            }
-            else
-            {
-                new_process->cpu_usage /= 2;
             }
         }
 
@@ -251,7 +250,7 @@ void process_manager_convert_process_info_to_user_info(process_info *process, pr
     memcpy(user_info->name, process->name, 32);
 
     user_info->status = (uint32_t)process->status;
-    user_info->cpu_usage = process->cpu_usage;
+    user_info->cpu_usage = process->last_cpu_usage;
     user_info->memory_usage = process_manager_get_process_memory_usage(process);
 }
 
@@ -272,7 +271,20 @@ uint32_t process_manager_get_process_memory_usage(process_info *process)
 
 void process_manager_interrupt_handler(interrupt_state *state)
 {
-    uint32_t delta = timer_get_system_clock() - last_task_switch;
+    uint32_t current_time = timer_get_system_clock();
+    uint32_t delta = current_time - last_task_switch;
+
+    if (last_cpu_recalculation + 1000 <= current_time)
+    {
+        for (int i = 0; i < processes.count; i++)
+        {
+            process_info *process = processes.data[i];
+            process->last_cpu_usage = process->current_cpu_usage;
+            process->current_cpu_usage = 0;
+        }
+
+        last_cpu_recalculation = current_time;
+    }
 
     // TODO: processes.count > 0 is temporary here, idle process will be always present
     if (run_scheduler_on_next_interrupt || (state->cs == 0x1B && processes.count > 0 && delta >= 10))
