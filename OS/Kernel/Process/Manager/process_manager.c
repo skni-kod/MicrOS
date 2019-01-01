@@ -159,7 +159,6 @@ void process_manager_switch_to_next_process()
     paging_set_page_directory(new_process->page_directory);
     heap_set_user_heap((void *)(new_process->heap));
 
-    pic_confirm_master_and_slave();
     __asm__("mov %0, %%eax\n"
             "mov %%eax, %%esp"
             :
