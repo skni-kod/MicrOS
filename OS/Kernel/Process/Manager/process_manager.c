@@ -20,6 +20,7 @@ uint32_t process_manager_create_process(char *path, char *parameters)
 {
     process_info *process = (process_info *)heap_kernel_alloc(sizeof(process_info), 0);
     process->id = next_process_id++;
+    process->status = process_status_ready;
     process->cpu_usage = 0;
 
     process->page_directory = heap_kernel_alloc(1024 * 4, 1024 * 4);
@@ -110,8 +111,13 @@ void process_manager_save_current_process_state(interrupt_state *state, uint32_t
 void process_manager_switch_to_next_process()
 {
     uint32_t new_process_id = (current_process_id + 1) % processes.count;
+
+    process_info *old_process = processes.data[current_process_id];
     process_info *new_process = processes.data[new_process_id];
+
     current_process_id = new_process_id;
+    old_process->status = process_status_ready;
+    new_process->status = process_status_working;
 
     paging_set_page_directory(new_process->page_directory);
     heap_set_user_heap((void *)(new_process->heap));
@@ -206,6 +212,7 @@ void process_manager_convert_process_info_to_user_info(process_info *process, pr
     user_info->id = process->id;
     memcpy(user_info->name, process->name, 32);
 
+    user_info->status = (uint32_t)process->status;
     user_info->cpu_usage = process->cpu_usage;
     user_info->memory_usage = process_manager_get_process_memory_usage(process);
 }

@@ -6,8 +6,9 @@ typedef struct process_user_info
     uint32_t id;
     char name[32];
 
+    uint32_t status;
     float cpu_usage;
     uint32_t memory_usage;
-} process_user_info;
+} __attribute__((packed)) process_user_info;
 
 #endif

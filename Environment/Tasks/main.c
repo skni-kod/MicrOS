@@ -34,19 +34,26 @@ int main(int argc, char *argv[])
             micros_process_user_info *process = &processes[i];
             micros_console_print_string(process->name);
             micros_console_print_string(" - ");
-            micros_console_print_string("ID: ");
 
+            micros_console_print_string("ID: ");
             itoa(process->id, buffer, 10);
             micros_console_print_string(buffer);
-            micros_console_print_string(", CPU: ");
 
+            micros_console_print_string(", Status: ");
+            itoa(process->status, buffer, 10);
+            micros_console_print_string(buffer);
+            micros_console_print_string("");
+
+            micros_console_print_string(", CPU: ");
             itoa((process->cpu_usage * 100) / total_cpu_usage, buffer, 10);
             micros_console_print_string(buffer);
-            micros_console_print_string(" %, MEMORY: ");
+            micros_console_print_string(" %");
 
+            micros_console_print_string(", MEMORY: ");
             itoa(process->memory_usage, buffer, 10);
             micros_console_print_string(buffer);
             micros_console_print_string(" MB");
+
             micros_console_print_string("\n");
         }
 

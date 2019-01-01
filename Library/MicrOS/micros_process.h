@@ -4,14 +4,22 @@
 #include <stdbool.h>
 #include "micros_interrupts.h"
 
+typedef enum micros_process_status
+{
+    micros_process_status_ready,
+    micros_process_status_working,
+    micros_process_status_waiting
+} micros_process_status;
+
 typedef struct micros_process_user_info
 {
     uint32_t id;
     char name[32];
 
+    micros_process_status status;
     float cpu_usage;
     uint32_t memory_usage;
-} micros_process_user_info;
+} __attribute__((packed)) micros_process_user_info;
 
 void micros_process_exit(int status);
 uint32_t micros_process_get_processes_count();
