@@ -190,7 +190,6 @@ void floppy_enable_motor()
         io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04 | 0x08 | 0x10);
         sleep(300);
 
-        logger_log_info("[Floppy] Motor enabled");
         motor_enabled = true;
     }
 
@@ -204,7 +203,6 @@ void floppy_disable_motor()
         // Disable floppy motor (reset (0x04))
         io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04);
 
-        logger_log_info("[Floppy] Motor disabled");
         motor_enabled = false;
     }
 }
