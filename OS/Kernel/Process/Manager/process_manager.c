@@ -118,7 +118,6 @@ void process_manager_switch_to_next_process()
     uint32_t new_process_id = current_process_id;
     process_info *new_process = NULL;
 
-    uint32_t test = new_process_id;
     while (1)
     {
         new_process_id = (new_process_id + 1) % processes.count;
@@ -126,8 +125,7 @@ void process_manager_switch_to_next_process()
 
         if (new_process->status == process_status_waiting_sleep)
         {
-            uint32_t q = timer_get_system_clock();
-            if (q >= new_process->sleep_deadline)
+            if (timer_get_system_clock() >= new_process->sleep_deadline)
             {
                 new_process->status = process_status_ready;
                 break;
@@ -139,14 +137,13 @@ void process_manager_switch_to_next_process()
             break;
         }
 
-        if (new_process_id == test)
+        if (new_process_id == current_process_id)
         {
             if (new_process->status == process_status_working)
             {
                 break;
             }
-            //run_scheduler_on_next_interrupt = true;
-            //io_enable_interrupts();
+
             __asm__ volatile("hlt");
             last_task_switch = timer_get_system_clock();
         }
