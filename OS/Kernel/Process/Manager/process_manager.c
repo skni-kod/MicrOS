@@ -320,6 +320,14 @@ void process_manager_interrupt_handler(interrupt_state *state)
 
 void process_manager_keyboard_interrupt_handler(interrupt_state *state)
 {
+    for (int i = 0; i < processes.count; i++)
+    {
+        process_info *process = processes.data[i];
+        if (process->status == process_status_waiting_key_press)
+        {
+            process->status = process_status_ready;
+        }
+    }
 }
 
 void process_manager_run()
