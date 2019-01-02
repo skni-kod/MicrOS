@@ -297,7 +297,7 @@ void process_manager_interrupt_handler(interrupt_state *state)
 
     if (last_cpu_recalculation + 1000 <= current_time)
     {
-        for (int i = 0; i < processes.count; i++)
+        for (uint32_t i = 0; i < processes.count; i++)
         {
             process_info *process = processes.data[i];
             process->last_cpu_usage = process->current_cpu_usage;
@@ -324,7 +324,7 @@ void process_manager_interrupt_handler(interrupt_state *state)
 
 void process_manager_keyboard_interrupt_handler(interrupt_state *state)
 {
-    for (int i = 0; i < processes.count; i++)
+    for (uint32_t i = 0; i < processes.count; i++)
     {
         process_info *process = processes.data[i];
         if (process->status == process_status_waiting_key_press)
