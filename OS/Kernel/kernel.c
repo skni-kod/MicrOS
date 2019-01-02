@@ -118,9 +118,12 @@ void startup()
     fat_init();
     logger_log_ok("FAT12");
 
+    process_manager_init();
+    logger_log_ok("Process manager");
+
     logger_log_info("MicrOS ready");
     logger_log_info("Created by Application Section of SKNI KOD");
-    logger_log_info("Version ... no version");
+    logger_log_info("Development version");
 }
 
 void clear_bss()
@@ -144,28 +147,22 @@ int kmain()
     //startup_music_play();
     logger_log_ok("READY.");
 
-    process_manager_init();
-    process_manager_create_process("/ENV/TASKS.ELF", "QWE");
-    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
-    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
-    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
-    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
-    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
-    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
-    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
-    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
-    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
-    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
-    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
-    process_manager_create_process("/ENV/SHELL.ELF", "QWE");
+    process_manager_create_process("/ENV/TASKS.ELF", "Honoka Kotori");
+    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
+    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
+    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
     process_manager_run();
-    logger_log_ok("Process manager");
 
+    while (1)
+        ;
+
+    /*
     while (1)
     {
         if (!keyboard_is_buffer_empty())
         {
-            keyboard_scan_ascii_pair c = keyboard_get_key_from_buffer();
+            keyboard_scan_ascii_pair c;
+            keyboard_get_key_from_buffer(&c);
             if (c.scancode == 59)
             {
                 if (getMode() != 3)
@@ -196,9 +193,10 @@ int kmain()
                 memoryViewer();
             }
             else
-                vga_printchar(c.ascii);
+            vga_printchar(c.ascii);
         }
     }
+    */
 
     return 0;
 }
