@@ -287,7 +287,9 @@ void memoryViewer()
     {
         if (!keyboard_is_buffer_empty())
         {
-            keyboard_scan_ascii_pair c = keyboard_get_key_from_buffer();
+            keyboard_scan_ascii_pair c;
+            keyboard_get_key_from_buffer(&c);
+
             if (c.scancode == 60)
             {
                 i++;
