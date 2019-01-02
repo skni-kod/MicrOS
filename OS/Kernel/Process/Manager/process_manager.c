@@ -141,6 +141,10 @@ void process_manager_switch_to_next_process()
 
         if (new_process_id == test)
         {
+            if (new_process->status == process_status_working)
+            {
+                break;
+            }
             //run_scheduler_on_next_interrupt = true;
             //io_enable_interrupts();
             __asm__ volatile("hlt");
