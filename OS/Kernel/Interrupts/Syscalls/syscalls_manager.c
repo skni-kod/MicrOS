@@ -24,6 +24,7 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0x16, syscall_vga_set_cursor_visibility);
 
     // 0x2X - Keyboard
+    syscalls_manager_attach_handler(0x20, syscall_keyboard_is_key_pressed);
 
     // 0x3X - PCI
 
