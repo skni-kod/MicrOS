@@ -13,9 +13,9 @@ void micros_console_print_string(const char *str)
     micros_interrupt_3a(0x11, (uint32_t)str, (uint32_t)foreground_color, (uint32_t)background_color);
 }
 
-char micros_console_get_char_at_position(micros_console_position position)
+char micros_console_get_char_at_position(micros_console_position *position)
 {
-    return (char)micros_interrupt_2a(0x12, position.x, position.y);
+    return (char)micros_interrupt_2a(0x12, position->x, position->y);
 }
 
 void micros_console_set_foreground_color(micros_console_color color)
@@ -28,9 +28,9 @@ void micros_console_set_background_color(micros_console_color color)
     background_color = color;
 }
 
-void micros_console_set_cursor_position(micros_console_position position)
+void micros_console_set_cursor_position(micros_console_position *position)
 {
-    micros_interrupt_2a(0x13, position.x, position.y);
+    micros_interrupt_2a(0x13, position->x, position->y);
 }
 
 void micros_console_get_cursor_position(micros_console_position *micros_console_position)
