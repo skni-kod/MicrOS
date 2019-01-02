@@ -8,7 +8,8 @@ typedef enum process_status
 {
     process_status_ready,
     process_status_working,
-    process_status_waiting_sleep
+    process_status_waiting_sleep,
+    process_status_waiting_key_press
 } process_status;
 
 typedef struct process_info

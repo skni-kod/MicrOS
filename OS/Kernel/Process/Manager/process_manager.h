@@ -25,12 +25,15 @@ void process_manager_get_current_process_user_info(process_user_info *user_info)
 bool process_manager_get_process_user_info(uint32_t id, process_user_info *user_info);
 void process_manager_get_all_processes_user_info(process_user_info *user_info);
 bool process_manager_set_current_process_name(char *name);
+
 void process_manager_current_process_sleep(uint32_t milliseconds);
+void process_manager_current_process_wait_for_key_press();
 
 void process_manager_convert_process_info_to_user_info(process_info *process, process_user_info *user_info);
 uint32_t process_manager_get_process_memory_usage(process_info *process);
 
 void process_manager_interrupt_handler(interrupt_state *state);
+void process_manager_keyboard_interrupt_handler(interrupt_state *state);
 void process_manager_run();
 
 #endif

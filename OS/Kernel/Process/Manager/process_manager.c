@@ -16,6 +16,7 @@ void process_manager_init()
 
     kvector_init(&processes);
     idt_attach_process_manager(process_manager_interrupt_handler);
+    idt_attach_interrupt_handler(1, process_manager_keyboard_interrupt_handler);
 }
 
 uint32_t process_manager_create_process(char *path, char *parameters)
@@ -252,6 +253,14 @@ void process_manager_current_process_sleep(uint32_t milliseconds)
     run_scheduler_on_next_interrupt = true;
 }
 
+void process_manager_current_process_wait_for_key_press()
+{
+    process_info *process = process_manager_get_process_info(current_process_id);
+    process->status = process_status_waiting_key_press;
+
+    run_scheduler_on_next_interrupt = true;
+}
+
 void process_manager_convert_process_info_to_user_info(process_info *process, process_user_info *user_info)
 {
     user_info->id = process->id;
@@ -307,6 +316,10 @@ void process_manager_interrupt_handler(interrupt_state *state)
 
         process_manager_switch_to_next_process(state);
     }
+}
+
+void process_manager_keyboard_interrupt_handler(interrupt_state *state)
+{
 }
 
 void process_manager_run()
