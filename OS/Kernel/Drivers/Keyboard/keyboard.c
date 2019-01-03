@@ -91,7 +91,7 @@ volatile uint16_t *const buffer_read = (uint16_t *)0xc000041A;
 void keyboard_init()
 {
     pic_enable_irq(1);
-    idt_attach_interrupt_handler(1, keyboard_handler, false);
+    idt_attach_interrupt_handler(1, keyboard_handler);
 }
 
 unsigned char keyboard_able_to_write()
@@ -133,20 +133,19 @@ void keyboard_put_key_to_buffor(unsigned char scancode, unsigned char ascii)
     keyboard_increment_buffer_pointer(buffer_write);
 }
 
-keyboard_scan_ascii_pair keyboard_get_key_from_buffer()
+bool keyboard_get_key_from_buffer(keyboard_scan_ascii_pair *scan_ascii_pair)
 {
-    keyboard_scan_ascii_pair c;
     if (keyboard_is_buffer_empty())
     {
-        c.ascii = 0;
-        c.scancode = 255;
-        return c;
+        return false;
     }
+
     keyboard_scan_ascii_pair *tmp = (keyboard_scan_ascii_pair *)((0xc0000000 + (0x0040 * 0x10)) + (*buffer_read));
-    c.ascii = tmp->ascii;
-    c.scancode = tmp->scancode;
+    scan_ascii_pair->ascii = tmp->ascii;
+    scan_ascii_pair->scancode = tmp->scancode;
     keyboard_increment_buffer_pointer(buffer_read);
-    return c;
+
+    return true;
 }
 
 unsigned char keyboard_get_scancode()

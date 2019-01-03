@@ -20,34 +20,53 @@ void *heap_alloc(uint32_t size, uint32_t align, bool supervisor)
 
     while (true)
     {
-        uint32_t align_fix = align == 0 ? 0 : align - (((uint32_t)current_entry) % align) - ENTRY_HEADER_SIZE;
-        uint32_t headers_size = align == 0 ? ENTRY_HEADER_SIZE : 2 * ENTRY_HEADER_SIZE;
+        uint32_t align_fix = 0;
+
+        if (align != 0)
+        {
+            align_fix = align - (((uint32_t)current_entry) % align);
+            if (align_fix < ENTRY_HEADER_SIZE * 2)
+            {
+                align_fix += align;
+            }
+        }
 
         if (current_entry->free)
         {
-            if (current_entry->size > size + align_fix + headers_size)
+            uint32_t required_size = size + align_fix;
+            if (current_entry->size > required_size)
+            {
+                required_size += ENTRY_HEADER_SIZE;
+            }
+
+            if (current_entry->size >= required_size)
             {
                 heap_entry *next_entry = current_entry->next;
 
-                uint32_t updated_free_size = current_entry->size - size - align_fix - headers_size;
+                uint32_t updated_free_size = current_entry->size - required_size;
                 if (align_fix != 0)
                 {
-                    current_entry->next = (heap_entry *)((uint32_t)current_entry + align_fix);
+                    current_entry->next = (heap_entry *)((uint32_t)current_entry + align_fix - ENTRY_HEADER_SIZE);
                     current_entry->next->prev = current_entry;
-                    current_entry->size = align_fix - ENTRY_HEADER_SIZE;
+                    current_entry->size = align_fix - 2 * ENTRY_HEADER_SIZE;
                     current_entry->free = 1;
 
                     current_entry = current_entry->next;
+                    updated_free_size += ENTRY_HEADER_SIZE;
                 }
 
                 current_entry->next = (heap_entry *)((uint32_t)current_entry + size + ENTRY_HEADER_SIZE);
+
+                if (current_entry->next != next_entry)
+                {
+                    current_entry->next->next = next_entry;
+                    current_entry->next->prev = current_entry;
+                    current_entry->next->size = updated_free_size;
+                    current_entry->next->free = 1;
+                }
+
                 current_entry->size = size;
                 current_entry->free = 0;
-
-                current_entry->next->next = next_entry;
-                current_entry->next->prev = current_entry;
-                current_entry->next->size = updated_free_size;
-                current_entry->next->free = 1;
 
                 return (void *)((uint32_t)current_entry + ENTRY_HEADER_SIZE);
             }
@@ -128,6 +147,12 @@ void *heap_user_realloc(void *ptr, uint32_t size, uint32_t align)
     return heap_realloc(ptr, size, align, false);
 }
 
+uint32_t heap_get_object_size(void *ptr)
+{
+    heap_entry *entry = (heap_entry *)((uint32_t)ptr - ENTRY_HEADER_SIZE);
+    return entry->size;
+}
+
 void *heap_realloc(void *ptr, uint32_t size, uint32_t align, bool supervisor)
 {
     heap_entry *old_entry = heap_dealloc(ptr, supervisor);
@@ -135,6 +160,16 @@ void *heap_realloc(void *ptr, uint32_t size, uint32_t align, bool supervisor)
 
     memcpy(new_ptr, ptr, old_entry->size);
     return new_ptr;
+}
+
+heap_entry *heap_get_kernel_heap()
+{
+    return kernel_heap;
+}
+
+heap_entry *heap_get_user_heap()
+{
+    return user_heap;
 }
 
 void heap_set_kernel_heap(void *heap_address)
@@ -169,7 +204,7 @@ void heap_init_heap(bool supervisor)
         heap = (heap_entry *)(virtual_memory_alloc_page(supervisor) * 1024 * 1024 * 4);
     }
 
-    heap->size = 4 * 1024 * 1024;
+    heap->size = (4 * 1024 * 1024) - ((uint32_t)heap % (4 * 1024 * 1024)) - ENTRY_HEADER_SIZE;
     heap->free = 1;
     heap->next = 0;
     heap->prev = 0;
@@ -210,21 +245,27 @@ void heap_dump(bool supervisor)
     }
 }
 
-bool heap_kernel_check_integrity()
+bool heap_kernel_verify_integrity()
 {
-    return heap_check_integrity(true);
+    return heap_verify_integrity(true);
 }
 
-bool heap_user_check_integrity()
+bool heap_user_verify_integrity()
 {
-    return heap_check_integrity(false);
+    return heap_verify_integrity(false);
 }
 
-bool heap_check_integrity(bool supervisor)
+bool heap_verify_integrity(bool supervisor)
 {
     heap_entry *current_entry = supervisor ? kernel_heap : user_heap;
+
+    uint32_t total_size = 0;
+    uint32_t allocated_pages = virtual_memory_get_allocated_pages_count(supervisor);
+
     while (true)
     {
+        total_size += current_entry->size + ENTRY_HEADER_SIZE;
+
         if (current_entry->next != 0 && (uint32_t)current_entry->next - (uint32_t)current_entry != current_entry->size + ENTRY_HEADER_SIZE)
         {
             return false;
@@ -238,5 +279,5 @@ bool heap_check_integrity(bool supervisor)
         current_entry = current_entry->next;
     }
 
-    return true;
+    return total_size == allocated_pages * 1024 * 1024 * 4;
 }

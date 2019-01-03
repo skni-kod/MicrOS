@@ -2,5 +2,5 @@
 
 clock_t clock()
 {
-    return call_interrupt_0a(0x01);
+    return micros_timer_get_system_clock();
 }

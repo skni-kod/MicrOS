@@ -9,7 +9,7 @@ uint32_t expected_clock_fraction = 0;
 void timer_init()
 {
     pic_enable_irq(0);
-    idt_attach_interrupt_handler(0, timer_interrupt, false);
+    idt_attach_interrupt_handler(0, timer_interrupt);
 
     // | CHA0 | CHA1 | ACM0 | ACM1 | OPE0 | OPE1 | OPE2 | BCD  |
     // |  0   |  0   |  1   |  1   |  0   |  1   |  0   |  0   | = 0x34

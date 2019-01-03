@@ -287,7 +287,9 @@ void memoryViewer()
     {
         if (!keyboard_is_buffer_empty())
         {
-            keyboard_scan_ascii_pair c = keyboard_get_key_from_buffer();
+            keyboard_scan_ascii_pair c;
+            keyboard_get_key_from_buffer(&c);
+
             if (c.scancode == 60)
             {
                 i++;
@@ -313,6 +315,29 @@ void memoryViewer()
                 vga_clear_screen();
                 return;
             }
+        }
+    }
+}
+
+void physical_memory_get_stats(physical_memory_stats *stats)
+{
+    stats->free_entries = 0;
+    stats->reserved_entries = 0;
+    stats->allocated_entries = 0;
+
+    for (int i = 0; i < 1024; i++)
+    {
+        switch (physical_entries[i].type)
+        {
+        case physical_memory_free:
+            stats->free_entries++;
+            break;
+        case physical_memory_reserved:
+            stats->reserved_entries++;
+            break;
+        case physical_memory_filled:
+            stats->allocated_entries++;
+            break;
         }
     }
 }

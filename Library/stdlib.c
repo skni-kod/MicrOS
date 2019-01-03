@@ -1,20 +1,6 @@
 #include "stdlib.h"
 #include "string.h"
 
-void sleep(uint32_t ms)
-{
-    // Temporary implementation, for testing purposes
-    uint32_t current_system_clock = clock();
-    uint32_t target_system_clock;
-
-    target_system_clock = current_system_clock + ms;
-
-    while (current_system_clock < target_system_clock)
-    {
-        current_system_clock = clock();
-    }
-}
-
 int32_t atoi(const char *string)
 {
     size_t len = strlen(string);
@@ -80,31 +66,35 @@ char *itoa(int input, char *buffer, int base)
 
 void *malloc(size_t size)
 {
-    return (void *)call_interrupt_2a(0x02, size, 0);
+    return micros_heap_alloc(size, 0);
 }
 
 void *malloc_align(size_t size, uint32_t align)
 {
-    return (void *)call_interrupt_2a(0x02, size, align);
+    return micros_heap_alloc(size, align);
 }
 
 void *calloc(size_t num, size_t size)
 {
-    void *ptr = malloc(num * size);
-    memset(ptr, 0, num * size);
+    size_t total_size = num * size;
+
+    void *ptr = micros_heap_alloc(total_size, 0);
+    memset(ptr, 0, total_size);
 
     return ptr;
 }
 
 void *realloc(void *ptr, size_t size)
 {
-    free(ptr);
-    void *new_ptr = malloc(size);
-
-    return memcpy(new_ptr, ptr, size);
+    return micros_heap_realloc(ptr, size);
 }
 
 void free(void *ptr)
 {
-    call_interrupt_1a(0x03, (uint32_t)ptr);
+    micros_heap_dealloc(ptr);
+}
+
+void exit(int status)
+{
+    micros_process_exit(status);
 }

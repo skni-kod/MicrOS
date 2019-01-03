@@ -11,13 +11,13 @@ void floppy_init()
 {
     // Enable timer interrupt (to check if floppy can be shut down after some time of inactivity)
     pic_enable_irq(0);
-    idt_attach_interrupt_handler(0, floppy_timer_interrupt, false);
+    idt_attach_interrupt_handler(0, floppy_timer_interrupt);
 
     time_of_last_activity = timer_get_system_clock();
 
     // Enable floppy interrupts
     pic_enable_irq(6);
-    idt_attach_interrupt_handler(6, floppy_interrupt, false);
+    idt_attach_interrupt_handler(6, floppy_interrupt);
 
     if (floppy_reset() == -1)
     {
@@ -190,7 +190,6 @@ void floppy_enable_motor()
         io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04 | 0x08 | 0x10);
         sleep(300);
 
-        logger_log_info("[Floppy] Motor enabled");
         motor_enabled = true;
     }
 
@@ -204,7 +203,6 @@ void floppy_disable_motor()
         // Disable floppy motor (reset (0x04))
         io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04);
 
-        logger_log_info("[Floppy] Motor disabled");
         motor_enabled = false;
     }
 }
@@ -276,10 +274,10 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
     // Wait for interrupt
     floppy_wait_for_interrupt();
     // Read command status
-    uint8_t st0 = floppy_read_data();
+    /*uint8_t st0 = */ floppy_read_data();
     uint8_t st1 = floppy_read_data();
     uint8_t st2 = floppy_read_data();
-    uint8_t cylinder_data = floppy_read_data();
+    /*uint8_t cylinder_data = */ floppy_read_data();
     /*uint8_t head_data = */ floppy_read_data();
     /*uint8_t sector_data = */ floppy_read_data();
     uint8_t bps = floppy_read_data();

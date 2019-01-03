@@ -30,9 +30,14 @@ SECTIONS
 	{
 		*(.data)
 	}
+
+	BSS_SECTION_START = .;
  
 	.bss ALIGN(4K) : AT(ADDR(.bss) - KERNEL_VIRTUAL_ADDRESS)
 	{
 		*(.bss)
 	}
+
+	BSS_SECTION_END = .;
+	KERNEL_VIRTUAL_ADDRESS_END = .;
 }

@@ -34,9 +34,9 @@ void startup_music_set_bmp(uint8_t new_bpm)
 
 void startup_music_play_note(uint32_t freq, uint32_t time)
 {
-    pc_speaker_sound(freq);
+    pc_speaker_enable_sound(freq);
     sleep(time);
-    pc_speaker_no_sound();
+    pc_speaker_disable_sound();
 }
 
 void startup_music_play()

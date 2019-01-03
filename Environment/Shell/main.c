@@ -1,37 +1,27 @@
-#include <stdint.h>
-#include <time.h>
+#include <micros.h>
 #include <stdlib.h>
-#include <time.h>
 
-int test_array[1024];
-
-int main(int id)
+int main(int argc, char *argv[])
 {
-    char buffer[32];
-
-    call_interrupt_1a(0x04, "Process START ");
-    itoa(id, buffer, 10);
-    call_interrupt_1a(0x04, buffer);
-    call_interrupt_1a(0x04, "\n");
-
-    uint32_t asd = 100;
-    for (int i = 0; i < id; i++)
-    {
-        asd *= 10;
-    }
-
+    micros_process_set_current_process_name("SHUKA");
     while (1)
     {
-        asd++;
+        uint32_t now = micros_timer_get_system_clock();
+        while (now + 100 >= micros_timer_get_system_clock())
+            ;
 
-        call_interrupt_1a(0x04, "Process ");
-        itoa(id, buffer, 10);
-        call_interrupt_1a(0x04, buffer);
-        call_interrupt_1a(0x04, ": ");
-        itoa(asd, buffer, 10);
-        call_interrupt_1a(0x04, buffer);
-        call_interrupt_1a(0x04, "\n");
+        /*
+        micros_keyboard_scan_ascii_pair pair;
+        micros_keyboard_wait_for_key_press(&pair);
 
-        sleep(30);
+        char b[16];
+        micros_console_print_string("ASCII: ");
+        micros_console_print_string(itoa(pair.ascii, b, 10));
+        micros_console_print_string(", code: ");
+        micros_console_print_string(itoa(pair.scancode, b, 10));
+        micros_console_print_string("\n");*/
+
+        micros_process_current_process_sleep(200);
     }
+    return 0;
 }

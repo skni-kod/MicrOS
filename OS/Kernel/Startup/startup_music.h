@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "../Drivers/PCSpeaker/pc_speaker.h"
 #include <stdlib.h>
+#include <ktime.h>
 
 #define C4_NOTE 262
 #define CS4_NOTE 277

@@ -4,6 +4,8 @@
 #define IDT_INTERRUPT_DESCRIPTOR_TABLE_LENGTH 64
 #define IDT_MAX_INTERRUPT_HANDLERS 64
 
+#include <stdlib.h>
+#include <string.h>
 #include "idt_entry.h"
 #include "idt_info.h"
 #include "interrupt_state.h"
@@ -12,15 +14,16 @@
 #include "exception_definition.h"
 #include "../PIC/pic.h"
 #include "../../Panic/panic_screen.h"
-#include "../Syscalls/time_calls.h"
-#include "../Syscalls/memory_calls.h"
-#include "../Syscalls/vga_calls.h"
+#include "../../Drivers/Keyboard/keyboard.h"
 
 void idt_init();
-void idt_set(uint8_t index, uint32_t (*handler)(), bool user_interrupt);
+void idt_set(uint8_t index, uint32_t (*handler)(interrupt_state *state), bool user_interrupt);
 void idt_unset(uint8_t index);
-void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)(), bool last);
-void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)());
+void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)(interrupt_state *state));
+void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)(interrupt_state *state));
+
+void idt_attach_process_manager(void (*handler)(interrupt_state *state));
+void idt_attach_syscalls_manager(void (*handler)(interrupt_state *state));
 
 void idt_global_int_handler(interrupt_state *state);
 void idt_global_exc_handler(exception_state *state);
@@ -80,10 +83,6 @@ extern uint32_t idt_int46();
 extern uint32_t idt_int47();
 
 // Software interrupts
-extern uint32_t idt_int48();
-extern uint32_t idt_int49();
 extern uint32_t idt_int50();
-extern uint32_t idt_int51();
-extern uint32_t idt_int52();
 
 #endif

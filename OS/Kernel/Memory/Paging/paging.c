@@ -32,13 +32,13 @@ paging_table_entry *paging_get_page_directory()
     return page_directory;
 }
 
-void paging_set_page_directory(uint32_t address)
+void paging_set_page_directory(void *address)
 {
     page_directory = (paging_table_entry *)address;
     __asm__("mov %0, %%eax\n"
             "mov %%eax, %%cr3"
             :
-            : "g"(address - 0xC0000000)
+            : "g"((uint32_t)address - 0xC0000000)
             : "eax");
 }
 

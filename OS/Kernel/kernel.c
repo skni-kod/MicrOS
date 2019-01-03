@@ -14,11 +14,12 @@
 #include "Memory/Paging/paging.h"
 #include "Memory/Map/memory_map.h"
 #include "Memory/Manager/Physic/physical_memory_manager.h"
-#include "FileSystem/fat12.h"
+#include "FileSystems/filesystem.h"
 #include "Panic/panic_screen.h"
 #include "Process/ELF/Parser/elf_parser.h"
 #include "Process/ELF/Loader/elf_loader.h"
 #include "Process/Manager/process_manager.h"
+#include "Interrupts/Syscalls/syscalls_manager.h"
 #include "TSS/tss.h"
 #include <stdint.h>
 
@@ -63,7 +64,10 @@ void startup()
     tss_init();
     logger_log_ok("TSS");
 
-    pci_init();
+    syscalls_manager_init();
+    logger_log_ok("Syscalls manager");
+
+    /*pci_init();
     logger_log_ok("PCI");
     logger_log_info("Number of devices: ");
     uint8_t nd = pci_get_number_of_devices();
@@ -105,36 +109,60 @@ void startup()
         vga_printstring_color(itoa(dev->prog_if, buff, 16), &col);
         vga_printchar('\n');
     }
-    /*pci_dev* dev = get_device(0);
+    pci_dev* dev = get_device(0);
     log_info(itoa(dev->vendor_id, buff, 16));
     log_info(itoa(dev->header_type, buff, 16));
     log_info(itoa(dev->class_code, buff, 16));
     log_info(itoa(dev->subclass, buff, 16));
     log_info(itoa(dev->prog_if, buff, 16));*/
-    fat12_init();
+    fat_init();
     logger_log_ok("FAT12");
+
+    process_manager_init();
+    logger_log_ok("Process manager");
 
     logger_log_info("MicrOS ready");
     logger_log_info("Created by Application Section of SKNI KOD");
-    logger_log_info("Version ... no version");
+    logger_log_info("Development version");
+}
+
+void clear_bss()
+{
+    extern uint32_t BSS_SECTION_START;
+    extern uint32_t BSS_SECTION_END;
+
+    void *bss_start_addr = &BSS_SECTION_START;
+    void *bss_end_addr = &BSS_SECTION_END;
+    uint32_t bss_length = bss_end_addr - bss_start_addr;
+
+    memset(bss_start_addr, 0, bss_length);
 }
 
 int kmain()
 {
+    clear_bss();
+
     startup();
     logger_log_info("Hello, World!");
     //startup_music_play();
     logger_log_ok("READY.");
 
-    process_manager_init();
-    process_manager_create_process("/ENV/SHELL.ELF");
-    logger_log_ok("Process manager");
+    process_manager_create_process("/ENV/TASKS.ELF", "Honoka Kotori");
+    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
+    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
+    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
+    process_manager_run();
 
+    while (1)
+        ;
+
+    /*
     while (1)
     {
         if (!keyboard_is_buffer_empty())
         {
-            keyboard_scan_ascii_pair c = keyboard_get_key_from_buffer();
+            keyboard_scan_ascii_pair c;
+            keyboard_get_key_from_buffer(&c);
             if (c.scancode == 59)
             {
                 if (getMode() != 3)
@@ -150,11 +178,11 @@ int kmain()
             }
             else if (c.scancode == 61)
             {
-                pc_speaker_sound(1000);
+                pc_speaker_enable_sound(1000);
             }
             else if (c.scancode == 62)
             {
-                pc_speaker_no_sound();
+                pc_speaker_disable_sound();
             }
             else if (c.scancode == 63)
             {
@@ -165,9 +193,10 @@ int kmain()
                 memoryViewer();
             }
             else
-                vga_printchar(c.ascii);
+            vga_printchar(c.ascii);
         }
     }
+    */
 
     return 0;
 }
