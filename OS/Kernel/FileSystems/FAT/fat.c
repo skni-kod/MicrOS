@@ -325,6 +325,49 @@ uint32_t fat_get_entries_count_in_directory(char *path)
     return entries_count;
 }
 
+uint32_t fat_get_entries_in_directory(char *path, char **entries)
+{
+    kvector *chunks = fat_parse_path(path);
+    uint32_t path_length = strlen(path);
+
+    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks);
+    fat_directory_entry *current_file_ptr = directory;
+    uint32_t current_entry_index = 0;
+
+    if (directory == NULL)
+    {
+        return false;
+    }
+
+    for (int i = 0; i < fat_header_data->directory_entries; i++)
+    {
+        if (fat_is_entry_valid(current_file_ptr))
+        {
+            uint8_t full_filename[12];
+            fat_merge_filename_and_extension(current_file_ptr, full_filename);
+
+            entries[current_entry_index] = heap_kernel_alloc(path_length + 13, 0);
+            memset(entries[current_entry_index], 0, path_length + 13);
+            memcpy(entries[current_entry_index], path, path_length);
+            memcpy(entries[current_entry_index] + path_length, full_filename, 12);
+            current_entry_index++;
+        }
+
+        if (i + 1 == fat_header_data->directory_entries)
+        {
+            break;
+        }
+
+        current_file_ptr++;
+    }
+
+    kvector_clear(chunks);
+    heap_kernel_dealloc(chunks);
+    heap_kernel_dealloc(directory);
+
+    return true;
+}
+
 bool fat_is_entry_valid(fat_directory_entry *entry)
 {
     return entry->filename[0] >= 32 && entry->filename[0] <= 126 && entry->filename[0] != 0x2E;
@@ -386,6 +429,16 @@ bool fat_generic_get_directory_info(char *path, filesystem_directory_info *gener
 bool fat_generic_read_file(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length)
 {
     return fat_read_file(path, buffer, start_index, length);
+}
+
+uint32_t fat_generic_get_entries_count_in_directory(char *path)
+{
+    return fat_get_entries_count_in_directory(path);
+}
+
+bool fat_generic_get_entries_in_directory(char *path, char *entries)
+{
+    return fat_get_entries_in_directory(path, entries);
 }
 
 uint8_t fat_generic_copy_filename_to_generic(char *fat_filename, char *generic_filename)

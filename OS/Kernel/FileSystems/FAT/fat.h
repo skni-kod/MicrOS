@@ -24,6 +24,7 @@ fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks);
 fat_directory_entry *fat_get_info(char *path, bool is_directory);
 
 uint32_t fat_get_entries_count_in_directory(char *path);
+uint32_t fat_get_entries_in_directory(char *path, char **entries);
 
 kvector *fat_parse_path(char *path);
 kvector *fat_list(char *path);
@@ -34,6 +35,8 @@ void fat_merge_filename_and_extension(fat_directory_entry *entry, uint8_t *buffe
 bool fat_generic_get_file_info(char *path, filesystem_file_info *generic_file_info);
 bool fat_generic_get_directory_info(char *path, filesystem_directory_info *generic_directory_info);
 bool fat_generic_read_file(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length);
+uint32_t fat_generic_get_entries_count_in_directory(char *path);
+bool fat_generic_get_entries_in_directory(char *path, char *entries);
 
 uint8_t fat_generic_copy_filename_to_generic(char *fat_filename, char *generic_filename);
 void fat_generic_convert_date_fat_to_generic(fat_directory_entry_date *fat_date, fat_directory_entry_time *fat_time, filesystem_time *generic_time);
