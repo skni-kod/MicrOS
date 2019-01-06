@@ -13,5 +13,6 @@
 bool filesystem_get_file_info(char *path, filesystem_file_info *file_info);
 bool filesystem_get_directory_info(char *path, filesystem_directory_info *directory_info);
 bool filesystem_read_file(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length);
+uint32_t filesystem_get_entries_count_in_directory(char *path);
 
 #endif

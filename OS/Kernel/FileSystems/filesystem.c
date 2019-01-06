@@ -14,3 +14,8 @@ bool filesystem_read_file(char *path, uint8_t *buffer, uint32_t start_index, uin
 {
     return fat_generic_read_file(path, buffer, start_index, length);
 }
+
+uint32_t filesystem_get_entries_count_in_directory(char *path)
+{
+    return fat_get_entries_count_in_directory(path);
+}

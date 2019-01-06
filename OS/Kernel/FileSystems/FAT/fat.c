@@ -290,9 +290,44 @@ fat_directory_entry *fat_get_info(char *path, bool is_directory)
     return result_without_junk;
 }
 
+uint32_t fat_get_entries_count_in_directory(char *path)
+{
+    kvector *chunks = fat_parse_path(path);
+
+    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks);
+    fat_directory_entry *current_file_ptr = directory;
+    uint32_t entries_count = 0;
+
+    if (directory == NULL)
+    {
+        return 0;
+    }
+
+    for (int i = 0; i < fat_header_data->directory_entries; i++)
+    {
+        if (fat_is_entry_valid(current_file_ptr))
+        {
+            entries_count++;
+        }
+
+        if (i + 1 == fat_header_data->directory_entries)
+        {
+            break;
+        }
+
+        current_file_ptr++;
+    }
+
+    kvector_clear(chunks);
+    heap_kernel_dealloc(chunks);
+    heap_kernel_dealloc(directory);
+
+    return entries_count;
+}
+
 bool fat_is_entry_valid(fat_directory_entry *entry)
 {
-    return entry->filename[0] >= 32 && entry->filename[0] <= 126;
+    return entry->filename[0] >= 32 && entry->filename[0] <= 126 && entry->filename[0] != 0x2E;
 }
 
 void fat_merge_filename_and_extension(fat_directory_entry *entry, uint8_t *buffer)

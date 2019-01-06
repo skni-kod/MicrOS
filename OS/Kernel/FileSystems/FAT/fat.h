@@ -23,6 +23,8 @@ fat_directory_entry *fat_get_directory_from_path(char *path);
 fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks);
 fat_directory_entry *fat_get_info(char *path, bool is_directory);
 
+uint32_t fat_get_entries_count_in_directory(char *path);
+
 kvector *fat_parse_path(char *path);
 kvector *fat_list(char *path);
 bool fat_is_entry_valid(fat_directory_entry *entry);
