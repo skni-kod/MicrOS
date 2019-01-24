@@ -2,7 +2,7 @@
 
 This is the simple 32-bit operating system developed by the SKNI KOD (Studenckie Koło Naukowe Informatyków KOD). Our main goal is to create the OS which will have functionality similar to the famous MS-DOS and be able to run on every modern computer (but no, we won't sell it and compete with Windows or Linux).
 
-The repository doesn't contain all files necessary to successful compilation - we use our internal build scripts which aren't present here. We will release complete image files when the OS will be ready to basic usage. Feel free to analyse and use any part of this project (but remember about GPL-3 license restrictions).
+The repository doesn't contain all files necessary to successful compilation - we use our internal build scripts which aren't present here. We will release complete image files when the OS will be ready for basic usage. Feel free to analyze and use any part of this project (but remember about GPL-3 license restrictions).
 
 ## What is done
 * Bootloader which loads the kernel by looking for a file in a FAT12 filesystem and enters the protected mode
@@ -13,7 +13,7 @@ The repository doesn't contain all files necessary to successful compilation - w
   * PC Speaker
   * RTC (Real-Time Clock)
   * PIT (Programmable Interval Timer)
-* Interrupts (software, hardware and exceptions) manager
+* Interrupts (software, hardware, exceptions) manager
 * Paging
 * Physical/Virtual memory manager
 * Heap
@@ -29,12 +29,9 @@ The repository doesn't contain all files necessary to successful compilation - w
 * Full support for the FAT12, FAT16 and FAT32 filesystems
 * Hard disk drive support
 * Shell and other important applications
-* More advanced scheduler with priorites and IO blocking
+* More advanced scheduler with priorities and IO blocking
 * Rest of the C standard library functions
-
-## TODO (?)
-* Abstraction layer between OS and devices
-* Support for network cards (and protocols related with them)
+* Support for network cards (and protocols related to them)
 * ...
 
 ## Used tools
@@ -53,3 +50,7 @@ Boot sequence, floppy calibration, reading content of the example file and heap 
 ![MicrOS multitasking](https://i.imgur.com/tKVWytt.png)
 
 Multitasking with five processes incrementing internal counters and printing them on the console.
+
+![Tasks manager](https://i.imgur.com/GETPuxo.png)
+
+Tasks manager displaying basic info about the current operating system state.
