@@ -123,6 +123,32 @@ void fat_normalise_filename(char *filename)
     }
 }
 
+void fat_denormalise_filename(char *filename)
+{
+    char *ptr = filename;
+    int spaces_count = 0;
+
+    for (int i = 0; i < 12; i++)
+    {
+        if (*ptr == ' ')
+        {
+            spaces_count++;
+        }
+        else if (*ptr == '.')
+        {
+            memmove(ptr - spaces_count, ptr, 4);
+            if (spaces_count > 0)
+            {
+                *(ptr + 4 - spaces_count) = 0;
+            }
+
+            break;
+        }
+
+        ptr++;
+    }
+}
+
 uint8_t *fat_load_file_from_sector(uint16_t initial_sector, uint16_t sector_offset, uint16_t sectors_count)
 {
     uint16_t sector = initial_sector;
@@ -345,6 +371,7 @@ uint32_t fat_get_entries_in_directory(char *path, char **entries)
         {
             uint8_t full_filename[12];
             fat_merge_filename_and_extension(current_file_ptr, full_filename);
+            fat_denormalise_filename(full_filename);
 
             entries[current_entry_index] = heap_kernel_alloc(path_length + 13, 0);
             memset(entries[current_entry_index], 0, path_length + 13);

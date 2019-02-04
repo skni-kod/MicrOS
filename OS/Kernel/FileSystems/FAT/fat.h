@@ -15,6 +15,7 @@ void fat_init();
 void fat_load_fat();
 void fat_load_root();
 void fat_normalise_filename(char *filename);
+void fat_denormalise_filename(char *filename);
 
 uint8_t *fat_load_file_from_sector(uint16_t initial_sector, uint16_t sector_offset, uint16_t sectors_count);
 bool fat_read_file(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length);
