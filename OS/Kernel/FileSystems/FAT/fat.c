@@ -239,7 +239,7 @@ fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks)
 
     for (int i = 0; i < fat_header_data->directory_entries; i++)
     {
-        uint8_t full_filename[12];
+        char full_filename[12];
         fat_merge_filename_and_extension(current_file_ptr, full_filename);
 
         if (fat_is_entry_valid(current_file_ptr) && current_file_ptr->file_attributes.subdirectory)
@@ -291,7 +291,7 @@ fat_directory_entry *fat_get_info(char *path, bool is_directory)
 
     for (int i = 0; i < fat_header_data->directory_entries; i++)
     {
-        uint8_t full_filename[12];
+        char full_filename[12];
         fat_merge_filename_and_extension(current_file_ptr, full_filename);
 
         if ((fat_is_entry_valid(current_file_ptr) && current_file_ptr->file_attributes.subdirectory == is_directory))
@@ -380,7 +380,7 @@ uint32_t fat_get_entries_in_directory(char *path, char **entries)
     {
         if (fat_is_entry_valid(current_file_ptr))
         {
-            uint8_t full_filename[12];
+            char full_filename[12];
             fat_merge_filename_and_extension(current_file_ptr, full_filename);
 
             if (current_file_ptr->file_attributes.subdirectory)
@@ -418,7 +418,7 @@ bool fat_is_entry_valid(fat_directory_entry *entry)
     return entry->filename[0] >= 32 && entry->filename[0] <= 126 && entry->filename[0] != 0x2E;
 }
 
-void fat_merge_filename_and_extension(fat_directory_entry *entry, uint8_t *buffer)
+void fat_merge_filename_and_extension(fat_directory_entry *entry, char *buffer)
 {
     memset(buffer, ' ', 12);
     memcpy(buffer, entry->filename, 8);
@@ -481,7 +481,7 @@ uint32_t fat_generic_get_entries_count_in_directory(char *path)
     return fat_get_entries_count_in_directory(path);
 }
 
-bool fat_generic_get_entries_in_directory(char *path, char *entries)
+bool fat_generic_get_entries_in_directory(char *path, char **entries)
 {
     return fat_get_entries_in_directory(path, entries);
 }

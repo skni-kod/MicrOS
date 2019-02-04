@@ -26,7 +26,7 @@ void syscall_filesystem_get_entries_count_in_directory(interrupt_state *state)
 
 void syscall_filesystem_get_entries_in_directory(interrupt_state *state)
 {
-    state->registers.eax = filesystem_get_entries_in_directory((char *)state->registers.ebx, (char *)state->registers.ecx);
+    state->registers.eax = filesystem_get_entries_in_directory((char *)state->registers.ebx, (char **)state->registers.ecx);
 }
 
 void syscall_filesystem_is_file(interrupt_state *state)
