@@ -18,3 +18,23 @@ void syscall_filesystem_read_file(interrupt_state *state)
         (uint32_t)state->registers.edx,
         (uint32_t)state->registers.esi);
 }
+
+void syscall_filesystem_get_entries_count_in_directory(interrupt_state *state)
+{
+    state->registers.eax = filesystem_get_entries_count_in_directory((char *)state->registers.ebx);
+}
+
+void syscall_filesystem_get_entries_in_directory(interrupt_state *state)
+{
+    state->registers.eax = filesystem_get_entries_in_directory((char *)state->registers.ebx, (char *)state->registers.ecx);
+}
+
+void syscall_filesystem_is_file(interrupt_state *state)
+{
+    state->registers.eax = filesystem_is_file((char *)state->registers.ebx);
+}
+
+void syscall_filesystem_is_directory(interrupt_state *state)
+{
+    state->registers.eax = filesystem_is_directory((char *)state->registers.ebx);
+}
