@@ -142,10 +142,21 @@ void fat_denormalise_filename(char *filename)
                 *(ptr + 4 - spaces_count) = 0;
             }
 
-            break;
+            return;
+        }
+        else if (*ptr == '/')
+        {
+            *(ptr - spaces_count) = '/';
+            *(ptr - spaces_count + 1) = 0;
+            return;
         }
 
         ptr++;
+    }
+
+    if (spaces_count != 0)
+    {
+        filename[12 - spaces_count] = 0;
     }
 }
 
@@ -371,12 +382,19 @@ uint32_t fat_get_entries_in_directory(char *path, char **entries)
         {
             uint8_t full_filename[12];
             fat_merge_filename_and_extension(current_file_ptr, full_filename);
+
+            if (current_file_ptr->file_attributes.subdirectory)
+            {
+                full_filename[11] = '/';
+            }
+
             fat_denormalise_filename(full_filename);
 
             entries[current_entry_index] = heap_kernel_alloc(path_length + 13, 0);
             memset(entries[current_entry_index], 0, path_length + 13);
             memcpy(entries[current_entry_index], path, path_length);
             memcpy(entries[current_entry_index] + path_length, full_filename, 12);
+
             current_entry_index++;
         }
 
@@ -421,7 +439,7 @@ bool fat_generic_get_file_info(char *path, filesystem_file_info *generic_file_in
         return false;
     }
 
-    memcpy(generic_file_info->path, path, strlen(path));
+    memcpy(generic_file_info->path, path, strlen(path) + 1);
     generic_file_info->size = fat_file_info->size;
 
     uint8_t filename_length = fat_generic_copy_filename_to_generic(fat_file_info->filename, generic_file_info->name);
@@ -445,7 +463,7 @@ bool fat_generic_get_directory_info(char *path, filesystem_directory_info *gener
     }
 
     fat_generic_copy_filename_to_generic(fat_directory_info->filename, generic_directory_info->name);
-    memcpy(generic_directory_info->path, path, strlen(path));
+    memcpy(generic_directory_info->path, path, strlen(path) + 1);
 
     fat_generic_convert_date_fat_to_generic(&fat_directory_info->create_date, &fat_directory_info->create_time, &generic_directory_info->create_time);
 
@@ -466,6 +484,16 @@ uint32_t fat_generic_get_entries_count_in_directory(char *path)
 bool fat_generic_get_entries_in_directory(char *path, char *entries)
 {
     return fat_get_entries_in_directory(path, entries);
+}
+
+bool fat_generic_is_file(char *path)
+{
+    return fat_get_info(path, false) != NULL;
+}
+
+bool fat_generic_is_directory(char *path)
+{
+    return fat_get_info(path, true) != NULL;
 }
 
 uint8_t fat_generic_copy_filename_to_generic(char *fat_filename, char *generic_filename)

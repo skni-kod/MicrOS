@@ -24,3 +24,13 @@ bool filesystem_get_entries_in_directory(char *path, char *entries)
 {
     return fat_generic_get_entries_in_directory(path, entries);
 }
+
+bool filesystem_is_file(char *path)
+{
+    return fat_generic_is_file(path);
+}
+
+bool filesystem_is_directory(char *path)
+{
+    return fat_generic_is_directory(path);
+}
