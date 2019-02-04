@@ -74,8 +74,11 @@ void draw_cpu_usage_bar(uint32_t cpu_usage, uint32_t bar_length)
 {
     char buffer[32];
 
+    uint32_t filled_entries = (cpu_usage / 10) * bar_length / 100;
+    filled_entries = bar_length < filled_entries ? bar_length : filled_entries;
+
     micros_console_print_string("CPU: [");
-    draw_bar((cpu_usage / 10) * bar_length / 100, bar_length);
+    draw_bar(filled_entries, bar_length);
     micros_console_print_string("] ");
 
     itoa(cpu_usage / 10, buffer, 10);
