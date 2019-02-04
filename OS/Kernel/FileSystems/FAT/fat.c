@@ -488,12 +488,28 @@ bool fat_generic_get_entries_in_directory(char *path, char *entries)
 
 bool fat_generic_is_file(char *path)
 {
-    return fat_get_info(path, false) != NULL;
+    fat_directory_entry *entry = fat_get_info(path, false);
+
+    if (entry != NULL)
+    {
+        heap_kernel_dealloc(entry);
+        return true;
+    }
+
+    return false;
 }
 
 bool fat_generic_is_directory(char *path)
 {
-    return fat_get_info(path, true) != NULL;
+    fat_directory_entry *entry = fat_get_info(path, true);
+
+    if (entry != NULL)
+    {
+        heap_kernel_dealloc(entry);
+        return true;
+    }
+
+    return false;
 }
 
 uint8_t fat_generic_copy_filename_to_generic(char *fat_filename, char *generic_filename)
