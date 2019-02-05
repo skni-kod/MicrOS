@@ -40,7 +40,7 @@ PartitionVolumeLabel            db 'SYSTEM PART'    ; 11 chars
 FileSystemType                  db 'FAT12   '       ; 8 chars
 
 KernelFileName                  db 'KERNEL  BIN'    ; 11 chars
-NonDataSectors                  db 0x00
+NonDataSectors                  dw 0x0000
 
 ; Entry point of bootloader
 Main:
@@ -331,7 +331,8 @@ LoadKernel:
     cmp bx, 0
     jne LoadKernel_Increment
 
-    mov ax, 0x1000
+    mov ax, es
+    add ax, 0x1000
     mov es, ax
 
     LoadKernel_Increment:
@@ -340,8 +341,8 @@ LoadKernel:
 
     ; Sector number
     mov cx, [ebp - 2]
-    add cl, [NonDataSectors]
-    sub cl, 2
+    add cx, [NonDataSectors]
+    sub cx, 2
 
     ; Load kernel sector
     call LoadFloppyData
