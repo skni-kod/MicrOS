@@ -158,7 +158,11 @@ void *heap_realloc(void *ptr, uint32_t size, uint32_t align, bool supervisor)
     heap_entry *old_entry = heap_dealloc(ptr, supervisor);
     void *new_ptr = heap_alloc(size, align, supervisor);
 
-    memcpy(new_ptr, ptr, old_entry->size);
+    if (ptr != new_ptr)
+    {
+        memcpy(new_ptr, ptr, size < old_entry->size ? size : old_entry->size);
+    }
+
     return new_ptr;
 }
 
