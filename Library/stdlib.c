@@ -39,7 +39,7 @@ char *itoa(int input, char *buffer, int base)
     do
     {
         kappa = input % base;
-        buffer[index] = (kappa >= 10 ? kappa - 10 + 'a' : kappa +  '0');
+        buffer[index] = (kappa >= 10 ? kappa - 10 + 'a' : kappa + '0');
 
         input /= base;
 
@@ -64,17 +64,37 @@ char *itoa(int input, char *buffer, int base)
     return buffer;
 }
 
-void sleep(uint32_t ms)
+void *malloc(size_t size)
 {
-    // Temporary implementation, for testing purposes
-    uint32_t current_system_clock;
-    uint32_t target_system_clock;
+    return micros_heap_alloc(size, 0);
+}
 
-    __asm__ ("int $48\n mov %%eax, %0" : "=r" (current_system_clock) :: "%eax");
-    target_system_clock = current_system_clock + ms;
+void *malloc_align(size_t size, uint32_t align)
+{
+    return micros_heap_alloc(size, align);
+}
 
-    while(current_system_clock < target_system_clock)
-    {
-        __asm__ ("int $48\n mov %%eax, %0" : "=r" (current_system_clock) :: "%eax");
-    }
+void *calloc(size_t num, size_t size)
+{
+    size_t total_size = num * size;
+
+    void *ptr = micros_heap_alloc(total_size, 0);
+    memset(ptr, 0, total_size);
+
+    return ptr;
+}
+
+void *realloc(void *ptr, size_t size)
+{
+    return micros_heap_realloc(ptr, size);
+}
+
+void free(void *ptr)
+{
+    micros_heap_dealloc(ptr);
+}
+
+void exit(int status)
+{
+    micros_process_exit(status);
 }
