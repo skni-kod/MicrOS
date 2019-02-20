@@ -169,12 +169,34 @@ float acosf(float x)
     return x;
 }
 
+double atan(double x)
+{
+    __asm__ (
+        "fldl  %1 \n" \
+        "fld1 \n" \
+        "fpatan \n" \
+        "fstpl %0 \n"
+        : "=m"(x): "m"(x));
+    return x;
+}
+
+float atanf(float x)
+{
+    __asm__ (
+        "fld  %1 \n" \
+        "fld1 \n" \
+        "fpatan \n" \
+        "fstp %0 \n"
+        : "=m"(x): "m"(x));
+    return x;
+}
+
 //Nearest integer floating-point operations
 
 double round(double x)
 {
     __asm__ (
-        "fldl %1 \n" \
+        "fld  %1 \n" \
         "frndint \n" \
         "fstpl %0"
         : "=m"(x): "m"(x));

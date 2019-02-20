@@ -41,6 +41,9 @@ float asinf(float x);
 double acos(double x);
 float acosf(float x);
 
+double atan(double x);
+float atanf(float x);
+
 //Nearest integer floating-point operations
 
 double round(double x);
