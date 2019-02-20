@@ -191,6 +191,28 @@ float atanf(float x)
     return x;
 }
 
+double atan2(double x, double y)
+{
+    __asm__ (
+        "fldl %1 \n" \
+        "fldl %2 \n" \
+        "fpatan \n" \
+        "fstpl %0 \n"
+        : "=m"(x): "m"(x), "m"(y));
+    return x;
+}
+
+float atan2f(float x, float y)
+{
+    __asm__ (
+        "fld %1 \n" \
+        "fld %2 \n" \
+        "fpatan \n" \
+        "fstp %0 \n"
+        : "=m"(x): "m"(x), "m"(y));
+    return x;
+}
+
 //Nearest integer floating-point operations
 
 double round(double x)
