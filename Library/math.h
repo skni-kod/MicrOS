@@ -38,6 +38,15 @@ float tanf(float x);
 double asin(double x);
 float asinf(float x);
 
+double acos(double x);
+float acosf(float x);
+
+double atan(double x);
+float atanf(float x);
+
+double atan2(double x, double y);
+float atan2f(float x, float y);
+
 //Nearest integer floating-point operations
 
 double round(double x);
