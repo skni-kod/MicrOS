@@ -1,6 +1,8 @@
 #ifndef STDLIB_H
 #define STDLIB_H
 
+#define RAND_MAX INT32_MAX
+
 #include <stdint.h>
 #include "string.h"
 #include "time.h"
@@ -14,6 +16,9 @@ void *malloc_align(size_t size, uint32_t align);
 void *calloc(size_t num, size_t size);
 void *realloc(void *ptr, size_t size);
 void free(void *ptr);
+
+int rand();
+void srand(unsigned int new_seed);
 
 void exit(int status);
 

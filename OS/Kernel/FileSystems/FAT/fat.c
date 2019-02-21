@@ -123,6 +123,43 @@ void fat_normalise_filename(char *filename)
     }
 }
 
+void fat_denormalise_filename(char *filename)
+{
+    char *ptr = filename;
+    int spaces_count = 0;
+
+    for (int i = 0; i < 12; i++)
+    {
+        if (*ptr == ' ')
+        {
+            spaces_count++;
+        }
+        else if (*ptr == '.')
+        {
+            memmove(ptr - spaces_count, ptr, 4);
+            if (spaces_count > 0)
+            {
+                *(ptr + 4 - spaces_count) = 0;
+            }
+
+            return;
+        }
+        else if (*ptr == '/')
+        {
+            *(ptr - spaces_count) = '/';
+            *(ptr - spaces_count + 1) = 0;
+            return;
+        }
+
+        ptr++;
+    }
+
+    if (spaces_count != 0)
+    {
+        filename[12 - spaces_count] = 0;
+    }
+}
+
 uint8_t *fat_load_file_from_sector(uint16_t initial_sector, uint16_t sector_offset, uint16_t sectors_count)
 {
     uint16_t sector = initial_sector;
@@ -202,7 +239,7 @@ fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks)
 
     for (int i = 0; i < fat_header_data->directory_entries; i++)
     {
-        uint8_t full_filename[12];
+        char full_filename[12];
         fat_merge_filename_and_extension(current_file_ptr, full_filename);
 
         if (fat_is_entry_valid(current_file_ptr) && current_file_ptr->file_attributes.subdirectory)
@@ -254,7 +291,7 @@ fat_directory_entry *fat_get_info(char *path, bool is_directory)
 
     for (int i = 0; i < fat_header_data->directory_entries; i++)
     {
-        uint8_t full_filename[12];
+        char full_filename[12];
         fat_merge_filename_and_extension(current_file_ptr, full_filename);
 
         if ((fat_is_entry_valid(current_file_ptr) && current_file_ptr->file_attributes.subdirectory == is_directory))
@@ -290,12 +327,98 @@ fat_directory_entry *fat_get_info(char *path, bool is_directory)
     return result_without_junk;
 }
 
-bool fat_is_entry_valid(fat_directory_entry *entry)
+uint32_t fat_get_entries_count_in_directory(char *path)
 {
-    return entry->filename[0] >= 32 && entry->filename[0] <= 126;
+    kvector *chunks = fat_parse_path(path);
+
+    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks);
+    fat_directory_entry *current_file_ptr = directory;
+    uint32_t entries_count = 0;
+
+    if (directory == NULL)
+    {
+        return 0;
+    }
+
+    for (int i = 0; i < fat_header_data->directory_entries; i++)
+    {
+        if (fat_is_entry_valid(current_file_ptr))
+        {
+            entries_count++;
+        }
+
+        if (i + 1 == fat_header_data->directory_entries)
+        {
+            break;
+        }
+
+        current_file_ptr++;
+    }
+
+    kvector_clear(chunks);
+    heap_kernel_dealloc(chunks);
+    heap_kernel_dealloc(directory);
+
+    return entries_count;
 }
 
-void fat_merge_filename_and_extension(fat_directory_entry *entry, uint8_t *buffer)
+uint32_t fat_get_entries_in_directory(char *path, char **entries)
+{
+    kvector *chunks = fat_parse_path(path);
+    uint32_t path_length = strlen(path);
+
+    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks);
+    fat_directory_entry *current_file_ptr = directory;
+    uint32_t current_entry_index = 0;
+
+    if (directory == NULL)
+    {
+        return false;
+    }
+
+    for (int i = 0; i < fat_header_data->directory_entries; i++)
+    {
+        if (fat_is_entry_valid(current_file_ptr))
+        {
+            char full_filename[12];
+            fat_merge_filename_and_extension(current_file_ptr, full_filename);
+
+            if (current_file_ptr->file_attributes.subdirectory)
+            {
+                full_filename[11] = '/';
+            }
+
+            fat_denormalise_filename(full_filename);
+
+            entries[current_entry_index] = heap_kernel_alloc(path_length + 13, 0);
+            memset(entries[current_entry_index], 0, path_length + 13);
+            memcpy(entries[current_entry_index], path, path_length);
+            memcpy(entries[current_entry_index] + path_length, full_filename, 12);
+
+            current_entry_index++;
+        }
+
+        if (i + 1 == fat_header_data->directory_entries)
+        {
+            break;
+        }
+
+        current_file_ptr++;
+    }
+
+    kvector_clear(chunks);
+    heap_kernel_dealloc(chunks);
+    heap_kernel_dealloc(directory);
+
+    return true;
+}
+
+bool fat_is_entry_valid(fat_directory_entry *entry)
+{
+    return entry->filename[0] >= 32 && entry->filename[0] <= 126 && entry->filename[0] != 0x2E;
+}
+
+void fat_merge_filename_and_extension(fat_directory_entry *entry, char *buffer)
 {
     memset(buffer, ' ', 12);
     memcpy(buffer, entry->filename, 8);
@@ -316,7 +439,7 @@ bool fat_generic_get_file_info(char *path, filesystem_file_info *generic_file_in
         return false;
     }
 
-    memcpy(generic_file_info->path, path, strlen(path));
+    memcpy(generic_file_info->path, path, strlen(path) + 1);
     generic_file_info->size = fat_file_info->size;
 
     uint8_t filename_length = fat_generic_copy_filename_to_generic(fat_file_info->filename, generic_file_info->name);
@@ -340,7 +463,7 @@ bool fat_generic_get_directory_info(char *path, filesystem_directory_info *gener
     }
 
     fat_generic_copy_filename_to_generic(fat_directory_info->filename, generic_directory_info->name);
-    memcpy(generic_directory_info->path, path, strlen(path));
+    memcpy(generic_directory_info->path, path, strlen(path) + 1);
 
     fat_generic_convert_date_fat_to_generic(&fat_directory_info->create_date, &fat_directory_info->create_time, &generic_directory_info->create_time);
 
@@ -351,6 +474,42 @@ bool fat_generic_get_directory_info(char *path, filesystem_directory_info *gener
 bool fat_generic_read_file(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length)
 {
     return fat_read_file(path, buffer, start_index, length);
+}
+
+uint32_t fat_generic_get_entries_count_in_directory(char *path)
+{
+    return fat_get_entries_count_in_directory(path);
+}
+
+bool fat_generic_get_entries_in_directory(char *path, char **entries)
+{
+    return fat_get_entries_in_directory(path, entries);
+}
+
+bool fat_generic_is_file(char *path)
+{
+    fat_directory_entry *entry = fat_get_info(path, false);
+
+    if (entry != NULL)
+    {
+        heap_kernel_dealloc(entry);
+        return true;
+    }
+
+    return false;
+}
+
+bool fat_generic_is_directory(char *path)
+{
+    fat_directory_entry *entry = fat_get_info(path, true);
+
+    if (entry != NULL)
+    {
+        heap_kernel_dealloc(entry);
+        return true;
+    }
+
+    return false;
 }
 
 uint8_t fat_generic_copy_filename_to_generic(char *fat_filename, char *generic_filename)

@@ -1,6 +1,8 @@
 #include "stdlib.h"
 #include "string.h"
 
+unsigned int seed = 0;
+
 int32_t atoi(const char *string)
 {
     size_t len = strlen(string);
@@ -92,6 +94,27 @@ void *realloc(void *ptr, size_t size)
 void free(void *ptr)
 {
     micros_heap_dealloc(ptr);
+}
+
+int rand()
+{
+    const int multiplier = 1103515245;
+    const int increment = 12345;
+    const int modulus = 2147483648;
+
+    if (seed == 0)
+    {
+        // TODO: Use time() instead of clock()
+        seed = clock();
+    }
+
+    seed = (multiplier * seed + increment) % modulus;
+    return seed;
+}
+
+void srand(unsigned int new_seed)
+{
+    seed = new_seed;
 }
 
 void exit(int status)

@@ -56,7 +56,7 @@ uint32_t process_manager_create_process(char *path, char *parameters)
     uint32_t parameters_length = strlen(parameters) + 1;
 
     void *path_in_user_heap = heap_user_alloc(path_length, 0);
-    void *parameters_in_user_heap = heap_user_alloc(path_length, 0);
+    void *parameters_in_user_heap = heap_user_alloc(parameters_length, 0);
 
     memcpy(path_in_user_heap, path, path_length);
     memcpy(parameters_in_user_heap, parameters, parameters_length);
