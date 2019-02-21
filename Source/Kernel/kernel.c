@@ -17,7 +17,7 @@ void print_ok_status(char* message)
 
 void startup()
 {
-    /*vga_clear_screen();
+    vga_clear_screen();
     vga_printstring("MicrOS is starting...\n");
     print_ok_status("VGA Driver");
 
@@ -29,24 +29,24 @@ void startup()
 
     vga_printstring("MicrOS ready\n");
     vga_printstring("Created by Application Section of SKNI KOD\n");
-    vga_printstring("Version ... no version\n");*/
+    vga_printstring("Version ... no version\n");
 }
 
 int kmain()
 {
-    //startup();
+    startup();
 
-    //vga_printstring("Hello, World!\n");
-    //vga_printstring("\nREADY.");
+    vga_printstring("Hello, World!\n");
+    vga_printstring("\nREADY.");
     
     for(long i=0; i<100000; i++);
 
     //enter_13H_mode();
-    drawDupaIn13H(3);
+    drawDupaIn13H();
     for(long i=0; i<100000; i++);
     testRegisters();
     //enter_13H_mode();
     //enter_3H_mode();
-    drawDupaIn13H(50);
+    //drawDupaIn13H();
     return 0;
 }
