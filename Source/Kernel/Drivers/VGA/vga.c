@@ -317,49 +317,15 @@ void writeAtributteContRegisters(uint8_t* i)
 void getAtributteContRegisters(uint8_t* i)
 {
     //inb(0x3C1);
-    uint8_t a;
-     __asm__ volatile("inb %1, %0" : "=a"(a) : "Nd"((uint16_t)0x3DA));
-     disable();
-     __asm__ volatile("outb %0, %1" : : "a"(0x10), "Nd"((uint16_t)0x3C0));
-     __asm__ volatile("inb %1, %0" : "=a"(i[0x10]) : "Nd"((uint16_t)0x3C1));
-     enable();
-
-     __asm__ volatile("inb %1, %0" : "=a"(a) : "Nd"((uint16_t)0x3DA));
-     disable();
-     __asm__ volatile("outb %0, %1" : : "a"(0x11), "Nd"((uint16_t)0x3C0));
-     __asm__ volatile("inb %1, %0" : "=a"(i[0x11]) : "Nd"((uint16_t)0x3C1));
-     enable();
-
-     __asm__ volatile("inb %1, %0" : "=a"(a) : "Nd"((uint16_t)0x3DA));
-     disable();
-     __asm__ volatile("outb %0, %1" : : "a"(0x12), "Nd"((uint16_t)0x3C0));
-     __asm__ volatile("inb %1, %0" : "=a"(i[0x12]) : "Nd"((uint16_t)0x3C1));
-     enable();
-
-     __asm__ volatile("inb %1, %0" : "=a"(a) : "Nd"((uint16_t)0x3DA));
-     disable();
-     __asm__ volatile("outb %0, %1" : : "a"(0x13), "Nd"((uint16_t)0x3C0));
-     __asm__ volatile("inb %1, %0" : "=a"(i[0x13]) : "Nd"((uint16_t)0x3C1));
-     enable();
-    /*uint8_t a = inb(0x3DA);
-    outb(0x3C0, 0x10);
-    i[0x10] = inb(0x3C1);
-    a = inb(0x3DA);
-    outb(0x3C0, 0x11);
-    i[0x11] = inb(0x3C1);
-    a = inb(0x3DA);
-    outb(0x3C0, 0x12);
-    i[0x12] = inb(0x3C1);
-    a = inb(0x3DA);
-    outb(0x3C0, 0x13);
-    i[0x13] = inb(0x3C1);*/
-    /*for(int j=0x10; j<=0x14; j++)
+    disable();
+    for(int j=0x10; j<=0x14; j++)
     {
         uint8_t a = inb(0x3DA);
         a++;
         i[j] = getRegisterDataNext(0x3C0, j);
         //writeRegisterDataNext(0x3C4, j, i[j]);
-    }*/
+    }
+    enable();
 }
 
 #define VGA_VRAM 0xA0000
