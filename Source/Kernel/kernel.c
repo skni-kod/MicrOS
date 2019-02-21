@@ -39,12 +39,5 @@ int kmain()
     vga_printstring("Hello, World!\n");
     vga_printstring("\nREADY.");
     
-    for(long i=0; i<100000; i++);
-
-    enter_13H_mode();
-    drawDupaIn13H();
-    for(long i=0; i<100000; i++);
-    //enter_3H_mode();
-    //drawDupaIn13H();
     return 0;
 }

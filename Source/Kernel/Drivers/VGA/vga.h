@@ -96,17 +96,6 @@ void vga_clear_screen();
 void vga_change_printing_screen(uint8_t a);
 void vga_copy_screen(uint8_t from, uint8_t to);
 
-void writeRegisterDataNext(uint16_t port, uint8_t index, uint8_t data);
-void writeRegisterDataSame(uint16_t port, uint8_t index, uint8_t data);
-void writeSequenceRegisters(uint8_t* i);
-void writeCRTCRegisters(uint8_t* i);
-void writeGraphicsContRegisters(uint8_t* i);
-void writeAtributteContRegisters(uint8_t* i);
-void pixel_256 (unsigned char color, unsigned int x, unsigned int y);
-void enter_13H_mode();
-void drawDupaIn13H();
-void enter_3H_mode();
-
 // Helpers
 void vga_newline();
 uint16_t vga_calcualte_position_with_offset(uint16_t x, uint16_t y);
