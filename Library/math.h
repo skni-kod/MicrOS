@@ -15,37 +15,33 @@
 #define M_SQRT2     1.41421356237309504880
 #define M_SQRT1_2   0.70710678118654752440
 
-
-double fabs(double x);
-float fabsf(float x);
-
-// Power functions 
-
-double sqrt(double x);
-float sqrtf(float x);
-
 // Trigonometric functions
-
-double sin(double x);
-float sinf(float x);
 
 double cos(double x);
 float cosf(float x);
 
+double sin(double x);
+float sinf(float x);
+
 double tan(double x);
 float tanf(float x);
 
-double asin(double x);
-float asinf(float x);
-
 double acos(double x);
 float acosf(float x);
+
+double asin(double x);
+float asinf(float x);
 
 double atan(double x);
 float atanf(float x);
 
 double atan2(double x, double y);
 float atan2f(float x, float y);
+
+// Hyperbolic functions
+
+double acosh(double x);
+float acoshf(float x);
 
 // Exponential and logarithmic functions
 
@@ -58,11 +54,19 @@ float log10f(float x);
 double log2(double x);
 float log2f(float x);
 
+// Power functions 
+
+double sqrt(double x);
+float sqrtf(float x);
 
 // Nearest integer floating-point operations
 
 double round(double x);
 float roundf(float x);
 
+// Other functions
+
+double fabs(double x);
+float fabsf(float x);
 
 #endif
