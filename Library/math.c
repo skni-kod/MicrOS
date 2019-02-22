@@ -336,6 +336,30 @@ float log2f(float x)
     return x;
 }
 
+double logb(double x)
+{
+    if(FLT_RADIX == 2)
+    {
+        return log2(x);
+    }
+    else
+    {
+        return log2(x)/log2(FLT_RADIX);
+    }   
+}
+
+float logbf(float x)
+{
+    if(FLT_RADIX == 2)
+    {
+        return log2f(x);
+    }
+    else
+    {
+        return log2f(x)/log2f(FLT_RADIX);
+    }  
+}
+
 // Power functions 
 
 double pow(double base, double exponent)

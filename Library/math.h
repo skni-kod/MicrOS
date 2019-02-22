@@ -1,3 +1,5 @@
+#include<float.h>
+
 #ifndef MATH_H
 #define MATH_H
 
@@ -83,6 +85,9 @@ float log1pf(float x);
 
 double log2(double x);
 float log2f(float x);
+
+double logb(double x);
+float logbf(float x);
 
 // Power functions 
 
