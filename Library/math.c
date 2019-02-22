@@ -186,6 +186,16 @@ float acoshf(float x)
     return logf(x + sqrtf(x * x - 1));
 }
 
+double asinh(double x)
+{
+    return log(x + sqrt(x * x + 1));
+}
+
+float asinhf(float x)
+{
+    return logf(x + sqrtf(x * x + 1));
+}
+
 // Exponential and logarithmic functions
 
 double log(double x)
