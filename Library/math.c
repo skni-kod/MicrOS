@@ -215,6 +215,16 @@ float atan2f(float x, float y)
 
 // Exponential and logarithmic functions
 
+double log(double x)
+{
+    return log2(x)/log2(M_E);
+}
+
+float logf(float x)
+{
+    return log2f(x)/log2f(M_E);
+}
+
 double log10(double x)
 {
     return log2(x)/log2(10.);
