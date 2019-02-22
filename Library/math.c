@@ -196,6 +196,16 @@ float asinhf(float x)
     return logf(x + sqrtf(x * x + 1));
 }
 
+double atanh(double x)
+{
+    return 0.5 * log((1 + x)/(1 - x));
+}
+
+float atanhf(float x)
+{
+    return 0.5 * logf((1 + x)/(1 - x));
+}
+
 // Exponential and logarithmic functions
 
 double log(double x)

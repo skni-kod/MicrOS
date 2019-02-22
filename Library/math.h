@@ -46,6 +46,9 @@ float acoshf(float x);
 double asinh(double x);
 float asinhf(float x);
 
+double atanh(double x);
+float atanhf(float x);
+
 // Exponential and logarithmic functions
 
 double log(double x);
