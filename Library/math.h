@@ -64,6 +64,10 @@ double exp(double x);
 float expf(float x);
 
 double modf(double x, double* intpart);
+float modff(float x, float* intpart);
+
+double exp2(double x);
+float exp2f(float x);
 
 double log(double x);
 float logf(float x);

@@ -264,6 +264,16 @@ float modff(float x, float* intpart)
     return remainder;
 }
 
+double exp2(double x)
+{
+    return pow(2, x);
+}
+
+float exp2f(float x)
+{
+    return powf(2, x);
+}
+
 double log(double x)
 {
     return log2(x)/log2(M_E);
