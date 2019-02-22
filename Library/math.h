@@ -51,6 +51,9 @@ float atanhf(float x);
 
 // Exponential and logarithmic functions
 
+double exp(double x);
+float expf(float x);
+
 double log(double x);
 float logf(float x);
 

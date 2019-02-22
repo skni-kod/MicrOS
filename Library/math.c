@@ -208,6 +208,16 @@ float atanhf(float x)
 
 // Exponential and logarithmic functions
 
+double exp(double x)
+{
+    return pow(M_E, x);
+}
+
+float expf(float x)
+{
+    return powf(M_E, x);
+}
+
 double log(double x)
 {
     return log2(x)/log2(M_E);
