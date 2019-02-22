@@ -176,6 +176,16 @@ float atan2f(float x, float y)
 
 // Hyperbolic functions
 
+double cosh(double x)
+{
+    return (exp(x) + exp(-x)) / 2;
+}
+
+float coshf(float x)
+{
+    return (expf(x) + expf(-x)) / 2;
+}
+
 double acosh(double x)
 {
     return log(x + sqrt(x * x - 1));

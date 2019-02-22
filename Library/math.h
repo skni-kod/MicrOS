@@ -40,6 +40,9 @@ float atan2f(float x, float y);
 
 // Hyperbolic functions
 
+double cosh(double x);
+float coshf(float x);
+
 double acosh(double x);
 float acoshf(float x);
 
