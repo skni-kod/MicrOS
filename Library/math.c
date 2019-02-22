@@ -248,6 +248,22 @@ float expf(float x)
     return powf(M_E, x);
 }
 
+double modf(double x, double* intpart)
+{
+    double remainder;
+    *intpart = (int)x;
+    remainder = x - *intpart;
+    return remainder;
+}
+
+float modff(float x, float* intpart)
+{
+    float remainder;
+    *intpart = (int)x;
+    remainder = x - *intpart;
+    return remainder;
+}
+
 double log(double x)
 {
     return log2(x)/log2(M_E);

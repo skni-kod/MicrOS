@@ -63,6 +63,8 @@ float atanhf(float x);
 double exp(double x);
 float expf(float x);
 
+double modf(double x, double* intpart);
+
 double log(double x);
 float logf(float x);
 
