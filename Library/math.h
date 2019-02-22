@@ -62,6 +62,9 @@ float log2f(float x);
 
 // Power functions 
 
+double pow(double base, double exponent);
+float powf(float base, float exponent);
+
 double sqrt(double x);
 float sqrtf(float x);
 

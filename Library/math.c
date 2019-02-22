@@ -252,11 +252,88 @@ float log2f(float x)
 
 // Power functions 
 
+double pow(double base, double exponent)
+{
+    // Use 2^(y*log2(x)) 
+    // Compute y*log2(x)
+    double ex;
+    __asm__ (
+        "fldl %2 \n" \
+        "fldl %1 \n" \
+        "fyl2x \n" \
+        "fstpl %0"
+        : "=m"(ex): "m"(base), "m"(exponent));
+
+    // Scale
+    double integer, remainder;
+    integer = (int)ex;
+    remainder = ex - integer;
+
+    // Compute 2^ex
+    double resultBeforeScale;
+    __asm__ (
+        "fldl %1 \n" \
+        "f2xm1 \n" \
+        "fld1 \n" \
+        "faddp \n" \
+        "fstpl %0"
+        : "=m"(resultBeforeScale): "m"(remainder));
+    
+    // Result after scale
+    double result;
+    __asm__ (
+        "fldl %2 \n" \
+        "fldl %1 \n" \
+        "fscale \n" \
+        "fstpl %0"
+        : "=m"(result): "m"(resultBeforeScale), "m"(integer));
+    return result;  
+}
+
+float powf(float base, float exponent)
+{
+    // Use 2^(y*log2(x)) 
+    // Compute y*log2(x)
+    float ex;
+    __asm__ (
+        "fld  %2 \n" \
+        "fld  %1 \n" \
+        "fyl2x \n" \
+        "fstp %0"
+        : "=m"(ex): "m"(base), "m"(exponent));
+
+    // Scale
+    float integer, remainder;
+    integer = (int)ex;
+    remainder = ex - integer;
+
+    // Compute 2^ex
+    float resultBeforeScale;
+    __asm__ (
+        "fld  %1 \n" \
+        "f2xm1 \n" \
+        "fld1 \n" \
+        "faddp \n" \
+        "fstp %0"
+        : "=m"(resultBeforeScale): "m"(remainder));
+    
+    // Result after scale
+    float result;
+    __asm__ (
+        "fld  %2 \n" \
+        "fld  %1 \n" \
+        "fscale \n" \
+        "fstp %0"
+        : "=m"(result): "m"(resultBeforeScale), "m"(integer));
+    return result;  
+}
+
 double sqrt(double x)
 {
     __asm__ (
         "fldl  %1 \n" \
-        "fsqrt \n fstpl %0"
+        "fsqrt \n" \
+        "fstpl %0"
         : "=m"(x): "m"(x));
     return x;  
 }
