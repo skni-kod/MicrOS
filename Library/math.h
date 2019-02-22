@@ -49,8 +49,12 @@ float atan2f(float x, float y);
 
 // Exponential and logarithmic functions
 
+double log10(double x);
+float log10f(float x);
+
 double log2(double x);
 float log2f(float x);
+
 
 // Nearest integer floating-point operations
 

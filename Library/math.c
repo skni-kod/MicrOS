@@ -215,6 +215,16 @@ float atan2f(float x, float y)
 
 // Exponential and logarithmic functions
 
+double log10(double x)
+{
+    return log2(x)/log2(10.);
+}
+
+float log10f(float x)
+{
+    return log2f(x)/log2f(10.);
+}
+
 double log2(double x)
 {
     __asm__ (
