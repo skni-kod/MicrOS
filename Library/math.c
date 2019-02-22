@@ -196,6 +196,16 @@ float sinhf(float x)
     return (expf(x) - expf(-x)) / 2;
 }
 
+double tanh(double x)
+{
+    return sinh(x) / cosh(x);
+}
+
+float tanhf(float x)
+{
+    return sinhf(x) / coshf(x);
+}
+
 double acosh(double x)
 {
     return log(x + sqrt(x * x - 1));

@@ -46,6 +46,9 @@ float coshf(float x);
 double sinh(double x);
 float sinhf(float x);
 
+double tanh(double x);
+float tanhf(float x);
+
 double acosh(double x);
 float acoshf(float x);
 
