@@ -274,6 +274,16 @@ float exp2f(float x)
     return powf(2, x);
 }
 
+double expm1(double x)
+{
+    return pow(M_E, x) - 1;
+}
+
+float expm1f(float x)
+{
+    return powf(M_E, x) - 1;
+}
+
 double log(double x)
 {
     return log2(x)/log2(M_E);
