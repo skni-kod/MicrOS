@@ -186,6 +186,16 @@ float coshf(float x)
     return (expf(x) + expf(-x)) / 2;
 }
 
+double sinh(double x)
+{
+    return (exp(x) - exp(-x)) / 2;
+}
+
+float sinhf(float x)
+{
+    return (expf(x) - expf(-x)) / 2;
+}
+
 double acosh(double x)
 {
     return log(x + sqrt(x * x - 1));

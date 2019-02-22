@@ -43,6 +43,9 @@ float atan2f(float x, float y);
 double cosh(double x);
 float coshf(float x);
 
+double sinh(double x);
+float sinhf(float x);
+
 double acosh(double x);
 float acoshf(float x);
 
