@@ -248,6 +248,26 @@ float expf(float x)
     return powf(M_E, x);
 }
 
+double log(double x)
+{
+    return log2(x)/log2(M_E);
+}
+
+float logf(float x)
+{
+    return log2f(x)/log2f(M_E);
+}
+
+double log10(double x)
+{
+    return log2(x)/log2(10.);
+}
+
+float log10f(float x)
+{
+    return log2f(x)/log2f(10.);
+}
+
 double modf(double x, double* intpart)
 {
     double remainder;
@@ -284,24 +304,14 @@ float expm1f(float x)
     return powf(M_E, x) - 1;
 }
 
-double log(double x)
+double log1p(double x)
 {
-    return log2(x)/log2(M_E);
+    return log2(1 + x);
 }
 
-float logf(float x)
+float log1pf(float x)
 {
-    return log2f(x)/log2f(M_E);
-}
-
-double log10(double x)
-{
-    return log2(x)/log2(10.);
-}
-
-float log10f(float x)
-{
-    return log2f(x)/log2f(10.);
+    return log2(1 + x);
 }
 
 double log2(double x)

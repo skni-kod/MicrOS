@@ -63,6 +63,12 @@ float atanhf(float x);
 double exp(double x);
 float expf(float x);
 
+double log(double x);
+float logf(float x);
+
+double log10(double x);
+float log10f(float x);
+
 double modf(double x, double* intpart);
 float modff(float x, float* intpart);
 
@@ -72,11 +78,8 @@ float exp2f(float x);
 double expm1(double x);
 float expm1f(float x);
 
-double log(double x);
-float logf(float x);
-
-double log10(double x);
-float log10f(float x);
+double log1p(double x);
+float log1pf(float x);
 
 double log2(double x);
 float log2f(float x);
