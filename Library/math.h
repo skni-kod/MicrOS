@@ -24,7 +24,7 @@ float fabsf(float x);
 double sqrt(double x);
 float sqrtf(float x);
 
-//Trigonometric functions
+// Trigonometric functions
 
 double sin(double x);
 float sinf(float x);
@@ -47,7 +47,12 @@ float atanf(float x);
 double atan2(double x, double y);
 float atan2f(float x, float y);
 
-//Nearest integer floating-point operations
+// Exponential and logarithmic functions
+
+double log2(double x);
+float log2f(float x);
+
+// Nearest integer floating-point operations
 
 double round(double x);
 float roundf(float x);
