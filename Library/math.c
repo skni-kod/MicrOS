@@ -501,7 +501,7 @@ float ceilf(float x)
 double round(double x)
 {
     __asm__ (
-        "fld  %1 \n" \
+        "fldl %1 \n" \
         "frndint \n" \
         "fstpl %0"
         : "=m"(x): "m"(x));
@@ -511,7 +511,7 @@ double round(double x)
 float roundf(float x)
 {
     __asm__ (
-        "fld  %1 \n" \
+        "fld %1 \n" \
         "frndint \n" \
         "fstp %0"
         : "=m"(x): "m"(x));
