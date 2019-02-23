@@ -135,6 +135,9 @@ float sqrtf(float x);
 double ceil(double x);
 float ceilf(float x);
 
+double floor(double x);
+float floorf(float x);
+
 double round(double x);
 float roundf(float x);
 
