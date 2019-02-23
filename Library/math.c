@@ -458,7 +458,6 @@ float sqrtf(float x)
     return x;
 }
 
-
 //Nearest integer floating-point operations
 
 double round(double x)
@@ -499,4 +498,42 @@ float fabsf(float x)
         "fabs \n fstp %0"
         : "=m"(x): "m"(x));
     return x;
+}
+
+// Helpers
+
+_FPU_control_word _read_control_word()
+{
+    _FPU_control_word control_word;
+
+    __asm__ (
+        "fstcw %0 \n"
+        : "=m"(control_word));
+    return control_word;
+
+}
+
+void _write_control_word(_FPU_control_word control_word)
+{
+__asm__ (
+        "fclex \n" \
+        "fldcw %0"
+        :: "m"(control_word));
+}
+
+_FPU_status_word _read_status_word()
+{
+    _FPU_status_word status_word;
+
+    __asm__ (
+        "fstsw %0 \n"
+        : "=m"(status_word));
+    return status_word;
+}
+
+void _clear_exceptions()
+{
+    __asm__ (
+        "fclex"
+        ::);
 }

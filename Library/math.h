@@ -17,6 +17,39 @@
 #define M_SQRT2     1.41421356237309504880
 #define M_SQRT1_2   0.70710678118654752440
 
+typedef struct _FPU_status_word
+{
+	unsigned char invalid_operation : 1;
+	unsigned char denormalized_operand : 1;
+	unsigned char zero_divide : 1;
+	unsigned char overflow : 1;
+	unsigned char underflow : 1;
+	unsigned char precision : 1;
+	unsigned char stack_fault : 1;
+	unsigned char error_summary_status : 1;
+	unsigned char condition_code_0: 1;
+	unsigned char condition_code_1: 1;
+	unsigned char condition_code_2: 1;
+	unsigned char top_of_stack_pointer : 3;
+	unsigned char condition_code_3: 1;
+	unsigned char busy : 1;
+} _FPU_status_word;
+
+typedef struct _FPU_control_word
+{
+	unsigned char invalid_operation : 1;
+	unsigned char denormalized_operand : 1;
+	unsigned char zero_divide : 1;
+	unsigned char overflow : 1;
+	unsigned char underflow : 1;
+	unsigned char precision : 1;
+	unsigned char : 2;
+	unsigned char precision_control : 2;
+	unsigned char rounding_control : 2;
+	unsigned char infinity_control : 1;
+	unsigned char : 3;
+} _FPU_control_word;
+
 // Trigonometric functions
 
 double cos(double x);
@@ -106,5 +139,12 @@ float roundf(float x);
 
 double fabs(double x);
 float fabsf(float x);
+
+// Helpers
+
+_FPU_control_word _read_control_word();
+void _write_control_word(_FPU_control_word control_word);
+_FPU_status_word _read_status_word();
+void _clear_exceptions();
 
 #endif
