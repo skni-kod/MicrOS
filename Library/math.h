@@ -132,6 +132,9 @@ float sqrtf(float x);
 
 // Nearest integer floating-point operations
 
+double ceil(double x);
+float ceilf(float x);
+
 double round(double x);
 float roundf(float x);
 
