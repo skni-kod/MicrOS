@@ -108,6 +108,12 @@ const fenv_t * env;
 extern "C" {
 #endif
 
+//! Clear FPU exception flags.
+/*!
+    \param excepts Exception flags to clear.
+*/
+void feclearexcept(int excepts);
+
 #ifdef __cplusplus
 }
 #endif
@@ -160,9 +166,22 @@ fcontrol_t _FPU_read_control_word();
 
 //! Write FPU control word.
 /*!
+	It also clears FPU exception before write value.
     \param control_word Control word to write into FPU.
 */
 void _FPU_write_control_word(fcontrol_t control_word);
+
+//! Read FPU enviroment.
+/*!
+    \return Current FPU enviroment.
+*/
+fenv_t _FPU_read_enviroment();
+
+//! Write FPU enviroment.
+/*!
+    \param enviroment Enviroment to write into FPU.
+*/
+void _FPU_write_control(fenv_t enviroment);
 
 //! Read FPU status word.
 /*!

@@ -1,4 +1,5 @@
 #include "math.h"
+#include "fenv.h"
 
 //Trigonometric functions
 
@@ -463,10 +464,10 @@ float sqrtf(float x)
 double ceil(double x)
 {
     // Change FPU control to ceil round
-    _FPU_control_word previous, current;
+    fcontrol_t previous, current;
     previous = _FPU_read_control_word();
     current = previous;
-    current.rounding_control = _FPU_rounding_ceil;
+    current.rounding_control = _FPU_ROUNDING_CEIL;
     _FPU_write_control_word(current);
     __asm__ (
         "fldl %1 \n" \
@@ -482,10 +483,10 @@ double ceil(double x)
 float ceilf(float x)
 {
     // Change FPU control to ceil round
-    _FPU_control_word previous, current;
+    fcontrol_t previous, current;
     previous = _FPU_read_control_word();
     current = previous;
-    current.rounding_control = _FPU_rounding_ceil;
+    current.rounding_control = _FPU_ROUNDING_CEIL;
     _FPU_write_control_word(current);
     __asm__ (
         "fld %1 \n" \
@@ -501,10 +502,10 @@ float ceilf(float x)
 double floor(double x)
 {
     // Change FPU control to floor round
-    _FPU_control_word previous, current;
+    fcontrol_t previous, current;
     previous = _FPU_read_control_word();
     current = previous;
-    current.rounding_control = _FPU_rounding_floor;
+    current.rounding_control = _FPU_ROUNDING_FLOOR;
     _FPU_write_control_word(current);
     __asm__ (
         "fldl %1 \n" \
@@ -520,10 +521,10 @@ double floor(double x)
 float floorf(float x)
 {
     // Change FPU control to floor round
-    _FPU_control_word previous, current;
+    fcontrol_t previous, current;
     previous = _FPU_read_control_word();
     current = previous;
-    current.rounding_control = _FPU_rounding_floor;
+    current.rounding_control = _FPU_ROUNDING_FLOOR;
     _FPU_write_control_word(current);
     __asm__ (
         "fld %1 \n" \
@@ -539,10 +540,10 @@ float floorf(float x)
 double trunc(double x)
 {
     // Change FPU control to truncate
-    _FPU_control_word previous, current;
+    fcontrol_t previous, current;
     previous = _FPU_read_control_word();
     current = previous;
-    current.rounding_control = _FPU_rounding_truncate;
+    current.rounding_control = _FPU_ROUNDING_TRUNCATE;
     _FPU_write_control_word(current);
     __asm__ (
         "fldl %1 \n" \
@@ -558,10 +559,10 @@ double trunc(double x)
 float truncf(float x)
 {
     // Change FPU control to truncate
-    _FPU_control_word previous, current;
+    fcontrol_t previous, current;
     previous = _FPU_read_control_word();
     current = previous;
-    current.rounding_control = _FPU_rounding_truncate;
+    current.rounding_control = _FPU_ROUNDING_TRUNCATE;
     _FPU_write_control_word(current);
     __asm__ (
         "fld %1 \n" \
@@ -612,42 +613,4 @@ float fabsf(float x)
         "fabs \n fstp %0"
         : "=m"(x): "m"(x));
     return x;
-}
-
-// Helpers
-
-_FPU_control_word _FPU_read_control_word()
-{
-    _FPU_control_word control_word;
-
-    __asm__ (
-        "fstcw %0 \n"
-        : "=m"(control_word));
-    return control_word;
-
-}
-
-void _FPU_write_control_word(_FPU_control_word control_word)
-{
-__asm__ (
-        "fclex \n" \
-        "fldcw %0"
-        :: "m"(control_word));
-}
-
-_FPU_status_word _FPU_read_status_word()
-{
-    _FPU_status_word status_word;
-
-    __asm__ (
-        "fstsw %0 \n"
-        : "=m"(status_word));
-    return status_word;
-}
-
-void _FPU_clear_exceptions()
-{
-    __asm__ (
-        "fclex"
-        ::);
 }
