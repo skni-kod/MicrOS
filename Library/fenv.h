@@ -32,27 +32,27 @@
 typedef struct fcontrol_t
 {
     //! Invalid operation exception flag.
-	unsigned char invalid_operation : 1;
+    unsigned char invalid_operation : 1;
     //! Denormalized operand exception flag.
-	unsigned char denormalized_operand : 1;
+    unsigned char denormalized_operand : 1;
     //! Zero divide exception flag.
-	unsigned char zero_divide : 1;
+    unsigned char zero_divide : 1;
     //! Overflow exception flag.
-	unsigned char overflow : 1;
+    unsigned char overflow : 1;
     //! Underflow exception flag.
-	unsigned char underflow : 1;
+    unsigned char underflow : 1;
     //! Precision exception flag.
-	unsigned char precision : 1;
+    unsigned char precision : 1;
     //! Dummy field to align.
-	unsigned char : 2;
+    unsigned char : 2;
     //! Precision control flag.
-	unsigned char precision_control : 2;
+    unsigned char precision_control : 2;
     //! Rounding control flag.
-	unsigned char rounding_control : 2;
+    unsigned char rounding_control : 2;
     //! Infinity control flag.
-	unsigned char infinity_control : 1;
+    unsigned char infinity_control : 1;
     //! Dummy field to align.
-	unsigned char : 3;
+    unsigned char : 3;
 } fcontrol_t;
 
 //! Type represent state of floating point status word.
@@ -60,33 +60,33 @@ typedef struct fcontrol_t
 typedef struct fexcept_t
 {
     //! Invalid operation exception.
-	unsigned char invalid_operation : 1;
+    unsigned char invalid_operation : 1;
     //! Denormalized operand exception.
-	unsigned char denormalized_operand : 1;
+    unsigned char denormalized_operand : 1;
     //! Zero divide exception.
-	unsigned char zero_divide : 1;
+    unsigned char zero_divide : 1;
     //! Overflow exception.
-	unsigned char overflow : 1;
+    unsigned char overflow : 1;
     //! Underflow exception.
-	unsigned char underflow : 1;
+    unsigned char underflow : 1;
     //! Precision exception.
-	unsigned char precision : 1;
+    unsigned char precision : 1;
     //! Stack fault flag.
-	unsigned char stack_fault : 1;
+    unsigned char stack_fault : 1;
     //! Error summary status.
-	unsigned char error_summary_status : 1;
+    unsigned char error_summary_status : 1;
     //! Condition code 0.
-	unsigned char condition_code_0: 1;
+    unsigned char condition_code_0: 1;
     //! Condition code 1.
-	unsigned char condition_code_1: 1;
+    unsigned char condition_code_1: 1;
     //! Condition code 2.
-	unsigned char condition_code_2: 1;
+    unsigned char condition_code_2: 1;
     //! Points to top of stack pointer.
-	unsigned char top_of_stack_pointer : 3;
+    unsigned char top_of_stack_pointer : 3;
     //! Condition code 3.
-	unsigned char condition_code_3: 1;
+    unsigned char condition_code_3: 1;
     //! Indicates if FPU is busy.
-	unsigned char busy : 1;
+    unsigned char busy : 1;
 } fexcept_t;
 
 //! Tag words.
@@ -161,8 +161,9 @@ extern "C" {
 //! Clear FPU exception flags.
 /*!
     \param excepts Exception flags to clear.
+    \return 
 */
-void feclearexcept(int excepts);
+int feclearexcept(int excepts);
 
 // Floating-point exceptions
 
@@ -171,7 +172,7 @@ void feclearexcept(int excepts);
     \param flagp Pointer to structure where expection flags will be stored.
     \param excepts Defines which excepts will be checked.
 */
-void fegetexceptflag(fexcept_t *flagp, int excepts);
+int fegetexceptflag(fexcept_t *flagp, int excepts);
 
 #ifdef __cplusplus
 }
