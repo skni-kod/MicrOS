@@ -40,27 +40,27 @@ void fegetexceptflag(fexcept_t *flagp, int excepts)
 
         // Set only flags user asked for.
 
-        if((excepts_to_clear & 0x01) != 0)
+        if(excepts_to_clear & 0x01)
         {
             flagp->invalid_operation = exceptions.invalid_operation;
         }
-        if((excepts_to_clear & 0x02) != 0)
+        if(excepts_to_clear & 0x02)
         {
             flagp->denormalized_operand = exceptions.denormalized_operand;
         }
-        if((excepts_to_clear & 0x04) != 0)
+        if(excepts_to_clear & 0x04)
         {
             flagp->zero_divide = exceptions.zero_divide;
         }
-        if((excepts_to_clear & 0x08) != 0)
+        if(excepts_to_clear & 0x08)
         {
             flagp->overflow = exceptions.overflow;
         }
-        if((excepts_to_clear & 0x10) != 0)
+        if(excepts_to_clear & 0x10)
         {
             flagp->underflow = exceptions.underflow;
         }
-        if((excepts_to_clear & 0x20) != 0)
+        if(excepts_to_clear & 0x20)
         {
             flagp->precision = exceptions.precision;
         }
