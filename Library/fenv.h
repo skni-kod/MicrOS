@@ -29,36 +29,61 @@
 /*! Includes exception falgs and control modes to precision, rounding and infnity control. */
 typedef struct fcontrol_t
 {
+    //! Invalid operation exception flag.
 	unsigned char invalid_operation : 1;
+    //! Denormalized operand exception flag.
 	unsigned char denormalized_operand : 1;
+    //! Zero divide exception flag.
 	unsigned char zero_divide : 1;
+    //! Overflow exception flag.
 	unsigned char overflow : 1;
+    //! Underflow exception flag.
 	unsigned char underflow : 1;
+    //! Precision exception flag.
 	unsigned char precision : 1;
+    //! Dummy field to align.
 	unsigned char : 2;
+    //! Precision control flag.
 	unsigned char precision_control : 2;
+    //! Rounding control flag.
 	unsigned char rounding_control : 2;
+    //! Infinity control flag.
 	unsigned char infinity_control : 1;
+    //! Dummy field to align.
 	unsigned char : 3;
 } fcontrol_t;
 
 //! Type represent state of floating point status word.
-/*! Includes exception falgs and other informations associates with their status. */
+/*! Includes exception flags and other informations associates with their status. */
 typedef struct fexcept_t
 {
+    //! Invalid operation exception.
 	unsigned char invalid_operation : 1;
+    //! Denormalized operand exception.
 	unsigned char denormalized_operand : 1;
+    //! Zero divide exception.
 	unsigned char zero_divide : 1;
+    //! Overflow exception.
 	unsigned char overflow : 1;
+    //! Underflow exception.
 	unsigned char underflow : 1;
+    //! Precision exception.
 	unsigned char precision : 1;
+    //! Stack fault flag.
 	unsigned char stack_fault : 1;
+    //! Error summary status.
 	unsigned char error_summary_status : 1;
+    //! Condition code 0.
 	unsigned char condition_code_0: 1;
+    //! Condition code 1.
 	unsigned char condition_code_1: 1;
+    //! Condition code 2.
 	unsigned char condition_code_2: 1;
+    //! Points to top of stack pointer.
 	unsigned char top_of_stack_pointer : 3;
+    //! Condition code 3.
 	unsigned char condition_code_3: 1;
+    //! Indicates if FPU is busy.
 	unsigned char busy : 1;
 } fexcept_t;
 
@@ -66,13 +91,21 @@ typedef struct fexcept_t
 /*! Describes what values are stored in FPU stack: valid; zero; invalid (NaN, unsupported), infinity or denormal; empty. */
 typedef struct ftag_word_t
 {
+    //! Describes content of 1st register.
     unsigned char tag0 : 2;
+    //! Describes content of 2nd register.
     unsigned char tag1 : 2;
+    //! Describes content of 3rd register.
     unsigned char tag2 : 2;
+    //! Describes content of 4th register.
     unsigned char tag3 : 2;
+    //! Describes content of 5th register.
     unsigned char tag4 : 2;
+    //! Describes content of 6th register.
     unsigned char tag5 : 2;
+    //! Describes content of 7th register.
     unsigned char tag6 : 2;
+    //! Describes content of 8th register.
     unsigned char tag7 : 2;
 } ftag_word_t;
 
@@ -81,18 +114,31 @@ typedef struct ftag_word_t
 Also tag word, last used opcode, instructions and data pointer offset. */
 typedef struct fenv_t
 {
+    //! FPU control word.
     fcontrol_t control_word;
+    //! Unused
     unsigned short unused1;
+    //! FPU status word.
     fexcept_t status_word;
+    //! Unused
     unsigned short unused2;
+    //! FPU tag word.
     ftag_word_t tag_word;
+    //! Unused
     unsigned short unused3;
+    //! Instruction pointer offset.
     unsigned int instruction_pointer_offset;
+    //! Instruction pointer selector.
     unsigned short instruction_pointer_selector;
+    //! Last used opcode.
     unsigned short opcode : 11;
+    //! Five zeros.
     unsigned char five_zeros : 5;
+    //! Data pointer offset.
     unsigned int data_pointer_offset;
+    //! Data pointer selector.
     unsigned short data_pointer_selector;
+    //! Unused
     unsigned short unused4;
 } fenv_t;
 
