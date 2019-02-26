@@ -1,6 +1,8 @@
 #ifndef FENV_H
 #define FENV_H
 
+#include <stddef.h>
+
 //! Invalid argument exception.
 #define FE_INVALID 1
 //! Denormal operand exception.
@@ -154,11 +156,22 @@ const fenv_t * env;
 extern "C" {
 #endif
 
+// Floating-point exceptions
+
 //! Clear FPU exception flags.
 /*!
     \param excepts Exception flags to clear.
 */
 void feclearexcept(int excepts);
+
+// Floating-point exceptions
+
+//! Get exception flags
+/*!
+    \param flagp Pointer to structure where expection flags will be stored.
+    \param excepts Defines which excepts will be checked.
+*/
+void fegetexceptflag(fexcept_t *flagp, int excepts);
 
 #ifdef __cplusplus
 }
