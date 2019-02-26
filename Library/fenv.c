@@ -2,7 +2,7 @@
 
 // Floating-point exceptions
 
-void feclearexcept(int excepts)
+int feclearexcept(int excepts)
 {
     // We only have 6 excepts to clear to cut varaible.
     unsigned char excepts_to_clear = (unsigned char)excepts;
@@ -21,9 +21,10 @@ void feclearexcept(int excepts)
     fexcept_t * fe = &env.status_word;
     ((unsigned char *)fe)[0] &= excepts_to_clear;
     _FPU_write_control(env);
+    return 0;
 }
 
-void fegetexceptflag(fexcept_t *flagp, int excepts)
+int fegetexceptflag(fexcept_t *flagp, int excepts)
 {
     if(flagp != NULL)
     {
@@ -64,7 +65,9 @@ void fegetexceptflag(fexcept_t *flagp, int excepts)
         {
             flagp->precision = exceptions.precision;
         }
+        return 0;
     }
+    return 1;
 }
 
 // Additional content
