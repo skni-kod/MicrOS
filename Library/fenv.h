@@ -161,7 +161,7 @@ extern "C" {
 //! Clear FPU exception flags.
 /*!
     \param excepts Exception flags to clear.
-    \return 
+    \return Function returns zero if the excepts argument is zero or if all the specified exceptions were successfully cleared. Otherwise, it returns a nonzero value.
 */
 int feclearexcept(int excepts);
 
@@ -171,8 +171,16 @@ int feclearexcept(int excepts);
 /*!
     \param flagp Pointer to structure where expection flags will be stored.
     \param excepts Defines which excepts will be checked.
+    \return Function returns zero if the representation was successfully stored. Otherwise, it returns a nonzero value.
 */
 int fegetexceptflag(fexcept_t *flagp, int excepts);
+
+//! Raise FPU exception flags.
+/*!
+    \param excepts Exception flags to raise.
+    \return Function returns zero if the excepts argument is zero or if all the specified exceptions were successfully raised. Otherwise, it returns a nonzero value.
+*/
+int feraiseexcept(int excepts);
 
 #ifdef __cplusplus
 }

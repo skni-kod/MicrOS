@@ -70,6 +70,26 @@ int fegetexceptflag(fexcept_t *flagp, int excepts)
     return 1;
 }
 
+int feraiseexcept(int excepts)
+{
+    if(excepts == 0)
+    {
+        return 0;
+    }
+    // We only have 6 excepts to raise.
+    unsigned char excepts_to_raise = (unsigned char)excepts;
+    excepts_to_raise &= 0x3F;
+
+    // Get current environment of FPU.
+    fenv_t env;
+    env = _FPU_read_enviroment();
+
+    // Set exception flags.
+    fexcept_t * fe = &env.status_word;
+    ((unsigned char *)fe)[0] |= excepts_to_raise;
+    _FPU_write_control(env);
+}
+
 // Additional content
 
 fcontrol_t _FPU_read_control_word()
