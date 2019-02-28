@@ -52,7 +52,7 @@ uint16_t fat_read_sector_value(uint32_t sector_number)
         high_byte = *(fat + (uint32_t)(sector_number * 1.5f + 1)) & 0x0F;
         low_byte = *(fat + (uint32_t)(sector_number * 1.5f));
 
-        return high_byte << 4 | low_byte;
+        return high_byte << 8 | low_byte;
     }
     else
     {
