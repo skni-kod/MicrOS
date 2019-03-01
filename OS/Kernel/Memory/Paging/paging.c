@@ -32,6 +32,11 @@ paging_table_entry *paging_get_page_directory()
     return page_directory;
 }
 
+paging_table_entry *paging_get_kernel_page_directory()
+{
+    return KERNEL_PAGE_DIRECTORY_ADDRESS;
+}
+
 void paging_set_page_directory(void *address)
 {
     page_directory = (paging_table_entry *)address;

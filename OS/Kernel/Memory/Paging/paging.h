@@ -13,6 +13,7 @@ void paging_init();
 void paging_remove_identity();
 void paging_add_stack_guard();
 paging_table_entry *paging_get_page_directory();
+paging_table_entry *paging_get_kernel_page_directory();
 void paging_set_page_directory(void *address);
 
 void paging_map_page(uint32_t physical_page_index, uint32_t virtual_page_index, bool supervisor);
