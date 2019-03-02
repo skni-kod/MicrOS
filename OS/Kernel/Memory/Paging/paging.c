@@ -34,7 +34,7 @@ paging_table_entry *paging_get_page_directory()
 
 paging_table_entry *paging_get_kernel_page_directory()
 {
-    return KERNEL_PAGE_DIRECTORY_ADDRESS;
+    return (paging_table_entry *)KERNEL_PAGE_DIRECTORY_ADDRESS;
 }
 
 void paging_set_page_directory(void *address)

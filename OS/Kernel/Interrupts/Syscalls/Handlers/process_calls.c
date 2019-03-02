@@ -37,5 +37,5 @@ void syscall_process_current_process_sleep(interrupt_state *state)
 
 void syscall_process_start_process(interrupt_state *state)
 {
-    process_manager_create_process(state->registers.ebx, state->registers.ecx);
+    process_manager_create_process((char *)state->registers.ebx, (char *)state->registers.ecx);
 }
