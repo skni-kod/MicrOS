@@ -2,6 +2,8 @@
 
 void _start(char *path, char *parameters)
 {
+    __asm__ ("finit");
+    
     int argc = 0;
     char **argv = parse_parameters(path, parameters, &argc);
 

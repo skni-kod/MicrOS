@@ -21,6 +21,15 @@ void process_manager_init()
 
 uint32_t process_manager_create_process(char *path, char *parameters)
 {
+    uint32_t path_length = strlen(path) + 1;
+    uint32_t parameters_length = strlen(parameters) + 1;
+
+    void *path_in_kernel_heap = heap_kernel_alloc(path_length, 0);
+    void *parameters_in_kernel_heap = heap_kernel_alloc(parameters_length, 0);
+
+    memcpy(path_in_kernel_heap, path, path_length);
+    memcpy(parameters_in_kernel_heap, parameters, parameters_length);
+
     process_info *process = (process_info *)heap_kernel_alloc(sizeof(process_info), 0);
     process->id = next_process_id++;
     process->status = process_status_ready;
@@ -31,15 +40,15 @@ uint32_t process_manager_create_process(char *path, char *parameters)
     process->page_directory = heap_kernel_alloc(1024 * 4, 1024 * 4);
 
     paging_table_entry *page_directory = paging_get_page_directory();
-    memcpy(process->page_directory, (void *)page_directory, 1024 * 4);
+    memcpy(process->page_directory, (void *)paging_get_kernel_page_directory(), 1024 * 4);
 
     paging_set_page_directory(process->page_directory);
 
     filesystem_file_info process_file_info;
-    fat_generic_get_file_info(path, &process_file_info);
+    fat_generic_get_file_info(path_in_kernel_heap, &process_file_info);
 
     uint8_t *process_content = heap_kernel_alloc(process_file_info.size, 0);
-    fat_read_file(path, process_content, 0, process_file_info.size);
+    fat_read_file(path_in_kernel_heap, process_content, 0, process_file_info.size);
 
     elf_header *app_header = elf_get_header(process_content);
     uint32_t initial_page = elf_loader_load(process_content);
@@ -49,17 +58,15 @@ uint32_t process_manager_create_process(char *path, char *parameters)
     process->user_stack = (void *)(initial_page * 1024 * 1024 * 4 + process->size_in_memory + stack_align) + 1024 * 1024;
     process->heap = (void *)((uint32_t)process->user_stack) + 4;
 
+    heap_entry* old_heap = heap_get_user_heap();
     heap_set_user_heap((void *)(process->heap));
     heap_init_user_heap();
-
-    uint32_t path_length = strlen(path) + 1;
-    uint32_t parameters_length = strlen(parameters) + 1;
 
     void *path_in_user_heap = heap_user_alloc(path_length, 0);
     void *parameters_in_user_heap = heap_user_alloc(parameters_length, 0);
 
-    memcpy(path_in_user_heap, path, path_length);
-    memcpy(parameters_in_user_heap, parameters, parameters_length);
+    memcpy(path_in_user_heap, path_in_kernel_heap, path_length);
+    memcpy(parameters_in_user_heap, parameters_in_kernel_heap, parameters_length);
 
     *((uint32_t *)process->user_stack - 0) = (uint32_t)parameters_in_user_heap;
     *((uint32_t *)process->user_stack - 1) = (uint32_t)path_in_user_heap;
@@ -86,9 +93,12 @@ uint32_t process_manager_create_process(char *path, char *parameters)
     }
 
     kvector_add(&processes, process);
+    heap_kernel_dealloc(path_in_kernel_heap);
+    heap_kernel_dealloc(parameters_in_kernel_heap);
     heap_kernel_dealloc(process_content);
 
     paging_set_page_directory(page_directory);
+    heap_set_user_heap(old_heap);
     return process->id;
 }
 

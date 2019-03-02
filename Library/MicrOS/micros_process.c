@@ -34,3 +34,8 @@ void micros_process_current_process_sleep(uint32_t milliseconds)
 {
     micros_interrupt_1a(0x96, milliseconds);
 }
+
+void micros_process_start_process(char *path, char *arguments)
+{
+    micros_interrupt_2a(0x97, (char*)path, (char*)arguments);
+}
