@@ -14,15 +14,15 @@ enter_user_space:
     mov eax, [esp + 4]
     mov esp, eax
     
+    ; Restore registers
+    popa
+    
     ; Load FPU state
     fwait
     frstor [esp]
     
     ; Move stack pointer (frstor won't do this itself)
     add esp, 108
-    
-    ; Restore registers
-    popa
     
     ; Skip interrupt number
     add esp, 4

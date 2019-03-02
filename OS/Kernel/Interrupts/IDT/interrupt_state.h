@@ -7,8 +7,8 @@
 
 typedef struct interrupt_state
 {
-    fpu_state fpu_state;
     registers_state registers;
+    fpu_state fpu_state;
 
     uint32_t interrupt_number;
 

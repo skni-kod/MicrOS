@@ -71,15 +71,15 @@ idt_exc_wrapper:
 ; Input: interrupt number on stack
 ; Output: nothing
 idt_int_wrapper:
-  ; Save registers
-  pusha
-  
   ; Save FPU state
   fwait
   fsave [esp - 108]
   
   ; Move stack pointer (fsave won't do this itself)
   sub esp, 108
+  
+  ; Save registers
+  pusha
   
   ; Push stack pointer (because esp in pusha is not valid for us)
   push esp
@@ -90,15 +90,15 @@ idt_int_wrapper:
   ; Restore original stack pointer
   pop esp
   
+  ; Restore registers
+  popa
+  
   ; Restore FPU state
   fwait
   frstor [esp]
   
   ; Move stack pointer (frstor won't do this itself)
   add esp, 108
-  
-  ; Restore registers
-  popa
   
   ; Skip interrupt number
   add esp, 4
