@@ -52,7 +52,10 @@ idt_int%1:
 %assign i i+1 
 %endrep
 
+; Input: interrupt number and error code on stack
+; Output: nothing
 idt_exc_wrapper:
+  ; Save registers
   pusha
   push esp
 
@@ -65,15 +68,40 @@ idt_exc_wrapper:
   add esp, 8
   iret
 
+; Input: interrupt number on stack
+; Output: nothing
 idt_int_wrapper:
+  ; Save registers
   pusha
+  
+  ; Save FPU state
+  fwait
+  fsave [esp - 108]
+  
+  ; Move stack pointer (fsave won't do this itself)
+  sub esp, 108
+  
+  ; Push stack pointer (because esp in pusha is not valid for us)
   push esp
 
+  ; Process interrupt
   call idt_global_int_handler
 
+  ; Restore original stack pointer
   pop esp
+  
+  ; Restore FPU state
+  fwait
+  frstor [esp]
+  
+  ; Move stack pointer (frstor won't do this itself)
+  add esp, 108
+  
+  ; Restore registers
   popa
   
   ; Skip interrupt number
   add esp, 4
+  
+  ; Bye!
   iret
