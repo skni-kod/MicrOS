@@ -196,6 +196,13 @@ int fesetexceptflag(const fexcept_t *flagp, int excepts);
 */
 int fegetround(void);
 
+//! Set rounding direction.
+/*!
+    \param round Rounding direction to set.
+    \return Function returns zero if and only if the requested rounding direction was established.
+*/
+int fesetround(int round);
+
 #ifdef __cplusplus
 }
 #endif
