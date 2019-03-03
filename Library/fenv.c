@@ -167,6 +167,16 @@ int fesetround(int round)
     return 0;
 }
 
+// Entire environment
+int fegetenv(fenv_t *envp)
+{
+    if(envp == NULL)
+    {
+        return 1;
+    }
+    *envp = _FPU_read_enviroment();
+}
+
 // Additional content
 
 fcontrol_t _FPU_read_control_word()

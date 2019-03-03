@@ -203,6 +203,15 @@ int fegetround(void);
 */
 int fesetround(int round);
 
+// Entire environment
+
+//! Get entire environment.
+/*!
+    \param envp Pointer to struct where environment will be stored.
+    \return Function returns zero if the environment was successfully stored. Otherwise, it returns a nonzero value.
+*/
+int fegetenv(fenv_t *envp);
+
 #ifdef __cplusplus
 }
 #endif
