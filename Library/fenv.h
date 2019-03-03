@@ -165,8 +165,6 @@ extern "C" {
 */
 int feclearexcept(int excepts);
 
-// Floating-point exceptions.
-
 //! Get exception flags
 /*!
     \param flagp Pointer to structure where expection flags will be stored.
@@ -189,6 +187,14 @@ int feraiseexcept(int excepts);
     \return Function returns zero if the excepts argument is zero or if all the specified flags were successfully set to the appropriate state. Otherwise, it returns a nonzero value.
 */
 int fesetexceptflag(const fexcept_t *flagp, int excepts);
+
+// Rounding direction
+
+//! Get current rounding direction.
+/*!
+    \return Function returns the value of the rounding direction macro representing the current rounding direction or a negative value if there is no such rounding direction macro or the current rounding direction is not determinable.
+*/
+int fegetround(void);
 
 #ifdef __cplusplus
 }

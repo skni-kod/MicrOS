@@ -143,6 +143,16 @@ int fesetexceptflag(const fexcept_t *flagp, int excepts)
     return 0;
 }
 
+// Rounding direction
+
+int fegetround(void)
+{
+    fcontrol_t control_word;
+    control_word = _FPU_read_control_word();
+
+    return control_word.rounding_control;
+}
+
 // Additional content
 
 fcontrol_t _FPU_read_control_word()
