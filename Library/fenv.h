@@ -165,7 +165,7 @@ extern "C" {
 */
 int feclearexcept(int excepts);
 
-// Floating-point exceptions
+// Floating-point exceptions.
 
 //! Get exception flags
 /*!
@@ -181,6 +181,14 @@ int fegetexceptflag(fexcept_t *flagp, int excepts);
     \return Function returns zero if the excepts argument is zero or if all the specified exceptions were successfully raised. Otherwise, it returns a nonzero value.
 */
 int feraiseexcept(int excepts);
+
+//! Set exception flags.
+/*!
+    \param flagp Pointer to structure from where we will read expection.
+    \param excepts Defines which excepts will be set.
+    \return Function returns zero if the excepts argument is zero or if all the specified flags were successfully set to the appropriate state. Otherwise, it returns a nonzero value.
+*/
+int fesetexceptflag(const fexcept_t *flagp, int excepts);
 
 #ifdef __cplusplus
 }

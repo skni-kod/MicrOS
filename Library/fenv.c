@@ -39,39 +39,35 @@ int fegetexceptflag(fexcept_t *flagp, int excepts)
         return 0;
     }
     // We only have 6 excepts to get to cut varaible.
-    unsigned char excepts_to_clear = (unsigned char)excepts;
-    excepts_to_clear &= 0x3F;
+    unsigned char excepts_to_get = (unsigned char)excepts;
+    excepts_to_get &= 0x3F;
 
     // Get exceptions flags
     fexcept_t exceptions = _FPU_read_status_word();
-    exceptions.invalid_operation = 1;
-    exceptions.denormalized_operand = 1;
-    exceptions.zero_divide = 1;
-
 
     // Set only flags user asked for.
 
-    if(excepts_to_clear & 0x01)
+    if(excepts_to_get & 0x01)
     {
         flagp->invalid_operation = exceptions.invalid_operation;
     }
-    if(excepts_to_clear & 0x02)
+    if(excepts_to_get & 0x02)
     {
         flagp->denormalized_operand = exceptions.denormalized_operand;
     }
-    if(excepts_to_clear & 0x04)
+    if(excepts_to_get & 0x04)
     {
         flagp->zero_divide = exceptions.zero_divide;
     }
-    if(excepts_to_clear & 0x08)
+    if(excepts_to_get & 0x08)
     {
         flagp->overflow = exceptions.overflow;
     }
-    if(excepts_to_clear & 0x10)
+    if(excepts_to_get & 0x10)
     {
         flagp->underflow = exceptions.underflow;
     }
-    if(excepts_to_clear & 0x20)
+    if(excepts_to_get & 0x20)
     {
         flagp->precision = exceptions.precision;
     }
@@ -95,6 +91,54 @@ int feraiseexcept(int excepts)
     // Set exception flags.
     fexcept_t * fe = &env.status_word;
     ((unsigned char *)fe)[0] |= excepts_to_raise;
+    _FPU_write_control(env);
+    return 0;
+}
+
+int fesetexceptflag(const fexcept_t *flagp, int excepts)
+{
+    if(flagp == NULL)
+    {
+        return 1;
+    }
+    if(excepts == 0)
+    {
+        return 0;
+    }
+    // We only have 6 excepts to set.
+    unsigned char excepts_to_set = (unsigned char)excepts;
+    excepts_to_set &= 0x3F;
+
+    // Get exceptions flags
+    fenv_t env;
+    env = _FPU_read_enviroment();
+
+    // Set only flags user asked for.
+
+    if(excepts_to_set & 0x01)
+    {
+        env.status_word.invalid_operation = flagp->invalid_operation;
+    }
+    if(excepts_to_set & 0x02)
+    {
+        env.status_word.denormalized_operand = flagp->denormalized_operand;
+    }
+    if(excepts_to_set & 0x04)
+    {
+        env.status_word.zero_divide = flagp->zero_divide;
+    }
+    if(excepts_to_set & 0x08)
+    {
+        env.status_word.overflow = flagp->overflow;
+    }
+    if(excepts_to_set & 0x10)
+    {
+        env.status_word.underflow = flagp->underflow;
+    }
+    if(excepts_to_set & 0x20)
+    {
+        env.status_word.precision = flagp->precision;
+    }
     _FPU_write_control(env);
     return 0;
 }
