@@ -24,7 +24,7 @@ int feclearexcept(int excepts)
     // And excepts_to_clear and current enviroment.
     fexcept_t * fe = &env.status_word;
     ((unsigned char *)fe)[0] &= excepts_to_clear;
-    _FPU_write_control(env);
+    _FPU_write_enviroment(env);
     return 0;
 }
 
@@ -91,7 +91,7 @@ int feraiseexcept(int excepts)
     // Set exception flags.
     fexcept_t * fe = &env.status_word;
     ((unsigned char *)fe)[0] |= excepts_to_raise;
-    _FPU_write_control(env);
+    _FPU_write_enviroment(env);
     return 0;
 }
 
@@ -139,7 +139,7 @@ int fesetexceptflag(const fexcept_t *flagp, int excepts)
     {
         env.status_word.precision = flagp->precision;
     }
-    _FPU_write_control(env);
+    _FPU_write_enviroment(env);
     return 0;
 }
 
@@ -198,7 +198,7 @@ fenv_t _FPU_read_enviroment()
     return enviroment;
 }
 
-void _FPU_write_control(fenv_t enviroment)
+void _FPU_write_enviroment(fenv_t enviroment)
 {
     __asm__ (
         "fldenv %0"

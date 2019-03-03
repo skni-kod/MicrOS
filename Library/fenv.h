@@ -270,7 +270,7 @@ fenv_t _FPU_read_enviroment();
 /*!
     \param enviroment Enviroment to write into FPU.
 */
-void _FPU_write_control(fenv_t enviroment);
+void _FPU_write_enviroment(fenv_t enviroment);
 
 //! Read FPU status word.
 /*!
