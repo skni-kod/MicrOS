@@ -212,6 +212,9 @@ int fesetround(int round);
 */
 int fegetenv(fenv_t *envp);
 
+
+int fesetenv(const fenv_t *envp);
+
 #ifdef __cplusplus
 }
 #endif
