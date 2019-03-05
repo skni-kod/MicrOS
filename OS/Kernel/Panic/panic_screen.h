@@ -5,10 +5,12 @@
 #include <stdint.h>
 #include "../Drivers/VGA/vga.h"
 #include "../Drivers/Keyboard/keyboard.h"
+#include "../Library/kvector.h"
 
 void panic_screen_show(exception_state *state, uint32_t code, const char *optString);
 void panic_screen_display_intro(exception_state *state, uint32_t code, const char *optString);
 void panic_screen_wait_for_key_press();
 void panic_screen_display_diagnostic_view(exception_state *state);
+char *panic_screen_value_to_string(char *buffer, unsigned int value);
 
 #endif
