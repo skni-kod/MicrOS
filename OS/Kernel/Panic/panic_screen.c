@@ -1,6 +1,4 @@
 #include "panic_screen.h"
-#include "../Drivers/VGA/vga.h"
-#include <stdlib.h>
 
 const char *img[] =
     {
@@ -26,9 +24,23 @@ const char *img[] =
         (const char *)". . . . . . . . . . . . . . . . `:,, . . . . . . . . . . . . . `\\. . . . . .",
 };
 
-void panic_screen_show(uint32_t code, const char *optString)
+void panic_screen_show(exception_state* state, uint32_t code, const char *optString)
 {
+    panic_screen_display_intro(state, code, optString);
+
+    if (state != NULL)
+    {
+        vga_printstring("\n\nNacisnij dowolny klawisz aby przejsc do widoku diagnostycznego.");
+        panic_screen_wait_for_key_press();
+        panic_screen_display_diagnostic_view(state);
+    }
+
     io_disable_interrupts();
+    __asm__("hlt");
+}
+
+void panic_screen_display_intro(exception_state *state, uint32_t code, const char *optString)
+{
     char buff[100];
 
     vga_clear_screen();
@@ -45,6 +57,20 @@ void panic_screen_show(uint32_t code, const char *optString)
     {
         vga_printstring(optString);
     }
+}
 
+void panic_screen_wait_for_key_press()
+{
+    while (1)
+    {
+        if (!keyboard_is_buffer_empty())
+            break;
+        __asm__("hlt");
+    }
+}
+
+void panic_screen_display_diagnostic_view(exception_state* state)
+{
+    vga_clear_screen();
     __asm__("hlt");
 }
