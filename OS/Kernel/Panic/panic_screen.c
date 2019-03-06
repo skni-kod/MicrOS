@@ -26,13 +26,14 @@ const char *img[] =
 
 void panic_screen_show(exception_state* state, uint32_t code, const char *optString)
 {
+    uint32_t system_clock = timer_get_system_clock();
     panic_screen_display_intro(state, code, optString);
 
     if (state != NULL)
     {
         vga_printstring("\n\nNacisnij dowolny klawisz aby przejsc do widoku diagnostycznego.");
         panic_screen_wait_for_key_press();
-        panic_screen_display_diagnostic_view(state);
+        panic_screen_display_diagnostic_view(state, system_clock);
     }
 
     io_disable_interrupts();
@@ -68,7 +69,7 @@ void panic_screen_wait_for_key_press()
         __asm__("hlt");
     }
 }
-void panic_screen_display_diagnostic_view(exception_state* state)
+void panic_screen_display_diagnostic_view(exception_state* state, uint32_t system_clock)
 {
     char buffer[16];
     
@@ -80,7 +81,7 @@ void panic_screen_display_diagnostic_view(exception_state* state)
     panic_screen_display_register_state("edx", state->registers.edx, true);
     panic_screen_display_register_state("esi", state->registers.esi, true);
     panic_screen_display_register_state("edi", state->registers.edi, true);
-    panic_screen_display_register_state("esp", state->registers.esp_unused, true);
+    panic_screen_display_register_state("esp", state->registers.esp_unused + STACK_POINTER_OFFSET, true);
     panic_screen_display_register_state("eip", state->eip, true);
     vga_printstring("\n");
     
@@ -99,9 +100,16 @@ void panic_screen_display_diagnostic_view(exception_state* state)
     panic_screen_display_descriptor_table("gdtr", state->gdtr, sizeof(gdt_entry));
     panic_screen_display_descriptor_table("idtr", state->idtr, sizeof(idt_entry));
     
-    panic_screen_display_stack(state->registers.esp_unused);
-    panic_screen_display_system_clock();
+    panic_screen_display_stack(state->registers.esp_unused + STACK_POINTER_OFFSET);
+    panic_screen_display_system_clock(system_clock);
+    
+    vga_set_cursor_pos(45, 17);
+    vga_printstring("FPU:");
+    panic_screen_display_fpu_control_word(state->fpu_state.control_word);
+    panic_screen_display_fpu_status_word(state->fpu_state.status_word);
 
+    vga_set_cursor_pos(0, 27);
+    vga_printchar(' ');
     __asm__("hlt");
 }
 
@@ -223,7 +231,7 @@ void panic_screen_display_stack(uint32_t esp)
     vga_set_cursor_pos(45, 0);
     vga_printstring("Stack:\n");
     
-    for(int i=2; i<20; i++)
+    for(int i=2; i<15; i++)
     {
         vga_set_cursor_pos(45, i);
         
@@ -258,13 +266,50 @@ void panic_screen_display_descriptor_table(char* name, uint64_t value, uint32_t 
     vga_printstring(")\n");
 }
 
-void panic_screen_display_system_clock()
+void panic_screen_display_system_clock(uint32_t system_clock)
 {
-    char buffer[16] = { 0 };
-    uint32_t system_clock = timer_get_system_clock();   
+    char buffer[16] = { 0 };   
      
-    vga_set_cursor_pos(45, 21);
+    vga_set_cursor_pos(45, 22);
     vga_printstring("System clock: ");
     vga_printstring(itoa(system_clock, buffer, 10));
     vga_printstring(" ms");
+}
+
+void panic_screen_display_fpu_control_word(uint32_t control_word)
+{
+    char buffer[16] = { 0 };
+    
+    vga_set_cursor_pos(45, 19);
+    vga_printstring("cw: 0x");
+    vga_printstring(itoa(control_word, buffer, 10));
+    
+    vga_printstring(" [");
+    if (control_word & (1 << 0)) vga_printstring(" IM");
+    if (control_word & (1 << 1)) vga_printstring(" DM");
+    if (control_word & (1 << 2)) vga_printstring(" ZM");
+    if (control_word & (1 << 3)) vga_printstring(" OM");
+    if (control_word & (1 << 4)) vga_printstring(" UM");
+    if (control_word & (1 << 5)) vga_printstring(" PM");
+    vga_printstring(" ]\n");
+}
+
+void panic_screen_display_fpu_status_word(uint32_t status_word)
+{
+    char buffer[16] = { 0 };
+    
+    vga_set_cursor_pos(45, 20);
+    vga_printstring("sw: 0x");
+    vga_printstring(itoa(status_word, buffer, 10));
+    
+    vga_printstring(" [");
+    if (status_word & (1 << 0)) vga_printstring(" IE");
+    if (status_word & (1 << 1)) vga_printstring(" DE");
+    if (status_word & (1 << 2)) vga_printstring(" ZE");
+    if (status_word & (1 << 3)) vga_printstring(" OE");
+    if (status_word & (1 << 4)) vga_printstring(" UE");
+    if (status_word & (1 << 5)) vga_printstring(" PE");
+    if (status_word & (1 << 6)) vga_printstring(" SF");
+    if (status_word & (1 << 7)) vga_printstring(" ES");
+    vga_printstring(" ]\n");
 }

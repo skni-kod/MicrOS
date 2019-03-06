@@ -81,11 +81,9 @@ idt_exc_wrapper:
   store_register fs
   store_register gs
   
-  push 0
-  push 0
+  sub esp, 8
   sgdt [esp]
-  push 0
-  push 0
+  sub esp, 8
   sidt [esp]
   
   push esp
