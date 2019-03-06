@@ -96,6 +96,8 @@ void panic_screen_display_diagnostic_view(exception_state* state)
     panic_screen_display_register_state("idtr", state->idtr, true);
 
     panic_screen_display_eflags(state->eflags);
+    
+    panic_screen_display_stack(state->registers.esp_unused);
 
     __asm__("hlt");
 }
@@ -120,7 +122,10 @@ char* panic_screen_value_to_string(char* buffer, unsigned int value)
     if(length == 0)
     {
         buffer[0] = '0';
+        length++;
     }
+    
+    buffer[length] = 0;
     
     return buffer;
 }
@@ -205,4 +210,27 @@ void panic_screen_display_cr4(uint32_t cr4)
     if (cr4 & (1 << 20)) vga_printstring(" SMEP");
     if (cr4 & (1 << 21)) vga_printstring(" SMAP");
     vga_printstring(" ]\n");
+}
+
+void panic_screen_display_stack(uint32_t esp)
+{
+    char buffer[16] = { 0 };
+    uint32_t* addr = (uint32_t*)esp;
+    
+    for(int i=0; i<20; i++)
+    {
+        vga_set_cursor_pos(40, i);
+        
+        panic_screen_value_to_string(buffer, (uint32_t)addr);
+        vga_printstring("0x");
+        vga_printstring(buffer);
+        vga_printstring(" = ");
+        
+        panic_screen_value_to_string(buffer, *addr);
+        vga_printstring("0x");
+        vga_printstring(buffer);
+        vga_printstring("\n");
+        
+        addr++;
+    }
 }
