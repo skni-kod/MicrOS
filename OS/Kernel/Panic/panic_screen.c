@@ -82,6 +82,18 @@ void panic_screen_display_diagnostic_view(exception_state* state)
     panic_screen_display_register_state("esp", state->registers.esp_unused, true);
     panic_screen_display_register_state("eip", state->eip, true);
     panic_screen_display_register_state("cs", state->cs, true);
+    panic_screen_display_register_state("ss", state->ss, true);
+    panic_screen_display_register_state("gs", state->gs, true);
+    panic_screen_display_register_state("fs", state->fs, true);
+    panic_screen_display_register_state("es", state->es, true);
+
+    panic_screen_display_register_state("cr0", state->cr0, true);
+    panic_screen_display_register_state("cr2", state->cr2, true);
+    panic_screen_display_register_state("cr3", state->cr3, true);
+    panic_screen_display_register_state("cr4", state->cr4, true);
+
+    panic_screen_display_register_state("gdtr", state->gdtr, true);
+    panic_screen_display_register_state("idtr", state->idtr, true);
 
     panic_screen_display_eflags(state->eflags);
 
@@ -117,7 +129,7 @@ void panic_screen_display_register_state(char* register_name, int value, bool ne
 {
     char buffer[32] = { 0 };
     vga_printstring(register_name);
-    vga_printstring(": ");
+    vga_printstring(": 0x");
     vga_printstring(panic_screen_value_to_string(buffer, value));
     
     if(new_line)
