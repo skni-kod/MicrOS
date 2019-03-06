@@ -6,6 +6,18 @@
 
 typedef struct exception_state
 {
+    uint32_t idtr;
+    uint32_t gdtr;
+    uint32_t gs;
+    uint32_t fs;
+    uint32_t ss;
+    uint32_t es;
+    uint32_t cr4;
+    uint32_t cr3;
+    uint32_t cr2;
+    uint32_t cr0;
+    uint32_t ds;
+    
     registers_state registers;
     fpu_state fpu_state;
 
