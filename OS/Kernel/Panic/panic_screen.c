@@ -68,13 +68,23 @@ void panic_screen_wait_for_key_press()
         __asm__("hlt");
     }
 }
-
 void panic_screen_display_diagnostic_view(exception_state* state)
 {
     char buffer[16];
     
     vga_clear_screen();
-    vga_printstring(panic_screen_value_to_string(buffer, 123));
+    panic_screen_display_register_state("eax", state->registers.eax, true);
+    panic_screen_display_register_state("ebx", state->registers.ebx, true);
+    panic_screen_display_register_state("ecx", state->registers.ecx, true);
+    panic_screen_display_register_state("edx", state->registers.edx, true);
+    panic_screen_display_register_state("esi", state->registers.esi, true);
+    panic_screen_display_register_state("edi", state->registers.edi, true);
+    panic_screen_display_register_state("esp", state->registers.esp_unused, true);
+    panic_screen_display_register_state("eip", state->eip, true);
+    panic_screen_display_register_state("cs", state->cs, true);
+
+    panic_screen_display_eflags(state->eflags);
+
     __asm__("hlt");
 }
 
@@ -95,5 +105,47 @@ char* panic_screen_value_to_string(char* buffer, unsigned int value)
         buffer[length - 1 - i] = numbers[i] >= 10 ? numbers[i] - 10 + 'a' : numbers[i] + '0';
     }
     
+    if(length == 0)
+    {
+        buffer[0] = '0';
+    }
+    
     return buffer;
+}
+
+void panic_screen_display_register_state(char* register_name, int value, bool new_line)
+{
+    char buffer[32] = { 0 };
+    vga_printstring(register_name);
+    vga_printstring(": ");
+    vga_printstring(panic_screen_value_to_string(buffer, value));
+    
+    if(new_line)
+    {
+        vga_printstring("\n");
+    }
+}
+
+void panic_screen_display_eflags(uint32_t eflags)
+{
+    panic_screen_display_register_state("eflags", eflags, false);
+
+    vga_printstring(" [");
+    if (eflags & (1 << 0)) vga_printstring(" CF");
+    if (eflags & (1 << 2)) vga_printstring(" PF");
+    if (eflags & (1 << 4)) vga_printstring(" AF");
+    if (eflags & (1 << 6)) vga_printstring(" ZF");
+    if (eflags & (1 << 7)) vga_printstring(" SF");
+    if (eflags & (1 << 8)) vga_printstring(" TF");
+    if (eflags & (1 << 9)) vga_printstring(" IF");
+    if (eflags & (1 << 10)) vga_printstring(" DF");
+    if (eflags & (1 << 11)) vga_printstring(" OF");
+    if (eflags & (1 << 14)) vga_printstring(" NT");
+    if (eflags & (1 << 16)) vga_printstring(" RF");
+    if (eflags & (1 << 17)) vga_printstring(" VM");
+    if (eflags & (1 << 18)) vga_printstring(" AC");
+    if (eflags & (1 << 19)) vga_printstring(" VIF");
+    if (eflags & (1 << 20)) vga_printstring(" VIP");
+    if (eflags & (1 << 21)) vga_printstring(" ID");
+    vga_printstring(" ]");
 }
