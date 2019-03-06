@@ -73,6 +73,7 @@ void panic_screen_display_diagnostic_view(exception_state* state)
     char buffer[16];
     
     vga_clear_screen();
+    vga_printstring("Registers:\n\n");
     panic_screen_display_register_state("eax", state->registers.eax, true);
     panic_screen_display_register_state("ebx", state->registers.ebx, true);
     panic_screen_display_register_state("ecx", state->registers.ecx, true);
@@ -81,23 +82,25 @@ void panic_screen_display_diagnostic_view(exception_state* state)
     panic_screen_display_register_state("edi", state->registers.edi, true);
     panic_screen_display_register_state("esp", state->registers.esp_unused, true);
     panic_screen_display_register_state("eip", state->eip, true);
+    vga_printstring("\n");
+    
     panic_screen_display_register_state("cs", state->cs, true);
     panic_screen_display_register_state("ss", state->ss, true);
-    panic_screen_display_register_state("gs", state->gs, true);
-    panic_screen_display_register_state("fs", state->fs, true);
-    panic_screen_display_register_state("es", state->es, true);
+    panic_screen_display_register_state("ds", state->ds, true);
+    vga_printstring("\n");
 
     panic_screen_display_cr0(state->cr0);
     panic_screen_display_register_state("cr2", state->cr2, true);
     panic_screen_display_register_state("cr3", state->cr3, true);
     panic_screen_display_cr4(state->cr4);
-
-    panic_screen_display_register_state("gdtr", state->gdtr, true);
-    panic_screen_display_register_state("idtr", state->idtr, true);
-
     panic_screen_display_eflags(state->eflags);
+    vga_printstring("\n");
+
+    panic_screen_display_descriptor_table("gdtr", state->gdtr, sizeof(gdt_entry));
+    panic_screen_display_descriptor_table("idtr", state->idtr, sizeof(idt_entry));
     
     panic_screen_display_stack(state->registers.esp_unused);
+    panic_screen_display_system_clock();
 
     __asm__("hlt");
 }
@@ -217,9 +220,12 @@ void panic_screen_display_stack(uint32_t esp)
     char buffer[16] = { 0 };
     uint32_t* addr = (uint32_t*)esp;
     
-    for(int i=0; i<20; i++)
+    vga_set_cursor_pos(45, 0);
+    vga_printstring("Stack:\n");
+    
+    for(int i=2; i<20; i++)
     {
-        vga_set_cursor_pos(40, i);
+        vga_set_cursor_pos(45, i);
         
         panic_screen_value_to_string(buffer, (uint32_t)addr);
         vga_printstring("0x");
@@ -233,4 +239,32 @@ void panic_screen_display_stack(uint32_t esp)
         
         addr++;
     }
+}
+
+void panic_screen_display_descriptor_table(char* name, uint64_t value, uint32_t size_of_entry)
+{
+    char buffer[16];
+    
+    uint32_t size = value & 0xFFFF;
+    uint32_t base = value >> 16;
+    
+    uint32_t entries_count = size / size_of_entry + 1;
+    
+    panic_screen_display_register_state(name, value, false);
+    vga_printstring(" (c: ");
+    vga_printstring(panic_screen_value_to_string(buffer, entries_count));
+    vga_printstring(", b: 0x");
+    vga_printstring(panic_screen_value_to_string(buffer, base));
+    vga_printstring(")\n");
+}
+
+void panic_screen_display_system_clock()
+{
+    char buffer[16] = { 0 };
+    uint32_t system_clock = timer_get_system_clock();   
+     
+    vga_set_cursor_pos(45, 21);
+    vga_printstring("System clock: ");
+    vga_printstring(itoa(system_clock, buffer, 10));
+    vga_printstring(" ms");
 }

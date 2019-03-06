@@ -6,8 +6,8 @@
 
 typedef struct exception_state
 {
-    uint32_t idtr;
-    uint32_t gdtr;
+    uint64_t idtr;
+    uint64_t gdtr;
     uint32_t gs;
     uint32_t fs;
     uint32_t ss;

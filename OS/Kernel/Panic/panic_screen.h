@@ -6,6 +6,9 @@
 #include "../Drivers/VGA/vga.h"
 #include "../Drivers/Keyboard/keyboard.h"
 #include "../Library/kvector.h"
+#include "../Memory/GDT/gdt_entry.h"
+#include "../Interrupts/IDT/idt_entry.h"
+#include "../Timer/timer.h"
 
 void panic_screen_show(exception_state *state, uint32_t code, const char *optString);
 void panic_screen_display_intro(exception_state *state, uint32_t code, const char *optString);
