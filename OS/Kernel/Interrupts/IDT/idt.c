@@ -298,7 +298,7 @@ void idt_global_exc_handler(exception_state *state)
             itoa(state->error_code, error_code_str, 16);
             memcpy(exception_string + description_length + error_code_msg_length, error_code_str, 10);
 
-            panic_screen_show(state->interrupt_number, exception_string);
+            panic_screen_show(state, state->interrupt_number, exception_string);
             break;
         }
     }

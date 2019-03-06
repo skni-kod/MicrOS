@@ -64,6 +64,28 @@ idt_exc_wrapper:
   
   ; Save registers
   pusha
+  
+  ; Save other registers for diagnostic view
+%macro store_register 1
+  mov eax, %1
+  push eax
+%endmacro
+
+  store_register ds
+  store_register cr0
+  store_register cr2
+  store_register cr3
+  store_register cr4
+  store_register es
+  store_register ss
+  store_register fs
+  store_register gs
+  
+  sub esp, 8
+  sgdt [esp]
+  sub esp, 8
+  sidt [esp]
+  
   push esp
 
   call idt_global_exc_handler
