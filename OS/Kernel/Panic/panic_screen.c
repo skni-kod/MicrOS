@@ -87,7 +87,7 @@ void panic_screen_display_diagnostic_view(exception_state* state)
     panic_screen_display_register_state("fs", state->fs, true);
     panic_screen_display_register_state("es", state->es, true);
 
-    panic_screen_display_register_state("cr0", state->cr0, true);
+    panic_screen_display_cr0(state->cr0);
     panic_screen_display_register_state("cr2", state->cr2, true);
     panic_screen_display_register_state("cr3", state->cr3, true);
     panic_screen_display_register_state("cr4", state->cr4, true);
@@ -159,5 +159,24 @@ void panic_screen_display_eflags(uint32_t eflags)
     if (eflags & (1 << 19)) vga_printstring(" VIF");
     if (eflags & (1 << 20)) vga_printstring(" VIP");
     if (eflags & (1 << 21)) vga_printstring(" ID");
-    vga_printstring(" ]");
+    vga_printstring(" ]\n");
+}
+
+void panic_screen_display_cr0(uint32_t cr0)
+{
+    panic_screen_display_register_state("cr0", cr0, false);
+
+    vga_printstring(" [");
+    if (cr0 & (1 << 0)) vga_printstring(" PE");
+    if (cr0 & (1 << 1)) vga_printstring(" MP");
+    if (cr0 & (1 << 2)) vga_printstring(" EM");
+    if (cr0 & (1 << 3)) vga_printstring(" TS");
+    if (cr0 & (1 << 4)) vga_printstring(" ET");
+    if (cr0 & (1 << 5)) vga_printstring(" NE");
+    if (cr0 & (1 << 16)) vga_printstring(" WP");
+    if (cr0 & (1 << 18)) vga_printstring(" AM");
+    if (cr0 & (1 << 29)) vga_printstring(" NW");
+    if (cr0 & (1 << 30)) vga_printstring(" CD");
+    if (cr0 & (1 << 31)) vga_printstring(" PG");
+    vga_printstring(" ]\n");
 }
