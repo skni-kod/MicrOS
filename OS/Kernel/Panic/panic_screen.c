@@ -90,7 +90,7 @@ void panic_screen_display_diagnostic_view(exception_state* state)
     panic_screen_display_cr0(state->cr0);
     panic_screen_display_register_state("cr2", state->cr2, true);
     panic_screen_display_register_state("cr3", state->cr3, true);
-    panic_screen_display_register_state("cr4", state->cr4, true);
+    panic_screen_display_cr4(state->cr4);
 
     panic_screen_display_register_state("gdtr", state->gdtr, true);
     panic_screen_display_register_state("idtr", state->idtr, true);
@@ -178,5 +178,31 @@ void panic_screen_display_cr0(uint32_t cr0)
     if (cr0 & (1 << 29)) vga_printstring(" NW");
     if (cr0 & (1 << 30)) vga_printstring(" CD");
     if (cr0 & (1 << 31)) vga_printstring(" PG");
+    vga_printstring(" ]\n");
+}
+
+void panic_screen_display_cr4(uint32_t cr4)
+{
+    panic_screen_display_register_state("cr4", cr4, false);
+
+    vga_printstring(" [");
+    if (cr4 & (1 << 0)) vga_printstring(" VME");
+    if (cr4 & (1 << 1)) vga_printstring(" PVI");
+    if (cr4 & (1 << 2)) vga_printstring(" TSD");
+    if (cr4 & (1 << 3)) vga_printstring(" DE");
+    if (cr4 & (1 << 4)) vga_printstring(" PSE");
+    if (cr4 & (1 << 5)) vga_printstring(" PAE");
+    if (cr4 & (1 << 6)) vga_printstring(" MCE");
+    if (cr4 & (1 << 7)) vga_printstring(" PGE");
+    if (cr4 & (1 << 8)) vga_printstring(" PCE");
+    if (cr4 & (1 << 9)) vga_printstring(" OSFXSR");
+    if (cr4 & (1 << 10)) vga_printstring(" OSXMMEXCPT");
+    if (cr4 & (1 << 11)) vga_printstring(" UMIP");
+    if (cr4 & (1 << 13)) vga_printstring(" VMXE");
+    if (cr4 & (1 << 14)) vga_printstring(" SMXE");
+    if (cr4 & (1 << 17)) vga_printstring(" PCIDE");
+    if (cr4 & (1 << 18)) vga_printstring(" OSXSAVE");
+    if (cr4 & (1 << 20)) vga_printstring(" SMEP");
+    if (cr4 & (1 << 21)) vga_printstring(" SMAP");
     vga_printstring(" ]\n");
 }

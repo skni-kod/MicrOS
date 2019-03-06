@@ -13,4 +13,7 @@ void panic_screen_wait_for_key_press();
 void panic_screen_display_diagnostic_view(exception_state *state);
 char *panic_screen_value_to_string(char *buffer, unsigned int value);
 
+void panic_screen_display_eflags(uint32_t eflags);
+void panic_screen_display_cr0(uint32_t cr0);
+void panic_screen_display_cr4(uint32_t cr4);
 #endif
