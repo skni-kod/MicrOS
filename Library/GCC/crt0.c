@@ -5,7 +5,7 @@ void _start(char *path, char *parameters)
     __asm__ ("finit");
     
     stdin = streams_create_stream();
-    streams_set_stream_as_keyboard(stdout);
+    streams_set_stream_as_keyboard(stdin);
     
     stdout = streams_create_stream();
     streams_set_stream_as_console(stdout);
