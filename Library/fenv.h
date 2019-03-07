@@ -227,6 +227,14 @@ int fesetenv(const fenv_t *envp);
 */
 int feholdexcept(fenv_t *envp);
 
+//! Update floating-point environment.
+/*!
+    function attempts to save the currently raised floating-point exceptions in its automatic storage, install the floating-point environment represented by the object pointed to by envp, and then raise the saved floating-point exceptions. The argument envp shall point to an object set by a call to feholdexcept or fegetenv, or equal a floating-point environment macro.
+    \param envp Pointer to struct from where environment will read environment.
+    \return Function returns zero if all the actions were successfully carried out. Otherwise, it returns a nonzero value.
+*/
+int feupdateenv(const fenv_t *envp);
+
 #ifdef __cplusplus
 }
 #endif
