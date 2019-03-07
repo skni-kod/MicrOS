@@ -144,12 +144,12 @@ typedef struct fenv_t
     unsigned short unused4;
 } fenv_t;
 
-//! Pointer to enviroment.
-/*! Points to default enviroment. It's set during program startup. */
+//! Pointer to environment.
+/*! Points to default environment. It's set during program startup. */
 const fenv_t * env;
 
-//! macro that provides access to pointer to enviroment.
-/*! Points to default enviroment. It's set during program startup. */
+//! macro that provides access to pointer to environment.
+/*! Points to default environment. It's set during program startup. */
 #define FE_DFL_ENV (env)
 
 #ifdef __cplusplus
@@ -160,6 +160,7 @@ extern "C" {
 
 //! Clear FPU exception flags.
 /*!
+    Function attempts to clear the supported floating-point exceptions represented by its argument.
     \param excepts Exception flags to clear.
     \return Function returns zero if the excepts argument is zero or if all the specified exceptions were successfully cleared. Otherwise, it returns a nonzero value.
 */
@@ -167,6 +168,7 @@ int feclearexcept(int excepts);
 
 //! Get exception flags
 /*!
+    Function attempts to store an implementation-defined representation of the states of the floating-point status flags indicated by the argument excepts in the object pointed to by the argument flagp.
     \param flagp Pointer to structure where expection flags will be stored.
     \param excepts Defines which excepts will be checked.
     \return Function returns zero if the representation was successfully stored. Otherwise, it returns a nonzero value.
@@ -175,6 +177,7 @@ int fegetexceptflag(fexcept_t *flagp, int excepts);
 
 //! Raise FPU exception flags.
 /*!
+    Function attempts to raise the supported floating-point exceptions represented by its argument.
     \param excepts Exception flags to raise.
     \return Function returns zero if the excepts argument is zero or if all the specified exceptions were successfully raised. Otherwise, it returns a nonzero value.
 */
@@ -182,6 +185,7 @@ int feraiseexcept(int excepts);
 
 //! Set exception flags.
 /*!
+    Function attempts to set the floating-point status flags indicated by the argument excepts to the states stored in the object pointed to by flagp. The value of *flagp shall have been set by a previous call to fegetexceptflag whose second argument represented at least those floating-point exceptions represented by the argument excepts. This function does not raise floatingpoint exceptions, but only sets the state of the flags.
     \param flagp Pointer to structure from where we will read expection.
     \param excepts Defines which excepts will be set.
     \return Function returns zero if the excepts argument is zero or if all the specified flags were successfully set to the appropriate state. Otherwise, it returns a nonzero value.
@@ -206,6 +210,7 @@ int fegetround(void);
 
 //! Set rounding direction.
 /*!
+    Function establishes the rounding direction represented by its argument round. If the argument is not equal to the value of a rounding direction macro, the rounding direction is not changed.
     \param round Rounding direction to set.
     \return Function returns zero if and only if the requested rounding direction was established.
 */
@@ -215,6 +220,7 @@ int fesetround(int round);
 
 //! Get entire environment.
 /*!
+    Function attempts to store the current floating-point environment in the object pointed to by envp/
     \param envp Pointer to struct where environment will be stored.
     \return Function returns zero if the environment was successfully stored. Otherwise, it returns a nonzero value.
 */
@@ -222,6 +228,7 @@ int fegetenv(fenv_t *envp);
 
 //! Set entire environment.
 /*!
+    The fesetenv function attempts to establish the floating-point environment represented by the object pointed to by envp. The argument envp shall point to an object set by a call to fegetenv or feholdexcept, or equal a floating-point environment macro. Note that fesetenv merely installs the state of the floating-point status flags represented through its argument, and does not raise these floating-point exceptions.
     \param envp Pointer to struct from where environment will read environment.
     \return Function returns zero if the environment was successfully wrote. Otherwise, it returns a nonzero value.
 */
@@ -300,17 +307,17 @@ fcontrol_t _FPU_read_control_word();
 */
 void _FPU_write_control_word(fcontrol_t control_word);
 
-//! Read FPU enviroment.
+//! Read FPU environment.
 /*!
-    \return Current FPU enviroment.
+    \return Current FPU environment.
 */
-fenv_t _FPU_read_enviroment();
+fenv_t _FPU_read_environment();
 
-//! Write FPU enviroment.
+//! Write FPU environment.
 /*!
-    \param enviroment Enviroment to write into FPU.
+    \param environment environment to write into FPU.
 */
-void _FPU_write_enviroment(fenv_t enviroment);
+void _FPU_write_environment(fenv_t environment);
 
 //! Read FPU status word.
 /*!

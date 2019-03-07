@@ -13,7 +13,7 @@ int feclearexcept(int excepts)
 
     // Get current environment of FPU.
     fenv_t env;
-    env = _FPU_read_enviroment();
+    env = _FPU_read_environment();
 
     // Set first 2 digit as 0 to make sure we won't overwrite anything in first 2 bits.
     excepts_to_clear &= 0x3F;
@@ -21,10 +21,10 @@ int feclearexcept(int excepts)
     // Negate value.
     excepts_to_clear = ~excepts_to_clear;
 
-    // And excepts_to_clear and current enviroment.
+    // And excepts_to_clear and current environment.
     fexcept_t * fe = &env.status_word;
     ((unsigned char *)fe)[0] &= excepts_to_clear;
-    _FPU_write_enviroment(env);
+    _FPU_write_environment(env);
     return 0;
 }
 
@@ -86,12 +86,12 @@ int feraiseexcept(int excepts)
 
     // Get current environment of FPU.
     fenv_t env;
-    env = _FPU_read_enviroment();
+    env = _FPU_read_environment();
 
     // Set exception flags.
     fexcept_t * fe = &env.status_word;
     ((unsigned char *)fe)[0] |= excepts_to_raise;
-    _FPU_write_enviroment(env);
+    _FPU_write_environment(env);
     return 0;
 }
 
@@ -111,7 +111,7 @@ int fesetexceptflag(const fexcept_t *flagp, int excepts)
 
     // Get exceptions flags
     fenv_t env;
-    env = _FPU_read_enviroment();
+    env = _FPU_read_environment();
 
     // Set only flags user asked for.
 
@@ -139,7 +139,7 @@ int fesetexceptflag(const fexcept_t *flagp, int excepts)
     {
         env.status_word.precision = flagp->precision;
     }
-    _FPU_write_enviroment(env);
+    _FPU_write_environment(env);
     return 0;
 }
 
@@ -195,7 +195,7 @@ int fegetenv(fenv_t *envp)
     {
         return 1;
     }
-    *envp = _FPU_read_enviroment();
+    *envp = _FPU_read_environment();
     return 0;
 }
 
@@ -205,7 +205,7 @@ int fesetenv(const fenv_t *envp)
     {
         return 1;
     }
-    fenv_t current = _FPU_read_enviroment();
+    fenv_t current = _FPU_read_environment();
     
     //Copy all data without exceptions flags.    
     current.control_word = envp->control_word;
@@ -223,7 +223,7 @@ int fesetenv(const fenv_t *envp)
     current.status_word.top_of_stack_pointer = envp->status_word.top_of_stack_pointer;
     current.status_word.condition_code_3 = envp->status_word.condition_code_3;
     current.status_word.busy = envp->status_word.busy;
-    _FPU_write_enviroment(current);
+    _FPU_write_environment(current);
     return 0;
 }
 
@@ -234,7 +234,7 @@ int feholdexcept(fenv_t *envp)
         return 1;
     }
     // Copy environment
-    *envp = _FPU_read_enviroment();
+    *envp = _FPU_read_environment();
     // Clear status
     feclearexcept(FE_ALL_EXCEPT);
     // Install a non-stop mode
@@ -256,7 +256,7 @@ int feupdateenv(const fenv_t *envp)
         return 1;
     }
 
-    fenv_t current = _FPU_read_enviroment();
+    fenv_t current = _FPU_read_environment();
     
     //Copy all data without exceptions flags.    
     current.control_word = envp->control_word;
@@ -274,7 +274,7 @@ int feupdateenv(const fenv_t *envp)
     current.status_word.top_of_stack_pointer = envp->status_word.top_of_stack_pointer;
     current.status_word.condition_code_3 = envp->status_word.condition_code_3;
     current.status_word.busy = envp->status_word.busy;
-    _FPU_write_enviroment(current);
+    _FPU_write_environment(current);
     return 0;
 }
 
@@ -299,21 +299,21 @@ void _FPU_write_control_word(fcontrol_t control_word)
         :: "m"(control_word));
 }
 
-fenv_t _FPU_read_enviroment()
+fenv_t _FPU_read_environment()
 {
-    fenv_t enviroment;
+    fenv_t environment;
 
     __asm__ (
         "fstenv %0 \n"
-        : "=m"(enviroment));
-    return enviroment;
+        : "=m"(environment));
+    return environment;
 }
 
-void _FPU_write_enviroment(fenv_t enviroment)
+void _FPU_write_environment(fenv_t environment)
 {
     __asm__ (
         "fldenv %0"
-        :: "m"(enviroment));
+        :: "m"(environment));
 }
 
 fexcept_t _FPU_read_status_word()
