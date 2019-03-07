@@ -188,6 +188,14 @@ int feraiseexcept(int excepts);
 */
 int fesetexceptflag(const fexcept_t *flagp, int excepts);
 
+//! Test for floating-point exceptions.
+/*!
+    Function determines which of a specified subset of the floatingpoint exception flags are currently set. The excepts argument specifies the floatingpoint status flags to be queried.
+    \param excepts Exception flags to check.
+    \return Function returns the value of the bitwise OR of the floating-point exception macros corresponding to the currently set floating-point exceptions included in excepts.
+*/
+int fetestexcept(int excepts);
+
 // Rounding direction
 
 //! Get current rounding direction.

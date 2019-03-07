@@ -143,6 +143,26 @@ int fesetexceptflag(const fexcept_t *flagp, int excepts)
     return 0;
 }
 
+int fetestexcept(int excepts)
+{
+    if(excepts == 0)
+    {
+        return 0;
+    }
+    // We only have 6 excepts to check to cut varaible.
+    unsigned char excepts_to_check = (unsigned char)excepts;
+
+    // Set first 2 digit as 0 to make sure we won't check anything in first 2 bits.
+    excepts_to_check &= 0x3F;
+
+    // Get current environment of FPU.
+    fexcept_t fe = _FPU_read_status_word();
+
+    unsigned char * p_fe = (unsigned char *)&fe;
+    excepts_to_check &= p_fe[0];
+    return excepts_to_check;
+}
+
 // Rounding direction
 
 int fegetround(void)
@@ -176,6 +196,7 @@ int fegetenv(fenv_t *envp)
         return 1;
     }
     *envp = _FPU_read_enviroment();
+    return 0;
 }
 
 int fesetenv(const fenv_t *envp)
