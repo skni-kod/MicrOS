@@ -7,6 +7,9 @@ void _start(char *path, char *parameters)
     stdout = streams_create_stream();
     streams_set_stream_as_console(stdout);
     
+    stderr = streams_create_stream();
+    streams_set_stream_as_console(stderr);
+    
     int argc = 0;
     char **argv = parse_parameters(path, parameters, &argc);
 
