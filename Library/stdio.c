@@ -14,14 +14,7 @@ int fflush(FILE* stream)
 
 int fputc(int character, FILE* stream)
 {
-    if(stream->pos + 1 > BUFSIZ)
-    {
-        fflush(stream);
-    }
-    
-    stream->buffer[stream->pos] = character;
-    stream->pos++;
-    
+    fwrite(&character, 1, 1, stream);
     return character;
 }
 
