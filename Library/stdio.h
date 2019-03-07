@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include "Streams/file.h"
 #include "Streams/console_stream.h"
+#include "Streams/keyboard_stream.h"
 
 FILE *stdin;
 FILE *stdout;
