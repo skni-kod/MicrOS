@@ -17,6 +17,13 @@
 #define M_SQRT2     1.41421356237309504880
 #define M_SQRT1_2   0.70710678118654752440
 
+//! The isnan macro determines whether its argument value is a NaN.
+/*!
+    \param x Value to check.
+    \return Returns a nonzero value if and only if its argument has a NaN value
+*/
+#define isnan(x) ((x) != (x))
+
 // Trigonometric functions
 
 double cos(double x);
