@@ -1,12 +1,38 @@
 #include "stdio.h"
 
+int fputc(int character, FILE* stream)
+{
+    streams_expand_buffer_to_size(stream, stream->pos + 1);
+    stream->buffer[stream->pos] = character;
+    stream->pos++;
+    
+    return character;
+}
+
 int fputs(const char* str, FILE* stream)
 {
     uint32_t str_length = strlen(str);
-    if(stream->size < stream->size + str_length)
-    {
-        memcpy(stream->buffer + stream->pos, str, str_length);
-    }
+    
+    streams_expand_buffer_to_size(stream, stream->pos + str_length);
+    memcpy(stream->buffer + stream->pos, str, str_length);
+    
+    stream->pos += str_length;
+    return 0;
+}
+
+int putc(int character, FILE* stream)
+{
+    return fputc(character, stream);
+}
+
+int putchar(int character)
+{
+    return fputc(character, stdout);
+}
+
+int puts(const char* str)
+{
+    return fputs(str, stdout);
 }
 
 int fflush(FILE* stream)
