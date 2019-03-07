@@ -1,5 +1,17 @@
 #include "stdio.h"
 
+int fclose(FILE * stream)
+{
+    fflush(stream);
+    free(stream);
+}
+
+int fflush(FILE* stream)
+{
+    stream->flush(stream);
+    stream->pos = 0;
+}
+
 int fputc(int character, FILE* stream)
 {
     streams_expand_buffer_to_size(stream, stream->pos + 1);
@@ -45,10 +57,15 @@ int ungetc(int character, FILE* stream)
     return stream->buffer[stream->pos - 1];
 }
 
-int fflush(FILE* stream)
+size_t fwrite(const void* ptr, size_t size, size_t count, FILE* stream)
 {
-    stream->flush(stream);
-    stream->pos = 0;
+    uint32_t total_size = size * count;
+    
+    streams_expand_buffer_to_size(stream, stream->pos + total_size);
+    memcpy(stream->buffer + stream->pos, ptr, total_size);
+    
+    stream->pos += total_size;
+    return 0;
 }
 
 FILE* streams_create_stream()
