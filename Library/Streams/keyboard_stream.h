@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "file.h"
+#include "../micros.h"
 
 FILE* streams_set_stream_as_keyboard(FILE* stream);
 void streams_keyboard_fetch(FILE* stream);
