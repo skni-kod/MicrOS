@@ -14,7 +14,11 @@ int fflush(FILE* stream)
 
 int fputc(int character, FILE* stream)
 {
-    streams_expand_buffer_to_size(stream, stream->pos + 1);
+    if(stream->pos + 1 > stream->size)
+    {
+        fflush(stream);
+    }
+    
     stream->buffer[stream->pos] = character;
     stream->pos++;
     
@@ -23,13 +27,7 @@ int fputc(int character, FILE* stream)
 
 int fputs(const char* str, FILE* stream)
 {
-    uint32_t str_length = strlen(str);
-    
-    streams_expand_buffer_to_size(stream, stream->pos + str_length);
-    memcpy(stream->buffer + stream->pos, str, str_length);
-    
-    stream->pos += str_length;
-    return 0;
+    return fwrite(str, strlen(str), 1, stream);
 }
 
 int putc(int character, FILE* stream)
@@ -61,7 +59,11 @@ size_t fwrite(const void* ptr, size_t size, size_t count, FILE* stream)
 {
     uint32_t total_size = size * count;
     
-    streams_expand_buffer_to_size(stream, stream->pos + total_size);
+    if(stream->pos + total_size > stream->size)
+    {
+        fflush(stream);
+    }
+    
     memcpy(stream->buffer + stream->pos, ptr, total_size);
     
     stream->pos += total_size;
@@ -92,13 +94,4 @@ void streams_console_fetch(FILE* stream)
 void streams_console_flush(FILE* stream)
 {
     micros_console_print_string(stream->buffer);
-}
-
-void streams_expand_buffer_to_size(FILE* stream, uint32_t needed_size)
-{
-    while(stream->size <= stream->pos + needed_size)
-    {
-        stream->size *= 2;
-        stream->buffer = realloc(stream->buffer, stream->size);
-    }
 }
