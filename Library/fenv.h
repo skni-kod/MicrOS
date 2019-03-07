@@ -212,8 +212,20 @@ int fesetround(int round);
 */
 int fegetenv(fenv_t *envp);
 
-
+//! Set entire environment.
+/*!
+    \param envp Pointer to struct from where environment will read environment.
+    \return Function returns zero if the environment was successfully wrote. Otherwise, it returns a nonzero value.
+*/
 int fesetenv(const fenv_t *envp);
+
+//! Hold floating-point exceptions.
+/*!
+    Function saves the current floating-point environment in the object pointed to by envp, clears the floating-point status flags, and then installs a non-stop (continue on floating-point exceptions) mode, if available, for all floating-point exceptions.
+    \param envp Pointer to struct where environment will be saved.
+    \return Function returns zero if and only if non-stop floating-point exception handling was successfully installed.
+*/
+int feholdexcept(fenv_t *envp);
 
 #ifdef __cplusplus
 }
