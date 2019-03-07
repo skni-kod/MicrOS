@@ -25,6 +25,7 @@ int fputs(const char* str, FILE* stream);
 int putc(int character, FILE* stream);
 int putchar(int character);
 int puts(const char* str);
+int ungetc(int character, FILE* stream);
 int fflush(FILE* stream);
 
 FILE* streams_create_stream();
