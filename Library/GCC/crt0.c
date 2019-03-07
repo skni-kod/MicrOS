@@ -4,6 +4,9 @@ void _start(char *path, char *parameters)
 {
     __asm__ ("finit");
     
+    stdout = streams_create_stream();
+    streams_set_stream_as_console(stdout);
+    
     int argc = 0;
     char **argv = parse_parameters(path, parameters, &argc);
 

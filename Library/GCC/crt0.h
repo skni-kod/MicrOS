@@ -2,6 +2,7 @@
 #define CRT0_H
 
 #include "../stdlib.h"
+#include "../stdio.h"
 
 void _start(char *path, char *parameters);
 char **parse_parameters(char *path, char *parameters, int *count);
