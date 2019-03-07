@@ -1,6 +1,8 @@
 #include <stdarg.h>
 #include "stdlib.h"
 
+#define BUFFER_SIZE 16
+
 int sscanf(const char *str, const char *format, ...)
 {
     return 0;
@@ -20,17 +22,18 @@ int sprintf(char *str, const char *format, ...)
     {
 
         // put char to buffer until you see '%'
-        while (*traverse != '%')
+        while (*traverse != '%' && *traverse != '\0')
         {
             str[put_index++] = *traverse;
 
             ++traverse;
         }
 
+        if(*traverse == '\0')
+            break;
+
         // set pointer to character after '%'
         ++traverse;
-
-#define BUFFER_SIZE 16
 
         char buffer[BUFFER_SIZE];
         int index = 0;
@@ -67,14 +70,15 @@ int sprintf(char *str, const char *format, ...)
             break;
 
         case 's':
-            // str_arg = va_arg(arg, char *);
-            // // put arg to buffer
-            // index = 0;
-            // while (str_arg[index] != '\0')
-            // {
-            //     str[put_index++] = str_arg[index];
-            //     index++;
-            // }
+            str_arg = va_arg(arg, char *);
+            // put arg to buffer
+            //micros_console_print_string(str_arg);
+            index = 0;
+            while (str_arg[index] != '\0')
+            {
+                str[put_index++] = str_arg[index];
+                index++;
+            }
             break;
 
         case 'x':
