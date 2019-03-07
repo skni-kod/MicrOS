@@ -40,3 +40,12 @@ void streams_console_flush(FILE* stream)
 {
     micros_console_print_string(stream->buffer);
 }
+
+void streams_expand_buffer_to_size(FILE* stream, uint32_t needed_size)
+{
+    while(stream->size <= stream->pos + needed_size)
+    {
+        stream->size *= 2;
+        stream->buffer = realloc(stream->buffer, stream->size);
+    }
+}
