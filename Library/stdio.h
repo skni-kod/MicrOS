@@ -1,17 +1,24 @@
 #ifndef STDIO_H
 #define STDIO_H
 
-#define BUFSIZ 1024
+#define BUFSIZ 1024 * 8
 #define size_t uint32_t
 
 #include <stdint.h>
 #include "micros.h"
 
+typedef enum file_buffering_mode
+{
+    file_buffering_mode_none,
+    file_buffering_mode_line,
+    file_buffering_mode_full
+} file_buffering_mode;
+
 typedef struct FILE
 {
     char* buffer;
     uint32_t pos;
-    uint32_t size;
+    file_buffering_mode buffering_mode;
     
     void (*fetch)(struct FILE* file);
     void (*flush)(struct FILE* file);
