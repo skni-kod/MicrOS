@@ -1,6 +1,9 @@
 #include "ctype.h"
 
-int isalpha(int c)
+int isalnum(int c)
 {
-    return 0;
+    if((c >= 0x61 && c <= 0x7a) || (c >= 0x41 && c <= 0x5a) || (c >= 0x30 && c <= 0x39))
+        return 1;
+    else
+        return 0;
 }

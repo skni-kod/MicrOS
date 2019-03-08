@@ -2,5 +2,8 @@
 
 int isblank(int c)
 {
-    return 0;
+    if((c == 0x09 || c == 0x20))
+        return 1;
+    else
+        return 0;
 }

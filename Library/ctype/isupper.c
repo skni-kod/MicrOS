@@ -2,5 +2,8 @@
 
 int isupper(int c)
 {
-    return 0;
+    if(c >= 0x41 && c <= 0x5a)
+        return 1;
+    else
+        return 0;
 }

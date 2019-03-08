@@ -2,5 +2,8 @@
 
 int tolower(int c)
 {
-    return 0;
+	if( c>=0x41 && c<=0x5a)
+        return (c = c + 0x61 - 0x41);
+    else
+        return c;
 }

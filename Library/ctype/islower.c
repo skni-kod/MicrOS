@@ -2,5 +2,8 @@
 
 int islower(int c)
 {
-    return 0;
+    if(c >= 0x61 && c <= 0x7a)
+        return 1;
+    else
+        return 0;
 }

@@ -2,5 +2,8 @@
 
 int toupper(int c)
 {
-    return 0;
+	if( c>=0x61 && c<=0x7a)
+        return (c = c + 0x41 - 0x61);
+    else
+        return c;
 }
