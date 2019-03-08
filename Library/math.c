@@ -550,7 +550,7 @@ double fmod(double numer, double denom)
         "fprem \n" \
         "fstpl %0"
         : "=m"(numer): "m"(numer), "m"(denom));
-    return trunc(numer);
+    return numer;
 }
 
 float fmodf(float numer, float denom)
@@ -566,7 +566,7 @@ float fmodf(float numer, float denom)
         "fprem \n" \
         "fstp %0"
         : "=m"(numer): "m"(numer), "m"(denom));
-    return trunc(numer);
+    return numer;
 }
 
 double trunc(double x)
