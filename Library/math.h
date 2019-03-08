@@ -665,6 +665,24 @@ long long int llround(double x);
 */
 long long int llroundf(float x);
 
+//! Compute reminder required by IEC 60559.
+/*! 
+    The remainder functions compute the remainder x REM y required by IEC 60559.
+    \param numer Dividend.
+    \param denom Divider.
+    \return The remainder functions return x REM y. If y is zero, whether a domain error occurs or the functions return zero is implementation defined.
+*/
+double remainder(double x, double y);
+
+//! Compute reminder required by IEC 60559.
+/*! 
+    The remainderf functions compute the remainder x REM y required by IEC 60559.
+    \param numer Dividend.
+    \param denom Divider.
+    \return The remainder functions return x REM y. If y is zero, whether a domain error occurs or the functions return zero is implementation defined.
+*/
+float remainderf(float x, float y);
+
 // Minimum, maximum, difference functions
 
 //! Positive difference.

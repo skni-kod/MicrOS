@@ -671,6 +671,38 @@ long long int llroundf(float x)
     return x;
 }
 
+double remainder(double x, double y)
+{
+    if(y == 0)
+    {
+        errno = EDOM;
+        return 0;
+    }
+    __asm__ (
+        "fldl %2 \n" \
+        "fldl %1 \n" \
+        "fprem1 \n" \
+        "fstpl %0"
+        : "=m"(x): "m"(x), "m"(y));
+    return x;
+}
+
+float remainderf(float x, float y)
+{
+    if(y == 0)
+    {
+        errno = EDOM;
+        return 0;
+    }
+    __asm__ (
+        "fld %2 \n" \
+        "fld %1 \n" \
+        "fprem1 \n" \
+        "fstp %0"
+        : "=m"(x): "m"(x), "m"(y));
+    return x;
+}
+
 // Minimum, maximum, difference functions
 
 double fdim(double x, double y)
