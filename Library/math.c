@@ -614,3 +614,29 @@ float fabsf(float x)
         : "=m"(x): "m"(x));
     return x;
 }
+
+double fma(double x, double y, double z)
+{
+    __asm__ (
+        "fldl  %3 \n" \
+        "fldl  %2 \n" \
+        "fldl  %1 \n" \
+        "fmulp \n" \
+        "faddp \n" \
+        "fstpl %0"
+        : "=m"(x): "m"(x), "m"(y), "m"(z));
+    return x;
+}
+
+float fmaf(float x, float y, float z)
+{
+    __asm__ (
+        "fld  %3 \n" \
+        "fld  %2 \n" \
+        "fld  %1 \n" \
+        "fmulp \n" \
+        "faddp \n" \
+        "fstp %0"
+        : "=m"(x): "m"(x), "m"(y), "m"(z));
+    return x;
+}

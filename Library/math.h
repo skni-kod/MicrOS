@@ -622,4 +622,24 @@ double fabs(double x);
 */
 float fabsf(float x);
 
+//! Multiply-add.
+/*! 
+    The fma functions compute (x × y) + z, rounded as one ternary operation: they compute the value (as if) to infinite precision and round once to the result format, according to the current rounding mode. A range error may occur.
+    \param x First value.
+    \param y Second value.
+    \param z Third value.
+    \return The fma functions return (x × y) + z, rounded as one ternary operation.
+*/
+double fma(double x, double y, double z);
+
+//! Multiply-add.
+/*! 
+    The fmaf functions compute (x × y) + z, rounded as one ternary operation: they compute the value (as if) to infinite precision and round once to the result format, according to the current rounding mode. A range error may occur.
+    \param x First value.
+    \param y Second value.
+    \param z Third value.
+    \return The fmaf functions return (x × y) + z, rounded as one ternary operation.
+*/
+float fmaf(float x, float y, float z);
+
 #endif
