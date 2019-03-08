@@ -33,12 +33,13 @@ int fgetc(FILE *stream)
 
 char *fgets(char *str, int num, FILE *stream)
 {
+    char c = fgetc(stream);
     int i = 0;
-    while (char c = fgetc(stream) != '\n' && stream->pos != stream->size && i < num)
+
+    do
     {
-        c = fgetc(stream);
         str[i++] = c;
-    }
+    } while (stream->pos != stream->size && (c = fgetc(stream), c != '\n') && i < num);
 
     str[i] = 0;
     return str;
