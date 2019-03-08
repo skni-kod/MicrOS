@@ -15,11 +15,6 @@
 #define FLAGS_LONG_LONG (1U << 9U)
 #define FLAGS_PRECISION (1U << 10U)
 
-int sscanf(const char *str, const char *format, ...)
-{
-    return 0;
-}
-
 bool _is_digit(char c)
 {
     return c >= '0' && c <= '9';
