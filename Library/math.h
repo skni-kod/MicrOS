@@ -41,6 +41,12 @@ int _math_errhandling = MATH_ERRNO;
 /*! The macro constant math_errhandling expands to an expression of type int that is either equal to MATH_ERRNO, or equal to MATH_ERREXCEPT, or equal to their bitwise OR (MATH_ERRNO | MATH_ERREXCEPT). */
 #define math_errhandling _math_errhandling
 
+//! The signbit macro determines whether the sign of its argument value is negative.
+/*!
+    /return The signbit macro returns a nonzero value if and only if the sign of its argument value is negative.
+*/
+#define signbit(arg) (((unsigned char)(&(arg))[0]) & (unsigned char)128)
+
 #if FLT_EVAL_METHOD == 0
     //! Floating-point type.
     /*!
