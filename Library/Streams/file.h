@@ -10,7 +10,9 @@ typedef enum file_buffering_mode
 
 typedef struct file
 {
+    char path[128];
     char *buffer;
+    uint32_t base;
     uint32_t pos;
     uint32_t size;
     file_buffering_mode buffering_mode;

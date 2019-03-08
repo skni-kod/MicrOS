@@ -1,5 +1,11 @@
 #include "stdio.h"
 
+FILE *fopen(const char *filename, const char *mode)
+{
+    FILE *stream = streams_create_stream();
+    streams_set_stream_as_file(filename, mode, stream);
+}
+
 int fclose(FILE *stream)
 {
     fflush(stream);
@@ -178,6 +184,7 @@ FILE *streams_create_stream()
 {
     FILE *stream = malloc(sizeof(FILE));
     stream->buffer = malloc(BUFSIZ);
+    stream->base = 0;
     stream->pos = 0;
     stream->size = 0;
     stream->buffering_mode = file_buffering_mode_line;

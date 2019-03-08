@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 #include "Streams/file.h"
-#include "Streams/console_stream.h"
-#include "Streams/keyboard_stream.h"
+#include "Streams/file_stream.h"
 
 FILE *stdin;
 FILE *stdout;
 FILE *stderr;
 
+FILE *fopen(const char *filename, const char *mode);
 int fclose(FILE *stream);
 int fflush(FILE *stream);
 
