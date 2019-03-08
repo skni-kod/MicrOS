@@ -5,8 +5,8 @@
 #include "file.h"
 #include "../micros.h"
 
-FILE* streams_set_stream_as_keyboard(FILE* stream);
-void streams_keyboard_fetch(FILE* stream);
-void streams_keyboard_flush(FILE* stream);
+FILE *streams_set_stream_as_keyboard(FILE *stream);
+int streams_keyboard_fetch(FILE *stream);
+void streams_keyboard_flush(FILE *stream);
 
 #endif
