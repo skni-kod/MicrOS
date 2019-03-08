@@ -23,9 +23,6 @@ int fgetc(FILE *stream)
 {
     if (stream->pos == stream->size)
     {
-        stream->pos = 0;
-        stream->size = 0;
-
         if (stream->fetch(stream) == 0)
         {
             return EOF;
@@ -187,6 +184,7 @@ FILE *streams_create_stream()
     stream->base = 0;
     stream->pos = 0;
     stream->size = 0;
+    stream->limit = 0;
     stream->buffering_mode = file_buffering_mode_line;
 
     return stream;

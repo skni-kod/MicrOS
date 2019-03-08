@@ -15,6 +15,7 @@ typedef struct file
     uint32_t base;
     uint32_t pos;
     uint32_t size;
+    uint32_t limit;
     file_buffering_mode buffering_mode;
 
     int (*fetch)(struct file *file);

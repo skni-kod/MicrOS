@@ -1,6 +1,8 @@
 #ifndef FILE_STREAM_H
 #define FILE_STREAM_H
 
+#define CHUNK_SIZE 10
+
 #include <stdint.h>
 #include "file.h"
 #include "../micros.h"
