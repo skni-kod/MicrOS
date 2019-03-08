@@ -595,6 +595,28 @@ float roundf(float x)
     return x;
 }
 
+// Minimum, maximum, difference functions
+
+double fmax(double x, double y)
+{
+    return x > y ? x : y;
+}
+
+float fmaxf(float x, float y)
+{
+    return x > y ? x : y;
+}
+
+double fmin(double x, double y)
+{
+    return x < y ? x : y;
+}
+
+float fminf(float x, float y)
+{
+    return x < y ? x : y;
+}
+
 // Other functions
 
 double fabs(double x)

@@ -604,6 +604,44 @@ double round(double x);
 */
 float roundf(float x);
 
+// Minimum, maximum, difference functions
+
+//! Higher value.
+/*! 
+    The fmax functions determine the maximum numeric value of their arguments.
+    \param x First value.
+    \param Y Second value.
+    \return The fmax functions return the maximum numeric value of their arguments.
+*/
+double fmax(double x, double y);
+
+//! Higher value.
+/*! 
+    The fmaxf functions determine the maximum numeric value of their arguments.
+    \param x First value.
+    \param Y Second value.
+    \return The fmaxf functions return the maximum numeric value of their arguments.
+*/
+float fmaxf(float x, float y);
+
+//! Lower value.
+/*! 
+    The fmin functions determine the minimum numeric value of their arguments.
+    \param x First value.
+    \param Y Second value.
+    \return The fmin functions return the minimum numeric value of their arguments.
+*/
+double fmin(double x, double y);
+
+//! Lower value.
+/*! 
+    The fminf functions determine the minimum numeric value of their arguments.
+    \param x First value.
+    \param Y Second value.
+    \return The fminf functions return the minimum numeric value of their arguments.
+*/
+float fminf(float x, float y);
+
 // Other functions
 
 //! Calculate absolute value.
