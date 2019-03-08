@@ -3,11 +3,17 @@
 
 #define BUFSIZ 1024 * 8
 #define EOF -1
-#define size_t uint32_t
+
+#define SEEK_SET 0
+#define SEEK_CUR 1
+#define SEEK_END 2
 
 #include <stdint.h>
 #include "Streams/file.h"
 #include "Streams/file_stream.h"
+
+typedef uint32_t size_t;
+typedef uint32_t fpos_t;
 
 FILE *stdin;
 FILE *stdout;
@@ -31,6 +37,12 @@ int ungetc(int character, FILE *stream);
 
 size_t fread(void *ptr, size_t size, size_t count, FILE *stream);
 size_t fwrite(const void *ptr, size_t size, size_t count, FILE *stream);
+
+int fgetpos(FILE *stream, fpos_t *pos);
+int fseek(FILE *stream, long int offset, int origin);
+int fsetpos(FILE *stream, const fpos_t *pos);
+long int ftell(FILE *stream);
+void rewind(FILE *stream);
 
 FILE *streams_create_stream();
 

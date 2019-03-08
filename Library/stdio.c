@@ -175,6 +175,66 @@ size_t fwrite(const void *ptr, size_t size, size_t count, FILE *stream)
     return total_size;
 }
 
+int fgetpos(FILE *stream, fpos_t *pos)
+{
+    *pos = stream->pos;
+}
+
+int fseek(FILE *stream, long int offset, int origin)
+{
+    uint32_t backup_pos = stream->pos;
+
+    switch (origin)
+    {
+    case SEEK_SET:
+    {
+        stream->pos = offset;
+        break;
+    }
+
+    case SEEK_CUR:
+    {
+        stream->pos += offset;
+        break;
+    }
+
+    case SEEK_END:
+    {
+        stream->pos = stream->limit + offset;
+        break;
+    }
+    }
+
+    if (stream->pos < 0 || stream->pos > stream->limit)
+    {
+        stream->pos = backup_pos;
+        return -1;
+    }
+
+    return 0;
+}
+
+int fsetpos(FILE *stream, const fpos_t *pos)
+{
+    if (*pos < 0 || *pos > stream->limit)
+    {
+        return -1;
+    }
+
+    stream->pos = *pos;
+    return 0;
+}
+
+long int ftell(FILE *stream)
+{
+    return stream->pos;
+}
+
+void rewind(FILE *stream)
+{
+    stream->pos = 0;
+}
+
 FILE *streams_create_stream()
 {
     FILE *stream = malloc(sizeof(FILE));
