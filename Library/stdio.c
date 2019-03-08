@@ -64,6 +64,21 @@ int fputs(const char *str, FILE *stream)
     return fwrite(str, strlen(str), 1, stream);
 }
 
+int getc(FILE *stream)
+{
+    return fgetc(stream);
+}
+
+int getchar()
+{
+    return fgetc(stdin);
+}
+
+char *gets(char *str)
+{
+    return fgets(str, INT32_MAX, stdin);
+}
+
 int putc(int character, FILE *stream)
 {
     return fputc(character, stream);
