@@ -17,14 +17,68 @@
 #define M_SQRT2     1.41421356237309504880
 #define M_SQRT1_2   0.70710678118654752440
 
+// Comparison macros
+
 //! The isnan macro determines whether its argument value is a NaN.
 /*!
     \param x Value to check.
-    \return Returns a nonzero value if and only if its argument has a NaN value
+    \return Returns a nonzero value if and only if its argument has a NaN value.
 */
 #define isnan(x) ((x) != (x))
 
+//! The isnan macro determines whether its argument value is a NaN.
+/*!
+    The isgreater macro determines whether its first argument is greater than its second argument. The value of isgreater(x, y) is always equal to (x) > (y); however, unlike (x) > (y), isgreater(x, y) does not raise the ‘‘invalid’’ floating-point exception when x and y are unordered.
+    \param x First value.
+    \param y Second value.
+    \return The isgreater macro returns the value of (x) > (y).
+*/
 #define isgreater(x,y) ((isnan(x) || isnan(y)) ? 0 : ( (x) > (y) ? 1 : 0 ))
+
+//! Check if value x is greather than y.
+/*!
+    The isgreaterequal macro determines whether its first argument is greater than or equal to its second argument. The value of isgreaterequal(x, y) is always equal to (x) >= (y); howev er, unlike (x) >= (y), isgreaterequal(x, y) does not raise the ‘‘invalid’’ floating-point exception when x and y are unordered.
+    \param x First value.
+    \param y Second value.
+    \return The isgreaterequal macro returns the value of (x) >= (y).
+*/
+#define isgreaterequal(x,y) ((isnan(x) || isnan(y)) ? 0 : ( (x) >= (y) ? 1 : 0 ))
+
+//! Check if value x is less than y.
+/*!
+    The isless macro determines whether its first argument is less than its second argument. The value of isless(x, y) is always equal to (x) < (y); however, unlike (x) < (y), isless(x, y) does not raise the ‘‘invalid’’ floating-point exception when x and y are unordered.
+    \param x First value.
+    \param y Second value.
+    \return The isless macro returns the value of (x) < (y).
+*/
+#define isless(x,y) ((isnan(x) || isnan(y)) ? 0 : ( (x) < (y) ? 1 : 0 ))
+
+//! Check if value x is less or equal than y.
+/*!
+    The islessequal macro determines whether its first argument is less than or equal to its second argument. The value of islessequal(x, y) is always equal to(x) <= (y); however, unlike (x) <= (y), islessequal(x, y) does not raise the ‘‘invalid’’ floating-point exception when x and y are unordered.
+    \param x First value.
+    \param y Second value.
+    \return The islessequal macro returns the value of (x) <= (y).
+*/
+#define islessequal(x,y) ((isnan(x) || isnan(y)) ? 0 : ( (x) <= (y) ? 1 : 0 ))
+
+//! Check if value x is less or greather than y.
+/*! 
+    The islessgreater macro determines whether its first argument is less than or greater than its second argument. The islessgreater(x, y) macro is similar to (x) < (y) || (x) > (y); however, islessgreater(x, y) does not raise the ‘‘invalid’’ floating-point exception when x and y are unordered (nor does it evaluate x and y twice).
+    \param x First value.
+    \param y Second value.
+    \return The islessgreater macro returns the value of (x) < (y) || (x) > (y).
+*/
+#define islessgreater(x,y) ((isnan(x) || isnan(y)) ? 0 : ( (x) < (y) || (x) > (y) ? 1 : 0 ))
+
+//! Check if value x or y is unordered.
+/*! 
+    The isunordered macro determines whether its arguments are unordered.
+    \param x First value.
+    \param y Second value.
+    \return The isunordered macro returns 1 if its arguments are unordered and 0 otherwise.
+*/
+#define isunordered(x,y) ((isnan(x) || isnan(y)) ? 1 : 0 ))
 
 // Trigonometric functions
 
