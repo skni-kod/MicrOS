@@ -2,6 +2,7 @@
 #define STDIO_H
 
 #define BUFSIZ 1024 * 8
+#define EOF -1
 #define size_t uint32_t
 
 #include <stdint.h>
@@ -28,6 +29,7 @@ int putchar(int character);
 int puts(const char *str);
 int ungetc(int character, FILE *stream);
 
+size_t fread(void *ptr, size_t size, size_t count, FILE *stream);
 size_t fwrite(const void *ptr, size_t size, size_t count, FILE *stream);
 
 FILE *streams_create_stream();

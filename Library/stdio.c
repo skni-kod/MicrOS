@@ -19,7 +19,11 @@ int fgetc(FILE *stream)
     {
         stream->pos = 0;
         stream->size = 0;
-        stream->fetch(stream);
+
+        if (stream->fetch(stream) == 0)
+        {
+            return EOF;
+        }
 
         stream->pos = 0;
     }
@@ -29,27 +33,18 @@ int fgetc(FILE *stream)
 
 char *fgets(char *str, int num, FILE *stream)
 {
-    int origin = stream->pos;
-    int length = 0;
+    char c = fgetc(stream);
+    int i = 0;
 
-    if (stream->pos == stream->size)
+    str[i++] = c;
+
+    while (c != '\n' && stream->pos != stream->size && i < num)
     {
-        stream->pos = 0;
-        stream->size = 0;
-        stream->fetch(stream);
-
-        stream->pos = 0;
+        c = fgetc(stream);
+        str[i++] = c;
     }
 
-    while (stream->buffer[stream->pos] != '\n' && stream->pos != stream->size && length < num)
-    {
-        stream->pos++;
-        length++;
-    }
-
-    memcpy(str, stream->buffer + origin, length);
-    str[length] = 0;
-
+    str[i] = 0;
     return str;
 }
 
@@ -102,6 +97,10 @@ int ungetc(int character, FILE *stream)
     }
 
     return stream->buffer[stream->pos - 1];
+}
+
+size_t fread(void *ptr, size_t size, size_t count, FILE *stream)
+{
 }
 
 size_t fwrite(const void *ptr, size_t size, size_t count, FILE *stream)
