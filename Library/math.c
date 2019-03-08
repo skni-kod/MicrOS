@@ -617,6 +617,28 @@ long int lroundf(float x)
     return x;
 }
 
+long long int llround(double x)
+{
+    long long int result;
+    __asm__ (
+        "fldl %1 \n" \
+        "frndint \n" \
+        "fistp %0"
+        : "=m"(result): "m"(x));
+    return x;
+}
+
+long long int llroundf(float x)
+{
+    long long int result;
+    __asm__ (
+        "fld %1 \n" \
+        "frndint \n" \
+        "fistp %0"
+        : "=m"(result): "m"(x));
+    return x;
+}
+
 // Minimum, maximum, difference functions
 
 double fdim(double x, double y)

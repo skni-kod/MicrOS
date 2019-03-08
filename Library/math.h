@@ -618,7 +618,23 @@ long int lround(double x);
     \param x First value.
     \return The lround and llround functions return the rounded integer value.
 */
-long int  lroundf(float x);
+long int lroundf(float x);
+
+//! Rounding.
+/*! 
+    The lround and llround functions round their argument to the nearest integer value, rounding halfway cases away from zero, regardless of the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
+    \param x First value.
+    \return The lround and llround functions return the rounded integer value.
+*/
+long long int llround(double x);
+
+//! Rounding.
+/*! 
+    The lround and llround functions round their argument to the nearest integer value, rounding halfway cases away from zero, regardless of the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
+    \param x First value.
+    \return The lround and llround functions return the rounded integer value.
+*/
+long long int llroundf(float x);
 
 // Minimum, maximum, difference functions
 
