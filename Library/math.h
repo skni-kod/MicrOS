@@ -606,6 +606,24 @@ float roundf(float x);
 
 // Minimum, maximum, difference functions
 
+//! Positive difference.
+/*! 
+    The fdim functions determine the positive difference between their arguments.
+    \param x First value.
+    \param Y Second value.
+    \return The fdim functions return the positive difference value.
+*/
+double fdim(double x, double y);
+
+//! Positive difference.
+/*! 
+    The fdimf functions determine the positive difference between their arguments.
+    \param x First value.
+    \param Y Second value.
+    \return The fdimf functions return the positive difference value.
+*/
+float fdimf(float x, float y);
+
 //! Higher value.
 /*! 
     The fmax functions determine the maximum numeric value of their arguments.

@@ -597,6 +597,16 @@ float roundf(float x)
 
 // Minimum, maximum, difference functions
 
+double fdim(double x, double y)
+{
+    return x > y ? x - y : 0;
+}
+
+float fdimf(float x, float y)
+{
+    return x > y ? x - y : 0;
+}
+
 double fmax(double x, double y)
 {
     return x > y ? x : y;
