@@ -26,6 +26,41 @@ int fflush(FILE *stream)
     return 0;
 }
 
+void setbuf(FILE *stream, char *buffer)
+{
+    if (buffer == NULL)
+    {
+        stream->buffering_mode = file_buffering_mode_none;
+    }
+    else
+    {
+        free(stream->buffer);
+        stream->buffer = buffer;
+    }
+}
+
+int setvbuf(FILE *stream, char *buffer, int mode, size_t size)
+{
+    if (mode < 0 || mode > 2)
+    {
+        return -1;
+    }
+
+    free(stream->buffer);
+
+    if (buffer == NULL)
+    {
+        buffer = malloc(size);
+    }
+    else
+    {
+        stream->base = buffer;
+    }
+
+    stream->buffering_mode = mode;
+    return 0;
+}
+
 int fgetc(FILE *stream)
 {
     if (stream->pos == stream->size)

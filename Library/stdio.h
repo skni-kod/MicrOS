@@ -8,6 +8,10 @@
 #define SEEK_CUR 1
 #define SEEK_END 2
 
+#define _IONBF 0
+#define _IOLBF 1
+#define _IOFBF 2
+
 #include <stdint.h>
 #include "stdlib.h"
 #include "Streams/streams.h"
@@ -22,6 +26,8 @@ FILE *stderr;
 FILE *fopen(const char *filename, const char *mode);
 int fclose(FILE *stream);
 int fflush(FILE *stream);
+void setbuf(FILE *stream, char *buffer);
+int setvbuf(FILE *stream, char *buffer, int mode, size_t size);
 
 int fgetc(FILE *stream);
 char *fgets(char *str, int num, FILE *stream);
