@@ -30,6 +30,52 @@
 //! The reciprocal of the square root of two (also the square root of 1/2).
 #define M_SQRT1_2   0.70710678118654752440
 
+#if FLT_EVAL_METHOD == 0
+    //! Floating-point type.
+    /*!
+        Alias of one of the fundamental floating-point types at least as wide as float.
+    */
+    typedef float float_t;
+    //! Floating-point type.
+    /*!
+        Alias of one of the fundamental floating-point types at least as wide as double.
+    */
+    typedef double double_t;
+#elif FLT_EVAL_METHOD == 1
+    //! Floating-point type.
+    /*!
+        Alias of one of the fundamental floating-point types at least as wide as float.
+    */
+    typedef double float_t;
+    //! Floating-point type.
+    /*!
+        Alias of one of the fundamental floating-point types at least as wide as double.
+    */
+    typedef double double_t;
+#elif FLT_EVAL_METHOD == 2
+    //! Floating-point type.
+    /*!
+        Alias of one of the fundamental floating-point types at least as wide as float.
+    */
+    typedef long double float_t;
+    //! Floating-point type.
+    /*!
+        Alias of one of the fundamental floating-point types at least as wide as double.
+    */
+    typedef long double double_t;
+#else
+    //! Floating-point type.
+    /*!
+        Alias of one of the fundamental floating-point types at least as wide as float.
+    */
+    typedef float float_t;
+    //! Floating-point type.
+    /*!
+        Alias of one of the fundamental floating-point types at least as wide as double.
+    */
+    typedef double double_t;
+#endif
+
 // Comparison macros
 
 //! The isnan macro determines whether its argument value is a NaN.
