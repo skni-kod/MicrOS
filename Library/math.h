@@ -24,6 +24,8 @@
 */
 #define isnan(x) ((x) != (x))
 
+#define isgreater(x,y) ((isnan(x) || isnan(y)) ? 0 : ( (x) > (y) ? 1 : 0 ))
+
 // Trigonometric functions
 
 double cos(double x);
