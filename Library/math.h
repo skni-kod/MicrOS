@@ -1,4 +1,5 @@
 #include<float.h>
+#include "errno.h"
 
 #ifndef MATH_H
 #define MATH_H
@@ -571,6 +572,24 @@ double floor(double x);
     \return The floorf functions return ⎣x⎦, expressed as a floating-point number.
 */
 float floorf(float x);
+
+//! Compute remainder of division.
+/*! 
+    The fmod functions compute the floating-point remainder of x/y.
+    \param numer Dividend.
+    \param denom Divider.
+    \return The fmod functions return the value x − ny, for some integer n such that, if y is nonzero, the result has the same sign as x and magnitude less than the magnitude of y. If y is zero, a domain error occurs and the fmod functions return zero.
+*/
+double fmod(double numer, double denom);
+
+//! Compute remainder of division.
+/*! 
+    The fmodf functions compute the floating-point remainder of x/y.
+    \param numer Dividend.
+    \param denom Divider.
+    \return The fmodf functions return the value x − ny, for some integer n such that, if y is nonzero, the result has the same sign as x and magnitude less than the magnitude of y. If y is zero, a domain error occurs and the fmodf functions return zero.
+*/
+float fmodf(float numer, float denom);
 
 //! Rounding towards zero.
 /*! 
