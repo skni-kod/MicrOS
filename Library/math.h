@@ -31,6 +31,16 @@
 //! The reciprocal of the square root of two (also the square root of 1/2).
 #define M_SQRT1_2   0.70710678118654752440
 
+//! Expands to an expression of type int that is either equal to MATH_ERRNO, or equal to MATH_ERREXCEPT, or equal to their bitwise OR (MATH_ERRNO | MATH_ERREXCEPT).
+int _math_errhandling;
+//! Indicates that floating-point operations use the variable errno to report errors.
+#define MATH_ERRNO 1
+//! Indicates that floating-point exceptions are used.
+#define MATH_ERREXCEPT 2
+//! Macro to access _math_errhandling.
+/*! The macro constant math_errhandling expands to an expression of type int that is either equal to MATH_ERRNO, or equal to MATH_ERREXCEPT, or equal to their bitwise OR (MATH_ERRNO | MATH_ERREXCEPT). */
+#define math_errhandling _math_errhandling
+
 #if FLT_EVAL_METHOD == 0
     //! Floating-point type.
     /*!
