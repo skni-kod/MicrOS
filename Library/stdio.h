@@ -13,19 +13,20 @@ FILE *stdin;
 FILE *stdout;
 FILE *stderr;
 
-int fclose(FILE* stream);
-int fflush(FILE* stream);
+int fclose(FILE *stream);
+int fflush(FILE *stream);
 
-int fgetc(FILE* stream);
-int fputc(int character, FILE* stream);
-int fputs(const char* str, FILE* stream);
-int putc(int character, FILE* stream);
+int fgetc(FILE *stream);
+char *fgets(char *str, int num, FILE *stream);
+int fputc(int character, FILE *stream);
+int fputs(const char *str, FILE *stream);
+int putc(int character, FILE *stream);
 int putchar(int character);
-int puts(const char* str);
-int ungetc(int character, FILE* stream);
+int puts(const char *str);
+int ungetc(int character, FILE *stream);
 
-size_t fwrite(const void* ptr, size_t size, size_t count, FILE* stream);
+size_t fwrite(const void *ptr, size_t size, size_t count, FILE *stream);
 
-FILE* streams_create_stream();
+FILE *streams_create_stream();
 
 #endif
