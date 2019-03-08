@@ -675,7 +675,14 @@ double remainder(double x, double y)
 {
     if(y == 0)
     {
-        errno = EDOM;
+        if(_math_errhandling == MATH_ERRNO)
+        {
+            errno = EDOM;
+        }
+        else if(_math_errhandling == MATH_ERREXCEPT)
+        {
+            feraiseexcept(FE_INVALID);  
+        }
         return 0;
     }
     __asm__ (
@@ -691,7 +698,14 @@ float remainderf(float x, float y)
 {
     if(y == 0)
     {
-        errno = EDOM;
+        if(_math_errhandling == MATH_ERRNO)
+        {
+            errno = EDOM;
+        }
+        else if(_math_errhandling == MATH_ERREXCEPT)
+        {
+            feraiseexcept(FE_INVALID);  
+        }
         return 0;
     }
     __asm__ (
