@@ -269,19 +269,19 @@ float log10f(float x)
     return log2f(x)/log2f(10.);
 }
 
-double modf(double x, double* intpart)
+double modf(double x, double* iptr)
 {
     double remainder;
-    *intpart = (int)x;
-    remainder = x - *intpart;
+    *iptr = (int)x;
+    remainder = x - *iptr;
     return remainder;
 }
 
-float modff(float x, float* intpart)
+float modff(float x, float* iptr)
 {
     float remainder;
-    *intpart = (int)x;
-    remainder = x - *intpart;
+    *iptr = (int)x;
+    remainder = x - *iptr;
     return remainder;
 }
 
