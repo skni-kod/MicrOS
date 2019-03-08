@@ -3,6 +3,7 @@
 
 #include "../stdlib.h"
 #include "../stdio.h"
+#include "../Streams/streams.h"
 
 void _start(char *path, char *parameters);
 char **parse_parameters(char *path, char *parameters, int *count);

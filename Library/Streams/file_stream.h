@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include "file.h"
+#include "../string.h"
 #include "../micros.h"
 
 FILE *streams_set_stream_as_file(const char *filename, const char *mode, FILE *stream);

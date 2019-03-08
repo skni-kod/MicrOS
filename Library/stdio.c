@@ -4,12 +4,16 @@ FILE *fopen(const char *filename, const char *mode)
 {
     FILE *stream = streams_create_stream();
     streams_set_stream_as_file(filename, mode, stream);
+
+    return stream;
 }
 
 int fclose(FILE *stream)
 {
     fflush(stream);
     free(stream);
+
+    return 0;
 }
 
 int fflush(FILE *stream)
@@ -17,6 +21,9 @@ int fflush(FILE *stream)
     stream->flush(stream);
     stream->pos = 0;
     stream->size = 0;
+    stream->base = 0;
+
+    return 0;
 }
 
 int fgetc(FILE *stream)
@@ -29,7 +36,7 @@ int fgetc(FILE *stream)
         }
     }
 
-    return stream->buffer[stream->pos++];
+    return stream->buffer[stream->pos++ - stream->base];
 }
 
 char *fgets(char *str, int num, FILE *stream)
@@ -94,7 +101,7 @@ int ungetc(int character, FILE *stream)
         stream->pos++;
     }
 
-    return stream->buffer[stream->pos - 1];
+    return stream->buffer[stream->pos - stream->base - 1];
 }
 
 size_t fread(void *ptr, size_t size, size_t count, FILE *stream)
@@ -124,7 +131,7 @@ size_t fwrite(const void *ptr, size_t size, size_t count, FILE *stream)
     {
     case file_buffering_mode_none:
     {
-        memcpy(stream->buffer + stream->pos, ptr, total_size);
+        memcpy(stream->buffer + (stream->pos - stream->base), ptr, total_size);
         stream->pos += total_size;
         stream->size += total_size;
 
@@ -136,14 +143,14 @@ size_t fwrite(const void *ptr, size_t size, size_t count, FILE *stream)
     case file_buffering_mode_line:
     {
         uint32_t origin = 0;
-        for (int i = origin; i < total_size; i++)
+        for (uint32_t i = origin; i < total_size; i++)
         {
             char c = ((const char *)ptr)[i];
             if (c == '\n')
             {
                 uint32_t bytes_to_copy = i - origin + 1;
 
-                memcpy(stream->buffer + stream->pos, ptr + origin, bytes_to_copy);
+                memcpy(stream->buffer + (stream->pos - stream->base), ptr + origin, bytes_to_copy);
                 fflush(stream);
 
                 origin = i + 1;
@@ -154,7 +161,7 @@ size_t fwrite(const void *ptr, size_t size, size_t count, FILE *stream)
         {
             uint32_t bytes_to_copy = total_size - origin - 1;
 
-            memcpy(stream->buffer + stream->pos, ptr + origin, bytes_to_copy);
+            memcpy(stream->buffer + (stream->pos - stream->base), ptr + origin, bytes_to_copy);
             stream->pos += bytes_to_copy;
             stream->size += bytes_to_copy;
         }
@@ -164,7 +171,7 @@ size_t fwrite(const void *ptr, size_t size, size_t count, FILE *stream)
 
     case file_buffering_mode_full:
     {
-        memcpy(stream->buffer + stream->pos, ptr, total_size);
+        memcpy(stream->buffer + (stream->pos - stream->base), ptr, total_size);
         stream->pos += total_size;
         stream->size += total_size;
 
@@ -178,6 +185,7 @@ size_t fwrite(const void *ptr, size_t size, size_t count, FILE *stream)
 int fgetpos(FILE *stream, fpos_t *pos)
 {
     *pos = stream->pos;
+    return 0;
 }
 
 int fseek(FILE *stream, long int offset, int origin)
@@ -205,24 +213,21 @@ int fseek(FILE *stream, long int offset, int origin)
     }
     }
 
-    if (stream->pos < 0 || stream->pos > stream->limit)
+    if (stream->pos > stream->limit)
     {
         stream->pos = backup_pos;
         return -1;
     }
+
+    stream->base = stream->pos;
+    stream->size = stream->pos;
 
     return 0;
 }
 
 int fsetpos(FILE *stream, const fpos_t *pos)
 {
-    if (*pos < 0 || *pos > stream->limit)
-    {
-        return -1;
-    }
-
-    stream->pos = *pos;
-    return 0;
+    return fseek(stream, *pos, SEEK_SET);
 }
 
 long int ftell(FILE *stream)
@@ -232,7 +237,7 @@ long int ftell(FILE *stream)
 
 void rewind(FILE *stream)
 {
-    stream->pos = 0;
+    fseek(stream, 0, SEEK_SET);
 }
 
 FILE *streams_create_stream()

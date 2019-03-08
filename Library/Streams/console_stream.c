@@ -5,6 +5,8 @@ FILE *streams_set_stream_as_console(FILE *stream)
     stream->buffering_mode = file_buffering_mode_none;
     stream->fetch = streams_console_fetch;
     stream->flush = streams_console_flush;
+
+    return stream;
 }
 
 int streams_console_fetch(FILE *stream)

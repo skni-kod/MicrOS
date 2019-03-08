@@ -9,8 +9,8 @@
 #define SEEK_END 2
 
 #include <stdint.h>
-#include "Streams/file.h"
-#include "Streams/file_stream.h"
+#include "stdlib.h"
+#include "Streams/streams.h"
 
 typedef uint32_t size_t;
 typedef uint32_t fpos_t;
