@@ -659,7 +659,7 @@ long int lround(double x)
         : "=m"(result): "m"(x));
     // Restore previous FPU control
     _FPU_write_control_word(previous);
-    return x;
+    return result;
 }
 
 long int lroundf(float x)
@@ -678,7 +678,7 @@ long int lroundf(float x)
         : "=m"(result): "m"(x));
     // Restore previous FPU control
     _FPU_write_control_word(previous);
-    return x;
+    return result;
 }
 
 long long int llround(double x)
@@ -697,7 +697,7 @@ long long int llround(double x)
         : "=m"(result): "m"(x));
     // Restore previous FPU control
     _FPU_write_control_word(previous);
-    return x;
+    return result;
 }
 
 long long int llroundf(float x)
@@ -716,6 +716,26 @@ long long int llroundf(float x)
         : "=m"(result): "m"(x));
     // Restore previous FPU control
     _FPU_write_control_word(previous);
+    return result;
+}
+
+double rint(double x)
+{
+    __asm__ (
+        "fldl %1 \n" \
+        "frndint \n" \
+        "fstpl %0"
+        : "=m"(x): "m"(x));
+    return x;
+}
+
+float rintf(float x)
+{
+    __asm__ (
+        "fld %1 \n" \
+        "frndint \n" \
+        "fstp %0"
+        : "=m"(x): "m"(x));
     return x;
 }
 

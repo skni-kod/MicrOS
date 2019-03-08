@@ -665,6 +665,22 @@ long long int llround(double x);
 */
 long long int llroundf(float x);
 
+//! Rounding.
+/*! 
+    The rint functions round their argument to an integer value in floating-point format, using the current rounding direction.
+    \param x First value.
+    \return The rint functions return the rounded integer value.
+*/
+double rint(double x);
+
+//! Rounding.
+/*! 
+    The rintf functions round their argument to an integer value in floating-point format, using the current rounding direction.
+    \param x First value.
+    \return The rintf functions return the rounded integer value.
+*/
+float rintf(float x);
+
 //! Compute reminder required by IEC 60559.
 /*! 
     The remainder functions compute the remainder x REM y required by IEC 60559.
