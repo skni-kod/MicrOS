@@ -8,6 +8,11 @@ FILE *fopen(const char *filename, const char *mode)
     return stream;
 }
 
+FILE *freopen(const char *filename, const char *mode, FILE *stream)
+{
+    return streams_set_stream_as_file(filename == NULL ? stream->filename : filename, mode, stream);
+}
+
 int fclose(FILE *stream)
 {
     fflush(stream);
@@ -54,7 +59,7 @@ int setvbuf(FILE *stream, char *buffer, int mode, size_t size)
     }
     else
     {
-        stream->base = buffer;
+        stream->buffer = buffer;
     }
 
     stream->buffering_mode = mode;

@@ -13,7 +13,7 @@ FILE *streams_set_stream_as_file(const char *filename, const char *mode, FILE *s
     stream->fetch = streams_file_fetch;
     stream->flush = streams_file_flush;
 
-    memcpy(stream->path, filename, strlen(filename));
+    memcpy(stream->filename, filename, strlen(filename));
     return stream;
 }
 
@@ -26,7 +26,7 @@ int streams_file_fetch(FILE *stream)
         return 0;
     }
 
-    micros_filesystem_read_file(stream->path, (uint8_t *)stream->buffer, stream->pos, CHUNK_SIZE);
+    micros_filesystem_read_file(stream->filename, (uint8_t *)stream->buffer, stream->pos, CHUNK_SIZE);
 
     stream->size = stream->pos + bytes_to_read;
     stream->base = stream->pos;
