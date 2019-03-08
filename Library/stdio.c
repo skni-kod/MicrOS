@@ -39,7 +39,7 @@ char *fgets(char *str, int num, FILE *stream)
     do
     {
         str[i++] = c;
-    } while (stream->pos != stream->size && (c = fgetc(stream), c != '\n') && i < num);
+    } while ((c = fgetc(stream), c != '\n') && i < num);
 
     str[i] = 0;
     return str;
@@ -98,6 +98,16 @@ int ungetc(int character, FILE *stream)
 
 size_t fread(void *ptr, size_t size, size_t count, FILE *stream)
 {
+    char c = fgetc(stream);
+    int i = 0;
+    int total_size = size * count;
+
+    do
+    {
+        ((char *)ptr)[i++] = c;
+    } while (i < total_size && (c = fgetc(stream), c != EOF));
+
+    return i;
 }
 
 size_t fwrite(const void *ptr, size_t size, size_t count, FILE *stream)

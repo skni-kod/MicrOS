@@ -23,6 +23,11 @@ int streams_keyboard_fetch(FILE *stream)
         case 10:
         {
             micros_console_print_char('\n');
+
+            stream->buffer[stream->pos++] = key_pair.ascii;
+            stream->size++;
+            read_chars++;
+
             processing = false;
 
             break;
