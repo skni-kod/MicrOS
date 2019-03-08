@@ -747,13 +747,33 @@ double remainder(double x, double y);
 */
 float remainderf(float x, float y);
 
+// Floating-point manipulation functions
+
+//! Copy sign.
+/*! 
+    The copysign functions produce a value with the magnitude of x and the sign of y. They produce a NaN (with the sign of y) if x is a NaN. On implementations that represent a signed zero but do not treat negative zero consistently in arithmetic operations, the copysign functions regard the sign of zero as positive.
+    \param x Copy magnitude from.
+    \param x Copy sign from.
+    \return The copysign functions return a value with the magnitude of x and the sign of y.
+*/
+double copysign(double x, double y);
+
+//! Copy sign.
+/*! 
+    The copysignf functions produce a value with the magnitude of x and the sign of y. They produce a NaN (with the sign of y) if x is a NaN. On implementations that represent a signed zero but do not treat negative zero consistently in arithmetic operations, the copysign functions regard the sign of zero as positive.
+    \param x Copy magnitude from.
+    \param x Copy sign from.
+    \return The copysignf functions return a value with the magnitude of x and the sign of y.
+*/  
+float copysignf(float x, float y);
+
 // Minimum, maximum, difference functions
 
 //! Positive difference.
 /*! 
     The fdim functions determine the positive difference between their arguments.
     \param x First value.
-    \param Y Second value.
+    \param y Second value.
     \return The fdim functions return the positive difference value.
 */
 double fdim(double x, double y);
@@ -762,7 +782,7 @@ double fdim(double x, double y);
 /*! 
     The fdimf functions determine the positive difference between their arguments.
     \param x First value.
-    \param Y Second value.
+    \param y Second value.
     \return The fdimf functions return the positive difference value.
 */
 float fdimf(float x, float y);
@@ -771,7 +791,7 @@ float fdimf(float x, float y);
 /*! 
     The fmax functions determine the maximum numeric value of their arguments.
     \param x First value.
-    \param Y Second value.
+    \param y Second value.
     \return The fmax functions return the maximum numeric value of their arguments.
 */
 double fmax(double x, double y);
@@ -780,7 +800,7 @@ double fmax(double x, double y);
 /*! 
     The fmaxf functions determine the maximum numeric value of their arguments.
     \param x First value.
-    \param Y Second value.
+    \param y Second value.
     \return The fmaxf functions return the maximum numeric value of their arguments.
 */
 float fmaxf(float x, float y);
@@ -789,7 +809,7 @@ float fmaxf(float x, float y);
 /*! 
     The fmin functions determine the minimum numeric value of their arguments.
     \param x First value.
-    \param Y Second value.
+    \param y Second value.
     \return The fmin functions return the minimum numeric value of their arguments.
 */
 double fmin(double x, double y);
@@ -798,7 +818,7 @@ double fmin(double x, double y);
 /*! 
     The fminf functions determine the minimum numeric value of their arguments.
     \param x First value.
-    \param Y Second value.
+    \param y Second value.
     \return The fminf functions return the minimum numeric value of their arguments.
 */
 float fminf(float x, float y);
