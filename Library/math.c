@@ -272,7 +272,7 @@ float log10f(float x)
 double modf(double x, double* iptr)
 {
     double remainder;
-    *iptr = (int)x;
+    *iptr = trunc(x);
     remainder = x - *iptr;
     return remainder;
 }
@@ -280,7 +280,7 @@ double modf(double x, double* iptr)
 float modff(float x, float* iptr)
 {
     float remainder;
-    *iptr = (int)x;
+    *iptr = truncf(x);
     remainder = x - *iptr;
     return remainder;
 }
