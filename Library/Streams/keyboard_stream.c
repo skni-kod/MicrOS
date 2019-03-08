@@ -18,9 +18,11 @@ void streams_keyboard_fetch(FILE* stream)
         switch (key_pair.ascii)
         {
             // Enter
-            case 13:
+            case 10:
             {
+                micros_console_print_char('\n');
                 processing = false;
+                
                 break;
             }
             
@@ -36,14 +38,16 @@ void streams_keyboard_fetch(FILE* stream)
                 micros_console_print_char(' ');
                 micros_console_set_cursor_position(&cursor_position);
                 
-                stream->buffer[pos--] = 0;
+                stream->buffer[stream->pos--] = 0;
+                stream->size--;
                 break;
             }
             
             default:
             {
                 micros_console_print_char(key_pair.ascii);
-                stream->buffer[pos++] = key_pair.ascii;
+                stream->buffer[stream->pos++] = key_pair.ascii;
+                stream->size++;
             }
         }
     }

@@ -12,6 +12,7 @@ typedef struct file
 {
     char* buffer;
     uint32_t pos;
+    uint32_t size;
     file_buffering_mode buffering_mode;
     
     void (*fetch)(struct file* file);

@@ -13,9 +13,10 @@ FILE *stdin;
 FILE *stdout;
 FILE *stderr;
 
-int fclose(FILE * stream);
+int fclose(FILE* stream);
 int fflush(FILE* stream);
 
+int fgetc(FILE* stream);
 int fputc(int character, FILE* stream);
 int fputs(const char* str, FILE* stream);
 int putc(int character, FILE* stream);

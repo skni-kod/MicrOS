@@ -10,6 +10,21 @@ int fflush(FILE* stream)
 {
     stream->flush(stream);
     stream->pos = 0;
+    stream->size = 0;
+}
+
+int fgetc(FILE* stream)
+{
+    if(stream->pos == stream->size)
+    {
+        stream->pos = 0;
+        stream->size = 0;
+        stream->fetch(stream);
+        
+        stream->pos = 0;
+    }
+    
+    return stream->buffer[stream->pos++];
 }
 
 int fputc(int character, FILE* stream)
@@ -63,6 +78,7 @@ size_t fwrite(const void* ptr, size_t size, size_t count, FILE* stream)
         {
             memcpy(stream->buffer + stream->pos, ptr, total_size);
             stream->pos += total_size;
+            stream->size += total_size;
             
             fflush(stream);
             
@@ -92,6 +108,7 @@ size_t fwrite(const void* ptr, size_t size, size_t count, FILE* stream)
 
                 memcpy(stream->buffer + stream->pos, ptr + origin, bytes_to_copy);
                 stream->pos += bytes_to_copy;
+                stream->size += bytes_to_copy;
             }
             
             break;
@@ -101,6 +118,7 @@ size_t fwrite(const void* ptr, size_t size, size_t count, FILE* stream)
         {
             memcpy(stream->buffer + stream->pos, ptr, total_size);
             stream->pos += total_size;
+            stream->size += total_size;
             
             break;
         }
@@ -114,6 +132,7 @@ FILE* streams_create_stream()
     FILE* stream = malloc(sizeof(FILE));
     stream->buffer = malloc(BUFSIZ);
     stream->pos = 0;
+    stream->size = 0;
     stream->buffering_mode = file_buffering_mode_line;
     
     return stream;
