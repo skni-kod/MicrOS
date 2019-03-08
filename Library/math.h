@@ -713,6 +713,22 @@ long long int llrint(double x);
 */
 long long int llrintf(float x);
 
+//! Rounding.
+/*! 
+    The nearbyint functions round their argument to an integer value in floating-point format, using the current rounding direction and without raising the ‘‘inexact’’ floatingpoint exception.
+    \param x First value.
+    \return The nearbyint functions return the rounded integer value.
+*/
+double nearbyint(double x);
+
+//! Rounding.
+/*! 
+    The nearbyintf functions round their argument to an integer value in floating-point format, using the current rounding direction and without raising the ‘‘inexact’’ floatingpoint exception.
+    \param x First value.
+    \return The nearbyintf functions return the rounded integer value.
+*/
+float nearbyintf(float x);
+
 //! Compute reminder required by IEC 60559.
 /*! 
     The remainder functions compute the remainder x REM y required by IEC 60559.

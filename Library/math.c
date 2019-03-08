@@ -782,6 +782,26 @@ long long int llrintf(float x)
     return result;
 }
 
+double nearbyint(double x)
+{
+    __asm__ (
+        "fldl %1 \n" \
+        "frndint \n" \
+        "fstpl %0"
+        : "=m"(x): "m"(x));
+    return x;
+}
+
+float nearbyintf(float x)
+{
+    __asm__ (
+        "fld %1 \n" \
+        "frndint \n" \
+        "fstp %0"
+        : "=m"(x): "m"(x));
+    return x;
+}
+
 double remainder(double x, double y)
 {
     if(y == 0)
