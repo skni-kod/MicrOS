@@ -27,8 +27,6 @@ int fgetc(FILE *stream)
         {
             return EOF;
         }
-
-        stream->pos = 0;
     }
 
     return stream->buffer[stream->pos++];
@@ -42,7 +40,7 @@ char *fgets(char *str, int num, FILE *stream)
     do
     {
         str[i++] = c;
-    } while ((c = fgetc(stream), c != '\n') && i < num);
+    } while ((c = fgetc(stream), c != '\n' && c != -1) && i < num);
 
     str[i] = 0;
     return str;

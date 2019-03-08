@@ -12,6 +12,12 @@ int streams_keyboard_fetch(FILE *stream)
     bool processing = true;
     int read_chars = 0;
 
+    if (stream->pos == stream->size)
+    {
+        stream->pos = 0;
+        stream->size = 0;
+    }
+
     while (processing)
     {
         micros_keyboard_scan_ascii_pair key_pair;
@@ -24,8 +30,7 @@ int streams_keyboard_fetch(FILE *stream)
         {
             micros_console_print_char('\n');
 
-            stream->buffer[stream->pos++] = key_pair.ascii;
-            stream->size++;
+            stream->buffer[stream->size++] = key_pair.ascii;
             read_chars++;
 
             processing = false;
@@ -47,8 +52,7 @@ int streams_keyboard_fetch(FILE *stream)
                 micros_console_print_char(' ');
                 micros_console_set_cursor_position(&cursor_position);
 
-                stream->buffer[stream->pos--] = 0;
-                stream->size--;
+                stream->buffer[stream->size--] = 0;
                 read_chars--;
             }
 
@@ -58,8 +62,7 @@ int streams_keyboard_fetch(FILE *stream)
         default:
         {
             micros_console_print_char(key_pair.ascii);
-            stream->buffer[stream->pos++] = key_pair.ascii;
-            stream->size++;
+            stream->buffer[stream->size++] = key_pair.ascii;
             read_chars++;
 
             break;
