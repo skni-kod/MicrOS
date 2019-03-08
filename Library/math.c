@@ -738,6 +738,49 @@ float rintf(float x)
         : "=m"(x): "m"(x));
     return x;
 }
+long int lrint(double x)
+{
+    long int result;
+    __asm__ (
+        "fldl %1 \n" \
+        "frndint \n" \
+        "fistp %0"
+        : "=m"(result): "m"(x));
+    return result;
+}
+
+long int lrintf(float x)
+{
+    long int result;
+    __asm__ (
+        "fld %1 \n" \
+        "frndint \n" \
+        "fistp %0"
+        : "=m"(result): "m"(x));
+        return result;
+}
+
+long long int llrint(double x)
+{
+    long long int result;
+    __asm__ (
+        "fldl %1 \n" \
+        "frndint \n" \
+        "fistp %0"
+        : "=m"(result): "m"(x));
+    return result;
+}
+
+long long int llrintf(float x)
+{
+    long long int result;
+    __asm__ (
+        "fld %1 \n" \
+        "frndint \n" \
+        "fistp %0"
+        : "=m"(result): "m"(x));
+    return result;
+}
 
 double remainder(double x, double y)
 {

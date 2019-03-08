@@ -681,6 +681,38 @@ double rint(double x);
 */
 float rintf(float x);
 
+//! Rounding.
+/*! 
+    The lrint function round their argument to the nearest integer value, rounding according to the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
+    \param x First value.
+    \return The lrint function return the rounded integer value.
+*/
+long int lrint(double x);
+
+//! Rounding.
+/*! 
+    The lrintf function round their argument to the nearest integer value, rounding according to the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
+    \param x First value.
+    \return The lrintf function return the rounded integer value.
+*/
+long int lrintf(float x);
+
+//! Rounding.
+/*! 
+    The llrint function round their argument to the nearest integer value, rounding according to the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
+    \param x First value.
+    \return The llrint function return the rounded integer value.
+*/
+long long int llrint(double x);
+
+//! Rounding.
+/*! 
+    The llrintf function round their argument to the nearest integer value, rounding according to the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
+    \param x First value.
+    \return The llrintf function return the rounded integer value.
+*/
+long long int llrintf(float x);
+
 //! Compute reminder required by IEC 60559.
 /*! 
     The remainder functions compute the remainder x REM y required by IEC 60559.
