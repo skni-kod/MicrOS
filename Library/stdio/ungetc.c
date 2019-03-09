@@ -2,10 +2,10 @@
 
 int ungetc(int character, FILE *stream)
 {
-    if (stream->pos > 0)
+    if (stream->pos == 0)
     {
-        stream->pos++;
+        return EOF;
     }
 
-    return stream->buffer[stream->pos - stream->base - 1];
+    return stream->buffer[stream->pos++ - stream->base - 1];
 }

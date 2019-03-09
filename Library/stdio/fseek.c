@@ -28,7 +28,10 @@ int fseek(FILE *stream, long int offset, int origin)
     if (stream->pos > stream->limit)
     {
         stream->pos = backup_pos;
+        stream->error = 1;
         return -1;
+
+        // TODO: errno
     }
 
     stream->base = stream->pos;
