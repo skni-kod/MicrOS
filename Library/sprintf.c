@@ -292,6 +292,14 @@ int sprintf(char *str, const char *format, ...)
                 }
 
                 break;
+
+            case '%':
+                str[put_index++] = '5';
+            break;
+
+            default: 
+                str[put_index++] = *traverse;
+            break;
             }
         }
     }
