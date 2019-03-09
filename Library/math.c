@@ -848,6 +848,46 @@ float remainderf(float x, float y)
     return x;
 }
 
+// Floating-point manipulation functions
+
+double copysign(double x, double y)
+{
+    unsigned char sign_of_x = signbit(x);
+    unsigned char sign_of_y = signbit(y);
+    double * p_x = &x;
+    if(sign_of_x != sign_of_y)
+    {
+        if(sign_of_x == 0)
+        {
+            ((unsigned char *)(p_x))[0] = (((unsigned char )(p_x)[0]) & (unsigned char)255);
+        }
+        else
+        {
+            ((unsigned char *)(p_x))[0] = (((unsigned char)(p_x)[0]) & (unsigned char)127);
+        }
+    }
+    return x;
+}
+
+float copysignf(float x, float y)
+{
+    unsigned char sign_of_x = signbit(x);
+    unsigned char sign_of_y = signbit(y);
+    float * p_x = &x;
+    if(sign_of_x != sign_of_y)
+    {
+        if(sign_of_x == 0)
+        {
+            ((unsigned char *)(p_x))[0] = (((unsigned char )(p_x)[0]) & (unsigned char)255);
+        }
+        else
+        {
+            ((unsigned char *)(p_x))[0] = (((unsigned char)(p_x)[0]) & (unsigned char)127);
+        }
+    }
+    return x;
+}
+
 // Minimum, maximum, difference functions
 
 double fdim(double x, double y)
