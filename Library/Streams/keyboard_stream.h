@@ -2,7 +2,7 @@
 #define KEYBOARD_STREAM_H
 
 #include <stdint.h>
-#include "file.h"
+#include "../stdio.h"
 #include "../micros.h"
 
 FILE *streams_set_stream_as_keyboard(FILE *stream);
