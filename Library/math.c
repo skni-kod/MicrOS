@@ -1,6 +1,8 @@
 #include "math.h"
 #include "fenv.h"
 
+int _math_errhandling = MATH_ERRNO;
+
 //Trigonometric functions
 
 double cos(double x)

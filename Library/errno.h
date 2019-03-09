@@ -6,7 +6,7 @@ extern "C" {
 #endif
 //! Last error number.
 /*! Value that inform about last error number occured during math operations. */
-int _errno;
+extern int _errno;
 //! Macro to access _errno.
 /*! Provides access to _errno. */
 #define errno _errno

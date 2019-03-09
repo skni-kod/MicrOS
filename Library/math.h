@@ -36,7 +36,7 @@
 //! Indicates that floating-point exceptions are used.
 #define MATH_ERREXCEPT 2
 //! Expands to an expression of type int that is either equal to MATH_ERRNO, or equal to MATH_ERREXCEPT, or equal to their bitwise OR (MATH_ERRNO | MATH_ERREXCEPT).
-int _math_errhandling = MATH_ERRNO;
+extern int _math_errhandling;
 //! Macro to access _math_errhandling.
 /*! The macro constant math_errhandling expands to an expression of type int that is either equal to MATH_ERRNO, or equal to MATH_ERREXCEPT, or equal to their bitwise OR (MATH_ERRNO | MATH_ERREXCEPT). */
 #define math_errhandling _math_errhandling
