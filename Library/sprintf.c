@@ -3,8 +3,6 @@
 #include "string.h"
 #include "math.h"
 
-#define BUFFER_SIZE 16
-
 #define FLAGS_ZEROPAD (1U << 0U)
 #define FLAGS_LEFT (1U << 1U)
 #define FLAGS_PLUS (1U << 2U)
@@ -22,11 +20,35 @@ bool _is_digit(char c)
     return c >= '0' && c <= '9';
 }
 
-unsigned int _number_len(int n)
+int _abs(int n)
 {
-    unsigned int res = floor(log10(abs(n))) + 1;
     if (n < 0)
-        res++;
+        n *= 1;
+
+    return n;
+}
+
+double _log_base(double n, int base)
+{
+    return log10(n) / log10(base);
+}
+
+unsigned int _number_len(int n, int base)
+{
+    unsigned int res;
+
+    switch (base)
+    {
+    case 10:
+        res = floor(log10(_abs(n))) + 1;
+        if (n < 0)
+            res++;
+        break;
+    case 16:
+    case 8:
+        res = floor(_log_base(n, base)) + 1;
+        break;
+    }
 
     return res;
 }
@@ -52,7 +74,7 @@ int sprintf(char *str, const char *format, ...)
     char *str_arg;
     unsigned int put_index = 0;
 
-    char buffer[BUFFER_SIZE];
+    char *buffer;
     int index = 0;
 
     unsigned short flags = 0;
@@ -197,7 +219,7 @@ int sprintf(char *str, const char *format, ...)
             case 'c': // CHARACTER
                 int_arg = va_arg(arg, unsigned int);
 
-                // Right padding 
+                // Right padding
                 if (!(flags & FLAGS_LEFT))
                 {
                     for (int i = width_field - 1; i > 0; i--)
@@ -223,10 +245,13 @@ int sprintf(char *str, const char *format, ...)
             case 'i':
                 int_arg = va_arg(arg, int);
 
+                size_t int_len = _number_len(int_arg, 10);
+                buffer = (char *)malloc((int_len + 1) * sizeof(char));
+
                 // convert argument to string and put to buffer
                 itoa(int_arg, buffer, 10);
                 index = 0;
-                while (buffer[index] != '\0' && index < BUFFER_SIZE)
+                while (buffer[index] != '\0')
                 {
                     str[put_index++] = buffer[index];
                     index++;
@@ -234,7 +259,12 @@ int sprintf(char *str, const char *format, ...)
                 break;
 
             case 'o': // OCTAL INTEGER
+            {
                 int_arg = va_arg(arg, unsigned int);
+
+                size_t int_len = _number_len(int_arg, 8);
+                buffer = (char *)malloc((int_len + 1) * sizeof(char));
+
                 // convert argumnrnt to string with 8
                 itoa(int_arg, buffer, 8);
 
@@ -246,12 +276,13 @@ int sprintf(char *str, const char *format, ...)
 
                 // put argument
                 index = 0;
-                while (buffer[index] != '\0' && index < BUFFER_SIZE)
+                while (buffer[index] != '\0')
                 {
                     str[put_index++] = buffer[index];
                     index++;
                 }
                 break;
+            }
 
             case 's': // STRING
                 str_arg = va_arg(arg, char *);
@@ -263,7 +294,7 @@ int sprintf(char *str, const char *format, ...)
                     str_len = str_len > precision_field ? precision_field : str_len;
                 }
 
-                // Right padding 
+                // Right padding
                 if (!(flags & FLAGS_LEFT))
                 {
                     for (int i = (width_field - str_len); i > 0; i--)
@@ -290,7 +321,12 @@ int sprintf(char *str, const char *format, ...)
 
             case 'X':
             case 'x': // HEX INTEGER
+            {
                 int_arg = va_arg(arg, unsigned int);
+
+                size_t int_len = _number_len(int_arg, 16);
+                buffer = (char *)malloc((int_len + 1) * sizeof(char));
+
                 // convert arg to string with 16 as base
                 itoa(int_arg, buffer, 16);
 
@@ -302,21 +338,22 @@ int sprintf(char *str, const char *format, ...)
                 }
 
                 index = 0;
-                while (buffer[index] != '\0' && index < BUFFER_SIZE)
+                while (buffer[index] != '\0')
                 {
                     str[put_index++] = buffer[index];
                     index++;
                 }
 
                 break;
+            }
 
             case '%':
                 str[put_index++] = '5';
-            break;
+                break;
 
-            default: 
+            default:
                 str[put_index++] = *traverse;
-            break;
+                break;
             }
         }
     }
