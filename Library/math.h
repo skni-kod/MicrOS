@@ -45,7 +45,7 @@ int _math_errhandling = MATH_ERRNO;
 /*!
     /return The signbit macro returns a nonzero value if and only if the sign of its argument value is negative.
 */
-#define signbit(arg) (((unsigned char)(&(arg))[0]) & (unsigned char)128)
+#define signbit(arg) (((unsigned char)(arg)) & (unsigned char)128)
 
 #if FLT_EVAL_METHOD == 0
     //! Floating-point type.
