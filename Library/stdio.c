@@ -280,6 +280,21 @@ void rewind(FILE *stream)
     fseek(stream, 0, SEEK_SET);
 }
 
+void clearerr(FILE *stream)
+{
+    stream->error = 0;
+}
+
+int feof(FILE *stream)
+{
+    return stream->pos < stream->limit;
+}
+
+int ferror(FILE *stream)
+{
+    return stream->error;
+}
+
 FILE *streams_create_stream()
 {
     FILE *stream = malloc(sizeof(FILE));

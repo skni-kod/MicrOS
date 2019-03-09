@@ -51,6 +51,10 @@ int fsetpos(FILE *stream, const fpos_t *pos);
 long int ftell(FILE *stream);
 void rewind(FILE *stream);
 
+void clearerr(FILE *stream);
+int feof(FILE *stream);
+int ferror(FILE *stream);
+
 FILE *streams_create_stream();
 
 #endif
