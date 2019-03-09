@@ -2,5 +2,5 @@
 
 int feof(FILE *stream)
 {
-    return stream->pos < stream->limit;
+    return stream->pos >= stream->limit;
 }
