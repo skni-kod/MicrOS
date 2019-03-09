@@ -1,6 +1,7 @@
 #include <stdarg.h>
 #include "stdlib.h"
 #include "string.h"
+#include "math.h"
 
 #define BUFFER_SIZE 16
 
@@ -19,6 +20,15 @@
 bool _is_digit(char c)
 {
     return c >= '0' && c <= '9';
+}
+
+unsigned int _number_len(int n)
+{
+    unsigned int res = floor(log10(abs(n))) + 1;
+    if (n < 0)
+        res++;
+
+    return res;
 }
 
 unsigned int _parse_number_field(const char **str)
