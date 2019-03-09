@@ -185,8 +185,28 @@ int sprintf(char *str, const char *format, ...)
             switch (*traverse)
             {
             case 'c': // CHARACTER
-                int_arg = va_arg(arg, int);
+                int_arg = va_arg(arg, unsigned int);
+
+                // Right padding 
+                if (!(flags & FLAGS_LEFT))
+                {
+                    for (int i = width_field - 1; i > 0; i--)
+                    {
+                        str[put_index++] = ' ';
+                    }
+                }
+
+                // Put character
                 str[put_index++] = int_arg;
+
+                // Left padding
+                if (flags & FLAGS_LEFT)
+                {
+                    for (int i = width_field - 1; i > 0; i--)
+                    {
+                        str[put_index++] = ' ';
+                    }
+                }
                 break;
 
             case 'd': // INTEGER
