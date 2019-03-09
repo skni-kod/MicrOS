@@ -87,7 +87,7 @@ typedef struct file
     //! Buffering mode of the stream.
     file_buffering_mode buffering_mode;
 
-    //! Function which loads chunk of the data from stream and stores it to the buffeer.
+    //! Function which loads chunk of the data from stream and stores it to the buffer.
     int (*fetch)(struct file *file);
 
     //! Function which gets data from the buffer and sends it to the output (and removes it from the buffer).
@@ -157,13 +157,72 @@ void setbuf(FILE *stream, char *buffer);
 */
 int setvbuf(FILE *stream, char *buffer, int mode, size_t size);
 
+//! Get character from stream.
+/*!
+    Returns the character currently pointed by the internal file position indicator of the specified stream. The internal file position indicator is then advanced to the next character.
+    \param stream Pointer to a FILE object that identifies the stream to be closed.
+    \return On success, the character read is returned. If the position indicator was at the end-of-file, the function returns EOF.
+*/
 int fgetc(FILE *stream);
+
+//! Get string from stream.
+/*!
+    Reads characters from stream and stores them as a C string into str until (num-1) characters have been read or either a newline or the end-of-file is reached, whichever happens first.
+    \param str Pointer to an array of chars where the string read is copied.
+    \param num Maximum number of characters to be copied into str (including the terminating null-character).
+    \param stream Pointer to a FILE object that identifies the stream to be closed.
+    \return On success, the function returns str. If the end-of-file is encountered while attempting to read a character, the eof indicator is set. If this happens before any characters could be read, the pointer returned is a null pointer.
+*/
 char *fgets(char *str, int num, FILE *stream);
+
+//! Write character to stream.
+/*!
+    Writes a character to the stream and advances the position indicator.
+    \param character The int promotion of the character to be written.
+    \param stream Pointer to a FILE object that identifies the stream to be closed.
+    \return On success, the character written is returned. If a writing error occurs, EOF is returned and the error indicator (ferror) is set.
+*/
 int fputc(int character, FILE *stream);
+
+//! Write string to stream.
+/*!
+    Writes the C string pointed by str to the stream. The function begins copying from the address specified (str) until it reaches the terminating null character ('\0'). This terminating null-character is not copied to the stream.
+    \param str C string with the content to be written to stream.
+    \param stream Pointer to a FILE object that identifies the stream to be closed.
+    \return On success, a non-negative value is returned. On error, the function returns EOF and sets the error indicator.
+*/
 int fputs(const char *str, FILE *stream);
+
+//! Get character from stream.
+/*!
+    Returns the character currently pointed by the internal file position indicator of the specified stream. The internal file position indicator is then advanced to the next character.
+    \param stream Pointer to a FILE object that identifies the stream to be closed.
+    \return On success, the character read is returned. If the position indicator was at the end-of-file, the function returns EOF.
+*/
 int getc(FILE *stream);
+
+//! Get character from stdin.
+/*!
+    Returns the next character from the standard input.
+    \return On success, the character read is returned. If the position indicator was at the end-of-file, the function returns EOF.
+*/
 int getchar();
+
+//! Get string from stdin.
+/*!
+    Reads characters from the standard input (stdin) and stores them as a C string into str until a newline character or the end-of-file is reached.
+    \param str Pointer to a block of memory (array of char) where the string read is copied as a C string.
+    \return On success, the character read is returned. If the position indicator was at the end-of-file, the function returns EOF.
+*/
 char *gets(char *str);
+
+//! Write character to stream.
+/*!
+    Writes a character to the stream and advances the position indicator. The character is written at the position indicated by the internal position indicator of the stream, which is then automatically advanced by one.
+    \param character The int promotion of the character to be written.
+    \param stream Pointer to a FILE object that identifies the stream to be closed.
+    \return On success, the character written is returned. If a writing error occurs, EOF is returned and the error indicator is set.
+*/
 int putc(int character, FILE *stream);
 int putchar(int character);
 int puts(const char *str);
