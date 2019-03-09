@@ -224,23 +224,125 @@ char *gets(char *str);
     \return On success, the character written is returned. If a writing error occurs, EOF is returned and the error indicator is set.
 */
 int putc(int character, FILE *stream);
+
+//! Write character to stdout.
+/*!
+    Writes a character to the standard output (stdout).
+    \param character The int promotion of the character to be written.
+    \return On success, the character written is returned. If a writing error occurs, EOF is returned and the error indicator is set.
+*/
 int putchar(int character);
+
+//! Write string to stdout.
+/*!
+    Writes the C string pointed by str to the standard output (stdout) and appends a newline character ('\n'). The function begins copying from the address specified (str) until it reaches the terminating null character ('\0'). This terminating null-character is not copied to the stream.
+    \param str C string to be printed.
+    \return On success, the character written is returned. If a writing error occurs, EOF is returned and the error indicator is set.
+*/
 int puts(const char *str);
+
+//! Unget character from stream.
+/*!
+    A character is virtually put back into an input stream, decreasing its internal file position as if a previous getc operation was undone.
+    \param character The int promotion of the character to be written.
+    \param stream Pointer to a FILE object that identifies the stream to be closed.
+    \return On success, the character put back is returned. If the operation fails, EOF is returned.
+*/
 int ungetc(int character, FILE *stream);
 
+//! Read block of data from stream.
+/*!
+    Reads an array of count elements, each one with a size of size bytes, from the stream and stores them in the block of memory specified by ptr. The position indicator of the stream is advanced by the total amount of bytes read.
+    \param ptr Pointer to a block of memory with a size of at least (size*count) bytes, converted to a void*.
+    \param size Size, in bytes, of each element to be read.
+    \param count Number of elements, each one with a size of size bytes.
+    \param stream Pointer to a FILE object that identifies the stream to be closed.
+    \return The total number of elements successfully read is returned. If this number differs from the count parameter, either a reading error occurred or the end-of-file was reached while reading. In both cases, the proper indicator is set.
+*/
 size_t fread(void *ptr, size_t size, size_t count, FILE *stream);
+
+//! Write block of data to stream.
+/*!
+    Writes an array of count elements, each one with a size of size bytes, from the block of memory pointed by ptr to the current position in the stream. The position indicator of the stream is advanced by the total number of bytes written.
+    \param ptr Pointer to a block of memory with a size of at least (size*count) bytes, converted to a void*.
+    \param size Size, in bytes, of each element to be read.
+    \param count Number of elements, each one with a size of size bytes.
+    \param stream Pointer to a FILE object that identifies the stream to be closed.
+    \return The total number of elements successfully written is returned. If this number differs from the count parameter, a writing error prevented the function from completing. In this case, the error indicator will be set for the stream.
+*/
 size_t fwrite(const void *ptr, size_t size, size_t count, FILE *stream);
 
+//! Get current position in stream.
+/*!
+    Retrieves the current position in the stream.
+    \param stream Pointer to a FILE object that identifies the stream to be closed.
+    \param pos Pointer to a fpos_t object. This should point to an object already allocated.
+    \return On success, the function returns zero. In case of error, errno is set to a platform-specific positive value and the function returns a non-zero value.
+*/
 int fgetpos(FILE *stream, fpos_t *pos);
+
+//! Reposition stream position indicator.
+/*!
+    Sets the position indicator associated with the stream to a new position.
+    \param stream Pointer to a FILE object that identifies the stream to be closed.
+    \param offset Number of bytes to offset from origin.
+    \param origin Position used as reference for the offset. It is specified by one of the constants (file begin: SEEK_SET, current position: SEEK_CUR, end of file: SEEK_END).
+    \return If successful, the function returns zero. Otherwise, it returns non-zero value and error indicator is set.
+*/
 int fseek(FILE *stream, long int offset, int origin);
+
+//! Set position indicator of stream.
+/*!
+    Restores the current position in the stream to pos. 
+    \param stream Pointer to a FILE object that identifies the stream to be closed.
+    \param pos Pointer to a fpos_t object containing a position previously obtained with fgetpos.
+    \return If successful, the function returns zero. On failure, a non-zero value is returned and errno is set to a system-specific positive value.
+*/
 int fsetpos(FILE *stream, const fpos_t *pos);
+
+//! Get current position in stream.
+/*!
+    Returns the current value of the position indicator of the stream.
+    \param stream Pointer to a FILE object that identifies the stream to be closed.
+    \return On success, the current value of the position indicator is returned. On failure, -1 is returned, and errno is set to a system-specific positive value.
+*/
 long int ftell(FILE *stream);
+
+//! Set position of stream to the beginning.
+/*!
+    Sets the position indicator associated with stream to the beginning of the file.
+    \param stream Pointer to a FILE object that identifies the stream to be closed.
+*/
 void rewind(FILE *stream);
 
+//! Clear error indicators.
+/*!
+    Resets both the error and the eof indicators of the stream.
+    \param stream Pointer to a FILE object that identifies the stream to be closed.
+*/
 void clearerr(FILE *stream);
+
+//! Check end-of-file indicator.
+/*!
+    Checks whether the end-of-File indicator associated with stream is set, returning a value different from zero if it is.
+    \param stream Pointer to a FILE object that identifies the stream to be closed.
+    \return A non-zero value is returned in the case that the end-of-file indicator associated with the stream is set. Otherwise, zero is returned.
+*/
 int feof(FILE *stream);
+
+//! Check error indicator.
+/*!
+    Checks if the error indicator associated with stream is set, returning a value different from zero if it is.
+    \param stream Pointer to a FILE object that identifies the stream to be closed.
+    \return A non-zero value is returned in the case that the error indicator associated with the stream is set. Otherwise, zero is returned.
+*/
 int ferror(FILE *stream);
 
-FILE *streams_create_stream();
+//! Creates new stream.
+/*!
+    Creates new stream (not assigned to any file or device) and returns it.
+    \return A newly created stream.
+*/
+FILE *__stdio_create_stream();
 
 #endif
