@@ -238,8 +238,11 @@ int sprintf(char *str, const char *format, ...)
                 // convert argumnrnt to string with 8
                 itoa(int_arg, buffer, 8);
 
-                // Put 0 as indicator that is octal number
-                str[put_index++] = '0';
+                if (flags & FLAGS_HASH)
+                {
+                    // Put 0 as indicator that is octal number
+                    str[put_index++] = '0';
+                }
 
                 // put argument
                 index = 0;
@@ -285,14 +288,18 @@ int sprintf(char *str, const char *format, ...)
                 }
                 break;
 
+            case 'X':
             case 'x': // HEX INTEGER
                 int_arg = va_arg(arg, unsigned int);
                 // convert arg to string with 16 as base
                 itoa(int_arg, buffer, 16);
 
-                // put 0x as this is hex number
-                str[put_index++] = '0';
-                str[put_index++] = 'x';
+                if (flags & FLAGS_HASH)
+                {
+                    // put 0x as this is hex number
+                    str[put_index++] = '0';
+                    str[put_index++] = 'x';
+                }
 
                 index = 0;
                 while (buffer[index] != '\0' && index < BUFFER_SIZE)
