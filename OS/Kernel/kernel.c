@@ -22,6 +22,7 @@
 #include "Interrupts/Syscalls/syscalls_manager.h"
 #include "TSS/tss.h"
 #include <stdint.h>
+#include "../../Library/math.h"
 
 char buff[50];
 
@@ -146,6 +147,14 @@ int kmain()
     logger_log_info("Hello, World!");
     //startup_music_play();
     logger_log_ok("READY.");
+
+    double arg = 10, arg2 = -10;
+
+    int value = atan2(arg, arg2) ;
+
+    arg2 = 10;
+
+    value = atan2(arg, arg2);
 
     process_manager_create_process("/ENV/TASKS.ELF", "Honoka Kotori");
     process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
