@@ -3,6 +3,10 @@
 
 #define BUFSIZ 1024 * 8
 #define EOF -1
+#define FILENAME_MAX 255
+#define FOPEN_MAX INT32_MAX
+#define L_tmpnam 0
+#define TMP_MAX 0
 
 #define SEEK_SET 0
 #define SEEK_CUR 1
