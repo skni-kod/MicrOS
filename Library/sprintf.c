@@ -1,5 +1,6 @@
 #include <stdarg.h>
 #include "stdlib.h"
+#include "string.h"
 
 #define BUFFER_SIZE 16
 
@@ -221,12 +222,36 @@ int sprintf(char *str, const char *format, ...)
 
             case 's': // STRING
                 str_arg = va_arg(arg, char *);
-                // put arg to buffer
-                index = 0;
-                while (str_arg[index] != '\0')
+                int str_len = strlen(str_arg);
+
+                // Check maximum number of characters (precision field)
+                if (flags & FLAGS_PRECISION)
                 {
-                    str[put_index++] = str_arg[index];
-                    index++;
+                    str_len = str_len > precision_field ? precision_field : str_len;
+                }
+
+                // Right padding 
+                if (!(flags & FLAGS_LEFT))
+                {
+                    for (int i = (width_field - str_len); i > 0; i--)
+                    {
+                        str[put_index++] = ' ';
+                    }
+                }
+
+                // put arg to buffer
+                for (int i = 0; i < str_len; i++)
+                {
+                    str[put_index++] = str_arg[i];
+                }
+
+                // Left Padding
+                if (flags & FLAGS_LEFT)
+                {
+                    for (int i = (width_field - str_len); i > 0; i--)
+                    {
+                        str[put_index++] = ' ';
+                    }
                 }
                 break;
 
