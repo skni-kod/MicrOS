@@ -22,6 +22,7 @@
 #include "Interrupts/Syscalls/syscalls_manager.h"
 #include "TSS/tss.h"
 #include <stdint.h>
+#include "../../Library/math.h"
 
 char buff[50];
 
@@ -148,23 +149,23 @@ int kmain()
     logger_log_ok("READY.");
 
     //process_manager_create_process("/ENV/TASKS.ELF", "Honoka Kotori");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
+    // process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
+    // process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
+    // process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
+    // process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
+    // process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
+    // process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
+    // process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
+    // process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
+    // process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
+    // process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
+    // process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
+    // process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
+    // process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
+    // process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
+    // process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
+    // process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
+    // process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
     process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
     process_manager_run();
 
