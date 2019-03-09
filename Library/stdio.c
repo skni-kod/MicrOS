@@ -1,6 +1,6 @@
 #include "stdio.h"
 
-FILE *streams_create_stream()
+FILE *__stdio_create_stream()
 {
     FILE *stream = malloc(sizeof(FILE));
     stream->buffer = malloc(BUFSIZ);

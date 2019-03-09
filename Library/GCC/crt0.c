@@ -2,17 +2,17 @@
 
 void _start(char *path, char *parameters)
 {
-    __asm__ ("finit");
-    
-    stdin = streams_create_stream();
+    __asm__("finit");
+
+    stdin = __stdio_create_stream();
     streams_set_stream_as_keyboard(stdin);
-    
-    stdout = streams_create_stream();
+
+    stdout = __stdio_create_stream();
     streams_set_stream_as_console(stdout);
-    
-    stderr = streams_create_stream();
+
+    stderr = __stdio_create_stream();
     streams_set_stream_as_console(stderr);
-    
+
     int argc = 0;
     char **argv = parse_parameters(path, parameters, &argc);
 
