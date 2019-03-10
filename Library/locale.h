@@ -1,6 +1,10 @@
 #ifndef LOCALE_H
 #define LOCALE_H
 
+#include <limits.h>
+#include "stdlib.h"
+#include "string.h"
+
 //! The entire locale.
 #define LC_ALL 0
 
@@ -77,7 +81,7 @@ typedef struct lconv
     char int_frac_digits;
 
     //! Same as p_cs_precedes, but for the international format.
-    char rint_p_cs_precedes;
+    char int_p_cs_precedes;
 
     //! Same as n_cs_precedes, but for the international format.
     char int_n_cs_precedes;
@@ -95,6 +99,9 @@ typedef struct lconv
     char int_n_sign_posn;
 } lconv;
 
+//! Current locale state.
+lconv *locale_state;
+
 //! Set or retrieve locale.
 /*!
     Sets locale information to be used by the current program, either changing the entire locale or portions of it. The function can also be used to retrieve the current locale's name by passing NULL as the value for argument locale.
@@ -110,5 +117,9 @@ char *setlocale(int category, const char *locale);
     \return A pointer to a structure object of the structure type lconv with the corresponding values for the current locale filled in. 
 */
 lconv *localeconv();
+
+void __locale_delete_char_field_value(char *field);
+char *__locale_set_char_field_value(char *value);
+void __locale_set_neutral_locale();
 
 #endif
