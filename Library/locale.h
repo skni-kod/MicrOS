@@ -102,6 +102,9 @@ typedef struct lconv
 //! Current locale state.
 lconv *locale_state;
 
+//! Current locale name.
+char *locale_name;
+
 //! Set or retrieve locale.
 /*!
     Sets locale information to be used by the current program, either changing the entire locale or portions of it. The function can also be used to retrieve the current locale's name by passing NULL as the value for argument locale.
@@ -118,8 +121,25 @@ char *setlocale(int category, const char *locale);
 */
 lconv *localeconv();
 
+//! Delete (free) field's value.
+/*!
+    Delete (free) field's value if it has been initialized previously.
+    \param field Field's value to remove.
+*/
 void __locale_delete_char_field_value(char *field);
-char *__locale_set_char_field_value(char *value);
-void __locale_set_neutral_locale();
+
+//! Set field's value.
+/*!
+    Allocs memory for the specified field and returns it.
+    \param value Newly created value.
+*/
+char *__locale_set_char_field_value(const char *value);
+
+//! Set locale state to the neutral value.
+/*!
+    Every field in the locale state will have default value (mostly "" or CHAR_MAX).
+    \param category Portion of the locale affected (LC_ALL, LC_COLLATE, LC_CTYPE, LC_MONETARY, LC_NUMERIC, LC_TIME).
+*/
+void __locale_set_neutral_locale(int category);
 
 #endif

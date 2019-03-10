@@ -8,7 +8,7 @@ void __locale_delete_char_field_value(char *field)
     }
 }
 
-char *__locale_set_char_field_value(char *value)
+char *__locale_set_char_field_value(const char *value)
 {
     uint32_t length = strlen(value) + 1;
     char *field = malloc(length);
@@ -17,7 +17,7 @@ char *__locale_set_char_field_value(char *value)
     return field;
 }
 
-void __locale_set_neutral_locale()
+void __locale_set_neutral_locale(int category)
 {
     __locale_delete_char_field_value(locale_state->decimal_point);
     locale_state->decimal_point = __locale_set_char_field_value(".");

@@ -10,8 +10,11 @@ char *setlocale(int category, const char *locale)
     // TODO: replace it with strcmp
     if (locale[0] == 'C')
     {
-        __locale_set_neutral_locale();
+        __locale_set_neutral_locale(category);
+
+        __locale_delete_char_field_value(locale_name);
+        locale_name = __locale_set_char_field_value(locale);
     }
 
-    return 0;
+    return locale_name;
 }
