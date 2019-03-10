@@ -2,5 +2,5 @@
 
 lconv *localeconv()
 {
-    return 0;
+    return locale_state;
 }
