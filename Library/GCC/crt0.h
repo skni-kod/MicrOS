@@ -1,6 +1,7 @@
 #ifndef CRT0_H
 #define CRT0_H
 
+#include "../locale.h"
 #include "../stdlib.h"
 #include "../stdio.h"
 #include "../Streams/streams.h"
