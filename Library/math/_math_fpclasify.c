@@ -1,11 +1,11 @@
 #include "../math.h"
 
-int _math_fpclasifyf(float x)
+int _math_fpclasify(double x)
 {
     __asm__ (
-        "fld %1 \n" \
+        "fldl %1 \n" \
         "fxam \n" \
-        "fstp %0"
+        "fstpl %0"
         : "=m"(x): "m"(x));
 
     fexcept_t status_word = _FPU_read_status_word();
