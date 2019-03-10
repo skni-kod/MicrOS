@@ -1,4 +1,4 @@
-#include <float.h>
+    #include <float.h>
 #include "errno.h"
 #include "fenv.h"
 
@@ -918,6 +918,12 @@ int _math_fpclasifyf(float x);
 }
 #endif
 
+//! Classify floating-point value.
+/*! 
+    Returns a value of type int that matches one of the classification macro constants, depending on the value of x.
+    \param x The value to classify.
+    \return One of the followoing int values: FP_INFINITE, FP_NAN, FP_ZERO, FP_SUBNORMAL, FP_NORMAL, FP_WTF.
+*/
 #define fpclasify(x) (sizeof(x) == sizeof(double) ? _math_fpclasify(x) : _math_fpclasifyf(x))
 
 #endif //MATH_H
