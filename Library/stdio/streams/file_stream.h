@@ -4,9 +4,9 @@
 #define CHUNK_SIZE 512
 
 #include <stdint.h>
-#include "../stdio.h"
-#include "../string.h"
-#include "../micros.h"
+#include "../../stdio.h"
+#include "../../string.h"
+#include "../../micros.h"
 
 FILE *streams_set_stream_as_file(const char *filename, const char *mode, FILE *stream);
 int streams_file_fetch(FILE *stream);
