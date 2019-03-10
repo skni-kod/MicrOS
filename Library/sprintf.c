@@ -86,11 +86,12 @@ void _put_integer(char *str, int *put_idx, int number, unsigned short flags, int
     size_t space_count = actual_width - int_len - zeros_count;
 
     // Pre padding
+    char prepadding_character = flags & FLAGS_ZEROPAD ? '0' : ' ';
     if (!(flags & FLAGS_LEFT))
     {
         for (int i = space_count; i > 0; i--)
         {
-            str[(*put_idx)++] = ' ';
+            str[(*put_idx)++] = prepadding_character;
         }
     }
 
