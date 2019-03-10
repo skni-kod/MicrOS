@@ -42,6 +42,8 @@
 #define FP_SUBNORMAL    3
 //! Normal value (none of the above).
 #define FP_NORMAL       4
+//! In normal case this shouldn't be returned.
+#define FP_WTF          5
 
 
 //! Indicates that floating-point operations use the variable errno to report errors.
@@ -889,5 +891,33 @@ float fmaf(float x, float y, float z);
 #ifdef __cplusplus
 }
 #endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Additional content
+
+//! Classify floating-point value.
+/*! 
+    Returns a value of type int that matches one of the classification macro constants, depending on the value of x.
+    \param x The value to classify.
+    \return One of the followoing int values: FP_INFINITE, FP_NAN, FP_ZERO, FP_SUBNORMAL, FP_NORMAL, FP_WTF.
+*/
+int _math_fpclasify(double x);
+
+//! Classify floating-point value.
+/*! 
+    Returns a value of type int that matches one of the classification macro constants, depending on the value of x.
+    \param x The value to classify.
+    \return One of the followoing int values: FP_INFINITE, FP_NAN, FP_ZERO, FP_SUBNORMAL, FP_NORMAL, FP_WTF.
+*/
+int _math_fpclasifyf(float x);
+
+#ifdef __cplusplus
+}
+#endif
+
+#define fpclasify(x) (sizeof(x) == sizeof(double) ? _math_fpclasify(x) : _math_fpclasifyf(x))
 
 #endif //MATH_H
