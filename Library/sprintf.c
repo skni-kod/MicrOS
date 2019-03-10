@@ -119,7 +119,7 @@ void _put_integer(char *str, int *put_idx, int number, unsigned short flags, int
         else if (base == 16)
         {
             str[(*put_idx)++] = '0';
-            str[(*put_idx)++] = 'x';
+            str[(*put_idx)++] = flags & FLAGS_UPPERCASE ? 'X' : 'x';
         }
     }
 
@@ -385,6 +385,7 @@ int sprintf(char *str, const char *format, ...)
                 break;
 
             case 'X':
+                flags |= FLAGS_UPPERCASE; // Uppercase X
             case 'x': // HEX INTEGER
             {
                 int_arg = va_arg(arg, unsigned int);
