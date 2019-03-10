@@ -393,7 +393,7 @@ int sprintf(char *str, const char *format, ...)
             }
 
             case '%':
-                str[put_index++] = '5';
+                str[put_index++] = '%';
                 break;
 
             default:
