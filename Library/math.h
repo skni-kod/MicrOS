@@ -32,6 +32,18 @@
 //! The reciprocal of the square root of two (also the square root of 1/2).
 #define M_SQRT1_2   0.70710678118654752440
 
+//! Positive or negative infinity (overflow).
+#define FP_INFINITE     0
+//! Not-A-Number.
+#define FP_NAN          1
+//! Value of zero.
+#define FP_ZERO         2
+//! Sub-normal value (underflow)
+#define FP_SUBNORMAL    3
+//! Normal value (none of the above).
+#define FP_NORMAL       4
+
+
 //! Indicates that floating-point operations use the variable errno to report errors.
 #define MATH_ERRNO 1
 //! Indicates that floating-point exceptions are used.
