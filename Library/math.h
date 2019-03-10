@@ -917,7 +917,7 @@ int _math_fpclasifyf(float x);
     \param x The value to check.
     \return 1 if true, 0 if false
 */
-#define isfinite(x) ((fpclasify(x) == FP_NORMAL || fpclasify(x) == FP_ZERO ) ? 1 : 0)
+#define isfinite(x) ((fpclasify(x) == FP_NORMAL || fpclasify(x) == FP_ZERO ))
 
 //! Is infinity.
 /*! 
@@ -925,7 +925,7 @@ int _math_fpclasifyf(float x);
     \param x The value to check.
     \return 1 if true, 0 if false
 */
-#define isinf(x) (fpclasify(x) == FP_INFINITE ? 1 : 0)
+#define isinf(x) (fpclasify(x) == FP_INFINITE)
 
 //! Is Not-A-Number.
 /*! 
@@ -933,7 +933,7 @@ int _math_fpclasifyf(float x);
     \param x The value to check.
     \return 1 if true, 0 if false
 */
-#define isnan(x) (fpclasify(x) == FP_NAN ? 1 : 0)
+#define isnan(x) (fpclasify(x) == FP_NAN)
 
 //! Is normal.
 /*! 
@@ -941,7 +941,7 @@ int _math_fpclasifyf(float x);
     \param x The value to check.
     \return 1 if true, 0 if false
 */
-#define isnormal(x) (fpclasify(x) == FP_NORMAL ? 1 : 0)
+#define isnormal(x) (fpclasify(x) == FP_NORMAL)
 
 //! The signbit macro determines whether the sign of its argument value is negative.
 /*!
