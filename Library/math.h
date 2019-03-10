@@ -926,4 +926,36 @@ int _math_fpclasifyf(float x);
 */
 #define fpclasify(x) (sizeof(x) == sizeof(double) ? _math_fpclasify(x) : _math_fpclasifyf(x))
 
+//! Is finite.
+/*! 
+    Returns whether x is a finite value. A finite value is any floating-point value that is neither infinite nor NaN (Not-A-Number).
+    \param x The value to check.
+    \return 1 if true, 0 if false
+*/
+#define isfinite(x) ((fpclasify(x) == FP_NORMAL || fpclasify(x) == FP_ZERO ) ? 1 : 0)
+
+//! Is infinity.
+/*! 
+    Returns whether x is an infinity value (either positive infinity or negative infinity).
+    \param x The value to check.
+    \return 1 if true, 0 if false
+*/
+#define isinf(x) (fpclasify(x) == FP_INFINITE ? 1 : 0)
+
+//! Is Not-A-Number.
+/*! 
+    Returns whether x is a NaN (Not-A-Number) value.
+    \param x The value to check.
+    \return 1 if true, 0 if false
+*/
+#define isnan(x) (fpclasify(x) == FP_NAN ? 1 : 0)
+
+//! Is normal.
+/*! 
+    Returns whether x is a normal value: i.e., whether it is neither infinity, NaN, zero or subnormal.
+    \param x The value to check.
+    \return 1 if true, 0 if false
+*/
+#define isnormal(x) (fpclasify(x) == FP_NORMAL ? 1 : 0)
+
 #endif //MATH_H
