@@ -45,6 +45,11 @@
 //! In normal case this shouldn't be returned.
 #define FP_WTF          5
 
+//! Arg of ilogb is zero.
+#define FP_ILOGB0   -2147483648
+//! Arg of ilogb is NaN.
+#define FP_ILOGBNAN -2147483648
+
 
 //! Indicates that floating-point operations use the variable errno to report errors.
 #define MATH_ERRNO 1
