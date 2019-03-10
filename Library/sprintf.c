@@ -20,17 +20,14 @@ bool _is_digit(char c)
     return c >= '0' && c <= '9';
 }
 
-int _abs(int n)
-{
-    if (n < 0)
-        n *= 1;
-
-    return n;
-}
-
 double _log_base(double n, int base)
 {
     return log10(n) / log10(base);
+}
+
+int _max(int a, int b)
+{
+    return a > b ? a : b;
 }
 
 unsigned int _number_len(int n, int base)
@@ -40,9 +37,7 @@ unsigned int _number_len(int n, int base)
     switch (base)
     {
     case 10:
-        res = floor(log10(_abs(n))) + 1;
-        if (n < 0)
-            res++;
+        res = floor(log10(fabs(n))) + 1;
         break;
     case 16:
     case 8:
@@ -51,6 +46,104 @@ unsigned int _number_len(int n, int base)
     }
 
     return res;
+}
+
+void _put_integer(char *str, int *put_idx, int number, unsigned short flags, int base, int width, int precision)
+{
+    size_t int_len = _number_len(number, base); // length of the number
+    size_t actual_width = _max(int_len, width); // length of entire string
+    //size_t number_len = _max(precision, int_len); // length of number with leading zeros
+
+    bool negative = false;
+    if (number < 0)
+    {
+        number *= -1;
+        negative = true;
+    }
+
+    char *number_buf = (char *)malloc((int_len + 1) * sizeof(char));
+    itoa(number, number_buf, base);
+
+    // 0x and 0
+    if (flags & FLAGS_HASH)
+    {
+        if (base == 8)
+        {
+            int_len += 1;
+        }
+        else if (base == 16)
+        {
+            int_len += 2;
+        }
+    }
+
+    if (flags & FLAGS_PLUS || flags & FLAGS_SPACE || negative)
+    {
+        int_len += 1;
+    }
+
+    size_t zeros_count = actual_width - _max(precision, int_len);
+    size_t space_count = actual_width - int_len - zeros_count;
+
+    // Pre padding
+    if (!(flags & FLAGS_LEFT))
+    {
+        for (int i = space_count; i > 0; i--)
+        {
+            str[(*put_idx)++] = ' ';
+        }
+    }
+
+    // Sign
+    if (negative)
+    {
+        str[(*put_idx)++] = '-';
+    }
+    else if (flags & FLAGS_PLUS)
+    {
+        str[(*put_idx)++] = '+';
+    }
+    else if (flags & FLAGS_SPACE)
+    {
+        str[(*put_idx)++] = ' ';
+    }
+
+    // 0x and 0
+    if (flags & FLAGS_HASH)
+    {
+        if (base == 8)
+        {
+            str[(*put_idx)++] = '0';
+        }
+        else if (base == 16)
+        {
+            str[(*put_idx)++] = '0';
+            str[(*put_idx)++] = 'x';
+        }
+    }
+
+    // Zeros
+    for (int i = zeros_count; i > 0; i--)
+    {
+        str[(*put_idx)++] = '0';
+    }
+
+    // Actual number
+    for (int i = 0; number_buf[i] != '\0'; i++)
+    {
+        str[(*put_idx)++] = number_buf[i];
+    }
+
+    // Post padding
+    if (flags & FLAGS_LEFT)
+    {
+        for (int i = space_count; i > 0; i--)
+        {
+            str[(*put_idx)++] = ' ';
+        }
+    }
+
+    free(number_buf);
 }
 
 unsigned int _parse_number_field(const char **str)
@@ -245,42 +338,13 @@ int sprintf(char *str, const char *format, ...)
             case 'i':
                 int_arg = va_arg(arg, int);
 
-                size_t int_len = _number_len(int_arg, 10);
-                buffer = (char *)malloc((int_len + 1) * sizeof(char));
-
-                // convert argument to string and put to buffer
-                itoa(int_arg, buffer, 10);
-                index = 0;
-                while (buffer[index] != '\0')
-                {
-                    str[put_index++] = buffer[index];
-                    index++;
-                }
+                _put_integer(str, &put_index, int_arg, flags, 10, width_field, precision_field);
                 break;
 
             case 'o': // OCTAL INTEGER
             {
                 int_arg = va_arg(arg, unsigned int);
-
-                size_t int_len = _number_len(int_arg, 8);
-                buffer = (char *)malloc((int_len + 1) * sizeof(char));
-
-                // convert argumnrnt to string with 8
-                itoa(int_arg, buffer, 8);
-
-                if (flags & FLAGS_HASH)
-                {
-                    // Put 0 as indicator that is octal number
-                    str[put_index++] = '0';
-                }
-
-                // put argument
-                index = 0;
-                while (buffer[index] != '\0')
-                {
-                    str[put_index++] = buffer[index];
-                    index++;
-                }
+                _put_integer(str, &put_index, int_arg, flags, 8, width_field, precision_field);
                 break;
             }
 
@@ -323,27 +387,7 @@ int sprintf(char *str, const char *format, ...)
             case 'x': // HEX INTEGER
             {
                 int_arg = va_arg(arg, unsigned int);
-
-                size_t int_len = _number_len(int_arg, 16);
-                buffer = (char *)malloc((int_len + 1) * sizeof(char));
-
-                // convert arg to string with 16 as base
-                itoa(int_arg, buffer, 16);
-
-                if (flags & FLAGS_HASH)
-                {
-                    // put 0x as this is hex number
-                    str[put_index++] = '0';
-                    str[put_index++] = 'x';
-                }
-
-                index = 0;
-                while (buffer[index] != '\0')
-                {
-                    str[put_index++] = buffer[index];
-                    index++;
-                }
-
+                _put_integer(str, &put_index, int_arg, flags, 16, width_field, precision_field);
                 break;
             }
 
