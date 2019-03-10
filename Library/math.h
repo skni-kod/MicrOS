@@ -954,4 +954,25 @@ int _math_fpclasifyf(float x);
 */
 #define signbit(arg) (((unsigned char)(arg)) & (unsigned char)128)
 
+//! Multiply-add.
+/*! 
+    Compute (x × y) + z, rounded as one ternary operation: they compute the value (as if) to infinite precision and round once to the result format, according to the current rounding mode. A range error may occur.
+    \param x First value.
+    \param y Second value.
+    \param z Third value.
+    \return Return (x × y) + z, rounded as one ternary operation.
+*/
+#define FP_FAST_FMA(x, y, z) (fma(x, y, z))
+
+//! Multiply-add.
+/*! 
+    Compute (x × y) + z, rounded as one ternary operation: they compute the value (as if) to infinite precision and round once to the result format, according to the current rounding mode. A range error may occur.
+    \param x First value.
+    \param y Second value.
+    \param z Third value.
+    \return Return (x × y) + z, rounded as one ternary operation.
+*/
+#define FP_FAST_FMAF(x, y, z) (fmaf(x, y, z))
+
+
 #endif //MATH_H
