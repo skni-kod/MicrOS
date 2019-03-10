@@ -102,22 +102,7 @@ extern int _math_errhandling;
     typedef double double_t;
 #endif
 
-// Classification macros
-
-//! The signbit macro determines whether the sign of its argument value is negative.
-/*!
-    /return The signbit macro returns a nonzero value if and only if the sign of its argument value is negative.
-*/
-#define signbit(arg) (((unsigned char)(arg)) & (unsigned char)128)
-
-// Comparison macros
-
-//! The isnan macro determines whether its argument value is a NaN.
-/*!
-    \param x Value to check.
-    \return Returns a nonzero value if and only if its argument has a NaN value.
-*/
-#define isnan(x) ((x) != (x))
+// Comparison macro
 
 //! The isnan macro determines whether its argument value is a NaN.
 /*!
@@ -957,5 +942,11 @@ int _math_fpclasifyf(float x);
     \return 1 if true, 0 if false
 */
 #define isnormal(x) (fpclasify(x) == FP_NORMAL ? 1 : 0)
+
+//! The signbit macro determines whether the sign of its argument value is negative.
+/*!
+    /return The signbit macro returns a nonzero value if and only if the sign of its argument value is negative.
+*/
+#define signbit(arg) (((unsigned char)(arg)) & (unsigned char)128)
 
 #endif //MATH_H
