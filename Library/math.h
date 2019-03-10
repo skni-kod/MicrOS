@@ -159,6 +159,10 @@ extern int _math_errhandling;
 */
 #define isunordered(x,y) ((isnan(x) || isnan(y)) ? 1 : 0 ))
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Trigonometric functions
 
 //! Calculate cosine.
@@ -870,4 +874,8 @@ double fma(double x, double y, double z);
 */
 float fmaf(float x, float y, float z);
 
+#ifdef __cplusplus
+}
 #endif
+
+#endif //MATH_H
