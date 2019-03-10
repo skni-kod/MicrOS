@@ -146,7 +146,7 @@ typedef struct fenv_t
 
 //! Pointer to environment.
 /*! Points to default environment. It's set during program startup. */
-const fenv_t * env;
+extern const fenv_t * env;
 
 //! macro that provides access to pointer to environment.
 /*! Points to default environment. It's set during program startup. */
