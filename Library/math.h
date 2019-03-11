@@ -915,6 +915,12 @@ int __math_fpclasifyf(float x);
 */
 float __math_NANf();
 
+//! Returns infinity.
+/*! 
+    \return Infinity.
+*/
+float __math_INFf();
+
 #ifdef __cplusplus
 }
 #endif
@@ -990,5 +996,11 @@ float __math_NANf();
     \return Quiet NAN.
 */
 #define NAN (__math_NANf())
+
+//! Returns infinity.
+/*! 
+    \return Infinity.
+*/
+#define INFINITY (__math_INFf())
 
 #endif //MATH_H
