@@ -399,6 +399,24 @@ double exp(double x);
 */
 float expf(float x);
 
+//! Generate value from significand and exponent.
+/*! 
+    The ldexp functions multiply a floating-point number by an integral power of 2. A range error may occur.
+    \param x Generate value from significand and exponent
+    \param exp Value of the exponent.
+    \return The ldexp functions return x * 2^exp.
+*/
+double ldexp(double x, int exp);
+
+//! Generate value from significand and exponent.
+/*! 
+    The ldexpl functions multiply a floating-point number by an integral power of 2. A range error may occur.
+    \param x Generate value from significand and exponent
+    \param exp Value of the exponent.
+    \return The ldexpl functions return x * 2^exp.
+*/
+float ldexpl(float x, int exp);
+
 //! Calculate natural logarithm.
 /*! 
     The log functions compute the base-e (natural) logarithm of x. A domain error occurs if the argument is negative. A pole error may occur if the argument is zero.
