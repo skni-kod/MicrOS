@@ -817,6 +817,15 @@ double copysign(double x, double y);
 */  
 float copysignf(float x, float y);
 
+//! Copy sign.
+/*! 
+    The copysignl functions produce a value with the magnitude of x and the sign of y. They produce a NaN (with the sign of y) if x is a NaN. On implementations that represent a signed zero but do not treat negative zero consistently in arithmetic operations, the copysign functions regard the sign of zero as positive.
+    \param x Copy magnitude from.
+    \param y Copy sign from.
+    \return The copysignl functions return a value with the magnitude of x and the sign of y.
+*/  
+long double copysignl(long double x, long double y);
+
 // Minimum, maximum, difference functions
 
 //! Positive difference.
