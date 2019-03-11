@@ -14,8 +14,7 @@ float powf(float base, float exponent)
 
     // Scale
     float integer, remainder;
-    integer = (int)ex;
-    remainder = ex - integer;
+    remainder = modff(ex, &integer);
 
     // Compute 2^ex
     float resultBeforeScale;

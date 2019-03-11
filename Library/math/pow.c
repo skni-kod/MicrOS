@@ -14,8 +14,7 @@ double pow(double base, double exponent)
 
     // Scale
     double integer, remainder;
-    integer = (int)ex;
-    remainder = ex - integer;
+    remainder = modf(ex, &integer);
 
     // Compute 2^ex
     double resultBeforeScale;
