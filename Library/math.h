@@ -565,6 +565,22 @@ double sqrt(double x);
 */
 float sqrtf(float x);
 
+//! Calculate cubic root.
+/*! 
+    The cbrt functions compute the cubic root of x.
+    \param x First value.
+    \return The cbrt functions return 3√x.
+*/
+double cbrt(double x);
+
+//! Calculate cubic root.
+/*! 
+    The cbrtf functions compute the cubic root of x.
+    \param x First value.
+    \return The cbrtf functions return 3√x.
+*/
+float cbrtf(float x);
+
 // Nearest integer floating-point operations
 
 //! Rounding up.
