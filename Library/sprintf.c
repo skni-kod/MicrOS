@@ -15,6 +15,8 @@
 #define FLAGS_LONG_LONG (1U << 9U)
 #define FLAGS_PRECISION (1U << 10U)
 
+
+// HELPER FUNCTIONS
 bool _is_digit(char c)
 {
     return c >= '0' && c <= '9';
@@ -48,6 +50,22 @@ unsigned int _number_len(int n, int base)
     return res;
 }
 
+
+char* _itoa(unsigned int number, char* buffer, int base, bool uppercase, int size) {
+    int idx =  size - 1;
+    static const char lowercase_table[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '8', 'a', 'b', 'c', 'd', 'f'};
+    static const char uppercase_table[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '8', 'A', 'B', 'C', 'D', 'F'};
+
+    do {
+        size_t digit = (number % base);
+        buffer[idx--] = uppercase ? uppercase_table[digit] : lowercase_table[digit];
+
+        number /= base;
+    } while(number);
+
+    return buffer;
+}
+
 void _put_integer(char *str, int *put_idx, int number, unsigned short flags, int base, int width, int precision)
 {
     size_t int_len = _number_len(number, base); // length of the number
@@ -62,7 +80,7 @@ void _put_integer(char *str, int *put_idx, int number, unsigned short flags, int
     }
 
     char *number_buf = (char *)malloc((int_len + 1) * sizeof(char));
-    itoa(number, number_buf, base);
+    _itoa(number, number_buf, base, flags & FLAGS_UPPERCASE, int_len);
 
     // 0x and 0
     if (flags & FLAGS_HASH)
@@ -158,6 +176,8 @@ unsigned int _parse_number_field(const char **str)
 
     return ret;
 }
+
+// PUBLIC FUNCTIONS 
 
 int sprintf(char *str, const char *format, ...)
 {
