@@ -50,8 +50,6 @@
 //! Arg of ilogb is NaN.
 #define FP_ILOGBNAN -2147483648
 
-#define NAN ((float)0x7ff8000000000000)
-
 //! Indicates that floating-point operations use the variable errno to report errors.
 #define MATH_ERRNO 1
 //! Indicates that floating-point exceptions are used.
