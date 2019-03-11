@@ -2,12 +2,10 @@
 
 double logb(double x)
 {
-    if(FLT_RADIX == 2)
-    {
+    // FLT_RADIX is guaranteed to be a constant expression.
+    #if FLT_RADIX == 2
         return log2(x);
-    }
-    else
-    {
+    #elif
         return log2(x)/log2(FLT_RADIX);
-    }   
+    #endif 
 }
