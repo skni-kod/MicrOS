@@ -410,12 +410,12 @@ double ldexp(double x, int exp);
 
 //! Generate value from significand and exponent.
 /*! 
-    The ldexpl functions multiply a floating-point number by an integral power of 2. A range error may occur.
+    The ldexpf functions multiply a floating-point number by an integral power of 2. A range error may occur.
     \param x Generate value from significand and exponent
     \param exp Value of the exponent.
-    \return The ldexpl functions return x * 2^exp.
+    \return The ldexpf functions return x * 2^exp.
 */
-float ldexpl(float x, int exp);
+float ldexpf(float x, int exp);
 
 //! Calculate natural logarithm.
 /*! 
