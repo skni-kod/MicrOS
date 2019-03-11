@@ -2,5 +2,14 @@
 
 char *strcat(char *destination, const char *source)
 {
-    return 0;
+    char *ret = destination;
+    while(*destination)
+        destination++;
+    do 
+    {
+        *destination = *source;
+        destination++,source++;
+    }while(*source);
+    return ret;
+        
 }

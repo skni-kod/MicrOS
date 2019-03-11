@@ -2,5 +2,17 @@
 
 char *strpbrk(char *str1, const char *str2)
 {
-    return 0;
+    char *ret = str2;
+    while(*str1 != '\0')
+    {
+        while(*str2 != '\0')
+        {
+            if(*str1 == *str2)
+                return ret = str1;
+            str2++;
+        }
+        str2 = ret;
+        str1++;
+    }
+    return ret = str1;
 }

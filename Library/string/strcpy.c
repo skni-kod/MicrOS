@@ -2,5 +2,11 @@
 
 char *strcpy(char *destination, const char *source)
 {
-    return 0;
+    char *str = destination;
+    do
+    {
+        *destination = *source;
+        source++,destination++;
+    }while(*source);
+    return str;
 }

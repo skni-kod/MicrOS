@@ -2,5 +2,8 @@
 
 char *strchr(char *str, int character)
 {
-    return 0;
+    char *ret;
+    while(*str != '\0' || *str == character)
+        str++;
+    return ret = str;
 }
