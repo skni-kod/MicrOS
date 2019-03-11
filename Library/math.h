@@ -547,6 +547,24 @@ double logb(double x);
 */
 float logbf(float x);
 
+//! Scale significand using floating-point base exponent.
+/*! 
+    The scalbn function compute x × FLT_RADIX^n efficiently, not normally by computing FLT_RADIX^n explicitly. A range error may occur.
+    \param x Value representing the significand.
+    \param n Value of the exponent.
+    \return The scalbn function return x × FLT_RADIX^n.
+*/
+double scalbn(double x, int n);
+
+//! Scale significand using floating-point base exponent.
+/*! 
+    The scalbnf function compute x × FLT_RADIX^n efficiently, not normally by computing FLT_RADIX^n explicitly. A range error may occur.
+    \param x Value representing the significand.
+    \param n Value of the exponent.
+    \return The scalbnf function return x × FLT_RADIX^n.
+*/
+float scalbnf(float x, int n);
+
 // Power functions 
 
 //! Calculate power.
