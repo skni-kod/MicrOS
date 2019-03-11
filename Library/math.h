@@ -50,6 +50,7 @@
 //! Arg of ilogb is NaN.
 #define FP_ILOGBNAN -2147483648
 
+#define NAN ((float)0x7ff8000000000000)
 
 //! Indicates that floating-point operations use the variable errno to report errors.
 #define MATH_ERRNO 1
@@ -882,6 +883,12 @@ float fmaf(float x, float y, float z);
 }
 #endif
 
+typedef union float_byte
+{
+    float f;
+    unsigned char bytes[sizeof(float)];
+} float_byte;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -903,6 +910,12 @@ int _math_fpclasify(double x);
     \return One of the followoing int values: FP_INFINITE, FP_NAN, FP_ZERO, FP_SUBNORMAL, FP_NORMAL, FP_WTF.
 */
 int _math_fpclasifyf(float x);
+
+//! Returns quiet NAN.
+/*! 
+    \return Quiet NAN.
+*/
+float _math_NANf();
 
 #ifdef __cplusplus
 }
@@ -974,5 +987,10 @@ int _math_fpclasifyf(float x);
 */
 #define FP_FAST_FMAF(x, y, z) (fmaf(x, y, z))
 
+//! Returns quiet NAN.
+/*! 
+    \return Quiet NAN.
+*/
+#define NAN (_math_NANf())
 
 #endif //MATH_H
