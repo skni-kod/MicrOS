@@ -1,6 +1,6 @@
 #include "../fenv.h"
 
-fcontrol_t _FPU_read_control_word()
+fcontrol_t __FPU_read_control_word()
 {
     fcontrol_t control_word;
 

@@ -6,6 +6,6 @@ int fegetenv(fenv_t *envp)
     {
         return 1;
     }
-    *envp = _FPU_read_environment();
+    *envp = __FPU_read_environment();
     return 0;
 }

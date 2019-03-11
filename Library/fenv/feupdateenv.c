@@ -7,7 +7,7 @@ int feupdateenv(const fenv_t *envp)
         return 1;
     }
 
-    fenv_t current = _FPU_read_environment();
+    fenv_t current = __FPU_read_environment();
     
     //Copy all data without exceptions flags.    
     current.control_word = envp->control_word;
@@ -25,6 +25,6 @@ int feupdateenv(const fenv_t *envp)
     current.status_word.top_of_stack_pointer = envp->status_word.top_of_stack_pointer;
     current.status_word.condition_code_3 = envp->status_word.condition_code_3;
     current.status_word.busy = envp->status_word.busy;
-    _FPU_write_environment(current);
+    __FPU_write_environment(current);
     return 0;
 }

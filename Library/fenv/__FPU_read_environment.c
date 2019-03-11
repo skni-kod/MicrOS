@@ -1,6 +1,6 @@
 #include "../fenv.h"
 
-fenv_t _FPU_read_environment()
+fenv_t __FPU_read_environment()
 {
     fenv_t environment;
 

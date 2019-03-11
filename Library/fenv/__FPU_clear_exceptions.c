@@ -1,6 +1,6 @@
 #include "../fenv.h"
 
-void _FPU_clear_exceptions()
+void __FPU_clear_exceptions()
 {
     __asm__ (
         "fclex"

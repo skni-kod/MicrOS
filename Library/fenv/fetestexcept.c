@@ -13,7 +13,7 @@ int fetestexcept(int excepts)
     excepts_to_check &= 0x3F;
 
     // Get current environment of FPU.
-    fexcept_t fe = _FPU_read_status_word();
+    fexcept_t fe = __FPU_read_status_word();
 
     unsigned char * p_fe = (unsigned char *)&fe;
     excepts_to_check &= p_fe[0];

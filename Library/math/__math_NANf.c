@@ -1,6 +1,6 @@
 #include "../math.h"
 
-float _math_NANf()
+float __math_NANf()
 {
     float_byte f;
     f.bytes[sizeof(float) - 1] = 0x7F;

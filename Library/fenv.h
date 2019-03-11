@@ -258,37 +258,37 @@ int feupdateenv(const fenv_t *envp);
 
 //! Number value in tag word.
 /*! Set when value at given FPU register is valid number. */
-#define _FPU_TAG_WORD_VALID 0
+#define __FPU_TAG_WORD_VALID 0
 //! Zero value in tag word.
 /*! Set when value at given FPU register is zero. */
-#define _FPU_TAG_ZERO 1
+#define __FPU_TAG_ZERO 1
 //! Sepcial value in tag word.
 /*! Set when value at given FPU register is invalid (NaN, unsupported), infinity or denormal. */
-#define _FPU_TAG_SPECIAL 2
+#define __FPU_TAG_SPECIAL 2
 //! Empty value in tag word.
 /*! Set when given FPU register is empty. */
-#define _FPU_TAG_EMPTY 3
+#define __FPU_TAG_EMPTY 3
 
 //! Single precision. (32 bit)
-#define _FPU_PRECISION_SINGLE 0
+#define __FPU_PRECISION_SINGLE 0
 //! Double precision. (53 bit)
-#define _FPU_PRECISION_DOUBLE 1
+#define __FPU_PRECISION_DOUBLE 1
 //! Extended precision. (64 bit)
-#define _FPU_PRECISION_EXTENDED 3
+#define __FPU_PRECISION_EXTENDED 3
 
 //! Rounding to nearest.
-#define _FPU_ROUNDING_NEAREST_EVEN FE_TONEAREST
+#define __FPU_ROUNDING_NEAREST_EVEN FE_TONEAREST
 //! Rounding downward.
-#define _FPU_ROUNDING_FLOOR FE_DOWNWARD
+#define __FPU_ROUNDING_FLOOR FE_DOWNWARD
 //! Rounding upward.
-#define _FPU_ROUNDING_CEIL FE_UPWARD
+#define __FPU_ROUNDING_CEIL FE_UPWARD
 //! Rounding towards zero.
-#define _FPU_ROUNDING_TRUNCATE FE_TOWARDZERO
+#define __FPU_ROUNDING_TRUNCATE FE_TOWARDZERO
 
 //! Projective infinity control.
-#define _FPU_INFINITY_CONTROL_PROJECTIVE 0
+#define __FPU_INFINITY_CONTROL_PROJECTIVE 0
 //! Affine infinity control.
-#define _FPU_INFINITY_CONTROL_AFFINE 1
+#define __FPU_INFINITY_CONTROL_AFFINE 1
 
 #ifdef __cplusplus
 extern "C" {
@@ -298,35 +298,35 @@ extern "C" {
 /*!
     \return Current FPU control word.
 */
-fcontrol_t _FPU_read_control_word();
+fcontrol_t __FPU_read_control_word();
 
 //! Write FPU control word.
 /*!
 	It also clears FPU exception before write value.
     \param control_word Control word to write into FPU.
 */
-void _FPU_write_control_word(fcontrol_t control_word);
+void __FPU_write_control_word(fcontrol_t control_word);
 
 //! Read FPU environment.
 /*!
     \return Current FPU environment.
 */
-fenv_t _FPU_read_environment();
+fenv_t __FPU_read_environment();
 
 //! Write FPU environment.
 /*!
     \param environment environment to write into FPU.
 */
-void _FPU_write_environment(fenv_t environment);
+void __FPU_write_environment(fenv_t environment);
 
 //! Read FPU status word.
 /*!
     \return Current FPU status word.
 */
-fexcept_t _FPU_read_status_word();
+fexcept_t __FPU_read_status_word();
 
 //! Clear all FPU exceptions.
-void _FPU_clear_exceptions();
+void __FPU_clear_exceptions();
 
 #ifdef __cplusplus
 }

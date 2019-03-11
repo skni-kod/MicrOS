@@ -16,7 +16,7 @@ int fesetexceptflag(const fexcept_t *flagp, int excepts)
 
     // Get exceptions flags
     fenv_t env;
-    env = _FPU_read_environment();
+    env = __FPU_read_environment();
 
     // Set only flags user asked for.
 
@@ -44,6 +44,6 @@ int fesetexceptflag(const fexcept_t *flagp, int excepts)
     {
         env.status_word.precision = flagp->precision;
     }
-    _FPU_write_environment(env);
+    __FPU_write_environment(env);
     return 0;
 }

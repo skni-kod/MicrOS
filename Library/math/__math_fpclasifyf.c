@@ -1,6 +1,6 @@
 #include "../math.h"
 
-int _math_fpclasifyf(float x)
+int __math_fpclasifyf(float x)
 {
     __asm__ (
         "fld %1 \n" \
@@ -8,7 +8,7 @@ int _math_fpclasifyf(float x)
         "fstp %0"
         : "=m"(x): "m"(x));
 
-    fexcept_t status_word = _FPU_read_status_word();
+    fexcept_t status_word = __FPU_read_status_word();
 
     // Unsupported
     if(status_word.condition_code_0 == 0 && status_word.condition_code_2 == 0 && status_word.condition_code_3 == 0)

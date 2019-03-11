@@ -1,6 +1,6 @@
 #include "../fenv.h"
 
-fexcept_t _FPU_read_status_word()
+fexcept_t __FPU_read_status_word()
 {
     fexcept_t status_word;
 

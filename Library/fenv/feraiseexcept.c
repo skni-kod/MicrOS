@@ -12,11 +12,11 @@ int feraiseexcept(int excepts)
 
     // Get current environment of FPU.
     fenv_t env;
-    env = _FPU_read_environment();
+    env = __FPU_read_environment();
 
     // Set exception flags.
     fexcept_t * fe = &env.status_word;
     ((unsigned char *)fe)[0] |= excepts_to_raise;
-    _FPU_write_environment(env);
+    __FPU_write_environment(env);
     return 0;
 }

@@ -901,7 +901,7 @@ extern "C" {
     \param x The value to classify.
     \return One of the followoing int values: FP_INFINITE, FP_NAN, FP_ZERO, FP_SUBNORMAL, FP_NORMAL, FP_WTF.
 */
-int _math_fpclasify(double x);
+int __math_fpclasify(double x);
 
 //! Classify floating-point value.
 /*! 
@@ -909,13 +909,13 @@ int _math_fpclasify(double x);
     \param x The value to classify.
     \return One of the followoing int values: FP_INFINITE, FP_NAN, FP_ZERO, FP_SUBNORMAL, FP_NORMAL, FP_WTF.
 */
-int _math_fpclasifyf(float x);
+int __math_fpclasifyf(float x);
 
 //! Returns quiet NAN.
 /*! 
     \return Quiet NAN.
 */
-float _math_NANf();
+float __math_NANf();
 
 #ifdef __cplusplus
 }
@@ -927,7 +927,7 @@ float _math_NANf();
     \param x The value to classify.
     \return One of the followoing int values: FP_INFINITE, FP_NAN, FP_ZERO, FP_SUBNORMAL, FP_NORMAL, FP_WTF.
 */
-#define fpclasify(x) (sizeof(x) == sizeof(double) ? _math_fpclasify(x) : _math_fpclasifyf(x))
+#define fpclasify(x) (sizeof(x) == sizeof(double) ? __math_fpclasify(x) : __math_fpclasifyf(x))
 
 //! Is finite.
 /*! 
@@ -991,6 +991,6 @@ float _math_NANf();
 /*! 
     \return Quiet NAN.
 */
-#define NAN (_math_NANf())
+#define NAN (__math_NANf())
 
 #endif //MATH_H

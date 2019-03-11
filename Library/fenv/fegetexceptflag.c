@@ -15,7 +15,7 @@ int fegetexceptflag(fexcept_t *flagp, int excepts)
     excepts_to_get &= 0x3F;
 
     // Get exceptions flags
-    fexcept_t exceptions = _FPU_read_status_word();
+    fexcept_t exceptions = __FPU_read_status_word();
 
     // Set only flags user asked for.
 
