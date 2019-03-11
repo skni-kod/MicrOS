@@ -846,6 +846,15 @@ double fdim(double x, double y);
 */
 float fdimf(float x, float y);
 
+//! Positive difference.
+/*! 
+    The fdiml functions determine the positive difference between their arguments.
+    \param x First value.
+    \param y Second value.
+    \return The fdiml functions return the positive difference value.
+*/
+long double fdiml(long double x, long double y);
+
 //! Higher value.
 /*! 
     The fmax functions determine the maximum numeric value of their arguments.
@@ -864,6 +873,15 @@ double fmax(double x, double y);
 */
 float fmaxf(float x, float y);
 
+//! Higher value.
+/*! 
+    The fmaxl functions determine the maximum numeric value of their arguments.
+    \param x First value.
+    \param y Second value.
+    \return The fmaxl functions return the maximum numeric value of their arguments.
+*/
+long double fmaxl(long double x, long double y);
+
 //! Lower value.
 /*! 
     The fmin functions determine the minimum numeric value of their arguments.
@@ -881,6 +899,15 @@ double fmin(double x, double y);
     \return The fminf functions return the minimum numeric value of their arguments.
 */
 float fminf(float x, float y);
+
+//! Lower value.
+/*! 
+    The fminl functions determine the minimum numeric value of their arguments.
+    \param x First value.
+    \param y Second value.
+    \return The fminl functions return the minimum numeric value of their arguments.
+*/
+long double fminl(long double x, long double y);
 
 // Other functions
 
