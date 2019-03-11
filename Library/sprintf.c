@@ -15,7 +15,6 @@
 #define FLAGS_LONG_LONG (1U << 9U)
 #define FLAGS_PRECISION (1U << 10U)
 
-
 // HELPER FUNCTIONS
 bool _is_digit(char c)
 {
@@ -50,18 +49,19 @@ unsigned int _number_len(int n, int base)
     return res;
 }
 
-
-char* _itoa(unsigned int number, char* buffer, int base, bool uppercase, int size) {
-    int idx =  size - 1;
+char *_itoa(unsigned int number, char *buffer, int base, bool uppercase, int size)
+{
+    int idx = size - 1;
     static const char lowercase_table[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '8', 'a', 'b', 'c', 'd', 'f'};
     static const char uppercase_table[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '8', 'A', 'B', 'C', 'D', 'F'};
 
-    do {
+    do
+    {
         size_t digit = (number % base);
         buffer[idx--] = uppercase ? uppercase_table[digit] : lowercase_table[digit];
 
         number /= base;
-    } while(number);
+    } while (number);
 
     return buffer;
 }
@@ -177,7 +177,7 @@ unsigned int _parse_number_field(const char **str)
     return ret;
 }
 
-// PUBLIC FUNCTIONS 
+// PUBLIC FUNCTIONS
 
 int sprintf(char *str, const char *format, ...)
 {
@@ -406,10 +406,18 @@ int sprintf(char *str, const char *format, ...)
 
             case 'X':
                 flags |= FLAGS_UPPERCASE; // Uppercase X
-            case 'x': // HEX INTEGER
+            case 'x':                     // HEX INTEGER
             {
                 int_arg = va_arg(arg, unsigned int);
                 _put_integer(str, &put_index, int_arg, flags, 16, width_field, precision_field);
+                break;
+            }
+
+            case 'F':
+            case 'f':
+            {
+                float f_arg = va_arg(arg, float);
+
                 break;
             }
 
