@@ -748,8 +748,8 @@ float nearbyintf(float x);
 //! Compute reminder required by IEC 60559.
 /*! 
     The remainder functions compute the remainder x REM y required by IEC 60559.
-    \param numer Dividend.
-    \param denom Divider.
+    \param x Dividend.
+    \param y Divider.
     \return The remainder functions return x REM y. If y is zero, whether a domain error occurs or the functions return zero is implementation defined.
 */
 double remainder(double x, double y);
@@ -757,8 +757,8 @@ double remainder(double x, double y);
 //! Compute reminder required by IEC 60559.
 /*! 
     The remainderf functions compute the remainder x REM y required by IEC 60559.
-    \param numer Dividend.
-    \param denom Divider.
+    \param x Dividend.
+    \param y Divider.
     \return The remainder functions return x REM y. If y is zero, whether a domain error occurs or the functions return zero is implementation defined.
 */
 float remainderf(float x, float y);
@@ -769,7 +769,7 @@ float remainderf(float x, float y);
 /*! 
     The copysign functions produce a value with the magnitude of x and the sign of y. They produce a NaN (with the sign of y) if x is a NaN. On implementations that represent a signed zero but do not treat negative zero consistently in arithmetic operations, the copysign functions regard the sign of zero as positive.
     \param x Copy magnitude from.
-    \param x Copy sign from.
+    \param y Copy sign from.
     \return The copysign functions return a value with the magnitude of x and the sign of y.
 */
 double copysign(double x, double y);
@@ -778,7 +778,7 @@ double copysign(double x, double y);
 /*! 
     The copysignf functions produce a value with the magnitude of x and the sign of y. They produce a NaN (with the sign of y) if x is a NaN. On implementations that represent a signed zero but do not treat negative zero consistently in arithmetic operations, the copysign functions regard the sign of zero as positive.
     \param x Copy magnitude from.
-    \param x Copy sign from.
+    \param y Copy sign from.
     \return The copysignf functions return a value with the magnitude of x and the sign of y.
 */  
 float copysignf(float x, float y);
