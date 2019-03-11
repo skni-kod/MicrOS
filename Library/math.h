@@ -815,6 +815,26 @@ double nearbyint(double x);
 */
 float nearbyintf(float x);
 
+//! Compute remainder and quotient.
+/*! 
+    The remquo functions compute the same remainder as the remainder functions. In the object pointed to by quo they store a value whose sign is the sign of x/y and whose magnitude is congruent modulo 2n to the magnitude of the integral quotient of x/y, where n is an implementation-defined integer greater than or equal to 3.
+    \param numer Floating point value with the quotient numerator.
+    \param denom Floating point value with the quotient denominator.
+    \param quot Pointer to an object where the quotient internally used to determine the remainder is stored as a value of type int.
+    \return The remquo functions return x REM y. If y is zero, the value stored in the object pointed to by quo is unspecified and whether a domain error occurs or the functions return zero is implementation defined.
+*/
+double remquo(double numer, double denom, int* quot);
+
+//! Compute remainder and quotient.
+/*! 
+    The remquof functions compute the same remainder as the remainder functions. In the object pointed to by quo they store a value whose sign is the sign of x/y and whose magnitude is congruent modulo 2n to the magnitude of the integral quotient of x/y, where n is an implementation-defined integer greater than or equal to 3.
+    \param numer Floating point value with the quotient numerator.
+    \param denom Floating point value with the quotient denominator.
+    \param quot Pointer to an object where the quotient internally used to determine the remainder is stored as a value of type int.
+    \return The remquof functions return x REM y. If y is zero, the value stored in the object pointed to by quo is unspecified and whether a domain error occurs or the functions return zero is implementation defined.
+*/
+float remquof(float numer, float denom, int* quot);
+
 //! Compute reminder required by IEC 60559.
 /*! 
     The remainder functions compute the remainder x REM y required by IEC 60559.
