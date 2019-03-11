@@ -1,4 +1,4 @@
-    #include <float.h>
+#include <float.h>
 #include "errno.h"
 #include "fenv.h"
 
@@ -881,11 +881,32 @@ float fmaf(float x, float y, float z);
 }
 #endif
 
+//! Type represent float value as array of bytes.
 typedef union float_byte
 {
+    //! Float value.
     float f;
+    //! Array of bytes.
     unsigned char bytes[sizeof(float)];
 } float_byte;
+
+//! Type represent double value as array of bytes.
+typedef union double_byte
+{
+    //! Double value.
+    double f;
+    //! Array of bytes.
+    unsigned char bytes[sizeof(double)];
+} double_byte;
+
+//! Type represent long double value as array of bytes.
+typedef union long_double_byte
+{
+    //! Long double value.
+    long double f;
+    //! Array of bytes.
+    unsigned char bytes[sizeof(long double)];
+} long_double_byte;
 
 #ifdef __cplusplus
 extern "C" {
@@ -919,7 +940,19 @@ float __math_NANf();
 /*! 
     \return Infinity.
 */
+double __math_INF();
+
+//! Returns infinity.
+/*! 
+    \return Infinity.
+*/
 float __math_INFf();
+
+//! Returns infinity.
+/*! 
+    \return Infinity.
+*/
+long double __math_INFl();
 
 #ifdef __cplusplus
 }
@@ -1002,5 +1035,23 @@ float __math_INFf();
     \return Infinity.
 */
 #define INFINITY (__math_INFf())
+
+//! Returns infinity.
+/*! 
+    \return Infinity.
+*/
+#define HUGE_VAL (__math_INF())
+
+//! Returns infinity.
+/*! 
+    \return Infinity.
+*/
+#define HUGE_VALF (__math_INFf())
+
+//! Returns infinity.
+/*! 
+    \return Infinity.
+*/
+#define HUGE_VALL (__math_INFl())
 
 #endif //MATH_H
