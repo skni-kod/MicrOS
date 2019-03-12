@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+//! Type or error.
 typedef int errno_t;
 
 //! Last error number.
