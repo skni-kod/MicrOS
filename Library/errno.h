@@ -4,9 +4,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef int errno_t;
+
 //! Last error number.
 /*! Value that inform about last error number occured during math operations. */
-extern int _errno;
+extern errno_t _errno;
 //! Macro to access _errno.
 /*! Provides access to _errno. */
 #define errno _errno
