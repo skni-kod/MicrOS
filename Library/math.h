@@ -517,6 +517,22 @@ double expm1(double x);
 */
 float expm1f(float x);
 
+//! Integer binary logarithm.
+/*! 
+    The ilogb functions extract the exponent of x as a signed int value. If x is zero they compute the value FP_ILOGB0; if x is infinite they compute the value INT_MAX; if x is a NaN they compute the value FP_ILOGBNAN; otherwise, they are equivalent to calling the corresponding logb function and casting the returned value to type int. A domain error or range error may occur if x is zero, infinite, or NaN. If the correct value is outside the range of the return type, the numeric result is unspecified.
+    \param x Value whose ilogb is returned.
+    \return The ilogb functions return the exponent of x as a signed int value.
+*/
+int ilogb(double x);
+
+//! Integer binary logarithm.
+/*! 
+    The ilogbf functions extract the exponent of x as a signed int value. If x is zero they compute the value FP_ILOGB0; if x is infinite they compute the value INT_MAX; if x is a NaN they compute the value FP_ILOGBNAN; otherwise, they are equivalent to calling the corresponding logb function and casting the returned value to type int. A domain error or range error may occur if x is zero, infinite, or NaN. If the correct value is outside the range of the return type, the numeric result is unspecified.
+    \param x Value whose ilogbf is returned.
+    \return The ilogbf functions return the exponent of x as a signed int value.
+*/
+int ilogbf(float x);
+
 //! Calculate natural logarithm of value + 1.
 /*! 
     The log1p functions compute the base-e (natural) logarithm of 1 plus the argument. A domain error occurs if the argument is less than −1. A pole error may occur if the argument equals −1.
