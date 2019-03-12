@@ -669,6 +669,24 @@ double cbrt(double x);
 */
 float cbrtf(float x);
 
+//! Compute hypotenuse.
+/*! 
+    The hypot functions compute the square root of the sum of the squares of x and y, without undue overflow or underflow. A range error may occur.
+    \param x Floating point value corresponding to the leg of a right-angled triangle for which the hypotenuse is computed.
+    \param y Floating point value corresponding to the leg of a right-angled triangle for which the hypotenuse is computed.
+    \return The hypot functions return √(x^2+y^2).
+*/
+double hypot(double x, double y);
+
+//! Compute hypotenuse.
+/*! 
+    The hypotf functions compute the square root of the sum of the squares of x and y, without undue overflow or underflow. A range error may occur.
+    \param x Floating point value corresponding to the leg of a right-angled triangle for which the hypotenuse is computed.
+    \param y Floating point value corresponding to the leg of a right-angled triangle for which the hypotenuse is computed.
+    \return The hypotf functions return √(x^2+y^2).
+*/
+float hypotf(float x, float y);
+
 // Nearest integer floating-point operations
 
 //! Rounding up.
