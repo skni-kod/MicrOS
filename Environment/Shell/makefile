@@ -5,8 +5,10 @@ OBJ_DIR := obj
 BIN_DIR := bin
 OUTPUT_FILE := $(BIN_DIR)/Shell.elf
 
-SOURCES := $(shell find $(SRC_DIR) -name "*.c" -o -name "*.h")
+SOURCES := $(shell find $(SRC_DIR) -name "*.c")
 OBJECTS := $(SOURCES:%.c=$(OBJ_DIR)/%.o)
+
+DEPS := $(C_OBJECTS:.o=.d)
 
 $(OUTPUT_FILE): $(OBJECTS)
 	@echo "=== Linking output file $(OUTPUT_FILE) ==="
@@ -17,7 +19,9 @@ $(OUTPUT_FILE): $(OBJECTS)
 $(OBJ_DIR)/%.o: %.c
 	@echo "=== Compiling file $< into object $@ ==="
 	@mkdir -p '$(@D)'
-	@$(GCC) -c $(PWD)/$< -o $@ -I../../Library -g -ffreestanding -Wall -Wextra -Wno-unused-parameter
+	@$(GCC) -c $(PWD)/$< -o $@ -MMD -MF $(@:.o=.d) -I../../Library -g -ffreestanding -Wall -Wextra -Wno-unused-parameter
+
+-include $(DEPS)
 
 clean:
 	@echo "=== Clearing $(BIN_DIR) and $(OBJ_DIR) directories ==="

@@ -7,10 +7,10 @@ OBJ_DIR := obj
 BIN_DIR := bin
 OUTPUT_FILE := $(BIN_DIR)/kernel.elf
 
-ASM_SOUCES := $(shell find $(SRC_DIR) -name "*.asm" -type f)
+ASM_SOUCES := $(shell find $(SRC_DIR) -name "*.asm")
 ASM_OBJECTS := $(ASM_SOUCES:%.asm=$(OBJ_DIR)/%.o)
 
-$(OUTPUT_FILE): $(C_OBJECTS) $(ASM_OBJECTS)
+$(OUTPUT_FILE): $(ASM_OBJECTS)
 	@echo "=== Copying output bootloader $(OUTPUT_FILE) ==="
 	@mkdir -p '$(@D)'
 	@cp $< $(BIN_DIR)/bootloader.bin
