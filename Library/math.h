@@ -184,6 +184,13 @@ double cos(double x);
 */
 float cosf(float x);
 
+//! Calculate cosine.
+/*! 
+    The cosl functions compute the cosine of x (measured in radians).
+    \param x First value.
+    \return The cosl functions return cos x.
+*/
+long double cosl(long double x);
 
 //! Calculate sine.
 /*! 
@@ -201,6 +208,14 @@ double sin(double x);
 */
 float sinf(float x);
 
+//! Calculate sine.
+/*! 
+    The sinl functions compute the sine of x (measured in radians).
+    \param x First value.
+    \return The sinl functions return sin x.
+*/
+long double sinl(long double x);
+
 //! Calculate tangent.
 /*! 
     The tan functions compute the tangent of x (measured in radians).
@@ -216,6 +231,14 @@ double tan(double x);
     \return The tanf functions return tan x.
 */
 float tanf(float x);
+
+//! Calculate tangent.
+/*! 
+    The tanl functions compute the tangent of x (measured in radians).
+    \param x First value.
+    \return The tanl functions return tan x.
+*/
+long double tanl(long double x);
 
 //! Calculate arc cosine.
 /*! 
