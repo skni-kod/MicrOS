@@ -13,13 +13,13 @@ DEPS := $(OBJECTS:.o=.d)
 $(OUTPUT_FILE): $(OBJECTS)
 	@echo "=== Linking output file $(OUTPUT_FILE) ==="
 	@mkdir -p '$(@D)'
-	@$(GCC) $(OBJECTS) -o $(OUTPUT_FILE) -L../../Library/bin -lc -g -ffreestanding -nostdlib 
+	@$(GCC) $(OBJECTS) -o $(OUTPUT_FILE) -L../../Library/bin -lc -nostdlib 
 	@echo "=== $(OUTPUT_FILE) done ==="
 
 $(OBJ_DIR)/%.o: %.c
 	@echo "=== Compiling file $< into object $@ ==="
 	@mkdir -p '$(@D)'
-	@$(GCC) -c $(PWD)/$< -o $@ -MMD -MF $(@:.o=.d) -I../../Library -g -ffreestanding -Wall -Wextra -Wno-unused-parameter
+	@$(GCC) -c $(PWD)/$< -o $@ -MMD -MF $(@:.o=.d) -I../../Library -ggdb3 -O0 -ffreestanding -Wall -Wextra -Wno-unused-parameter
 
 -include $(DEPS)
 

@@ -20,7 +20,7 @@ $(OUTPUT_FILE): $(OBJECTS)
 $(OBJ_DIR)/%.o: %.c
 	@echo "=== Compiling file $< into object $@ ==="
 	@mkdir -p '$(@D)'
-	@$(GCC) -c $(PWD)/$< -o $@ -MMD -MF $(@:.o=.d) -ffreestanding -Wall -Wextra -Wno-unused-parameter
+	@$(GCC) -c $(PWD)/$< -o $@ -MMD -MF $(@:.o=.d) -ggdb3 -O0 -ffreestanding -Wall -Wextra -Wno-unused-parameter
 
 -include $(DEPS)
 

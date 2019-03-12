@@ -18,7 +18,7 @@ DEPS := $(C_OBJECTS:.o=.d)
 $(OUTPUT_FILE): $(C_OBJECTS) $(ASM_OBJECTS)
 	@echo "=== Linking output file $(OUTPUT_FILE) ==="
 	@mkdir -p '$(@D)'
-	@$(GCC) $(C_OBJECTS) $(ASM_OBJECTS) -o $(OUTPUT_FILE) -T ../linker.ld -L../../Library/bin -lc -g3 -ffreestanding -nostdlib 
+	@$(GCC) $(C_OBJECTS) $(ASM_OBJECTS) -o $(OUTPUT_FILE) -T ../linker.ld -L../../Library/bin -lc -nostdlib 
 	@echo "=== Creating binary version of kernel elf ==="
 	@$(OBJCOPY) -O binary $(OUTPUT_FILE) $(BIN_DIR)/kernel.bin
 	@echo "=== $(OUTPUT_FILE) done ==="
@@ -26,7 +26,7 @@ $(OUTPUT_FILE): $(C_OBJECTS) $(ASM_OBJECTS)
 $(OBJ_DIR)/%.o: %.c
 	@echo "=== Compiling file $< into object $@ ==="
 	@mkdir -p '$(@D)'
-	@$(GCC) -c $(PWD)/$< -o $@ -MMD -MF $(@:.o=.d) -I../../Library -ILibrary -g3 -ffreestanding -Wall -Wextra -Wno-unused-parameter -fshort-enums
+	@$(GCC) -c $(PWD)/$< -o $@ -MMD -MF $(@:.o=.d) -I../../Library -ILibrary -ggdb3 -O0 -ffreestanding -Wall -Wextra -Wno-unused-parameter -fshort-enums
 	
 $(OBJ_DIR)/%.o: %.asm
 	@echo "=== Compiling asm $< into object $@ ==="
