@@ -18,7 +18,7 @@ $(OUTPUT_FILE): $(OBJECTS)
 $(OBJ_DIR)/%.o: %.c
 	@echo "=== Compiling file $< into object $@ ==="
 	@mkdir -p '$(@D)'
-	@$(GCC) -c $< -o $@ -ffreestanding -Wall -Wextra -Wno-unused-parameter
+	@$(GCC) -c $(PWD)/$< -o $@ -ffreestanding -Wall -Wextra -Wno-unused-parameter
 
 clean:
 	@echo "=== Clearing $(BIN_DIR) and $(OBJ_DIR) directories ==="
