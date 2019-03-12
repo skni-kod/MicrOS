@@ -21,7 +21,7 @@ $(OUTPUT_FILE): $(C_OBJECTS) $(ASM_OBJECTS)
 	@$(GCC) $(C_OBJECTS) $(ASM_OBJECTS) -o $(OUTPUT_FILE) -T ../linker.ld -L../../Library/bin -lc -g3 -ffreestanding -nostdlib 
 	@echo "=== Creating binary version of kernel elf ==="
 	@$(OBJCOPY) -O binary $(OUTPUT_FILE) $(BIN_DIR)/kernel.bin
-	@echo "=== Done ==="
+	@echo "=== $(OUTPUT_FILE) done ==="
 
 $(OBJ_DIR)/%.o: %.c
 	@echo "=== Compiling file $< into object $@ ==="

@@ -14,7 +14,7 @@ $(OUTPUT_FILE): $(ASM_OBJECTS)
 	@echo "=== Copying output bootloader $(OUTPUT_FILE) ==="
 	@mkdir -p '$(@D)'
 	@cp $< $(BIN_DIR)/bootloader.bin
-	@echo "=== Done ==="
+	@echo "=== $(OUTPUT_FILE) done ==="
 
 $(OBJ_DIR)/%.o: %.asm
 	@echo "=== Compiling bootloader $(PWD)/$< into object $@ ==="

@@ -14,7 +14,7 @@ $(OUTPUT_FILE): $(OBJECTS)
 	@echo "=== Linking output file $(OUTPUT_FILE) ==="
 	@mkdir -p '$(@D)'
 	@$(GCC) $(OBJECTS) -o $(OUTPUT_FILE) -L../../Library/bin -lc -g -ffreestanding -nostdlib 
-	@echo "=== Done ==="
+	@echo "=== $(OUTPUT_FILE) done ==="
 
 $(OBJ_DIR)/%.o: %.c
 	@echo "=== Compiling file $< into object $@ ==="
