@@ -399,6 +399,24 @@ double exp(double x);
 */
 float expf(float x);
 
+//! Get significand and exponent.
+/*! 
+    The frexp functions break a floating-point number into a normalized fraction and an integral power of 2. They store the integer in the int object pointed to by exp.
+    \param x Value to be decomposed.
+    \param exp Pointer to an int where the value of the exponent is stored.
+    \return If value is not a floating-point number or if the integral power of 2 is outside the range of int, the results are unspecified. Otherwise, the frexp functions return the value x, such that x has a magnitude in the interval [1/2, 1) or zero, and value equals x × 2^exp. If value is zero, both parts of the result are zero.
+*/
+double frexp(double x, int* exp);
+
+//! Get significand and exponent.
+/*! 
+    The frexpf functions break a floating-point number into a normalized fraction and an integral power of 2. They store the integer in the int object pointed to by exp.
+    \param x Value to be decomposed.
+    \param exp Pointer to an int where the value of the exponent is stored.
+    \return If value is not a floating-point number or if the integral power of 2 is outside the range of int, the results are unspecified. Otherwise, the frexpf functions return the value x, such that x has a magnitude in the interval [1/2, 1) or zero, and value equals x × 2^exp. If value is zero, both parts of the result are zero.
+*/
+float frexpf(float x, int* exp);
+
 //! Generate value from significand and exponent.
 /*! 
     The ldexp functions multiply a floating-point number by an integral power of 2. A range error may occur.
