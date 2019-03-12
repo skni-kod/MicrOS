@@ -49,6 +49,11 @@ unsigned int _number_len(int n, int base)
     return res;
 }
 
+unsigned int _fnumber_len(float n)
+{
+    return floor(log10(fabs(n))) + 1;
+}
+
 char *_itoa(unsigned int number, char *buffer, int base, bool uppercase, int size)
 {
     int idx = size - 1;
@@ -62,6 +67,47 @@ char *_itoa(unsigned int number, char *buffer, int base, bool uppercase, int siz
 
         number /= base;
     } while (number);
+
+    return buffer;
+}
+
+char *_ftoa(float number, char *buffer, unsigned short flags, int precision)
+{
+    float whole = floor(number);
+    float frac = number - whole;
+
+    // float i;
+    // float f = modf(number, &i);
+
+    if (!(flags & FLAGS_PRECISION))
+    {
+        precision = 6;
+    }
+
+    frac = floor(pow(10, precision) * frac);
+
+    int whole_size = _fnumber_len(whole);
+    int frac_size = precision;
+
+    int idx = whole_size;
+
+    while (idx)
+    {
+        buffer[idx - 1] = (char)fmod(whole, 10) + '0';
+        whole /= 10;
+        idx--;
+    }
+
+    buffer[whole_size] = '.';
+
+    idx = whole_size + frac_size;
+    buffer[idx + 1] = '\0';
+
+    while (frac > 1)
+    {
+        buffer[idx--] = (char)fmod(frac, 10) + '0';
+        frac /= 10;
+    }
 
     return buffer;
 }
@@ -416,8 +462,15 @@ int sprintf(char *str, const char *format, ...)
             case 'F':
             case 'f':
             {
-                float f_arg = va_arg(arg, float);
+                float f_arg = va_arg(arg, double);
+                char buff[256];
 
+                _ftoa(f_arg, buff, flags, precision_field);
+                int idx = 0;
+                while (buff[idx] != '\0')
+                {
+                    str[put_index++] = buff[idx];
+                }
                 break;
             }
 
