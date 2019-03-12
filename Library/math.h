@@ -653,6 +653,14 @@ double sqrt(double x);
 */
 float sqrtf(float x);
 
+//! Calculate square root.
+/*! 
+    The sqrtl functions compute the nonnegative square root of x. A domain error occurs if the argument is less than zero.
+    \param x First value.
+    \return The sqrtl functions return √x.
+*/
+long double sqrtl(long double x);
+
 //! Calculate cubic root.
 /*! 
     The cbrt functions compute the cubic root of x.
