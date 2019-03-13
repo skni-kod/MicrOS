@@ -1389,6 +1389,14 @@ double fabs(double x);
 */
 float fabsf(float x);
 
+//! Calculate absolute value.
+/*! 
+    The fabsl functions compute the absolute value of a floating-point number x.
+    \param x First value.
+    \return The fabsl functions return | x |.
+*/
+long double fabsl(long double x);
+
 //! Multiply-add.
 /*! 
     The fma functions compute (x × y) + z, rounded as one ternary operation: they compute the value (as if) to infinite precision and round once to the result format, according to the current rounding mode. A range error may occur.
@@ -1408,6 +1416,16 @@ double fma(double x, double y, double z);
     \return The fmaf functions return (x × y) + z, rounded as one ternary operation.
 */
 float fmaf(float x, float y, float z);
+
+//! Multiply-add.
+/*! 
+    The fmal functions compute (x × y) + z, rounded as one ternary operation: they compute the value (as if) to infinite precision and round once to the result format, according to the current rounding mode. A range error may occur.
+    \param x First value.
+    \param y Second value.
+    \param z Third value.
+    \return The fmal functions return (x × y) + z, rounded as one ternary operation.
+*/
+long double fmal(long double x, long double y, long double z);
 
 #ifdef __cplusplus
 }
@@ -1461,6 +1479,14 @@ int __math_fpclasify(double x);
     \return One of the followoing int values: FP_INFINITE, FP_NAN, FP_ZERO, FP_SUBNORMAL, FP_NORMAL, FP_WTF.
 */
 int __math_fpclasifyf(float x);
+
+//! Classify floating-point value.
+/*! 
+    Returns a value of type int that matches one of the classification macro constants, depending on the value of x.
+    \param x The value to classify.
+    \return One of the followoing int values: FP_INFINITE, FP_NAN, FP_ZERO, FP_SUBNORMAL, FP_NORMAL, FP_WTF.
+*/
+int __math_fpclasifyl(long double x);
 
 //! Returns quiet NAN.
 /*! 
