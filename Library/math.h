@@ -357,6 +357,14 @@ double cosh(double x);
 */
 float coshf(float x);
 
+//! Calculate hyperbolic cosine.
+/*! 
+    The coshl functions compute the hyperbolic cosine of x. A range error occurs if the magnitude of x is too large.
+    \param x First value.
+    \return The coshl functions return cosh x.
+*/
+long double coshl(long double x);
+
 //! Calculate hyperbolic sine.
 /*! 
     The sinh functions compute the hyperbolic sine of x. A range error occurs if the magnitude of x is too large.
@@ -373,6 +381,14 @@ double sinh(double x);
 */
 float sinhf(float x);
 
+//! Calculate hyperbolic sine.
+/*! 
+    The sinhl functions compute the hyperbolic sine of x. A range error occurs if the magnitude of x is too large.
+    \param x First value.
+    \return The sinhl functions return sinh x.
+*/
+long double sinhl(long double x);
+
 //! Calculate hyperbolic tangent.
 /*! 
     The tanh functions compute the hyperbolic tangent of x.
@@ -388,6 +404,14 @@ double tanh(double x);
     \return The tanhf functions return tanh x.
 */
 float tanhf(float x);
+
+//! Calculate hyperbolic tangent.
+/*! 
+    The tanhl functions compute the hyperbolic tangent of x.
+    \param x First value.
+    \return The tanhl functions return tanh x.
+*/
+long double tanhl(long double x);
 
 //! Calculate arc hyperbolic cosine.
 /*! 
