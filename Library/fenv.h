@@ -19,13 +19,13 @@
 #define FE_ALL_EXCEPT   (FE_INVALID | FE_DENORMAL | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW | FE_INEXACT)
 
 //! Rounding to nearest.
-#define FE_TONEAREST    0
+#define FE_TONEAREST    0x0000
 //! Rounding downward.
-#define FE_DOWNWARD     1
+#define FE_DOWNWARD     0x0400
 //! Rounding upward.
-#define FE_UPWARD       2
+#define FE_UPWARD       0x0800
 //! Rounding towards zero.
-#define FE_TOWARDZERO   3
+#define FE_TOWARDZERO   0x0c00
 
 //! Type represent state of floating point control word.
 /*! Includes exception falgs and control modes to precision, rounding and infnity control. */
@@ -277,13 +277,13 @@ int feupdateenv(const fenv_t *envp);
 #define __FPU_PRECISION_EXTENDED    3
 
 //! Rounding to nearest.
-#define __FPU_ROUNDING_NEAREST_EVEN     FE_TONEAREST
+#define __FPU_ROUNDING_NEAREST_EVEN     0
 //! Rounding downward.
-#define __FPU_ROUNDING_FLOOR            FE_DOWNWARD
+#define __FPU_ROUNDING_FLOOR            1
 //! Rounding upward.
-#define __FPU_ROUNDING_CEIL             FE_UPWARD
+#define __FPU_ROUNDING_CEIL             2
 //! Rounding towards zero.
-#define __FPU_ROUNDING_TRUNCATE         FE_TOWARDZERO
+#define __FPU_ROUNDING_TRUNCATE         3
 
 //! Projective infinity control.
 #define __FPU_INFINITY_CONTROL_PROJECTIVE   0
