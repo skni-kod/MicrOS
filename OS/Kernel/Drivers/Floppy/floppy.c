@@ -202,9 +202,9 @@ void floppy_disable_motor()
     if (motor_enabled)
     {
         // Disable floppy motor (reset (0x04))
-        io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04);
+        //io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04);
 
-        motor_enabled = false;
+        //motor_enabled = false;
     }
 }
 
@@ -216,8 +216,8 @@ uint8_t *floppy_read_sector(uint16_t sector)
     uint8_t *ptr;
     while (ptr = floppy_do_operation_on_sector(head, track, true_sector, true), ptr == NULL)
     {
-        logger_log_error("[Floppy] Read failed, waiting 300 ms");
-        sleep(300);
+        logger_log_error("[Floppy] Read failed, waiting 5000 ms");
+        sleep(5000);
     }
 
     return ptr + 0xc0000000;
@@ -265,15 +265,6 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
     // Sector number
     floppy_send_command(sector);
 
-    char buf[16];
-    itoa(track, buf, 10);
-    logger_log_info("Track:");
-    logger_log_info(buf);
-
-    itoa(sector, buf, 10);
-    logger_log_info("Sector:");
-    logger_log_info(buf);
-
     // Sector size (2 = 512)
     floppy_send_command(2);
 
@@ -291,13 +282,40 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
     // Wait for interrupt
     floppy_wait_for_interrupt();
     // Read command status
-    /*uint8_t st0 = */ floppy_read_data();
+    uint8_t st0 = floppy_read_data();
     uint8_t st1 = floppy_read_data();
     uint8_t st2 = floppy_read_data();
-    /*uint8_t cylinder_data = */ floppy_read_data();
-    /*uint8_t head_data = */ floppy_read_data();
-    /*uint8_t sector_data = */ floppy_read_data();
+    uint8_t cylinder_data = floppy_read_data();
+    uint8_t head_data = floppy_read_data();
+    uint8_t sector_data = floppy_read_data();
     uint8_t bps = floppy_read_data();
+
+    if (st1 != 0 || st2 != 0)
+    {
+        char output[80] = {' '};
+        logger_log_info("[Floppy] DUMP (ST0 ST1 ST2 CD HD SD BPS T H S)");
+        itoa(st0, output, 5);
+        itoa(st1, output + 6, 10);
+        itoa(st2, output + 12, 10);
+        itoa(cylinder_data, output + 18, 10);
+        itoa(head_data, output + 24, 10);
+        itoa(sector_data, output + 30, 10);
+        itoa(bps, output + 36, 10);
+        itoa(track, output + 42, 10);
+        itoa(head, output + 48, 10);
+        itoa(sector, output + 54, 10);
+
+        for (int i = 0; i < 80; i++)
+        {
+            if (output[i] == 0)
+            {
+                output[i] = ' ';
+            }
+        }
+
+        output[79] = 0;
+        logger_log_info(output);
+    }
 
     if (st1 & 0x80)
     {

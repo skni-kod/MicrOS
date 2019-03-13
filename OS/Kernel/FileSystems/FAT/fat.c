@@ -11,14 +11,17 @@ uint32_t directory_length;
 
 void fat_init()
 {
+    logger_log_info("[FAT] Reading FAT array...");
     fat_length = fat_header_data->bytes_per_sector * fat_header_data->sectors_per_fat;
     fat = heap_kernel_alloc(fat_length, 0);
+    fat_load_fat();
+    logger_log_info("[FAT] FAT array done...");
 
+    logger_log_info("[FAT] Reading root directory...");
     directory_length = fat_header_data->directory_entries * 32;
     root = heap_kernel_alloc(directory_length, 0);
-
-    fat_load_fat();
     fat_load_root();
+    logger_log_info("[FAT] Root directore done...");
 }
 
 void fat_load_fat()
@@ -26,8 +29,14 @@ void fat_load_fat()
     for (int i = 1; i < fat_header_data->sectors_per_fat; i++)
     {
         uint8_t *buffer = floppy_read_sector(i);
+        if (buffer != NULL)
+        {
+            vga_printchar('.');
+        }
+
         memcpy((void *)((uint32_t)fat + ((i - 1) * 512)), buffer, 512);
     }
+    vga_printchar('\n');
 }
 
 void fat_load_root()
@@ -38,8 +47,14 @@ void fat_load_root()
     for (int i = root_first_sector; i < root_first_sector + root_sectors_count; i++)
     {
         uint8_t *buffer = floppy_read_sector(i);
+        if (buffer != NULL)
+        {
+            vga_printchar('.');
+        }
+
         memcpy((void *)((uint32_t)root + ((i - root_first_sector) * 512)), buffer, 512);
     }
+    vga_printchar('\n');
 }
 
 uint16_t fat_read_sector_value(uint32_t sector_number)
