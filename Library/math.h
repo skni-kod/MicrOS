@@ -256,6 +256,14 @@ double acos(double x);
 */
 float acosf(float x);
 
+//! Calculate arc cosine.
+/*! 
+    The acosl functions compute the principal value of the arc cosine of x. A domain error occurs for arguments not in the interval [−1, +1].
+    \param x First value.
+    \return The acosl functions return arccos x in the interval [0,π ] radians.
+*/
+long double acosl(long double x);
+
 //! Calculate arc sine.
 /*! 
     The asin functions compute the principal value of the arc sine of x. A domain error occurs for arguments not in the interval [−1, +1].
@@ -271,6 +279,14 @@ double asin(double x);
     \return The asinf functions return arcsin x in the interval [−π /2, +π /2] radians.
 */
 float asinf(float x);
+
+//! Calculate arc sine.
+/*! 
+    The asinl functions compute the principal value of the arc sine of x. A domain error occurs for arguments not in the interval [−1, +1].
+    \param x First value.
+    \return The asinl functions return arcsin x in the interval [−π /2, +π /2] radians.
+*/
+long double asinl(long double x);
 
 //! Calculate arc tangent.
 /*! 
@@ -290,6 +306,14 @@ float atanf(float x);
 
 //! Calculate arc tangent.
 /*! 
+    The atanl functions compute the principal value of the arc tangent of x.
+    \param x First value.
+    \return The atanl functions return arctan x in the interval [−π /2, +π /2] radians.
+*/
+long double atanl(long double x);
+
+//! Calculate arc tangent.
+/*! 
     The atan2 functions compute the value of the arc tangent of y/x, using the signs of both arguments to determine the quadrant of the return value. A domain error may occur if both arguments are zero.
     \param x First value.
     \param y Second value.
@@ -305,6 +329,15 @@ double atan2(double x, double y);
     \return The atan2f functions return arctan y/x in the interval [−π , +π ] radians.
 */
 float atan2f(float x, float y);
+
+//! Calculate arc tangent.
+/*! 
+    The atan2l functions compute the value of the arc tangent of y/x, using the signs of both arguments to determine the quadrant of the return value. A domain error may occur if both arguments are zero.
+    \param x First value.
+    \param y Second value.
+    \return The atan2l functions return arctan y/x in the interval [−π , +π ] radians.
+*/
+long double atan2l(long double x, long double y);
 
 // Hyperbolic functions
 
