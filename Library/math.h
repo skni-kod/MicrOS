@@ -505,6 +505,15 @@ double frexp(double x, int* exp);
 */
 float frexpf(float x, int* exp);
 
+//! Get significand and exponent.
+/*! 
+    The frexpl functions break a floating-point number into a normalized fraction and an integral power of 2. They store the integer in the int object pointed to by exp.
+    \param x Value to be decomposed.
+    \param exp Pointer to an int where the value of the exponent is stored.
+    \return If value is not a floating-point number or if the integral power of 2 is outside the range of int, the results are unspecified. Otherwise, the frexp functions return the value x, such that x has a magnitude in the interval [1/2, 1) or zero, and value equals x × 2^exp. If value is zero, both parts of the result are zero.
+*/
+long double frexpl(long double x, int* exp);
+
 //! Generate value from significand and exponent.
 /*! 
     The ldexp functions multiply a floating-point number by an integral power of 2. A range error may occur.
@@ -523,6 +532,15 @@ double ldexp(double x, int exp);
 */
 float ldexpf(float x, int exp);
 
+//! Generate value from significand and exponent.
+/*! 
+    The ldexpl functions multiply a floating-point number by an integral power of 2. A range error may occur.
+    \param x Generate value from significand and exponent
+    \param exp Value of the exponent.
+    \return The ldexpl functions return x * 2^exp.
+*/
+long double ldexpl(long double x, int exp);
+
 //! Calculate natural logarithm.
 /*! 
     The log functions compute the base-e (natural) logarithm of x. A domain error occurs if the argument is negative. A pole error may occur if the argument is zero.
@@ -539,6 +557,14 @@ double log(double x);
 */
 float logf(float x);
 
+//! Calculate natural logarithm.
+/*! 
+    The logl functions compute the base-e (natural) logarithm of x. A domain error occurs if the argument is negative. A pole error may occur if the argument is zero.
+    \param x First value.
+    \return The logl functions return log_e x.
+*/
+long double logl(long double x);
+
 //! Calculate 10 based logarithm.
 /*! 
     The log10 functions compute the base-10 (common) logarithm of x. A domain error occurs if the argument is negative. A pole error may occur if the argument is zero.
@@ -554,6 +580,14 @@ double log10(double x);
     \return The log10f functions return log_10 x.
 */
 float log10f(float x);
+
+//! Calculate 10 based logarithm.
+/*! 
+    The log10l functions compute the base-10 (common) logarithm of x. A domain error occurs if the argument is negative. A pole error may occur if the argument is zero.
+    \param x First value.
+    \return The log10l functions return log_10 x.
+*/
+long double log10l(long double x);
 
 //! Break into fractional and integral parts.
 /*! 
@@ -598,6 +632,14 @@ double exp2(double x);
 */
 float exp2f(float x);
 
+//! Calculate exponential function 2 based.
+/*! 
+    The exp2l functions compute the base-2 exponential of x. A range error occurs if the magnitude of x is too large.
+    \param x First value.
+    \return The exp2l functions return 2^x.
+*/
+long double exp2l(long double x);
+
 //! Calculate exponential function minus 1.
 /*! 
     The expm1 functions compute the base-e exponential of the argument, minus 1. A range error occurs if x is too large.
@@ -613,6 +655,14 @@ double expm1(double x);
     \return The expm1f functions return e^x − 1.
 */
 float expm1f(float x);
+
+//! Calculate exponential function minus 1.
+/*! 
+    The expm1l functions compute the base-e exponential of the argument, minus 1. A range error occurs if x is too large.
+    \param x First value.
+    \return The expm1l functions return e^x − 1.
+*/
+long double expm1l(long double x);
 
 //! Integer binary logarithm.
 /*! 
@@ -630,6 +680,14 @@ int ilogb(double x);
 */
 int ilogbf(float x);
 
+//! Integer binary logarithm.
+/*! 
+    The ilogbl functions extract the exponent of x as a signed int value. If x is zero they compute the value FP_ILOGB0; if x is infinite they compute the value INT_MAX; if x is a NaN they compute the value FP_ILOGBNAN; otherwise, they are equivalent to calling the corresponding logb function and casting the returned value to type int. A domain error or range error may occur if x is zero, infinite, or NaN. If the correct value is outside the range of the return type, the numeric result is unspecified.
+    \param x Value whose ilogbl is returned.
+    \return The ilogbl functions return the exponent of x as a signed int value.
+*/
+int ilogbl(long double x);
+
 //! Calculate natural logarithm of value + 1.
 /*! 
     The log1p functions compute the base-e (natural) logarithm of 1 plus the argument. A domain error occurs if the argument is less than −1. A pole error may occur if the argument equals −1.
@@ -645,6 +703,14 @@ double log1p(double x);
     \return The log1pf functions return log_e(1 + x).
 */
 float log1pf(float x);
+
+//! Calculate natural logarithm of value + 1.
+/*! 
+    The log1pl functions compute the base-e (natural) logarithm of 1 plus the argument. A domain error occurs if the argument is less than −1. A pole error may occur if the argument equals −1.
+    \param x First value.
+    \return The log1pl functions return log_e(1 + x).
+*/
+long double log1pl(long double x);
 
 //! Calculate 2 based logarithm.
 /*! 
@@ -662,6 +728,14 @@ double log2(double x);
 */
 float log2f(float x);
 
+//! Calculate 2 based logarithm.
+/*! 
+    The log2l functions compute the base-2 logarithm of x. A domain error occurs if the argument is less than zero. A pole error may occur if the argument is zero.
+    \param x First value.
+    \return The log2l functions return log_2 x.
+*/
+long double log2l(long double x);
+
 //! Calculate logarithm using FLT_RADIX.
 /*! 
     The logb functions extract the exponent of x, as a signed integer value in floating-point format. If x is subnormal it is treated as though it were normalized; thus, for positive finite x, 1 ≤ x × FLT_RADIX^(−log_b(x)) < FLT_RADIX. A domain error or pole error may occur if the argument is zero.
@@ -677,6 +751,14 @@ double logb(double x);
     \return The logbf functions return the signed exponent of x.
 */
 float logbf(float x);
+
+//! Calculate logarithm using FLT_RADIX.
+/*! 
+    The logbl functions extract the exponent of x, as a signed integer value in floating-point format. If x is subnormal it is treated as though it were normalized; thus, for positive finite x, 1 ≤ x × FLT_RADIX^(−log_b(x)) < FLT_RADIX. A domain error or pole error may occur if the argument is zero.
+    \param x First value.
+    \return The logbl functions return the signed exponent of x.
+*/
+long double logbl(long double x);
 
 //! Scale significand using floating-point base exponent.
 /*! 
@@ -698,6 +780,15 @@ float scalbnf(float x, int n);
 
 //! Scale significand using floating-point base exponent.
 /*! 
+    The scalbnl function compute x × FLT_RADIX^n efficiently, not normally by computing FLT_RADIX^n explicitly. A range error may occur.
+    \param x Value representing the significand.
+    \param n Value of the exponent.
+    \return The scalbnl function return x × FLT_RADIX^n.
+*/
+long double scalbnl(long double x, int n);
+
+//! Scale significand using floating-point base exponent.
+/*! 
     The scalbln function compute x × FLT_RADIX^n efficiently, not normally by computing FLT_RADIX^n explicitly. A range error may occur.
     \param x Value representing the significand.
     \param n Value of the exponent.
@@ -713,6 +804,15 @@ double scalbln(double x, long int n);
     \return The scalblnf function return x × FLT_RADIX^n.
 */
 float scalblnf(float x, long int n);
+
+//! Scale significand using floating-point base exponent.
+/*! 
+    The scalblnl function compute x × FLT_RADIX^n efficiently, not normally by computing FLT_RADIX^n explicitly. A range error may occur.
+    \param x Value representing the significand.
+    \param n Value of the exponent.
+    \return The scalblnl function return x × FLT_RADIX^n.
+*/
+long double scalblnl(long double x, long int n);
 
 // Power functions 
 
