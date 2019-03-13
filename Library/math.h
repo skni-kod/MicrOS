@@ -429,6 +429,14 @@ double acosh(double x);
 */
 float acoshf(float x);
 
+//! Calculate arc hyperbolic cosine.
+/*! 
+    The acoshl functions compute the (nonnegative) arc hyperbolic cosine of x. A domain error occurs for arguments less than 1.
+    \param x First value.
+    \return The acoshl functions return arcosh x in the interval [0, +∞].
+*/
+long double acoshl(long double x);
+
 //! Calculate arc hyperbolic sine.
 /*! 
     The asinh functions compute the arc hyperbolic sine of x.
@@ -445,6 +453,14 @@ double asinh(double x);
 */
 float asinhf(float x);
 
+//! Calculate arc hyperbolic sine.
+/*! 
+    The asinhl functions compute the arc hyperbolic sine of x.
+    \param x First value.
+    \return The asinhl functions return arsinh x.
+*/
+long double asinhl(long double x);
+
 //! Calculate arc hyperbolic tangent.
 /*! 
     The atanh functions compute the arc hyperbolic tangent of x. A domain error occurs for arguments not in the interval [−1, +1]. A pole error may occur if the argument equals −1 or +1.
@@ -460,6 +476,14 @@ double atanh(double x);
     \return The atanhf functions return artanh x.
 */
 float atanhf(float x);
+
+//! Calculate arc hyperbolic tangent.
+/*! 
+    The atanhl functions compute the arc hyperbolic tangent of x. A domain error occurs for arguments not in the interval [−1, +1]. A pole error may occur if the argument equals −1 or +1.
+    \param x First value.
+    \return The atanhl functions return artanh x.
+*/
+long double atanhl(long double x);
 
 // Exponential and logarithmic functions
 
@@ -882,6 +906,14 @@ double cbrt(double x);
     \return The cbrtf functions return 3√x.
 */
 float cbrtf(float x);
+
+//! Calculate cubic root.
+/*! 
+    The cbrtl functions compute the cubic root of x.
+    \param x First value.
+    \return The cbrtl functions return 3√x.
+*/
+long double cbrtl(long double x);
 
 //! Compute hypotenuse.
 /*! 
