@@ -429,9 +429,7 @@ void set3HVideoMode()
 	pokeb(0xC0000040, 0xC0000084, rows - 1); /* rows on screen - 1 */
 	pokeb(0xC0000040, 0xC0000085, ht);		 /* char height */
 											 /* set white-on-black attributes for all text */
-	for (i = 0; i < cols * rows; i++)
-		pokeb(0xC00B8000, i * 2 + 1, 7);
-
+	vga_clear_screen();
 	memcpy((void *)VGA_BASE_ADDR, text_dump, 4000);
 	mode = 3;
 }

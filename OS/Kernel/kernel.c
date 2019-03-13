@@ -148,7 +148,7 @@ int kmain()
     logger_log_ok("READY.");
 
     //process_manager_create_process("/ENV/TASKS.ELF", "Honoka Kotori");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
+    /*process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
     process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
     process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
     process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
@@ -166,12 +166,12 @@ int kmain()
     process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
     process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
     process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
-    process_manager_run();
+    process_manager_run();*/
 
-    while (1)
+    /*while (1)
         ;
-
-    /*
+    */
+    
     while (1)
     {
         if (!keyboard_is_buffer_empty())
@@ -201,7 +201,7 @@ int kmain()
             }
             else if (c.scancode == 63)
             {
-                panic_screen_show(0x42, "Someone ask Question about Life, the Universe and Evertything");
+                panic_screen_show(NULL, 0x42, "Someone ask Question about Life, the Universe and Evertything");
             }
             else if (c.scancode == 64)
             {
@@ -211,7 +211,7 @@ int kmain()
             vga_printchar(c.ascii);
         }
     }
-    */
+
 
     return 0;
 }
