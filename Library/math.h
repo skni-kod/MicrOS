@@ -455,6 +455,14 @@ double exp(double x);
 */
 float expf(float x);
 
+//! Calculate exponential function.
+/*! 
+    The expl functions compute the base-e exponential of x. A range error occurs if the magnitude of x is too large.
+    \param x First value.
+    \return The expl functions return e^x.
+*/
+long double expl(long double x);
+
 //! Get significand and exponent.
 /*! 
     The frexp functions break a floating-point number into a normalized fraction and an integral power of 2. They store the integer in the int object pointed to by exp.
@@ -701,6 +709,15 @@ double pow(double base, double exponent);
     \return The powf functions return x^y.
 */
 float powf(float base, float exponent);
+
+//! Calculate power.
+/*! 
+    The powl functions compute x raised to the power y. A domain error occurs if x is finite and negative and y is finite and not an integer value. A range error may occur. A domain error may occur if x is zero and y is zero. A domain error or pole error may occur if x is zero and y is less than zero.
+    \param base Base of power.
+    \param exponent Exponent of power.
+    \return The powl functions return x^y.
+*/
+long double powl(long double base, long double exponent);
 
 //! Calculate square root.
 /*! 
