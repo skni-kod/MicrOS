@@ -541,6 +541,15 @@ double modf(double x, double* iptr);
 */
 float modff(float x, float* iptr);
 
+//! Break into fractional and integral parts.
+/*! 
+    The modfl functions break the argument value into integral and fractional parts, each of which has the same type and sign as the argument. They store the integral part (in floating-point format) in the object pointed to by iptr.
+    \param x First value.
+    \param iptr Return of integral part.
+    \return The modfl functions return the signed fractional part of value.
+*/
+long double modfl(long double x, long double* iptr);
+
 //! Calculate exponential function 2 based.
 /*! 
     The exp2 functions compute the base-2 exponential of x. A range error occurs if the magnitude of x is too large.
