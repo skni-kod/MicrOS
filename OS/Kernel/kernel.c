@@ -43,16 +43,21 @@ void startup()
     heap_init_kernel_heap();
     logger_log_ok("Virtual Memory");
 
-    pic_init();
-    logger_log_ok("Programmable Interrupt Controller");
-
     idt_init();
     logger_log_ok("Interrupt Descriptor Table");
+
+    pic_init();
+    logger_log_ok("Programmable Interrupt Controller");
 
     timer_init();
     logger_log_ok("Timer");
 
-    floppy_init();
+    if (!floppy_init())
+    {
+        logger_log_error("Floppy init fail");
+        while (1)
+            ;
+    }
     logger_log_ok("Floppy");
 
     keyboard_init();
@@ -148,8 +153,8 @@ int kmain()
     logger_log_ok("READY.");
 
     //process_manager_create_process("/ENV/TASKS.ELF", "Honoka Kotori");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
+    //process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
+    /*process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
     process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
     process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
     process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
@@ -165,8 +170,8 @@ int kmain()
     process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
     process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
     process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
-    process_manager_run();
+    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");*/
+    //process_manager_run();
 
     while (1)
         ;
