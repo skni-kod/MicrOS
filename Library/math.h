@@ -1001,6 +1001,15 @@ double fmod(double numer, double denom);
 */
 float fmodf(float numer, float denom);
 
+//! Compute remainder of division.
+/*! 
+    The fmodl functions compute the floating-point remainder of x/y.
+    \param numer Dividend.
+    \param denom Divider.
+    \return The fmodl functions return the value x − ny, for some integer n such that, if y is nonzero, the result has the same sign as x and magnitude less than the magnitude of y. If y is zero, a domain error occurs and the fmod functions return zero.
+*/
+long double fmodl(long double numer, long double denom);
+
 //! Rounding towards zero.
 /*! 
     The trunc functions round their argument to the integer value, in floating format, nearest to but no larger in magnitude than the argument.
@@ -1067,6 +1076,14 @@ long int lroundf(float x);
 
 //! Rounding.
 /*! 
+    The lroundl and llround functions round their argument to the nearest integer value, rounding halfway cases away from zero, regardless of the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
+    \param x First value.
+    \return The lroundl and llround functions return the rounded integer value.
+*/
+long int lroundl(long double x);
+
+//! Rounding.
+/*! 
     The lround and llround functions round their argument to the nearest integer value, rounding halfway cases away from zero, regardless of the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
     \param x First value.
     \return The lround and llround functions return the rounded integer value.
@@ -1080,6 +1097,14 @@ long long int llround(double x);
     \return The lround and llround functions return the rounded integer value.
 */
 long long int llroundf(float x);
+
+//! Rounding.
+/*! 
+    The lround and llround functions round their argument to the nearest integer value, rounding halfway cases away from zero, regardless of the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
+    \param x First value.
+    \return The lround and llround functions return the rounded integer value.
+*/
+long long int llroundl(long double x);
 
 //! Rounding.
 /*! 
@@ -1099,6 +1124,14 @@ float rintf(float x);
 
 //! Rounding.
 /*! 
+    The rintl functions round their argument to an integer value in floating-point format, using the current rounding direction.
+    \param x First value.
+    \return The rintl functions return the rounded integer value.
+*/
+long double rintl(long double x);
+
+//! Rounding.
+/*! 
     The lrint function round their argument to the nearest integer value, rounding according to the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
     \param x First value.
     \return The lrint function return the rounded integer value.
@@ -1112,6 +1145,14 @@ long int lrint(double x);
     \return The lrintf function return the rounded integer value.
 */
 long int lrintf(float x);
+
+//! Rounding.
+/*! 
+    The lrintl function round their argument to the nearest integer value, rounding according to the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
+    \param x First value.
+    \return The lrintl function return the rounded integer value.
+*/
+long int lrintl(long double x);
 
 //! Rounding.
 /*! 
@@ -1131,6 +1172,14 @@ long long int llrintf(float x);
 
 //! Rounding.
 /*! 
+    The llrintl function round their argument to the nearest integer value, rounding according to the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
+    \param x First value.
+    \return The llrintl function return the rounded integer value.
+*/
+long long int llrintl(long double x);
+
+//! Rounding.
+/*! 
     The nearbyint functions round their argument to an integer value in floating-point format, using the current rounding direction and without raising the ‘‘inexact’’ floatingpoint exception.
     \param x First value.
     \return The nearbyint functions return the rounded integer value.
@@ -1144,6 +1193,14 @@ double nearbyint(double x);
     \return The nearbyintf functions return the rounded integer value.
 */
 float nearbyintf(float x);
+
+//! Rounding.
+/*! 
+    The nearbyintl functions round their argument to an integer value in floating-point format, using the current rounding direction and without raising the ‘‘inexact’’ floatingpoint exception.
+    \param x First value.
+    \return The nearbyintl functions return the rounded integer value.
+*/
+long double nearbyintl(long double x);
 
 //! Compute remainder and quotient.
 /*! 
@@ -1165,6 +1222,16 @@ double remquo(double numer, double denom, int* quot);
 */
 float remquof(float numer, float denom, int* quot);
 
+//! Compute remainder and quotient.
+/*! 
+    The remquol functions compute the same remainder as the remainder functions. In the object pointed to by quo they store a value whose sign is the sign of x/y and whose magnitude is congruent modulo 2n to the magnitude of the integral quotient of x/y, where n is an implementation-defined integer greater than or equal to 3.
+    \param numer Floating point value with the quotient numerator.
+    \param denom Floating point value with the quotient denominator.
+    \param quot Pointer to an object where the quotient internally used to determine the remainder is stored as a value of type int.
+    \return The remquol functions return x REM y. If y is zero, the value stored in the object pointed to by quo is unspecified and whether a domain error occurs or the functions return zero is implementation defined.
+*/
+long double remquol(long double numer, long double denom, int* quot);
+
 //! Compute reminder required by IEC 60559.
 /*! 
     The remainder functions compute the remainder x REM y required by IEC 60559.
@@ -1182,6 +1249,15 @@ double remainder(double x, double y);
     \return The remainder functions return x REM y. If y is zero, whether a domain error occurs or the functions return zero is implementation defined.
 */
 float remainderf(float x, float y);
+
+//! Compute reminder required by IEC 60559.
+/*! 
+    The remainderl functions compute the remainder x REM y required by IEC 60559.
+    \param x Dividend.
+    \param y Divider.
+    \return The remainderl functions return x REM y. If y is zero, whether a domain error occurs or the functions return zero is implementation defined.
+*/
+long double remainderl(long double x, long double y);
 
 // Floating-point manipulation functions
 
