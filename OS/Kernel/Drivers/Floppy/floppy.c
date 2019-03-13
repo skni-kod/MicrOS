@@ -7,7 +7,7 @@ volatile bool motor_enabled = false;
 
 volatile bool floppy_interrupt_flag = false;
 
-void floppy_init()
+bool floppy_init()
 {
     // Enable timer interrupt (to check if floppy can be shut down after some time of inactivity)
     pic_enable_irq(0);
@@ -19,19 +19,20 @@ void floppy_init()
     pic_enable_irq(6);
     idt_attach_interrupt_handler(6, floppy_interrupt);
 
-    if (floppy_reset() == -1)
+    if (!floppy_reset())
     {
         logger_log_error("[Floppy] Reset failure");
-        return;
+        return false;
     }
     logger_log_info("[Floppy] Reset done");
 
-    if (floppy_calibrate() == -1)
+    if (!floppy_calibrate())
     {
         logger_log_error("[Floppy] Calibration failure");
-        return;
+        return false;
     }
     logger_log_info("[Floppy] Calibration done");
+    return true;
 }
 
 void floppy_lba_to_chs(uint16_t lba, uint8_t *head, uint8_t *track, uint8_t *sector)
@@ -41,7 +42,7 @@ void floppy_lba_to_chs(uint16_t lba, uint8_t *head, uint8_t *track, uint8_t *sec
     *sector = lba % (*floppy_header_data).sectors_per_track + 1;
 }
 
-int8_t floppy_reset()
+bool floppy_reset()
 {
     // Disable floppy controller
     io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0);
@@ -59,7 +60,7 @@ int8_t floppy_reset()
     if (st0 != 0xC0)
     {
         logger_log_error("[Floppy] Invalid ST0 after reset");
-        return -1;
+        return false;
     }
 
     // Set transfer speed to 500 kb/s
@@ -76,10 +77,10 @@ int8_t floppy_reset()
     //  DMA = yes
     floppy_set_parameters(3, 16, 240, true);
 
-    return 0;
+    return true;
 }
 
-int8_t floppy_wait_until_ready()
+bool floppy_wait_until_ready()
 {
     for (int i = 0; i < 1000; i++)
     {
@@ -87,32 +88,32 @@ int8_t floppy_wait_until_ready()
         // If yes, data register is ready for data transfer
         if (io_in_byte(FLOPPY_MAIN_STAUTS_REGISTER) & 0x80)
         {
-            return 0;
+            return true;
         }
 
         sleep(1);
     }
 
     logger_log_error("[Floppy] Timeout while waiting for availability");
-    return -1;
+    return false;
 }
 
-int8_t floppy_send_command(uint8_t cmd)
+bool floppy_send_command(uint8_t cmd)
 {
-    if (floppy_wait_until_ready() == -1)
+    if (!floppy_wait_until_ready())
     {
         logger_log_error("[Floppy] Timeout while waiting for command send");
-        return -1;
+        return false;
     }
 
     io_out_byte(FLOPPY_DATA_REGISTER, cmd);
 
-    return 0;
+    return true;
 }
 
 uint8_t floppy_read_data()
 {
-    if (floppy_wait_until_ready() == -1)
+    if (!floppy_wait_until_ready())
     {
         logger_log_error("[Floppy] Timeout while waiting for data read");
         return 0xFF;
@@ -149,7 +150,7 @@ void floppy_set_parameters(uint32_t step_rate, uint32_t head_load_time, uint32_t
     floppy_send_command(data);
 }
 
-int8_t floppy_calibrate()
+bool floppy_calibrate()
 {
     floppy_enable_motor();
 
@@ -173,13 +174,13 @@ int8_t floppy_calibrate()
 
         if (cylinder == 0)
         {
-            return 0;
+            return true;
         }
 
         sleep(1);
     }
 
-    return -1;
+    return false;
 }
 
 void floppy_enable_motor()
@@ -212,7 +213,14 @@ uint8_t *floppy_read_sector(uint16_t sector)
     uint8_t head, track, true_sector;
     floppy_lba_to_chs(sector, &head, &track, &true_sector);
 
-    return floppy_do_operation_on_sector(head, track, true_sector, true) + 0xc0000000;
+    uint8_t *ptr;
+    while (ptr = floppy_do_operation_on_sector(head, track, true_sector, true), ptr == NULL)
+    {
+        logger_log_error("[Floppy] Read failed, waiting 300 ms");
+        sleep(300);
+    }
+
+    return ptr + 0xc0000000;
 }
 
 void floppy_write_sector(uint16_t sector, uint8_t *content)
@@ -232,7 +240,7 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
     // Init DMA
     floppy_dma_init(read);
 
-    if (floppy_seek(0, head) == -1)
+    if (!floppy_seek(0, head))
     {
         logger_log_error("[Floppy] Seek failure");
         return NULL;
@@ -256,6 +264,15 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
 
     // Sector number
     floppy_send_command(sector);
+
+    char buf[16];
+    itoa(track, buf, 10);
+    logger_log_info("Track:");
+    logger_log_info(buf);
+
+    itoa(sector, buf, 10);
+    logger_log_info("Sector:");
+    logger_log_info(buf);
 
     // Sector size (2 = 512)
     floppy_send_command(2);
@@ -285,65 +302,54 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
     if (st1 & 0x80)
     {
         logger_log_error("[Floppy] End of cylinder");
-        return NULL;
     }
     if (st1 & 0x20)
     {
         logger_log_error("[Floppy] Data error");
-        return NULL;
     }
     if (st1 & 0x04)
     {
         logger_log_error("[Floppy] No data");
-        return NULL;
     }
     if (st1 & 0x02)
     {
         logger_log_error("[Floppy] Not writable");
-        return NULL;
     }
     if (st1 & 0x01)
     {
         logger_log_error("[Floppy] Missing address mark");
-        return NULL;
     }
 
     if (st2 & 0x40)
     {
         logger_log_error("[Floppy] Control mask");
-        return NULL;
     }
     if (st2 & 0x20)
     {
         logger_log_error("[Floppy] Data error in data field");
-        return NULL;
     }
     if (st2 & 0x10)
     {
         logger_log_error("[Floppy] Wrong cylinder");
-        return NULL;
     }
     if (st2 & 0x02)
     {
         logger_log_error("[Floppy] Bad cylinder");
-        return NULL;
     }
     if (st2 & 0x01)
     {
         logger_log_error("[Floppy] Missing data address mark");
-        return NULL;
     }
 
     if (bps != 0x2)
     {
         logger_log_error("[Floppy] Invalid bps");
-        return NULL;
     }
 
-    return (uint8_t *)dma_buffer;
+    return st1 == 0 ? (uint8_t *)dma_buffer : NULL;
 }
 
-int floppy_seek(uint32_t cylinder, uint32_t head)
+bool floppy_seek(uint32_t cylinder, uint32_t head)
 {
     uint8_t st0, interrupt_cylinder;
 
@@ -364,13 +370,14 @@ int floppy_seek(uint32_t cylinder, uint32_t head)
 
         if (interrupt_cylinder == cylinder)
         {
-            return 0;
+            sleep(100);
+            return true;
         }
 
         sleep(1);
     }
 
-    return -1;
+    return false;
 }
 
 void floppy_dma_init(bool read)
