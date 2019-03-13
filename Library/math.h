@@ -46,14 +46,14 @@
 #define FP_WTF          5
 
 //! Arg of ilogb is zero.
-#define FP_ILOGB0   -2147483648
+#define FP_ILOGB0       -2147483648
 //! Arg of ilogb is NaN.
-#define FP_ILOGBNAN -2147483648
+#define FP_ILOGBNAN     -2147483648
 
 //! Indicates that floating-point operations use the variable errno to report errors.
-#define MATH_ERRNO 1
+#define MATH_ERRNO      1
 //! Indicates that floating-point exceptions are used.
-#define MATH_ERREXCEPT 2
+#define MATH_ERREXCEPT  2
 //! Expands to an expression of type int that is either equal to MATH_ERRNO, or equal to MATH_ERREXCEPT, or equal to their bitwise OR (MATH_ERRNO | MATH_ERREXCEPT).
 extern int _math_errhandling;
 //! Macro to access _math_errhandling.

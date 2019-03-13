@@ -4,28 +4,28 @@
 #include <stddef.h>
 
 //! Invalid argument exception.
-#define FE_INVALID 1
+#define FE_INVALID      1
 //! Denormal operand exception.
-#define FE_DENORMAL 2
+#define FE_DENORMAL     2
 //! Pole error exception.
-#define FE_DIVBYZERO 4
+#define FE_DIVBYZERO    4
 //! Overflow exception.
-#define FE_OVERFLOW 8
+#define FE_OVERFLOW     8
 //! Underflow exception.
-#define FE_UNDERFLOW 16
+#define FE_UNDERFLOW    16
 //! Pole error exception.
-#define FE_INEXACT 32
+#define FE_INEXACT      32
 //! All exceptions.
-#define FE_ALL_EXCEPT (FE_INVALID | FE_DENORMAL | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW | FE_INEXACT)
+#define FE_ALL_EXCEPT   (FE_INVALID | FE_DENORMAL | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW | FE_INEXACT)
 
 //! Rounding to nearest.
-#define FE_TONEAREST 0
+#define FE_TONEAREST    0
 //! Rounding downward.
-#define FE_DOWNWARD 1
+#define FE_DOWNWARD     1
 //! Rounding upward.
-#define FE_UPWARD 2
+#define FE_UPWARD       2
 //! Rounding towards zero.
-#define FE_TOWARDZERO 3
+#define FE_TOWARDZERO   3
 
 //! Type represent state of floating point control word.
 /*! Includes exception falgs and control modes to precision, rounding and infnity control. */
@@ -258,37 +258,37 @@ int feupdateenv(const fenv_t *envp);
 
 //! Number value in tag word.
 /*! Set when value at given FPU register is valid number. */
-#define __FPU_TAG_WORD_VALID 0
+#define __FPU_TAG_WORD_VALID        0
 //! Zero value in tag word.
 /*! Set when value at given FPU register is zero. */
-#define __FPU_TAG_ZERO 1
+#define __FPU_TAG_ZERO              1
 //! Sepcial value in tag word.
 /*! Set when value at given FPU register is invalid (NaN, unsupported), infinity or denormal. */
-#define __FPU_TAG_SPECIAL 2
+#define __FPU_TAG_SPECIAL           2
 //! Empty value in tag word.
 /*! Set when given FPU register is empty. */
-#define __FPU_TAG_EMPTY 3
+#define __FPU_TAG_EMPTY             3
 
 //! Single precision. (32 bit)
-#define __FPU_PRECISION_SINGLE 0
+#define __FPU_PRECISION_SINGLE      0
 //! Double precision. (53 bit)
-#define __FPU_PRECISION_DOUBLE 1
+#define __FPU_PRECISION_DOUBLE      1
 //! Extended precision. (64 bit)
-#define __FPU_PRECISION_EXTENDED 3
+#define __FPU_PRECISION_EXTENDED    3
 
 //! Rounding to nearest.
-#define __FPU_ROUNDING_NEAREST_EVEN FE_TONEAREST
+#define __FPU_ROUNDING_NEAREST_EVEN     FE_TONEAREST
 //! Rounding downward.
-#define __FPU_ROUNDING_FLOOR FE_DOWNWARD
+#define __FPU_ROUNDING_FLOOR            FE_DOWNWARD
 //! Rounding upward.
-#define __FPU_ROUNDING_CEIL FE_UPWARD
+#define __FPU_ROUNDING_CEIL             FE_UPWARD
 //! Rounding towards zero.
-#define __FPU_ROUNDING_TRUNCATE FE_TOWARDZERO
+#define __FPU_ROUNDING_TRUNCATE         FE_TOWARDZERO
 
 //! Projective infinity control.
-#define __FPU_INFINITY_CONTROL_PROJECTIVE 0
+#define __FPU_INFINITY_CONTROL_PROJECTIVE   0
 //! Affine infinity control.
-#define __FPU_INFINITY_CONTROL_AFFINE 1
+#define __FPU_INFINITY_CONTROL_AFFINE       1
 
 #ifdef __cplusplus
 extern "C" {

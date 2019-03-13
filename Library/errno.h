@@ -17,13 +17,13 @@ extern errno_t _errno;
 
 //! Domain error.
 /*! Set when function is called with parameters that are outside of its domain. */
-#define EDOM 1
+#define EDOM        1
 //! Range error.
 /*! Set when value is too large to be stored in variable like pole error, overflow, underflow. */
-#define ERANGE 2
+#define ERANGE      2
 //! Illegal sequence.
 /*! Set when illegal byte sequence appears. */
-#define EILSEQ 3
+#define EILSEQ      3
 
 #ifdef __cplusplus
 }
