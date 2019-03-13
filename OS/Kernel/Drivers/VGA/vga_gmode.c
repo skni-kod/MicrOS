@@ -8,6 +8,12 @@
 #define pokew(S, O, V) *(unsigned short *)(16uL * (S) + (O)) = (V)
 #define _vmemwr(DS, DO, S, N) memcpy((char *)((DS)*16 + (DO)), S, N)
 
+#define bit_get(p,m) ((p) & (m))
+#define bit_set(p,m) ((p) |= (m))
+#define bit_clear(p,m) ((p) &= ~(m))
+#define bit_flip(p,m) ((p) ^= (m))
+#define bit_write(p,m,v) (v ? bit_set(p,m) : bit_clear(p,m))
+
 // TODO: Set some prefix for functions.
 
 static char mode = 3;
@@ -53,6 +59,26 @@ uint8_t g_80x25_text[] =
 		0x0C, 0x00, 0x0F, 0x08, 0x00};
 
 //11h
+//unsigned char g_640x480x2[] =
+//{
+/* MISC */
+//	0xE3,
+/* SEQ */
+//	0x03, 0x01, 0x0F, 0x00, 0x06,
+/* CRTC */
+//	0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0x0B, 0x3E,
+//	0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+//	0xEA, 0x0C, 0xDF, 0x28, 0x00, 0xE7, 0x04, 0xE3,
+//	0xFF,
+/* GC */
+//	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x0F,
+//	0xFF,
+/* AC */
+//	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x14, 0x07,
+//	0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F,
+//	0x01, 0x00, 0x0F, 0x00, 0x00
+//};
+
 unsigned char g_640x480x2[] =
 {
 /* MISC */
@@ -60,17 +86,16 @@ unsigned char g_640x480x2[] =
 /* SEQ */
 	0x03, 0x01, 0x0F, 0x00, 0x06,
 /* CRTC */
-	0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0x0B, 0x3E,
-	0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0xEA, 0x0C, 0xDF, 0x28, 0x00, 0xE7, 0x04, 0xE3,
-	0xFF,
+	0x5F, 0x4F,0x50,0x82,0x54,0x80,0xB,0x3E,
+	0x0,0x40,0x0,0x0,0x0,0x0,0x0,0x59,0xEA,
+	0x8C,0xDF,0x28,0x0,0xE7,0x4,0xC3,0xFF,
 /* GC */
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x0F,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x05,
 	0xFF,
 /* AC */
-	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x14, 0x07,
-	0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F,
-	0x01, 0x00, 0x0F, 0x00, 0x00
+	0x0,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,
+	0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,
+	0x1,0x0,0x0F,0x0,0x0
 };
 
 //05h
@@ -499,16 +524,33 @@ void writeRegistersText(uint8_t *registers)
 
 void set13HVideoMode()
 {
-	memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
+	if(mode == 0x03)
+		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
 	writeRegisters(g_320x200x256);
 	mode = 0x13;
 }
 
+void pixel_13H(unsigned char color, unsigned int x, unsigned int y)
+{
+	unsigned char *fb = (unsigned char *)VGA_VRAM;
+	unsigned int offset = y * PITCH + x;
+	fb[offset] = color;
+}
+
 void set11HVideoMode()
 {
-	memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
+	if(mode == 0x03)
+		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
 	writeRegisters(g_640x480x2);
 	mode = 0x11;
+}
+
+void pixel_11H(unsigned char color, unsigned int x, unsigned int y)
+{
+	unsigned char *fb = (unsigned char*)VGA_VRAM;
+	unsigned int offset = y * (640 / 8) + (x / 8);
+	unsigned bit_no = x % 8;
+	bit_write(fb[offset], 1<<(8-bit_no), color ? 1 : 0);
 }
 
 void set05HVideoMode()
@@ -520,9 +562,22 @@ void set05HVideoMode()
 
 void set12HVideoMode()
 {
-	memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
+	if(mode == 0x03)
+		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
 	writeRegisters(g_640x480x16);
 	mode = 0x12;
+}
+
+void pixel_12H(unsigned char color, unsigned int x, unsigned int y)
+{
+	unsigned char *fb = (unsigned char*)VGA_VRAM;
+	unsigned int offset = y * (640 / 8) + (x / 8);
+	unsigned bit_no = x % 8;
+	for(char p = 0; p < 4; p++)
+	{
+		set_plane(p);
+		bit_write(fb[offset], 1<<(8-bit_no), (bit_get(color, 1 << p)) ? 1 : 0);
+	}
 }
 
 void setModeXVideoMode()
@@ -658,19 +713,31 @@ assume: chain-4 addressing already off */
 	io_out_byte(graphicsControllerDataPort, gc6);
 }
 
-void pixel_256(unsigned char color, unsigned int x, unsigned int y)
-{
-	unsigned char *fb = (unsigned char *)VGA_VRAM;
-	unsigned int offset = y * PITCH + x;
-	fb[offset] = color;
-}
-
 void drawDupaIn13H(int color)
 {
 	for (int x = 0; x < 320; x++)
 	{
 		for (int y = 0; y < 200; y++)
-			pixel_256(color, x, y);
+			pixel_13H(color, x, y);
+	}
+}
+
+void drawDupaIn11H(int color)
+{
+	set_plane(1);
+	for (int x = 0; x < 640; x++)
+	{
+		for (int y = 0; y < 480; y++)
+			pixel_11H(color, x, y);
+	}
+}
+
+void drawDupaIn12H(int color)
+{
+	for (int x = 0; x < 640; x++)
+	{
+		for (int y = 0; y < 480; y++)
+			pixel_12H(color, x, y);
 	}
 }
 

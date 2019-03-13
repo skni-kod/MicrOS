@@ -193,11 +193,17 @@ int kmain()
             }
             else if (c.scancode == 61)
             {
-                pc_speaker_enable_sound(1000);
+                //pc_speaker_enable_sound(1000);
+                if (getMode() != 0x12)
+                {
+                    set12HVideoMode();
+                    drawDupaIn12H(0x3);
+                    //pixel_11H(1, 5, 0);
+                }
             }
             else if (c.scancode == 62)
             {
-                pc_speaker_disable_sound();
+                //pc_speaker_disable_sound();
             }
             else if (c.scancode == 63)
             {
