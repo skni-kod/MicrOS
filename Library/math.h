@@ -769,6 +769,14 @@ double ceil(double x);
 */
 float ceilf(float x);
 
+//! Rounding up.
+/*! 
+    The ceill functions compute the smallest integer value not less than x.
+    \param x First value.
+    \return The ceill functions return ⎡x⎤, expressed as a floating-point number.
+*/
+long double ceill(long double x);
+
 //! Rounding down.
 /*! 
     The floor functions compute the largest integer value not greater than x.
@@ -784,6 +792,14 @@ double floor(double x);
     \return The floorf functions return ⎣x⎦, expressed as a floating-point number.
 */
 float floorf(float x);
+
+//! Rounding down.
+/*! 
+    The floorl functions compute the largest integer value not greater than x.
+    \param x First value.
+    \return The floorl functions return ⎣x⎦, expressed as a floating-point number.
+*/
+long double floorl(long double x);
 
 //! Compute remainder of division.
 /*! 
@@ -819,6 +835,14 @@ double trunc(double x);
 */
 float truncf(float x);
 
+//! Rounding towards zero.
+/*! 
+    The truncl functions round their argument to the integer value, in floating format, nearest to but no larger in magnitude than the argument.
+    \param x First value.
+    \return The truncl functions return the truncated integer value.
+*/
+long double truncl(long double x);
+
 //! Rounding.
 /*! 
     The round functions round their argument to the nearest integer value in floating-point format, rounding halfway cases away from zero, regardless of the current rounding direction.
@@ -834,6 +858,14 @@ double round(double x);
     \return The roundf functions return the rounded integer value.
 */
 float roundf(float x);
+
+//! Rounding.
+/*! 
+    The roundl functions round their argument to the nearest integer value in floating-point format, rounding halfway cases away from zero, regardless of the current rounding direction.
+    \param x First value.
+    \return The roundl functions return the rounded integer value.
+*/
+long double roundl(long double x);
 
 //! Rounding.
 /*! 
