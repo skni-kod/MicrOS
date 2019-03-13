@@ -1522,7 +1522,7 @@ long double __math_INFl();
     \param x The value to classify.
     \return One of the followoing int values: FP_INFINITE, FP_NAN, FP_ZERO, FP_SUBNORMAL, FP_NORMAL, FP_WTF.
 */
-#define fpclasify(x) (sizeof(x) == sizeof(double) ? __math_fpclasify(x) : __math_fpclasifyf(x))
+#define fpclasify(x) (sizeof(x) == sizeof(double) ? __math_fpclasify(x) : (sizeof(x) == sizeof(float) ? __math_fpclasifyf(x) : __math_fpclasifyl(x)))
 
 //! Is finite.
 /*! 
@@ -1581,6 +1581,16 @@ long double __math_INFl();
     \return Return (x × y) + z, rounded as one ternary operation.
 */
 #define FP_FAST_FMAF(x, y, z) (fmaf(x, y, z))
+
+//! Multiply-add.
+/*! 
+    Compute (x × y) + z, rounded as one ternary operation: they compute the value (as if) to infinite precision and round once to the result format, according to the current rounding mode. A range error may occur.
+    \param x First value.
+    \param y Second value.
+    \param z Third value.
+    \return Return (x × y) + z, rounded as one ternary operation.
+*/
+#define FP_FAST_FMAL(x, y, z) (fmal(x, y, z))
 
 //! Returns quiet NAN.
 /*! 
