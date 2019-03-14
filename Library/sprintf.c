@@ -216,6 +216,12 @@ void _put_integer(char *str, int *put_idx, int number, unsigned short flags, int
 
 void _put_float(char *str, int *put_idx, float number, unsigned short flags, int width, int precision)
 {
+    bool negative = number < 0;
+    if (negative)
+    {
+        number *= -1;
+    }
+
     int whole_len = _fnumber_len(number);
     int number_len = whole_len + precision + 2; // +2 because of '.' and '\0'
     char *num_buff = (char *)malloc(sizeof(char) * number_len);
@@ -224,7 +230,29 @@ void _put_float(char *str, int *put_idx, float number, unsigned short flags, int
 
     num_buff = _ftoa(number, num_buff, flags, precision);
 
-    for (int i = 0; i < num_spaces; i++)
+    if (negative || flags & FLAGS_PLUS || flags & FLAGS_SPACE)
+    {
+        num_spaces--;
+    }
+
+    if (!(flags & FLAGS_LEFT))
+    {
+        char pad_char = ((flags & FLAGS_ZEROPAD) ? '0' : ' ');
+        for (int i = 0; i < num_spaces; i++)
+        {
+            str[(*put_idx)++] = pad_char;
+        }
+    }
+
+    if (negative)
+    {
+        str[(*put_idx)++] = '-';
+    }
+    else if (flags & FLAGS_PLUS)
+    {
+        str[(*put_idx)++] = '+';
+    }
+    else if (flags & FLAGS_SPACE)
     {
         str[(*put_idx)++] = ' ';
     }
@@ -233,6 +261,14 @@ void _put_float(char *str, int *put_idx, float number, unsigned short flags, int
     while (num_buff[idx] != '\0')
     {
         str[(*put_idx)++] = num_buff[idx++];
+    }
+
+    if (flags & FLAGS_LEFT)
+    {
+        for (int i = 0; i < num_spaces; i++)
+        {
+            str[(*put_idx)++] = ' ';
+        }
     }
 
     free(num_buff);
