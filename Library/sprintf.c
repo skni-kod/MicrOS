@@ -469,7 +469,7 @@ int sprintf(char *str, const char *format, ...)
                 int idx = 0;
                 while (buff[idx] != '\0')
                 {
-                    str[put_index++] = buff[idx];
+                    str[put_index++] = buff[idx++];
                 }
                 break;
             }
