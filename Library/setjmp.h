@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-//! Type to hold information to restore calling environment
-typedef uint32_t jmp_buf[8];
+//! Type to hold information to restore calling environment. Contains ebx, esi, edi, ebp, return address.
+typedef uint32_t jmp_buf[5];
 
 //! Long jump.
 /*!
