@@ -116,18 +116,11 @@ char *_ftoa(float number, char *buffer, unsigned short flags, int precision)
     return buffer;
 }
 
-void _put_integer(char *str, int *put_idx, int number, unsigned short flags, int base, int width, int precision)
+void _put_unsigned_integer(char *str, int *put_idx, unsigned int number, unsigned short flags, int base, int width, int precision)
 {
     size_t int_len = _number_len(number, base); // length of the number
     size_t actual_width = _max(int_len, width); // length of entire string
     //size_t number_len = _max(precision, int_len); // length of number with leading zeros
-
-    bool negative = false;
-    if (number < 0)
-    {
-        number *= -1;
-        negative = true;
-    }
 
     char *number_buf = (char *)malloc((int_len + 1) * sizeof(char));
     _itoa(number, number_buf, base, flags & FLAGS_UPPERCASE, int_len);
@@ -144,6 +137,88 @@ void _put_integer(char *str, int *put_idx, int number, unsigned short flags, int
             int_len += 2;
         }
     }
+
+    if (flags & FLAGS_PLUS || flags & FLAGS_SPACE)
+    {
+        int_len += 1;
+    }
+
+    size_t zeros_count = actual_width - _max(precision, int_len);
+    size_t space_count = actual_width - int_len - zeros_count;
+
+    // Pre padding
+    char prepadding_character = flags & FLAGS_ZEROPAD ? '0' : ' ';
+    if (!(flags & FLAGS_LEFT))
+    {
+        for (int i = space_count; i > 0; i--)
+        {
+            str[(*put_idx)++] = prepadding_character;
+        }
+    }
+
+    // Sign or Space
+    if (flags & FLAGS_PLUS)
+    {
+        str[(*put_idx)++] = '+';
+    }
+    else if (flags & FLAGS_SPACE)
+    {
+        str[(*put_idx)++] = ' ';
+    }
+
+    // 0x and 0
+    if (flags & FLAGS_HASH)
+    {
+        if (base == 8)
+        {
+            str[(*put_idx)++] = '0';
+        }
+        else if (base == 16)
+        {
+            str[(*put_idx)++] = '0';
+            str[(*put_idx)++] = flags & FLAGS_UPPERCASE ? 'X' : 'x';
+        }
+    }
+
+    // Zeros
+    for (int i = zeros_count; i > 0; i--)
+    {
+        str[(*put_idx)++] = '0';
+    }
+
+    // Actual number
+    for (int i = 0; number_buf[i] != '\0'; i++)
+    {
+        str[(*put_idx)++] = number_buf[i];
+    }
+
+    // Post padding
+    if (flags & FLAGS_LEFT)
+    {
+        for (int i = space_count; i > 0; i--)
+        {
+            str[(*put_idx)++] = ' ';
+        }
+    }
+
+    free(number_buf);
+}
+
+void _put_signed_integer(char *str, int *put_idx, int number, unsigned short flags, int base, int width, int precision)
+{
+    size_t int_len = _number_len(number, base); // length of the number
+    size_t actual_width = _max(int_len, width); // length of entire string
+    //size_t number_len = _max(precision, int_len); // length of number with leading zeros
+
+    bool negative = false;
+    if (number < 0)
+    {
+        number *= -1;
+        negative = true;
+    }
+
+    char *number_buf = (char *)malloc((int_len + 1) * sizeof(char));
+    _itoa(number, number_buf, base, flags & FLAGS_UPPERCASE, int_len);
 
     if (flags & FLAGS_PLUS || flags & FLAGS_SPACE || negative)
     {
@@ -175,20 +250,6 @@ void _put_integer(char *str, int *put_idx, int number, unsigned short flags, int
     else if (flags & FLAGS_SPACE)
     {
         str[(*put_idx)++] = ' ';
-    }
-
-    // 0x and 0
-    if (flags & FLAGS_HASH)
-    {
-        if (base == 8)
-        {
-            str[(*put_idx)++] = '0';
-        }
-        else if (base == 16)
-        {
-            str[(*put_idx)++] = '0';
-            str[(*put_idx)++] = flags & FLAGS_UPPERCASE ? 'X' : 'x';
-        }
     }
 
     // Zeros
@@ -469,13 +530,13 @@ int sprintf(char *str, const char *format, ...)
             case 'i':
                 int_arg = va_arg(arg, int);
 
-                _put_integer(str, &put_index, int_arg, flags, 10, width_field, precision_field);
+                _put_signed_integer(str, &put_index, int_arg, flags, 10, width_field, precision_field);
                 break;
 
             case 'o': // OCTAL INTEGER
             {
                 int_arg = va_arg(arg, unsigned int);
-                _put_integer(str, &put_index, int_arg, flags, 8, width_field, precision_field);
+                _put_unsigned_integer(str, &put_index, int_arg, flags, 8, width_field, precision_field);
                 break;
             }
 
@@ -519,7 +580,7 @@ int sprintf(char *str, const char *format, ...)
             case 'x':                     // HEX INTEGER
             {
                 int_arg = va_arg(arg, unsigned int);
-                _put_integer(str, &put_index, int_arg, flags, 16, width_field, precision_field);
+                _put_unsigned_integer(str, &put_index, int_arg, flags, 16, width_field, precision_field);
                 break;
             }
 
