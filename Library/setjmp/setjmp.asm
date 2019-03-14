@@ -1,5 +1,8 @@
 global setjmp
 
+; Input:
+;   - first stack parameter: array of 5 32-bit integers which will be used to store registers
+; Output: 0 if this is normall call or eax if setjmp has been called by longjmp function
 setjmp:
     mov eax, [esp + 4]
     mov [eax], ebx      ; evn[0] = ebx
