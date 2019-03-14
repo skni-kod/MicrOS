@@ -1,11 +1,10 @@
 #ifndef SETJMP_H
 #define SETJMP_H
 
-//! Type to hold information to restore calling environment
-typedef struct jmp_buf
-{
+#include <stdint.h>
 
-} jmp_buf;
+//! Type to hold information to restore calling environment
+typedef uint32_t jmp_buf[8];
 
 //! Long jump.
 /*!
@@ -13,7 +12,7 @@ typedef struct jmp_buf
     \param env Object of type jmp_buf filled by a previous call to setjmp that contains information to restore the environment to that point.
     \param val Value to which the setjmp expression evaluates. If this is zero, the expression evaluates as 1.
 */
-void longjmp(jmp_buf env, int val);
+extern void longjmp(int x, int val);
 
 //! Save calling environment for long jump.
 /*!
@@ -21,6 +20,6 @@ void longjmp(jmp_buf env, int val);
     \param env Object of type jmp_buf where the environment information is stored.
     \return This macro may return more than once: A first time, on its direct invocation; In this case it always returns zero. When longjmp is called with the information set to env, the macro returns again; this time it returns the value passed to longjmp as second argument if this is different from zero, or 1 if it is zero.
 */
-int setjmp(jmp_buf env);
+extern int setjmp(int *x);
 
 #endif
