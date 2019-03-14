@@ -98,8 +98,11 @@ char *_ftoa(float number, char *buffer, unsigned short flags, int precision)
         idx--;
     }
 
-    buffer[whole_size] = '.';
-
+    if (precision != 0 || flags & FLAGS_HASH)
+    {
+        buffer[whole_size] = '.';
+    }
+    
     idx = whole_size + frac_size;
     buffer[idx + 1] = '\0';
 
