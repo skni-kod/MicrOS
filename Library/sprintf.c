@@ -102,7 +102,7 @@ char *_ftoa(float number, char *buffer, unsigned short flags, int precision)
     {
         buffer[whole_size] = '.';
     }
-    
+
     idx = whole_size + frac_size;
     buffer[idx + 1] = '\0';
 
@@ -212,6 +212,30 @@ void _put_integer(char *str, int *put_idx, int number, unsigned short flags, int
     }
 
     free(number_buf);
+}
+
+void _put_float(char *str, int *put_idx, float number, unsigned short flags, int width, int precision)
+{
+    int whole_len = _fnumber_len(number);
+    int number_len = whole_len + precision + 2; // +2 because of '.' and '\0'
+    char *num_buff = (char *)malloc(sizeof(char) * number_len);
+
+    int num_spaces = width - whole_len;
+
+    num_buff = _ftoa(number, num_buff, flags, precision);
+
+    for (int i = 0; i < num_spaces; i++)
+    {
+        str[(*put_idx)++] = ' ';
+    }
+
+    int idx = 0;
+    while (num_buff[idx] != '\0')
+    {
+        str[(*put_idx)++] = num_buff[idx++];
+    }
+
+    free(num_buff);
 }
 
 unsigned int _parse_number_field(const char **str)
@@ -466,14 +490,9 @@ int sprintf(char *str, const char *format, ...)
             case 'f':
             {
                 float f_arg = va_arg(arg, double);
-                char buff[256];
 
-                _ftoa(f_arg, buff, flags, precision_field);
-                int idx = 0;
-                while (buff[idx] != '\0')
-                {
-                    str[put_index++] = buff[idx++];
-                }
+                _put_float(str, &put_index, f_arg, flags, width_field, precision_field);
+
                 break;
             }
 
