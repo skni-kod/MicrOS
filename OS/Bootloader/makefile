@@ -16,7 +16,7 @@ $(OUTPUT_FILE): $(ASM_OBJECTS)
 	@echo "=== $(OUTPUT_FILE) done ==="
 
 $(OBJ_DIR)/%.o: %.asm
-	@echo "=== Compiling asm $(PWD)/$< into object $@ ==="
+	@echo "=== Compiling asm file $(PWD)/$< into object $@ ==="
 	@mkdir -p '$(@D)'
 	@$(NASM) $< -f bin -o $@
 
