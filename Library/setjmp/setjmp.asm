@@ -13,5 +13,5 @@ setjmp:
     mov ecx, [esp]
     mov [eax + 16], ecx ; env[4] = target eip
     
-    xor eax, eax
+    xor eax, eax        ; Return 0
     ret
