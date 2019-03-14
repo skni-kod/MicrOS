@@ -25,12 +25,12 @@ $(OUTPUT_FILE): $(C_OBJECTS) $(ASM_OBJECTS)
 	@echo "=== $(OUTPUT_FILE) done ==="
 
 $(OBJ_DIR)/%.o: %.c
-	@echo "=== Compiling file $< into object $@ ==="
+	@echo "=== Compiling C file $< into object $@ ==="
 	@mkdir -p '$(@D)'
 	@$(GCC) -c $(PWD)/$< -o $@ -MMD -MF $(@:.o=.d) -I../../Library -ILibrary -ggdb3 -O0 -ffreestanding -Wall -Wextra -Wno-unused-parameter -fshort-enums
 	
 $(OBJ_DIR)/%.o: %.asm
-	@echo "=== Compiling asm $< into object $@ ==="
+	@echo "=== Compiling asm file $< into object $@ ==="
 	@mkdir -p '$(@D)'
 	@$(NASM) $(PWD)/$< -f elf32 -o $@
 	
