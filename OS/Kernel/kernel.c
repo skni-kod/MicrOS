@@ -152,26 +152,9 @@ int kmain()
     //startup_music_play();
     logger_log_ok("READY.");
 
-    //process_manager_create_process("/ENV/TASKS.ELF", "Honoka Kotori");
-    //process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    /*process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
+    process_manager_create_process("/ENV/TASKS.ELF", "Honoka Kotori");
     process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");*/
-    //process_manager_run();
+    process_manager_run();
 
     while (1)
         ;

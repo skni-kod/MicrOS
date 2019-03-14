@@ -48,7 +48,7 @@ bool floppy_reset()
     io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0);
 
     // Enable floppy controller (reset (0x04) | DMA (0x08))
-    io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04 | 0x08);
+    io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x0C);
 
     // Wait for interrupt and continue reset sequence
     floppy_wait_for_interrupt();
@@ -91,7 +91,7 @@ bool floppy_wait_until_ready()
             return true;
         }
 
-        sleep(1);
+        sleep(10);
     }
 
     logger_log_error("[Floppy] Timeout while waiting for availability");
@@ -133,7 +133,7 @@ void floppy_confirm_interrupt(uint8_t *st0, uint8_t *cylinder)
 
 void floppy_set_parameters(uint32_t step_rate, uint32_t head_load_time, uint32_t head_unload_time, bool dma)
 {
-    uint8_t data = 0;
+    //uint8_t data = 0;
 
     // Send SPECIFY command
     floppy_send_command(0x03);
@@ -141,13 +141,13 @@ void floppy_set_parameters(uint32_t step_rate, uint32_t head_load_time, uint32_t
     // S S S S H H H H
     //  S = Step Rate
     //  H = Head Unload Time
-    data = ((step_rate & 0xf) << 4) | (head_unload_time & 0xf);
-    floppy_send_command(data);
+    //data = ((step_rate & 0xf) << 4) | (head_unload_time & 0xf);
+    floppy_send_command(0xdf);
 
     // H H H H H H H DMA
     //  H = Head Load Time
-    data = (head_load_time << 1) | (dma ? 0 : 1);
-    floppy_send_command(data);
+    //data = (head_load_time << 1) | (dma ? 0 : 1);
+    floppy_send_command(0x02);
 }
 
 bool floppy_calibrate()
@@ -167,9 +167,13 @@ bool floppy_calibrate()
         uint8_t st0, cylinder;
 
         floppy_confirm_interrupt(&st0, &cylinder);
-        if ((st0 & 0x20) == 0)
+        if (st0 & 0xC0)
         {
             logger_log_error("[Floppy] Invalid ST0 after calibration");
+
+            static const char *status[] = {0, "error", "invalid", "drive"};
+            logger_log_error(status[st0 >> 6]);
+            return false;
         }
 
         if (cylinder == 0)
@@ -177,9 +181,10 @@ bool floppy_calibrate()
             return true;
         }
 
-        sleep(1);
+        sleep(10);
     }
 
+    floppy_disable_motor();
     return false;
 }
 
@@ -188,10 +193,11 @@ void floppy_enable_motor()
     if (!motor_enabled)
     {
         // Enable floppy motor (reset (0x04) | Drive 0 Motor (0x10))
-        io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04 | 0x08 | 0x10);
-        sleep(300);
+        io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x1C);
+        sleep(2000);
 
         motor_enabled = true;
+        logger_log_warning("[Floppy] Floppy enabled");
     }
 
     time_of_last_activity = timer_get_system_clock();
@@ -202,9 +208,10 @@ void floppy_disable_motor()
     if (motor_enabled)
     {
         // Disable floppy motor (reset (0x04))
-        //io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04);
+        io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x0C);
 
-        //motor_enabled = false;
+        motor_enabled = false;
+        logger_log_warning("[Floppy] Floppy disabled");
     }
 }
 
@@ -234,137 +241,152 @@ void floppy_write_sector(uint16_t sector, uint8_t *content)
 
 uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sector, bool read)
 {
-    // Run floppy motor and wait some time
-    floppy_enable_motor();
-
-    // Init DMA
-    floppy_dma_init(read);
-
-    if (!floppy_seek(0, head))
+    for (int i = 0; i < 100; i++)
     {
-        logger_log_error("[Floppy] Seek failure");
-        return NULL;
-    }
+        // Run floppy motor and wait some time
+        floppy_enable_motor();
 
-    // Send command to read sector
-    //  0x06 or 0x05 - read or write sector command
-    //  0x20 - skip deleted data address marks
-    //  0x40 - double density mode
-    //  0x80 - operate on both tracks of the cylinder
-    floppy_send_command((read ? 0x06 : 0x05) | 0x20 | 0x40 | 0x80);
+        // Init DMA
+        floppy_dma_init(read);
 
-    // _ _ _ _ _ HEAD DEV1 DEV2
-    floppy_send_command(head << 2 | DEVICE_NUMBER);
-
-    // Track number
-    floppy_send_command(track);
-
-    // Head number
-    floppy_send_command(head);
-
-    // Sector number
-    floppy_send_command(sector);
-
-    // Sector size (2 = 512)
-    floppy_send_command(2);
-
-    uint8_t sectors_per_track = (*floppy_header_data).sectors_per_track;
-
-    // Sectors per track
-    floppy_send_command(((sector + 1) >= sectors_per_track) ? sectors_per_track : (sector + 1));
-
-    // Length of gap (0x1B = floppy 3,5)
-    floppy_send_command(0x1B);
-
-    // Data length
-    floppy_send_command(0xff);
-
-    // Wait for interrupt
-    floppy_wait_for_interrupt();
-    // Read command status
-    uint8_t st0 = floppy_read_data();
-    uint8_t st1 = floppy_read_data();
-    uint8_t st2 = floppy_read_data();
-    uint8_t cylinder_data = floppy_read_data();
-    uint8_t head_data = floppy_read_data();
-    uint8_t sector_data = floppy_read_data();
-    uint8_t bps = floppy_read_data();
-
-    if (st1 != 0 || st2 != 0)
-    {
-        char output[80] = {' '};
-        logger_log_info("[Floppy] DUMP (ST0 ST1 ST2 CD HD SD BPS T H S)");
-        itoa(st0, output, 5);
-        itoa(st1, output + 6, 10);
-        itoa(st2, output + 12, 10);
-        itoa(cylinder_data, output + 18, 10);
-        itoa(head_data, output + 24, 10);
-        itoa(sector_data, output + 30, 10);
-        itoa(bps, output + 36, 10);
-        itoa(track, output + 42, 10);
-        itoa(head, output + 48, 10);
-        itoa(sector, output + 54, 10);
-
-        for (int i = 0; i < 80; i++)
+        if (!floppy_seek(0, head))
         {
-            if (output[i] == 0)
-            {
-                output[i] = ' ';
-            }
+            logger_log_error("[Floppy] Seek failure");
+            return NULL;
         }
 
-        output[79] = 0;
-        logger_log_info(output);
+        // Send command to read sector
+        //  0x06 or 0x05 - read or write sector command
+        //  0x20 - skip deleted data address marks
+        //  0x40 - double density mode
+        //  0x80 - operate on both tracks of the cylinder
+        floppy_send_command((read ? 0x06 : 0x05) | 0x20 | 0x40 | 0x80);
+
+        // _ _ _ _ _ HEAD DEV1 DEV2
+        floppy_send_command(head << 2 | DEVICE_NUMBER);
+
+        // Track number
+        floppy_send_command(track);
+
+        // Head number
+        floppy_send_command(head);
+
+        // Sector number
+        floppy_send_command(sector);
+
+        // Sector size (2 = 512)
+        floppy_send_command(2);
+
+        uint8_t sectors_per_track = (*floppy_header_data).sectors_per_track;
+
+        // Sectors per track
+        floppy_send_command(((sector + 1) >= sectors_per_track) ? sectors_per_track : (sector + 1));
+
+        // Length of gap (0x1B = floppy 3,5)
+        floppy_send_command(0x1B);
+
+        // Data length
+        floppy_send_command(0xff);
+
+        // Wait for interrupt
+        floppy_wait_for_interrupt();
+        // Read command status
+        uint8_t st0 = floppy_read_data();
+        uint8_t st1 = floppy_read_data();
+        uint8_t st2 = floppy_read_data();
+        uint8_t cylinder_data = floppy_read_data();
+        uint8_t head_data = floppy_read_data();
+        uint8_t sector_data = floppy_read_data();
+        uint8_t bps = floppy_read_data();
+
+        if (st1 & 0x80)
+        {
+            logger_log_error("[Floppy] End of cylinder");
+        }
+        if (st1 & 0x20)
+        {
+            logger_log_error("[Floppy] Data error");
+        }
+        if (st1 & 0x04)
+        {
+            logger_log_error("[Floppy] No data");
+        }
+        if (st1 & 0x02)
+        {
+            logger_log_error("[Floppy] Not writable");
+        }
+        if (st1 & 0x01)
+        {
+            logger_log_error("[Floppy] Missing address mark");
+        }
+
+        if (st2 & 0x40)
+        {
+            logger_log_error("[Floppy] Control mask");
+        }
+        if (st2 & 0x20)
+        {
+            logger_log_error("[Floppy] Data error in data field");
+        }
+        if (st2 & 0x10)
+        {
+            logger_log_error("[Floppy] Wrong cylinder");
+        }
+        if (st2 & 0x02)
+        {
+            logger_log_error("[Floppy] Bad cylinder");
+        }
+        if (st2 & 0x01)
+        {
+            logger_log_error("[Floppy] Missing data address mark");
+        }
+
+        if (bps != 0x2)
+        {
+            logger_log_error("[Floppy] Invalid bps");
+        }
+
+        if (st1 != 0 || st2 != 0)
+        {
+            char output[80] = {' '};
+            logger_log_info("[Floppy] DUMP (ST0 ST1 ST2 CD HD SD BPS T H S)");
+            itoa(st0, output, 5);
+            itoa(st1, output + 6, 10);
+            itoa(st2, output + 12, 10);
+            itoa(cylinder_data, output + 18, 10);
+            itoa(head_data, output + 24, 10);
+            itoa(sector_data, output + 30, 10);
+            itoa(bps, output + 36, 10);
+            itoa(track, output + 42, 10);
+            itoa(head, output + 48, 10);
+            itoa(sector, output + 54, 10);
+
+            for (int i = 0; i < 80; i++)
+            {
+                if (output[i] == 0)
+                {
+                    output[i] = ' ';
+                }
+            }
+
+            output[79] = 0;
+            logger_log_info(output);
+
+            if (!floppy_calibrate())
+            {
+                logger_log_error("[Floppy] Calibration failure");
+                return false;
+            }
+
+            logger_log_ok("[Floppy] Recalibration done");
+            sleep(2000);
+            continue;
+        }
+
+        return st1 == 0 ? (uint8_t *)dma_buffer : NULL;
     }
 
-    if (st1 & 0x80)
-    {
-        logger_log_error("[Floppy] End of cylinder");
-    }
-    if (st1 & 0x20)
-    {
-        logger_log_error("[Floppy] Data error");
-    }
-    if (st1 & 0x04)
-    {
-        logger_log_error("[Floppy] No data");
-    }
-    if (st1 & 0x02)
-    {
-        logger_log_error("[Floppy] Not writable");
-    }
-    if (st1 & 0x01)
-    {
-        logger_log_error("[Floppy] Missing address mark");
-    }
-
-    if (st2 & 0x40)
-    {
-        logger_log_error("[Floppy] Control mask");
-    }
-    if (st2 & 0x20)
-    {
-        logger_log_error("[Floppy] Data error in data field");
-    }
-    if (st2 & 0x10)
-    {
-        logger_log_error("[Floppy] Wrong cylinder");
-    }
-    if (st2 & 0x02)
-    {
-        logger_log_error("[Floppy] Bad cylinder");
-    }
-    if (st2 & 0x01)
-    {
-        logger_log_error("[Floppy] Missing data address mark");
-    }
-
-    if (bps != 0x2)
-    {
-        logger_log_error("[Floppy] Invalid bps");
-    }
-
-    return st1 == 0 ? (uint8_t *)dma_buffer : NULL;
+    return NULL;
 }
 
 bool floppy_seek(uint32_t cylinder, uint32_t head)
@@ -381,18 +403,22 @@ bool floppy_seek(uint32_t cylinder, uint32_t head)
         // Wait for interrupt
         floppy_wait_for_interrupt();
         floppy_confirm_interrupt(&st0, &interrupt_cylinder);
-        if ((st0 & 0x20) == 0)
+        if (st0 & 0xC0)
         {
             logger_log_error("[Floppy] Invalid ST0 after seek");
+            static const char *status[] = {0, "error", "invalid", "drive"};
+            logger_log_error(status[st0 >> 6]);
+
+            return false;
         }
 
         if (interrupt_cylinder == cylinder)
         {
-            sleep(100);
+            sleep(40);
             return true;
         }
 
-        sleep(1);
+        sleep(10);
     }
 
     return false;
@@ -413,9 +439,9 @@ void floppy_dma_init(bool read)
     // Reset Flip-Flop register
     io_out_byte(DMA_FLIP_FLOP_RESET_REGISTER, 0xff);
 
-    // Count to 0x23ff (number of bytes in a 3.5" floppy disk track)
+    // Count to 0x01ff (number of bytes in a 3.5" floppy disk track)
     io_out_byte(DMA_COUNT_REGISTER_CHANNEL, (0xff));
-    io_out_byte(DMA_COUNT_REGISTER_CHANNEL, 0x23);
+    io_out_byte(DMA_COUNT_REGISTER_CHANNEL, 0x01);
 
     // We don't want to have external page register
     io_out_byte(DMA_EXTERNAL_PAGE_REGISTER, 0);
