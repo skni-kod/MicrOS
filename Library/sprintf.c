@@ -67,6 +67,7 @@ char *_itoa(unsigned int number, char *buffer, int base, bool uppercase, int siz
 
         number /= base;
     } while (number);
+    buffer[size] = '\0';
 
     return buffer;
 }
