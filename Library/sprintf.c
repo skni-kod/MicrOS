@@ -31,7 +31,7 @@ int _max(int a, int b)
     return a > b ? a : b;
 }
 
-unsigned int _number_len(int n, int base)
+unsigned int _unsigned_number_len(unsigned int n, int base)
 {
     unsigned int res;
 
@@ -118,8 +118,8 @@ char *_ftoa(float number, char *buffer, unsigned short flags, int precision)
 
 void _put_unsigned_integer(char *str, int *put_idx, unsigned int number, unsigned short flags, int base, int width, int precision)
 {
-    size_t int_len = _number_len(number, base); // length of the number
-    size_t actual_width = _max(int_len, width); // length of entire string
+    size_t int_len = _unsigned_number_len(number, base); // length of the number
+    size_t actual_width = _max(int_len, width);          // length of entire string
     //size_t number_len = _max(precision, int_len); // length of number with leading zeros
 
     char *number_buf = (char *)malloc((int_len + 1) * sizeof(char));
@@ -206,16 +206,15 @@ void _put_unsigned_integer(char *str, int *put_idx, unsigned int number, unsigne
 
 void _put_signed_integer(char *str, int *put_idx, int number, unsigned short flags, int base, int width, int precision)
 {
-    size_t int_len = _number_len(number, base); // length of the number
-    size_t actual_width = _max(int_len, width); // length of entire string
-    //size_t number_len = _max(precision, int_len); // length of number with leading zeros
-
     bool negative = false;
     if (number < 0)
     {
         number *= -1;
         negative = true;
     }
+
+    size_t int_len = _unsigned_number_len(number, base); // length of the number
+    size_t actual_width = _max(int_len, width);          // length of entire string
 
     char *number_buf = (char *)malloc((int_len + 1) * sizeof(char));
     _itoa(number, number_buf, base, flags & FLAGS_UPPERCASE, int_len);
@@ -591,6 +590,13 @@ int sprintf(char *str, const char *format, ...)
 
                 _put_float(str, &put_index, f_arg, flags, width_field, precision_field);
 
+                break;
+            }
+
+            case 'u':
+            {
+                int_arg = va_arg(arg, unsigned int);
+                _put_unsigned_integer(str, &put_index, int_arg, flags, 10, width_field, precision_field);
                 break;
             }
 
