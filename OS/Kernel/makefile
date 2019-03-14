@@ -6,6 +6,7 @@ SRC_DIR := .
 OBJ_DIR := obj
 BIN_DIR := bin
 OUTPUT_FILE := $(BIN_DIR)/kernel.elf
+OUTPUT_BIN_FILE := $(BIN_DIR)/kernel.bin
 
 C_SOURCES := $(shell find $(SRC_DIR) -name "*.c")
 C_OBJECTS := $(C_SOURCES:%.c=$(OBJ_DIR)/%.o)
