@@ -2,5 +2,13 @@
 
 char *strrchr(char *str, int character)
 {
-    return 0;
+    char *ret = '\0';
+    do
+    {
+        if(*str == (char)character)
+            ret = str;
+        str++;
+    } while (*str);
+
+    return ret; 
 }
