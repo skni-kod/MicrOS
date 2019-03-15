@@ -153,6 +153,7 @@ void floppy_set_parameters(uint32_t step_rate, uint32_t head_load_time, uint32_t
 bool floppy_calibrate()
 {
     floppy_enable_motor();
+    sleep(50);
 
     for (int i = 0; i < 1000; i++)
     {
