@@ -52,12 +52,7 @@ void startup()
     timer_init();
     logger_log_ok("Timer");
 
-    if (!floppy_init())
-    {
-        logger_log_error("Floppy init fail");
-        while (1)
-            ;
-    }
+    floppy_init();
     logger_log_ok("Floppy");
 
     keyboard_init();
@@ -153,7 +148,7 @@ int kmain()
     logger_log_ok("READY.");
 
     process_manager_create_process("/ENV/TASKS.ELF", "Honoka Kotori");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
+    //process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
     process_manager_run();
 
     while (1)
