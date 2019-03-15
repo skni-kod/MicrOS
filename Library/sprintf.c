@@ -118,9 +118,7 @@ char *_ftoa(float number, char *buffer, unsigned short flags, int precision)
 
 void _put_unsigned_integer(char *str, int *put_idx, unsigned int number, unsigned short flags, int base, int width, int precision)
 {
-    size_t int_len = _unsigned_number_len(number, base); // length of the number
-    size_t actual_width = _max(int_len, width);          // length of entire string
-    //size_t number_len = _max(precision, int_len); // length of number with leading zeros
+    int int_len = _unsigned_number_len(number, base); // length of the number
 
     char *number_buf = (char *)malloc((int_len + 1) * sizeof(char));
     _itoa(number, number_buf, base, flags & FLAGS_UPPERCASE, int_len);
@@ -143,8 +141,8 @@ void _put_unsigned_integer(char *str, int *put_idx, unsigned int number, unsigne
         int_len += 1;
     }
 
-    size_t zeros_count = actual_width - _max(precision, int_len);
-    size_t space_count = actual_width - int_len - zeros_count;
+    int zeros_count = precision - int_len;
+    int space_count = width - _max(precision, int_len);
 
     // Pre padding
     char prepadding_character = flags & FLAGS_ZEROPAD ? '0' : ' ';
@@ -213,8 +211,7 @@ void _put_signed_integer(char *str, int *put_idx, int number, unsigned short fla
         negative = true;
     }
 
-    size_t int_len = _unsigned_number_len(number, base); // length of the number
-    size_t actual_width = _max(int_len, width);          // length of entire string
+    int int_len = _unsigned_number_len(number, base); // length of the number
 
     char *number_buf = (char *)malloc((int_len + 1) * sizeof(char));
     _itoa(number, number_buf, base, flags & FLAGS_UPPERCASE, int_len);
@@ -224,8 +221,8 @@ void _put_signed_integer(char *str, int *put_idx, int number, unsigned short fla
         int_len += 1;
     }
 
-    size_t zeros_count = actual_width - _max(precision, int_len);
-    size_t space_count = actual_width - int_len - zeros_count;
+    int zeros_count = precision - int_len;
+    int space_count = width - _max(precision, int_len);
 
     // Pre padding
     char prepadding_character = flags & FLAGS_ZEROPAD ? '0' : ' ';
@@ -352,8 +349,8 @@ void _put_scientific_notation(char *str, int *put_idx, double number, unsigned s
     }
 
     int num_spaces = width - precision - 2; // -2 because of one digit before decimal point and decimal point itself
-    num_spaces -= 2; // e notation and exponent sign
-    num_spaces -= exponent_len; 
+    num_spaces -= 2;                        // e notation and exponent sign
+    num_spaces -= exponent_len;
 
     // scale number to fit <1, 10> range
     // and specify its exponent
