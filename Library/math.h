@@ -1315,6 +1315,33 @@ float nextafterf(float x, float y);
 */
 long double nextafterl(long double x, long double y);
 
+//! Next representable value toward precise value.
+/*! 
+    The nexttoward functions are equivalent to the nextafter functions except that the second parameter has type long double and the functions return y converted to the type of the function if x equals y.
+    \param x Base value.
+    \param y Value toward which the return value is approximated.
+    \return The next representable value after x in the direction of y.
+*/
+double nexttoward(double x, long double y);
+
+//! Next representable value toward precise value.
+/*! 
+    The nexttowardf functions are equivalent to the nextafter functions except that the second parameter has type long double and the functions return y converted to the type of the function if x equals y.
+    \param x Base value.
+    \param y Value toward which the return value is approximated.
+    \return The next representable value after x in the direction of y.
+*/
+float nexttowardf(float x, long double y);
+
+//! Next representable value toward precise value.
+/*! 
+    The nexttowardl functions are equivalent to the nextafter functions except that the second parameter has type long double and the functions return y converted to the type of the function if x equals y.
+    \param x Base value.
+    \param y Value toward which the return value is approximated.
+    \return The next representable value after x in the direction of y.
+*/
+long double nexttowardl(long double x, long double y);
+
 // Minimum, maximum, difference functions
 
 //! Positive difference.
