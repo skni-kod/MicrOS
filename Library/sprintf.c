@@ -338,6 +338,7 @@ void _put_float(char *str, int *put_idx, float number, unsigned short flags, int
 void _put_scientific_notation(char *str, int *put_idx, double number, unsigned short flags, int width, int precision)
 {
     int exponent = 0;
+    int exponent_len = _unsigned_number_len(exponent, 10);
 
     bool negative = number < 0;
     if (negative)
@@ -350,7 +351,11 @@ void _put_scientific_notation(char *str, int *put_idx, double number, unsigned s
         precision = 6;
     }
 
-    // scale number to fit <1, 10> range 
+    int num_spaces = width - precision - 2; // -2 because of one digit before decimal point and decimal point itself
+    num_spaces -= 2; // e notation and exponent sign
+    num_spaces -= exponent_len; 
+
+    // scale number to fit <1, 10> range
     // and specify its exponent
     while (!(number >= 1 && number < 10))
     {
@@ -364,6 +369,21 @@ void _put_scientific_notation(char *str, int *put_idx, double number, unsigned s
         {
             number /= 10;
             exponent++;
+        }
+    }
+
+    if (negative || flags & FLAGS_PLUS || flags & FLAGS_SPACE)
+    {
+        num_spaces--;
+    }
+
+    // Pre Padding
+    if (!(flags & FLAGS_LEFT))
+    {
+        char pad_char = ((flags & FLAGS_ZEROPAD) ? '0' : ' ');
+        for (int i = 0; i < num_spaces; i++)
+        {
+            str[(*put_idx)++] = pad_char;
         }
     }
 
@@ -409,7 +429,6 @@ void _put_scientific_notation(char *str, int *put_idx, double number, unsigned s
     str[(*put_idx)++] = (flags & FLAGS_UPPERCASE ? 'E' : 'e');
 
     // Exponent sign
-
     if (exponent < 0)
     {
         str[(*put_idx)++] = '-';
@@ -420,7 +439,6 @@ void _put_scientific_notation(char *str, int *put_idx, double number, unsigned s
         str[(*put_idx)++] = '+';
     }
 
-    int exponent_len = _unsigned_number_len(exponent, 10);
     num_buff = realloc(num_buff, sizeof(char) * (exponent_len + 1));
 
     _itoa(exponent, num_buff, 10, false, exponent_len);
@@ -428,6 +446,14 @@ void _put_scientific_notation(char *str, int *put_idx, double number, unsigned s
     while (num_buff[idx] != '\0')
     {
         str[(*put_idx)++] = num_buff[idx++];
+    }
+
+    if (flags & FLAGS_LEFT)
+    {
+        for (int i = 0; i < num_spaces; i++)
+        {
+            str[(*put_idx)++] = ' ';
+        }
     }
 
     free(num_buff);
