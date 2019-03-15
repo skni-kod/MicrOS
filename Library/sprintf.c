@@ -763,5 +763,5 @@ int sprintf(char *str, const char *format, ...)
     str[put_index++] = '\0';
 
     va_end(arg);
-    return 0;
+    return put_index - 1;
 }
