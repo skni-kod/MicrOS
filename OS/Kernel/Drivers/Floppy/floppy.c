@@ -174,7 +174,7 @@ bool floppy_calibrate()
 
             static const char *status[] = {0, "error", "invalid", "drive"};
             logger_log_error(status[st0 >> 6]);
-            return false;
+            //return false;
         }
 
         if (cylinder == 0)
@@ -250,10 +250,10 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
         // Init DMA
         floppy_dma_init(read);
 
-        if (!floppy_seek(0, head))
+        if (!floppy_seek(track, head))
         {
             logger_log_error("[Floppy] Seek failure");
-            return NULL;
+            continue;
         }
 
         // Send command to read sector
@@ -378,7 +378,6 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
                 if (!floppy_reset())
                 {
                     logger_log_error("[Floppy] Reset failure");
-                    return false;
                 }
                 logger_log_warning("[Floppy] Reset done");
             }
@@ -386,7 +385,6 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
             if (!floppy_calibrate())
             {
                 logger_log_error("[Floppy] Calibration failure");
-                return false;
             }
 
             logger_log_warning("[Floppy] Recalibration done, waiting 2s");
@@ -404,6 +402,12 @@ bool floppy_seek(uint32_t cylinder, uint32_t head)
 {
     uint8_t st0, interrupt_cylinder;
 
+    if (cylinder == 1)
+    {
+        int a = 1;
+        a++;
+    }
+
     for (int i = 0; i < 1000; i++)
     {
         // Send seek command
@@ -419,8 +423,6 @@ bool floppy_seek(uint32_t cylinder, uint32_t head)
             logger_log_error("[Floppy] Invalid ST0 after seek");
             static const char *status[] = {0, "error", "invalid", "drive"};
             logger_log_error(status[st0 >> 6]);
-
-            return false;
         }
 
         if (interrupt_cylinder == cylinder)
