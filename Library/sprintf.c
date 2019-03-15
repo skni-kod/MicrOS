@@ -335,6 +335,94 @@ void _put_float(char *str, int *put_idx, float number, unsigned short flags, int
     free(num_buff);
 }
 
+void _put_scientific_notation(char *str, int *put_idx, double number, unsigned short flags, int width, int precision)
+{
+    int exponent = 0;
+
+    bool negative = number < 0;
+    if (negative)
+    {
+        number *= -1;
+    }
+
+    if (!(flags & FLAGS_PRECISION))
+    {
+        precision = 6;
+    }
+
+    // 
+    while (!(number >= 1 && number < 10))
+    {
+        number /= 10;
+        exponent++;
+    }
+
+    // SIGN
+    if (negative)
+    {
+        str[(*put_idx)++] = '-';
+    }
+    else if (flags & FLAGS_PLUS)
+    {
+        str[(*put_idx)++] = '+';
+    }
+    else if (flags & FLAGS_SPACE)
+    {
+        str[(*put_idx)++] = ' ';
+    }
+
+    // Actual number
+    // We know that number must have 1 digit before decimal point
+    // So we just cast it to int and make char from it
+    str[(*put_idx)++] = (int)number + '0';
+
+    if (precision != 0 || flags & FLAGS_HASH)
+    {
+        str[(*put_idx)++] = '.';
+    }
+
+    // Digits after decimal point
+    double integer;
+    double fract = modf(number, &integer);
+
+    fract *= pow(10, precision);
+    char *num_buff = (char *)malloc(sizeof(char) * (precision + 1));
+    num_buff = _itoa(fract, num_buff, 10, false, precision);
+
+    int idx = 0;
+    while (num_buff[idx] != '\0')
+    {
+        str[(*put_idx)++] = num_buff[idx++];
+    }
+
+    // Exponent
+    str[(*put_idx)++] = (flags & FLAGS_UPPERCASE ? 'E' : 'e');
+
+    // Exponent sign
+
+    if (exponent < 0)
+    {
+        str[(*put_idx)++] = '-';
+        exponent *= -1;
+    }
+    else
+    {
+        str[(*put_idx)++] = '+';
+    }
+
+    int exponent_len = _unsigned_number_len(exponent, 10);
+    num_buff = realloc(num_buff, sizeof(char) * (exponent_len + 1));
+
+    _itoa(exponent, num_buff, 10, false, exponent_len);
+    idx = 0;
+    while (num_buff[idx] != '\0')
+    {
+        str[(*put_idx)++] = num_buff[idx++];
+    }
+
+    free(num_buff);
+}
+
 unsigned int _parse_number_field(const char **str)
 {
     unsigned int ret = 0;
@@ -597,6 +685,15 @@ int sprintf(char *str, const char *format, ...)
             {
                 int_arg = va_arg(arg, unsigned int);
                 _put_unsigned_integer(str, &put_index, int_arg, flags, 10, width_field, precision_field);
+                break;
+            }
+
+            case 'E':
+                flags |= FLAGS_UPPERCASE;
+            case 'e':
+            {
+                double d_arg = va_arg(arg, double);
+                _put_scientific_notation(str, &put_index, d_arg, flags, width_field, precision_field);
                 break;
             }
 
