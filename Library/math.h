@@ -933,6 +933,32 @@ double hypot(double x, double y);
 */
 float hypotf(float x, float y);
 
+// Error and gamma functions
+
+//! Compute error function.
+/*! 
+    The erf functions compute the error function of x.
+    \param x Parameter for the error function.
+    \return Error function value for x.
+*/
+double erf(double x);
+
+//! Compute error function.
+/*! 
+    The erf functions compute the error function of x.
+    \param x Parameter for the error function.
+    \return Error function value for x.
+*/
+float erff(float x);
+
+//! Compute error function.
+/*! 
+    The erf functions compute the error function of x.
+    \param x Parameter for the error function.
+    \return Error function value for x.
+*/
+long double erfl(long double x);
+
 // Nearest integer floating-point operations
 
 //! Rounding up.
