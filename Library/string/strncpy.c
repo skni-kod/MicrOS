@@ -2,5 +2,11 @@
 
 char *strncpy(char *destination, const char *source, size_t num)
 {
-    return 0;
+    char *str = destination;
+    do
+    {
+        *destination = *source;
+        source++,destination++,num--;
+    }while(*source && num);
+    return str;
 }
