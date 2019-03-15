@@ -350,11 +350,21 @@ void _put_scientific_notation(char *str, int *put_idx, double number, unsigned s
         precision = 6;
     }
 
-    // 
+    // scale number to fit <1, 10> range 
+    // and specify its exponent
     while (!(number >= 1 && number < 10))
     {
-        number /= 10;
-        exponent++;
+        if (number < 1)
+        {
+
+            number *= 10;
+            exponent--;
+        }
+        else
+        {
+            number /= 10;
+            exponent++;
+        }
     }
 
     // SIGN
