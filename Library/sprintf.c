@@ -730,6 +730,25 @@ int sprintf(char *str, const char *format, ...)
                 break;
             }
 
+            case 'p':
+            {
+                uintptr_t ptr = va_arg(arg, void *);
+                flags |= FLAGS_UPPERCASE;
+                // Ignore those flags
+                flags &= ~(FLAGS_ZEROPAD | FLAGS_HASH | FLAGS_PLUS | FLAGS_SPACE);
+
+                precision_field = sizeof(void *) * 2;
+                _put_unsigned_integer(str, &put_index, ptr, flags, 16, width_field, precision_field);
+                break;
+            }
+
+            case 'n':
+            {
+                int *ptr = va_arg(arg, int *);
+                (*ptr) = put_index;
+                break;
+            }
+
             case '%':
                 str[put_index++] = '%';
                 break;
