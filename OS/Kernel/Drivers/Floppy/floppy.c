@@ -195,7 +195,7 @@ void floppy_enable_motor()
     {
         // Enable floppy motor (reset (0x04) | Drive 0 Motor (0x10))
         io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x1C);
-        sleep(2000);
+        sleep(1000);
 
         motor_enabled = true;
         logger_log_warning("[Floppy] Floppy enabled");
@@ -373,13 +373,23 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
             output[79] = 0;
             logger_log_info(output);
 
+            if (i > 5)
+            {
+                if (!floppy_reset())
+                {
+                    logger_log_error("[Floppy] Reset failure");
+                    return false;
+                }
+                logger_log_warning("[Floppy] Reset done");
+            }
+
             if (!floppy_calibrate())
             {
                 logger_log_error("[Floppy] Calibration failure");
                 return false;
             }
 
-            logger_log_ok("[Floppy] Recalibration done");
+            logger_log_warning("[Floppy] Recalibration done, waiting 2s");
             sleep(2000);
             continue;
         }
@@ -415,7 +425,7 @@ bool floppy_seek(uint32_t cylinder, uint32_t head)
 
         if (interrupt_cylinder == cylinder)
         {
-            sleep(40);
+            sleep(50);
             return true;
         }
 
