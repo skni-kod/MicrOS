@@ -945,7 +945,7 @@ double erf(double x);
 
 //! Compute error function.
 /*! 
-    The erf functions compute the error function of x.
+    The erff functions compute the error function of x.
     \param x Parameter for the error function.
     \return Error function value for x.
 */
@@ -953,11 +953,35 @@ float erff(float x);
 
 //! Compute error function.
 /*! 
-    The erf functions compute the error function of x.
+    The erfl functions compute the error function of x.
     \param x Parameter for the error function.
     \return Error function value for x.
 */
 long double erfl(long double x);
+
+//! Compute complementary error function.
+/*! 
+    The erfc functions compute the complementary error function of x. A range error occurs if x is too large.
+    \param x Parameter for the complementary error function.
+    \return Complementary error function value for x.
+*/
+double erfc(double x);
+
+//! Compute complementary error function.
+/*! 
+    The erfcf functions compute the complementary error function of x. A range error occurs if x is too large.
+    \param x Parameter for the complementary error function.
+    \return Complementary error function value for x.
+*/
+float erfcf(float x);
+
+//! Compute complementary error function.
+/*! 
+    The erfcl functions compute the complementary error function of x. A range error occurs if x is too large.
+    \param x Parameter for the complementary error function.
+    \return Complementary error function value for x.
+*/
+long double erfcl(long double x);
 
 // Nearest integer floating-point operations
 
