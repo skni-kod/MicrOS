@@ -1288,6 +1288,33 @@ float copysignf(float x, float y);
 */  
 long double copysignl(long double x, long double y);
 
+//! Next representable value.
+/*! 
+    The nextafter functions determine the next representable value, in the type of the function, after x in the direction of y, where x and y are first converted to the type of the function. The nextafter functions return y if x equals y. A range error may occur if the magnitude of x is the largest finite value representable in the type and the result is infinite or not representable in the type.
+    \param x Base value.
+    \param y Value toward which the return value is approximated.
+    \return The nextafter functions return the next representable value in the specified format after x in the direction of y.
+*/
+double nextafter(double x, double y);
+
+//! Next representable value.
+/*! 
+    The nextafterf functions determine the next representable value, in the type of the function, after x in the direction of y, where x and y are first converted to the type of the function. The nextafterf functions return y if x equals y. A range error may occur if the magnitude of x is the largest finite value representable in the type and the result is infinite or not representable in the type.
+    \param x Base value.
+    \param y Value toward which the return value is approximated.
+    \return The nextafterf functions return the next representable value in the specified format after x in the direction of y.
+*/
+float nextafterf(float x, float y);
+
+//! Next representable value.
+/*! 
+    The nextafterl functions determine the next representable value, in the type of the function, after x in the direction of y, where x and y are first converted to the type of the function. The nextafterl functions return y if x equals y. A range error may occur if the magnitude of x is the largest finite value representable in the type and the result is infinite or not representable in the type.
+    \param x Base value.
+    \param y Value toward which the return value is approximated.
+    \return The nextafterl functions return the next representable value in the specified format after x in the direction of y.
+*/
+long double nextafterl(long double x, long double y);
+
 // Minimum, maximum, difference functions
 
 //! Positive difference.
