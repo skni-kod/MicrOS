@@ -19,19 +19,44 @@ bool floppy_init()
     pic_enable_irq(6);
     idt_attach_interrupt_handler(6, floppy_interrupt);
 
-    if (!floppy_reset())
+    for (int i = 0; i < 100; i++)
     {
-        logger_log_error("[Floppy] Reset failure");
-        return false;
+        if (!floppy_reset())
+        {
+            logger_log_error("[Floppy] Reset failure. Waiting 10 ms...");
+            sleep(10);
+        }
+        else
+            break;
+
+        if (i + 1 == 100)
+        {
+            logger_log_error("[Floppy] Reset timeout.");
+            return false;
+        }
     }
+
     logger_log_info("[Floppy] Reset done");
 
-    if (!floppy_calibrate())
+    for (int i = 0; i < 100; i++)
     {
-        logger_log_error("[Floppy] Calibration failure");
-        return false;
+        if (!floppy_calibrate())
+        {
+            logger_log_error("[Floppy] Calibration failure. Waiting 10 ms...");
+            sleep(10);
+        }
+        else
+            break;
+
+        if (i + 1 == 100)
+        {
+            logger_log_error("[Floppy] Calibration timeout.");
+            return false;
+        }
     }
+
     logger_log_info("[Floppy] Calibration done");
+
     return true;
 }
 
@@ -153,9 +178,8 @@ void floppy_set_parameters(uint32_t step_rate, uint32_t head_load_time, uint32_t
 bool floppy_calibrate()
 {
     floppy_enable_motor();
-    sleep(50);
 
-    for (int i = 0; i < 1000; i++)
+    for (int i = 0; i < 100; i++)
     {
         // Send CALIBRATE command
         floppy_send_command(0x07);
@@ -170,22 +194,19 @@ bool floppy_calibrate()
         floppy_confirm_interrupt(&st0, &cylinder);
         if (st0 & 0xC0)
         {
-            logger_log_error("[Floppy] Invalid ST0 after calibration");
+            logger_log_error("[Floppy] Invalid ST0 after calibration. Waiting 10ms...");
+            sleep(10);
 
-            static const char *status[] = {0, "error", "invalid", "drive"};
-            logger_log_error(status[st0 >> 6]);
-            //return false;
+            continue;
         }
 
         if (cylinder == 0)
         {
             return true;
         }
-
-        sleep(10);
     }
 
-    floppy_disable_motor();
+    logger_log_error("[Floppy] Calibration timeout.");
     return false;
 }
 
@@ -195,10 +216,10 @@ void floppy_enable_motor()
     {
         // Enable floppy motor (reset (0x04) | Drive 0 Motor (0x10))
         io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x1C);
-        sleep(1000);
+        sleep(500);
 
         motor_enabled = true;
-        logger_log_warning("[Floppy] Floppy enabled");
+        logger_log_warning("[Floppy] Floppy motor enabled");
     }
 
     time_of_last_activity = timer_get_system_clock();
@@ -212,7 +233,7 @@ void floppy_disable_motor()
         io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x0C);
 
         motor_enabled = false;
-        logger_log_warning("[Floppy] Floppy disabled");
+        logger_log_warning("[Floppy] Floppy motor disabled");
     }
 }
 
@@ -224,8 +245,8 @@ uint8_t *floppy_read_sector(uint16_t sector)
     uint8_t *ptr;
     while (ptr = floppy_do_operation_on_sector(head, track, true_sector, true), ptr == NULL)
     {
-        logger_log_error("[Floppy] Read failed, waiting 5000 ms");
-        sleep(5000);
+        logger_log_error("[Floppy] Read failed, waiting 100 ms");
+        sleep(100);
     }
 
     return ptr + 0xc0000000;
@@ -242,17 +263,19 @@ void floppy_write_sector(uint16_t sector, uint8_t *content)
 
 uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sector, bool read)
 {
+    // Run floppy motor and wait some time
+    floppy_enable_motor();
+
     for (int i = 0; i < 100; i++)
     {
-        // Run floppy motor and wait some time
-        floppy_enable_motor();
-
         // Init DMA
         floppy_dma_init(read);
 
         if (!floppy_seek(track, head))
         {
-            logger_log_error("[Floppy] Seek failure");
+            logger_log_error("[Floppy] Seek failure. Waiting 10ms...");
+            sleep(10);
+
             continue;
         }
 
@@ -291,6 +314,7 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
 
         // Wait for interrupt
         floppy_wait_for_interrupt();
+
         // Read command status
         uint8_t st0 = floppy_read_data();
         uint8_t st1 = floppy_read_data();
@@ -373,22 +397,26 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
             output[79] = 0;
             logger_log_info(output);
 
-            if (i > 5)
+            for (int i = 0; i < 100; i++)
             {
-                if (!floppy_reset())
+                if (!floppy_calibrate())
                 {
-                    logger_log_error("[Floppy] Reset failure");
+                    logger_log_error("[Floppy] Calibration failure. Waiting 10 ms...");
+                    sleep(10);
                 }
-                logger_log_warning("[Floppy] Reset done");
+
+                if (i + 1 == 100)
+                {
+                    logger_log_error("[Floppy] Calibration timeout.");
+                    return false;
+                }
             }
 
-            if (!floppy_calibrate())
-            {
-                logger_log_error("[Floppy] Calibration failure");
-            }
+            logger_log_info("[Floppy] Calibration done");
 
-            logger_log_warning("[Floppy] Recalibration done, waiting 2s");
-            sleep(2000);
+            logger_log_warning("[Floppy] Recalibration done, waiting 100ms...");
+            sleep(100);
+
             continue;
         }
 
@@ -398,21 +426,15 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
     return NULL;
 }
 
-bool floppy_seek(uint32_t cylinder, uint32_t head)
+bool floppy_seek(uint8_t cylinder, uint8_t head)
 {
     uint8_t st0, interrupt_cylinder;
 
-    if (cylinder == 1)
-    {
-        int a = 1;
-        a++;
-    }
-
-    for (int i = 0; i < 1000; i++)
+    for (int i = 0; i < 100; i++)
     {
         // Send seek command
         floppy_send_command(0xf);
-        floppy_send_command((head) << 2 | DEVICE_NUMBER);
+        floppy_send_command((head << 2) | DEVICE_NUMBER);
         floppy_send_command(cylinder);
 
         // Wait for interrupt
@@ -420,9 +442,8 @@ bool floppy_seek(uint32_t cylinder, uint32_t head)
         floppy_confirm_interrupt(&st0, &interrupt_cylinder);
         if (st0 & 0xC0)
         {
-            logger_log_error("[Floppy] Invalid ST0 after seek");
-            static const char *status[] = {0, "error", "invalid", "drive"};
-            logger_log_error(status[st0 >> 6]);
+            logger_log_error("[Floppy] Invalid ST0 after seek. Waiting 10ms...");
+            sleep(10);
         }
 
         if (interrupt_cylinder == cylinder)
@@ -430,10 +451,9 @@ bool floppy_seek(uint32_t cylinder, uint32_t head)
             sleep(50);
             return true;
         }
-
-        sleep(10);
     }
 
+    logger_log_error("[Floppy] Seek timeout.");
     return false;
 }
 

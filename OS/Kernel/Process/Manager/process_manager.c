@@ -21,6 +21,9 @@ void process_manager_init()
 
 uint32_t process_manager_create_process(char *path, char *parameters)
 {
+    logger_log_ok("Loading...");
+    logger_log_ok(path);
+
     uint32_t path_length = strlen(path) + 1;
     uint32_t parameters_length = strlen(parameters) + 1;
 
@@ -44,21 +47,31 @@ uint32_t process_manager_create_process(char *path, char *parameters)
 
     paging_set_page_directory(process->page_directory);
 
+    logger_log_ok("Memory set");
+
     filesystem_file_info process_file_info;
     fat_generic_get_file_info(path_in_kernel_heap, &process_file_info);
 
+    logger_log_ok("File info loaded");
+
     uint8_t *process_content = heap_kernel_alloc(process_file_info.size, 0);
     fat_read_file(path_in_kernel_heap, process_content, 0, process_file_info.size);
+
+    logger_log_ok("File content loaded");
 
     elf_header *app_header = elf_get_header(process_content);
     uint32_t initial_page = elf_loader_load(process_content);
     process->size_in_memory = elf_get_total_size_in_memory(process_content);
 
+    char buf[32];
+    logger_log_ok("Size in memory:");
+    logger_log_ok(itoa(process->size_in_memory, buf, 10));
+
     uint32_t stack_align = 4 - (process->size_in_memory % 4);
     process->user_stack = (void *)(initial_page * 1024 * 1024 * 4 + process->size_in_memory + stack_align) + 1024 * 1024;
     process->heap = (void *)((uint32_t)process->user_stack) + 4;
 
-    heap_entry* old_heap = heap_get_user_heap();
+    heap_entry *old_heap = heap_get_user_heap();
     heap_set_user_heap((void *)(process->heap));
     heap_init_user_heap();
 
@@ -99,6 +112,8 @@ uint32_t process_manager_create_process(char *path, char *parameters)
 
     paging_set_page_directory(page_directory);
     heap_set_user_heap(old_heap);
+
+    logger_log_ok("Process loading done!");
     return process->id;
 }
 
@@ -343,5 +358,6 @@ void process_manager_keyboard_interrupt_handler(interrupt_state *state)
 
 void process_manager_run()
 {
+    logger_log_ok("Process manager start!");
     run_scheduler_on_next_interrupt = true;
 }

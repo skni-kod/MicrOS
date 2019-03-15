@@ -45,7 +45,7 @@ void floppy_write_sector(uint16_t sector, uint8_t *content);
 uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sector, bool read);
 void floppy_enable_motor();
 void floppy_disable_motor();
-bool floppy_seek(uint32_t cylinder, uint32_t head);
+bool floppy_seek(uint8_t cylinder, uint8_t head);
 
 void floppy_dma_init(bool read);
 
