@@ -157,6 +157,9 @@ main_protected_area:
     mov ax, 0x10
     mov ds, ax
     mov ss, ax
+    
+    call clear_page_directory
+    call clear_page_tables
 
     call create_page_directory
     call create_identity_page_table
@@ -176,6 +179,43 @@ main_protected_area:
 
     ; Something went wrong, but no problem!
     JMP $
+    
+; Output: nothing
+clear_page_directory:
+    ; Index
+    mov eax, 0
+
+    clear_page_directory_loop:
+    ; Clear entry
+    mov [PAGE_DIRECTORY_BASE + eax], byte 0
+
+    ; Increment index
+    inc eax
+
+    ; Leave loop if we cleared all entries
+    cmp eax, 0x1000
+    jl clear_page_directory_loop
+
+    ret
+
+; Input: nothing
+; Output: nothing
+clear_page_tables:
+    ; Index
+    mov eax, 0
+
+    clear_page_tables_loop:
+    ; Clear entry
+    mov [0x01100000 + eax], byte 0
+
+    ; Increment index
+    inc eax
+
+    ; Leave loop if we cleared all entries
+    cmp eax, 0x400000
+    jl clear_page_tables_loop
+
+    ret
 
 ; Input: nothing
 ; Output: nothing
