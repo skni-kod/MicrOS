@@ -10,6 +10,10 @@
 
 [BITS 16]
 
+%define PAGE_DIRECTORY_BASE 0x00006000
+%define PAGE_TABLES_BASE 0x01100000
+%define PAGES_COUNT 6
+
 jmp main
 
 ; Entry frame: https://wiki.osdev.org/GDT
@@ -165,7 +169,7 @@ main_protected_area:
 
     ; Init FPU
     finit
-
+    
     ; Jump to kmain and start kernel work
     extern kmain
     call kmain
@@ -185,14 +189,14 @@ create_page_directory:
     ; Add temporary identity entry (physical address: 0x00000000, virtual address: 0x00000000, 24 MB)
     %assign i 0 
     %rep    6 
-    page_directory_definition 0x01100000 + (i * 0x1000), 0x00006000, i
+    page_directory_definition PAGE_TABLES_BASE + (i * 0x1000), PAGE_DIRECTORY_BASE, i
     %assign i i+4 
     %endrep
 
     ; Add kernel entry (physical address: 0x00000000, virtual address: 0xC0000000, 24 MB)
     %assign i 0 
     %rep    6 
-    page_directory_definition 0x01400000 + (i * 0x1000), 0x00006C00, i
+    page_directory_definition PAGE_TABLES_BASE + 0x00300000 + (i * 0x1000), PAGE_DIRECTORY_BASE + 0xC00, i
     %assign i i+4 
     %endrep
 
@@ -213,14 +217,16 @@ create_identity_page_table:
     or ecx, 3
     
     ; Set entry
-    mov [0x01100000 + eax*4], ecx
+    mov [PAGE_TABLES_BASE + eax*4], ecx
+    
+    invlpg [PAGE_TABLES_BASE + eax*4]
 
     ; Go to the next entry
     add ebx, 0x1000
     inc eax
 
     ; Leave loop if we filled all entries for the first 6 megabytes
-    cmp eax, 0x6000
+    cmp eax, PAGES_COUNT * 0x1000
     jl fill_identity_page_table_loop
 
     ret
@@ -240,14 +246,14 @@ create_kernel_page_table:
     or ecx, 3
     
     ; Set entry
-    mov [0x01400000 + eax*4], ecx
+    mov [PAGE_TABLES_BASE + 0x00300000 + eax*4], ecx
 
     ; Go to the next entry
     add ebx, 0x1000
     inc eax
 
     ; Leave loop if we filled all entries for the first megabyte
-    cmp eax, 0x6000
+    cmp eax, PAGES_COUNT * 0x1000
     jl fill_kernel_page_table_loop
 
     ret
@@ -256,12 +262,20 @@ create_kernel_page_table:
 ; Output: nothing
 enable_paging:
     ; Set address of the directory table
-    mov eax, 0x00006000
+    mov eax, PAGE_DIRECTORY_BASE
     mov cr3, eax
 
     ; Enable paging
     mov eax, cr0
     or eax, 0x80000001
     mov cr0, eax
+
+    jmp .branch
+    nop
+    nop
+    nop
+    nop
+    nop
+    .branch:
 
     ret
