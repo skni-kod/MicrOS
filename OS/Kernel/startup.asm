@@ -188,16 +188,16 @@ create_page_directory:
     
     ; Add temporary identity entry (physical address: 0x00000000, virtual address: 0x00000000, 24 MB)
     %assign i 0 
-    %rep    6 
-    page_directory_definition PAGE_TABLES_BASE + (i * 0x1000), PAGE_DIRECTORY_BASE, i
-    %assign i i+4 
+    %rep    PAGES_COUNT 
+    page_directory_definition PAGE_TABLES_BASE + (i * 0x1000), PAGE_DIRECTORY_BASE, i * 4
+    %assign i i+1 
     %endrep
 
     ; Add kernel entry (physical address: 0x00000000, virtual address: 0xC0000000, 24 MB)
     %assign i 0 
-    %rep    6 
-    page_directory_definition PAGE_TABLES_BASE + 0x00300000 + (i * 0x1000), PAGE_DIRECTORY_BASE + 0xC00, i
-    %assign i i+4 
+    %rep    PAGES_COUNT 
+    page_directory_definition PAGE_TABLES_BASE + 0x00300000 + (i * 0x1000), PAGE_DIRECTORY_BASE + 0xC00, i * 4
+    %assign i i+1 
     %endrep
 
     ret
@@ -218,8 +218,6 @@ create_identity_page_table:
     
     ; Set entry
     mov [PAGE_TABLES_BASE + eax*4], ecx
-    
-    invlpg [PAGE_TABLES_BASE + eax*4]
 
     ; Go to the next entry
     add ebx, 0x1000
