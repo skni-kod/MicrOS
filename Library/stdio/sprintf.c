@@ -1,7 +1,8 @@
 #include <stdarg.h>
-#include "stdlib.h"
-#include "string.h"
-#include "math.h"
+#include "../stdlib.h"
+#include "../string.h"
+#include "../math.h"
+#include "../stdio.h"
 
 #define FLAGS_ZEROPAD (1U << 0U)
 #define FLAGS_LEFT (1U << 1U)
@@ -116,7 +117,7 @@ char *_ftoa(float number, char *buffer, unsigned short flags, int precision)
     return buffer;
 }
 
-void _put_unsigned_integer(char *str, int *put_idx, unsigned int number, unsigned short flags, int base, int width, int precision)
+void _put_unsigned_integer(FILE *stream, int *put_idx, unsigned int number, unsigned short flags, int base, int width, int precision)
 {
     int int_len = _unsigned_number_len(number, base); // length of the number
 
@@ -150,18 +151,21 @@ void _put_unsigned_integer(char *str, int *put_idx, unsigned int number, unsigne
     {
         for (int i = space_count; i > 0; i--)
         {
-            str[(*put_idx)++] = prepadding_character;
+            fputc(prepadding_character, stream);
+            (*put_idx)++;
         }
     }
 
     // Sign or Space
     if (flags & FLAGS_PLUS)
     {
-        str[(*put_idx)++] = '+';
+        fputc('+', stream);
+        (*put_idx)++;
     }
     else if (flags & FLAGS_SPACE)
     {
-        str[(*put_idx)++] = ' ';
+        fputc(' ', stream);
+        (*put_idx)++;
     }
 
     // 0x and 0
@@ -169,25 +173,31 @@ void _put_unsigned_integer(char *str, int *put_idx, unsigned int number, unsigne
     {
         if (base == 8)
         {
-            str[(*put_idx)++] = '0';
+            fputc('0', stream);
+            (*put_idx)++;
         }
         else if (base == 16)
         {
-            str[(*put_idx)++] = '0';
-            str[(*put_idx)++] = flags & FLAGS_UPPERCASE ? 'X' : 'x';
+            fputc('0', stream);
+            (*put_idx)++;
+
+            fputc(flags & FLAGS_UPPERCASE ? 'X' : 'x', stream);
+            (*put_idx)++;
         }
     }
 
     // Zeros
     for (int i = zeros_count; i > 0; i--)
     {
-        str[(*put_idx)++] = '0';
+        fputc('0', stream);
+        (*put_idx)++;
     }
 
     // Actual number
     for (int i = 0; number_buf[i] != '\0'; i++)
     {
-        str[(*put_idx)++] = number_buf[i];
+        fputc(number_buf[i], stream);
+        (*put_idx)++;
     }
 
     // Post padding
@@ -195,14 +205,15 @@ void _put_unsigned_integer(char *str, int *put_idx, unsigned int number, unsigne
     {
         for (int i = space_count; i > 0; i--)
         {
-            str[(*put_idx)++] = ' ';
+            fputc(' ', stream);
+            (*put_idx)++;
         }
     }
 
     free(number_buf);
 }
 
-void _put_signed_integer(char *str, int *put_idx, int number, unsigned short flags, int base, int width, int precision)
+void _put_signed_integer(FILE *stream, int *put_idx, int number, unsigned short flags, int base, int width, int precision)
 {
     bool negative = false;
     if (number < 0)
@@ -230,34 +241,40 @@ void _put_signed_integer(char *str, int *put_idx, int number, unsigned short fla
     {
         for (int i = space_count; i > 0; i--)
         {
-            str[(*put_idx)++] = prepadding_character;
+            fputc(prepadding_character, stream);
+            (*put_idx)++;
         }
     }
 
     // Sign
     if (negative)
     {
-        str[(*put_idx)++] = '-';
+        fputc('-', stream);
+        (*put_idx)++;
     }
     else if (flags & FLAGS_PLUS)
     {
-        str[(*put_idx)++] = '+';
+        fputc('+', stream);
+        (*put_idx)++;
     }
     else if (flags & FLAGS_SPACE)
     {
-        str[(*put_idx)++] = ' ';
+        fputc(' ', stream);
+        (*put_idx)++;
     }
 
     // Zeros
     for (int i = zeros_count; i > 0; i--)
     {
-        str[(*put_idx)++] = '0';
+        fputc('0', stream);
+        (*put_idx)++;
     }
 
     // Actual number
     for (int i = 0; number_buf[i] != '\0'; i++)
     {
-        str[(*put_idx)++] = number_buf[i];
+        fputc(number_buf[i], stream);
+        (*put_idx)++;
     }
 
     // Post padding
@@ -265,14 +282,15 @@ void _put_signed_integer(char *str, int *put_idx, int number, unsigned short fla
     {
         for (int i = space_count; i > 0; i--)
         {
-            str[(*put_idx)++] = ' ';
+            fputc(' ', stream);
+            (*put_idx)++;
         }
     }
 
     free(number_buf);
 }
 
-void _put_float(char *str, int *put_idx, float number, unsigned short flags, int width, int precision)
+void _put_float(FILE *stream, int *put_idx, float number, unsigned short flags, int width, int precision)
 {
     bool negative = number < 0;
     if (negative)
@@ -298,41 +316,47 @@ void _put_float(char *str, int *put_idx, float number, unsigned short flags, int
         char pad_char = ((flags & FLAGS_ZEROPAD) ? '0' : ' ');
         for (int i = 0; i < num_spaces; i++)
         {
-            str[(*put_idx)++] = pad_char;
+            fputc(pad_char, stream);
+            (*put_idx)++;
         }
     }
 
     if (negative)
     {
-        str[(*put_idx)++] = '-';
+        fputc('-', stream);
+        (*put_idx)++;
     }
     else if (flags & FLAGS_PLUS)
     {
-        str[(*put_idx)++] = '+';
+        fputc('+', stream);
+        (*put_idx)++;
     }
     else if (flags & FLAGS_SPACE)
     {
-        str[(*put_idx)++] = ' ';
+        fputc(' ', stream);
+        (*put_idx)++;
     }
 
     int idx = 0;
     while (num_buff[idx] != '\0')
     {
-        str[(*put_idx)++] = num_buff[idx++];
+        fputc(num_buff[idx++], stream);
+        (*put_idx)++;
     }
 
     if (flags & FLAGS_LEFT)
     {
         for (int i = 0; i < num_spaces; i++)
         {
-            str[(*put_idx)++] = ' ';
+            fputc(' ', stream);
+            (*put_idx)++;
         }
     }
 
     free(num_buff);
 }
 
-void _put_scientific_notation(char *str, int *put_idx, double number, unsigned short flags, int width, int precision)
+void _put_scientific_notation(FILE *stream, int *put_idx, double number, unsigned short flags, int width, int precision)
 {
     int exponent = 0;
     int exponent_len = _unsigned_number_len(exponent, 10);
@@ -380,32 +404,38 @@ void _put_scientific_notation(char *str, int *put_idx, double number, unsigned s
         char pad_char = ((flags & FLAGS_ZEROPAD) ? '0' : ' ');
         for (int i = 0; i < num_spaces; i++)
         {
-            str[(*put_idx)++] = pad_char;
+            fputc(pad_char, stream);
+            (*put_idx)++;
         }
     }
 
     // SIGN
     if (negative)
     {
-        str[(*put_idx)++] = '-';
+        fputc('-', stream);
+        (*put_idx)++;
     }
     else if (flags & FLAGS_PLUS)
     {
-        str[(*put_idx)++] = '+';
+        fputc('+', stream);
+        (*put_idx)++;
     }
     else if (flags & FLAGS_SPACE)
     {
-        str[(*put_idx)++] = ' ';
+        fputc(' ', stream);
+        (*put_idx)++;
     }
 
     // Actual number
     // We know that number must have 1 digit before decimal point
     // So we just cast it to int and make char from it
-    str[(*put_idx)++] = (int)number + '0';
+    fputc((int)number + '0', stream);
+    (*put_idx)++;
 
     if (precision != 0 || flags & FLAGS_HASH)
     {
-        str[(*put_idx)++] = '.';
+        fputc('.', stream);
+        (*put_idx)++;
     }
 
     // Digits after decimal point
@@ -419,21 +449,26 @@ void _put_scientific_notation(char *str, int *put_idx, double number, unsigned s
     int idx = 0;
     while (num_buff[idx] != '\0')
     {
-        str[(*put_idx)++] = num_buff[idx++];
+        fputc(num_buff[idx++], stream);
+        (*put_idx)++;
     }
 
     // Exponent
-    str[(*put_idx)++] = (flags & FLAGS_UPPERCASE ? 'E' : 'e');
+    fputc((flags & FLAGS_UPPERCASE ? 'E' : 'e'), stream);
+    (*put_idx)++;
 
     // Exponent sign
     if (exponent < 0)
     {
-        str[(*put_idx)++] = '-';
+        fputc('-', stream);
+        (*put_idx)++;
+
         exponent *= -1;
     }
     else
     {
-        str[(*put_idx)++] = '+';
+        fputc('+', stream);
+        (*put_idx)++;
     }
 
     num_buff = realloc(num_buff, sizeof(char) * (exponent_len + 1));
@@ -442,14 +477,16 @@ void _put_scientific_notation(char *str, int *put_idx, double number, unsigned s
     idx = 0;
     while (num_buff[idx] != '\0')
     {
-        str[(*put_idx)++] = num_buff[idx++];
+        fputc(num_buff[idx++], stream);
+        (*put_idx)++;
     }
 
     if (flags & FLAGS_LEFT)
     {
         for (int i = 0; i < num_spaces; i++)
         {
-            str[(*put_idx)++] = ' ';
+            fputc(' ', stream);
+            (*put_idx)++;
         }
     }
 
@@ -470,10 +507,8 @@ unsigned int _parse_number_field(const char **str)
 
 // PUBLIC FUNCTIONS
 
-int sprintf(char *str, const char *format, ...)
+int __vfprintf(FILE *stream, const char *format, va_list arg)
 {
-    va_list arg;
-    va_start(arg, format);
 
     int int_arg;
     char *str_arg;
@@ -496,7 +531,8 @@ int sprintf(char *str, const char *format, ...)
 
         if (*traverse != '%')
         {
-            str[put_index++] = *traverse;
+            fputc(*traverse, stream);
+            put_index++;
         }
         else
         {
@@ -622,6 +658,7 @@ int sprintf(char *str, const char *format, ...)
             switch (*traverse)
             {
             case 'c': // CHARACTER
+            {
                 int_arg = va_arg(arg, unsigned int);
 
                 // Right padding
@@ -629,34 +666,38 @@ int sprintf(char *str, const char *format, ...)
                 {
                     for (int i = width_field - 1; i > 0; i--)
                     {
-                        str[put_index++] = ' ';
+                        fputc(' ', stream);
+                        put_index++;
                     }
                 }
 
                 // Put character
-                str[put_index++] = int_arg;
+                fputc(int_arg, stream);
+                put_index++;
 
                 // Left padding
                 if (flags & FLAGS_LEFT)
                 {
                     for (int i = width_field - 1; i > 0; i--)
                     {
-                        str[put_index++] = ' ';
+                        fputc(' ', stream);
+                        put_index++;
                     }
                 }
                 break;
+            }
 
             case 'd': // INTEGER
             case 'i':
                 int_arg = va_arg(arg, int);
 
-                _put_signed_integer(str, &put_index, int_arg, flags, 10, width_field, precision_field);
+                _put_signed_integer(stream, &put_index, int_arg, flags, 10, width_field, precision_field);
                 break;
 
             case 'o': // OCTAL INTEGER
             {
                 int_arg = va_arg(arg, unsigned int);
-                _put_unsigned_integer(str, &put_index, int_arg, flags, 8, width_field, precision_field);
+                _put_unsigned_integer(stream, &put_index, int_arg, flags, 8, width_field, precision_field);
                 break;
             }
 
@@ -675,14 +716,16 @@ int sprintf(char *str, const char *format, ...)
                 {
                     for (int i = (width_field - str_len); i > 0; i--)
                     {
-                        str[put_index++] = ' ';
+                        fputc(' ', stream);
+                        put_index++;
                     }
                 }
 
                 // put arg to buffer
                 for (int i = 0; i < str_len; i++)
                 {
-                    str[put_index++] = str_arg[i];
+                    fputc(str_arg[i], stream);
+                    put_index++;
                 }
 
                 // Left Padding
@@ -690,7 +733,8 @@ int sprintf(char *str, const char *format, ...)
                 {
                     for (int i = (width_field - str_len); i > 0; i--)
                     {
-                        str[put_index++] = ' ';
+                        fputc(' ', stream);
+                        put_index++;
                     }
                 }
                 break;
@@ -700,7 +744,7 @@ int sprintf(char *str, const char *format, ...)
             case 'x':                     // HEX INTEGER
             {
                 int_arg = va_arg(arg, unsigned int);
-                _put_unsigned_integer(str, &put_index, int_arg, flags, 16, width_field, precision_field);
+                _put_unsigned_integer(stream, &put_index, int_arg, flags, 16, width_field, precision_field);
                 break;
             }
 
@@ -709,7 +753,7 @@ int sprintf(char *str, const char *format, ...)
             {
                 float f_arg = va_arg(arg, double);
 
-                _put_float(str, &put_index, f_arg, flags, width_field, precision_field);
+                _put_float(stream, &put_index, f_arg, flags, width_field, precision_field);
 
                 break;
             }
@@ -717,7 +761,7 @@ int sprintf(char *str, const char *format, ...)
             case 'u':
             {
                 int_arg = va_arg(arg, unsigned int);
-                _put_unsigned_integer(str, &put_index, int_arg, flags, 10, width_field, precision_field);
+                _put_unsigned_integer(stream, &put_index, int_arg, flags, 10, width_field, precision_field);
                 break;
             }
 
@@ -726,7 +770,7 @@ int sprintf(char *str, const char *format, ...)
             case 'e':
             {
                 double d_arg = va_arg(arg, double);
-                _put_scientific_notation(str, &put_index, d_arg, flags, width_field, precision_field);
+                _put_scientific_notation(stream, &put_index, d_arg, flags, width_field, precision_field);
                 break;
             }
 
@@ -738,7 +782,7 @@ int sprintf(char *str, const char *format, ...)
                 flags &= ~(FLAGS_ZEROPAD | FLAGS_HASH | FLAGS_PLUS | FLAGS_SPACE);
 
                 precision_field = sizeof(void *) * 2;
-                _put_unsigned_integer(str, &put_index, ptr, flags, 16, width_field, precision_field);
+                _put_unsigned_integer(stream, &put_index, ptr, flags, 16, width_field, precision_field);
                 break;
             }
 
@@ -750,18 +794,37 @@ int sprintf(char *str, const char *format, ...)
             }
 
             case '%':
-                str[put_index++] = '%';
+                fputc('%', stream);
+                put_index++;
+
                 break;
 
             default:
-                str[put_index++] = *traverse;
+                fputc(*traverse, stream);
+                put_index++;
+
                 break;
             }
         }
     }
 
-    str[put_index++] = '\0';
-
     va_end(arg);
     return put_index - 1;
+}
+
+int sprintf(char *str, const char *format, ...)
+{
+    va_list arg;
+    va_start(arg, format);
+
+    FILE *stream = __stdio_create_stream();
+    setvbuf(stream, str, _IOFBF, 0);
+
+    int ret = __vfprintf(stream, format, arg) + 1;
+
+    str[ret] = '\0';
+
+    va_end(arg);
+
+    return ret;
 }
