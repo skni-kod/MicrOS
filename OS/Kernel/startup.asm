@@ -206,7 +206,7 @@ clear_page_tables:
 
     clear_page_tables_loop:
     ; Clear entry
-    mov [0x01100000 + eax], byte 0
+    mov [PAGE_TABLES_BASE + eax], byte 0
 
     ; Increment index
     inc eax
