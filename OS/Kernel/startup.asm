@@ -139,6 +139,9 @@ load_memory_map:
     ; Read memory map
     mov eax, 0xe820
     int 0x15
+    
+    ; Disable interrupts (can be enabled by int 0x15)
+    cli
 
     ; Exit if ebx is equal to zero (reading has ended)
     cmp ebx, 0
