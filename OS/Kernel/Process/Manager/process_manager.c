@@ -209,6 +209,8 @@ void process_manager_switch_to_next_process()
     logger_log_warning("I'm just before stack change.");
     logger_log_warning("Something is fucked up in enter_user_space if you see this message.");
 
+    __asm__(" cli \n hlt \n ");
+
     enter_user_space(&new_process->state);
 }
 
