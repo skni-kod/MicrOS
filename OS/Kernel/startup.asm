@@ -176,55 +176,25 @@ main_protected_area:
 ; Input: nothing
 ; Output: nothing
 create_page_directory:
-    ; Add temporary identity entry (physical address: 0x00000000, virtual address: 0x00000000, 24 MB)
-    ; 0 - 4 MB
-    mov eax, 0x01100003
-    mov [0x00006000], eax
-
-    ; 4 - 8 MB
-    mov eax, 0x01101003
-    mov [0x00006000 + 4], eax
-
-    ; 8 - 12 MB
-    mov eax, 0x01102003
-    mov [0x00006000 + 8], eax
-
-    ; 12 - 16 MB
-    mov eax, 0x01103003
-    mov [0x00006000 + 12], eax
-
-    ; 16 - 20 MB
-    mov eax, 0x01104003
-    mov [0x00006000 + 16], eax
+    ; Page definition macro
+    %macro page_directory_definition 3
+    mov eax, %1 + 3
+    mov [%2 + %3], eax
+    %endmacro
     
-    ; 20 - 24 MB
-    mov eax, 0x01105003
-    mov [0x00006000 + 20], eax
+    ; Add temporary identity entry (physical address: 0x00000000, virtual address: 0x00000000, 24 MB)
+    %assign i 0 
+    %rep    6 
+    page_directory_definition 0x01100000 + (i * 0x1000), 0x00006000, i
+    %assign i i+4 
+    %endrep
 
     ; Add kernel entry (physical address: 0x00000000, virtual address: 0xC0000000, 24 MB)
-    ; 0 - 4 MB
-    mov eax, 0x01400003
-    mov [0x00006000 + 0x300 * 4], eax
-    
-    ; 4 - 8 MB
-    mov eax, 0x01401003
-    mov [0x00006000 + 0x301 * 4], eax
-
-    ; 8 - 12 MB
-    mov eax, 0x01402003
-    mov [0x00006000 + 0x302 * 4], eax
-
-    ; 12 - 16 MB
-    mov eax, 0x01403003
-    mov [0x00006000 + 0x303 * 4], eax
-
-    ; 16 - 20 MB
-    mov eax, 0x01404003
-    mov [0x00006000 + 0x304 * 4], eax
-    
-    ; 20 - 24 MB
-    mov eax, 0x01405003
-    mov [0x00006000 + 0x305 * 4], eax
+    %assign i 0 
+    %rep    6 
+    page_directory_definition 0x01400000 + (i * 0x1000), 0x00006C00, i
+    %assign i i+4 
+    %endrep
 
     ret
 
