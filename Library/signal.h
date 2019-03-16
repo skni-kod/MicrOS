@@ -1,6 +1,8 @@
 #ifndef SIGNAL_H
 #define SIGNAL_H
 
+#include <stdint.h>
+
 //! (Signal Abort) Abnormal termination, such as is initiated by the abort function.
 #define SIGABRT 0
 
@@ -19,15 +21,20 @@
 //! (Signal Terminate) Termination request sent to program.
 #define SIGTERM 5
 
+//! Special return value indicating failure.
+#define SIG_IGN 0
+
 //! Default handling: The signal is handled by the default action for that particular signal.
 #define SIG_DFL 1
 
 //! Ignore Signal: The signal is ignored.
-#define SIG_IGN 2
+#define SIG_ERR 2
 
 //! Integral type.
 /*! Integral type of an object that can be accessed as an atomic entity, even in the presence of asynchronous signals. !*/
 typedef int32_t sig_atomic_t;
+
+extern void (*signal_handlers[5])(int);
 
 //! Set function to handle signal.
 /*!
