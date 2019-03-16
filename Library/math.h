@@ -933,6 +933,15 @@ double hypot(double x, double y);
 */
 float hypotf(float x, float y);
 
+//! Compute hypotenuse.
+/*! 
+    The hypotl functions compute the square root of the sum of the squares of x and y, without undue overflow or underflow. A range error may occur.
+    \param x Floating point value corresponding to the leg of a right-angled triangle for which the hypotenuse is computed.
+    \param y Floating point value corresponding to the leg of a right-angled triangle for which the hypotenuse is computed.
+    \return The hypotl functions return √(x^2+y^2).
+*/
+long double hypotl(long double x, long double y);
+
 // Error and gamma functions
 
 //! Compute error function.
@@ -982,6 +991,54 @@ float erfcf(float x);
     \return Complementary error function value for x.
 */
 long double erfcl(long double x);
+
+//! Compute gamma function.
+/*! 
+    The tgamma functions compute the gamma function of x. A domain error or pole error may occur if x is a negative integer or zero. A range error occurs if the magnitude of x is too large and may occur if the magnitude of x is too small.
+    \param x Parameter for the gamma function.
+    \return The tgamma functions return Γ(x).
+*/
+double tgamma(double x);
+
+//! Compute gamma function.
+/*! 
+    The tgammaf functions compute the gamma function of x. A domain error or pole error may occur if x is a negative integer or zero. A range error occurs if the magnitude of x is too large and may occur if the magnitude of x is too small.
+    \param x Parameter for the gamma function.
+    \return The tgamma functions return Γ(x).
+*/
+float tgammaf(float x);
+
+//! Compute gamma function.
+/*! 
+    The tgammal functions compute the gamma function of x. A domain error or pole error may occur if x is a negative integer or zero. A range error occurs if the magnitude of x is too large and may occur if the magnitude of x is too small.
+    \param x Parameter for the gamma function.
+    \return The tgamma functions return Γ(x).
+*/
+long double tgammal(long double x);
+
+//! Compute gamma function.
+/*! 
+    The lgamma functions compute the natural logarithm of the absolute value of gamma of x. A range error occurs if x is too large. A pole error may occur if x is a negative integer or zero.
+    \param x Parameter for the log-gamma function.
+    \return The lgamma functions return log_e | Γ(x) |.
+*/
+double lgamma(double x);
+
+//! Compute gamma function.
+/*! 
+    The lgammaf functions compute the natural logarithm of the absolute value of gamma of x. A range error occurs if x is too large. A pole error may occur if x is a negative integer or zero.
+    \param x Parameter for the log-gamma function.
+    \return The lgammaf functions return log_e | Γ(x) |.
+*/
+float lgammaf(float x);
+
+//! Compute gamma function.
+/*! 
+    The lgammal functions compute the natural logarithm of the absolute value of gamma of x. A range error occurs if x is too large. A pole error may occur if x is a negative integer or zero.
+    \param x Parameter for the log-gamma function.
+    \return The lgammal functions return log_e | Γ(x) |.
+*/
+long double lgammal(long double x);
 
 // Nearest integer floating-point operations
 
@@ -1337,6 +1394,30 @@ float copysignf(float x, float y);
     \return The copysignl functions return a value with the magnitude of x and the sign of y.
 */  
 long double copysignl(long double x, long double y);
+
+//! Generate quiet NaN.
+/*! 
+    The call nan("n-char-sequence") is equivalent to strtod("NAN(n-charsequence)", (char**) NULL); the call nan("") is equivalent to strtod("NAN()", (char**) NULL). If tagp does not point to an n-char sequence or an empty string, the call is equivalent to strtod("NAN", (char**) NULL). Calls to nanf and nanl are equivalent to the corresponding calls to strtof and strtold.
+    \param arg Narrow character string identifying the contents of a NaN.
+    \return The nan functions return a quiet NaN, if available, with content indicated through tagp. If the implementation does not support quiet NaNs, the functions return zero.
+*/
+double nan(const char* arg);
+
+//! Generate quiet NaN.
+/*! 
+    The call nan("n-char-sequence") is equivalent to strtod("NAN(n-charsequence)", (char**) NULL); the call nan("") is equivalent to strtod("NAN()", (char**) NULL). If tagp does not point to an n-char sequence or an empty string, the call is equivalent to strtod("NAN", (char**) NULL). Calls to nanf and nanl are equivalent to the corresponding calls to strtof and strtold.
+    \param arg Narrow character string identifying the contents of a NaN.
+    \return The nanf functions return a quiet NaN, if available, with content indicated through tagp. If the implementation does not support quiet NaNs, the functions return zero.
+*/
+float nanf(const char* arg);
+
+//! Generate quiet NaN.
+/*! 
+    The call nan("n-char-sequence") is equivalent to strtod("NAN(n-charsequence)", (char**) NULL); the call nan("") is equivalent to strtod("NAN()", (char**) NULL). If tagp does not point to an n-char sequence or an empty string, the call is equivalent to strtod("NAN", (char**) NULL). Calls to nanf and nanl are equivalent to the corresponding calls to strtof and strtold.
+    \param arg Narrow character string identifying the contents of a NaN.
+    \return The nanl functions return a quiet NaN, if available, with content indicated through tagp. If the implementation does not support quiet NaNs, the functions return zero.
+*/
+long double nanl(const char* arg);
 
 //! Next representable value.
 /*! 
