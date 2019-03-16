@@ -1,10 +1,6 @@
 #ifndef STDIO_H
 #define STDIO_H
 
-int sprintf(char* str, const char* format, ...);
-
-int sscanf(const char *str, const char *format, ...);
-
 //! Size of the stream buffer
 #define BUFSIZ 1024 * 32
 
@@ -42,6 +38,7 @@ int sscanf(const char *str, const char *format, ...);
 #define _IOFBF 2
 
 #include <stdint.h>
+#include <stdarg.h>
 #include "stdlib.h"
 
 //! Unsigned integral type.
@@ -341,6 +338,14 @@ int feof(FILE *stream);
     \return A non-zero value is returned in the case that the error indicator associated with the stream is set. Otherwise, zero is returned.
 */
 int ferror(FILE *stream);
+
+int sprintf(char* str, const char* format, ...);
+
+int printf(const char* format, ...);
+
+int fprintf(FILE* file, const char* format, ...);
+
+int __vfprintf(FILE* stream, const char* format, va_list arg);
 
 //! Creates new stream.
 /*!
