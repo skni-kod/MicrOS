@@ -44,6 +44,20 @@ NonDataSectors                  dw 0x0000
 
 ; Entry point of bootloader
 Main:
+    ; Disable interrupts (will be enabled again during kernel initialization sequence)
+    cli
+    
+    ; Clear DF flag in EFLAGS register
+    cld
+    
+    ; Clear segment registers
+    xor ax, ax
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+
     ; Set stack pointer to be directly under bootloader
     ; About 30 KiB of memory is free here
     ; https://wiki.osdev.org/Memory_Map_(x86)

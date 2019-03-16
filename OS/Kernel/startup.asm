@@ -93,9 +93,6 @@ main:
 
     call load_memory_map
 
-    ; Disable interrupts
-    cli
-
     ; Load GDT table
     lgdt [dword gdt_description]
 
@@ -252,7 +249,7 @@ create_identity_page_table:
     add ebx, 0x1000
     inc eax
 
-    ; Leave loop if we filled all entries for the first megabyte
+    ; Leave loop if we filled all entries for the first 6 megabytes
     cmp eax, 0x6000
     jl fill_identity_page_table_loop
 
@@ -293,8 +290,8 @@ enable_paging:
     mov cr3, eax
 
     ; Enable paging
-    mov ebx, cr0
-    or ebx, 0x80000001
-    mov cr0, ebx
+    mov eax, cr0
+    or eax, 0x80000001
+    mov cr0, eax
 
     ret
