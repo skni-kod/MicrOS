@@ -26,12 +26,16 @@ void writeRegistersText(uint8_t *registers);
 void set13HVideoMode();
 void set3HVideoMode();
 void set11HVideoMode();
+void set12HVideoMode();
+void setModeXVideoMode();
 void pixel_13H(unsigned char color, unsigned int x, unsigned int y);
 void pixel_11H(unsigned char color, unsigned int x, unsigned int y);
 void pixel_12H(unsigned char color, unsigned int x, unsigned int y);
 void drawDupaIn13H(int color);
 void drawDupaIn11H(int color);
 void drawDupaIn12H(int color);
+void pixel_ModeX(unsigned char color, unsigned int x, unsigned int y);
+void drawDupaInX(int color);
 
 static void set_plane(unsigned p);
 
