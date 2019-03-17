@@ -34,7 +34,9 @@
 /*! Integral type of an object that can be accessed as an atomic entity, even in the presence of asynchronous signals. !*/
 typedef int32_t sig_atomic_t;
 
-extern void (*signal_handlers[5])(int);
+typedef void (*signal_func)(int);
+
+extern signal_func signal_handlers[5];
 
 //! Set function to handle signal.
 /*!
@@ -43,7 +45,7 @@ extern void (*signal_handlers[5])(int);
     \param func A pointer to a function. This may either be a function defined by the programmer or one of the following predefined functions: SIG_DFL (handle) or SIG_IGN (ignore).
     \return If the request is successful, the function returns a pointer to the particular handler function which was in charge of handling this signal before the call, if any. Or either SIG_DFL or SIG_IGN if before the call the signal was being handled by the default handler or was being ignored, respectivelly. If the function was not successful in registering the new signal handling procedure, it returns SIG_ERR and errno may be set to a positive value.
 */
-void (*signal(int sig, void (*func)(int)))(int);
+void (*signal(int sig, signal_func func))(int);
 
 //! Generates a signal.
 /*!
