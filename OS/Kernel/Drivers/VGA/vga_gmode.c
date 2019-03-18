@@ -59,26 +59,6 @@ uint8_t g_80x25_text[] =
 		0x0C, 0x00, 0x0F, 0x08, 0x00};
 
 //11h
-//unsigned char g_640x480x2[] =
-//{
-/* MISC */
-//	0xE3,
-/* SEQ */
-//	0x03, 0x01, 0x0F, 0x00, 0x06,
-/* CRTC */
-//	0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0x0B, 0x3E,
-//	0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-//	0xEA, 0x0C, 0xDF, 0x28, 0x00, 0xE7, 0x04, 0xE3,
-//	0xFF,
-/* GC */
-//	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x0F,
-//	0xFF,
-/* AC */
-//	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x14, 0x07,
-//	0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F,
-//	0x01, 0x00, 0x0F, 0x00, 0x00
-//};
-
 unsigned char g_640x480x2[] =
 {
 /* MISC */
@@ -99,30 +79,24 @@ unsigned char g_640x480x2[] =
 };
 
 //05h
-/*****************************************************************************
-*** NOTE: the mode described by g_320x200x4[]
-is different from BIOS mode 05h in two ways:
-- Framebuffer is at A000:0000 instead of B800:0000
-- Framebuffer is linear (no screwy line-by-line CGA addressing)
-*****************************************************************************/
-unsigned char g_320x200x4[] =
+unsigned char g_320x200x4b[] =
 {
 /* MISC */
-	0x63,
+	0x63, 
 /* SEQ */
-	0x03, 0x09, 0x03, 0x00, 0x02,
+	0x03, 0x09, 0x03, 0x00, 0x02, 
 /* CRTC */
 	0x2D, 0x27, 0x28, 0x90, 0x2B, 0x80, 0xBF, 0x1F,
-	0x00, 0x41, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x9C, 0x0E, 0x8F, 0x14, 0x00, 0x96, 0xB9, 0xA3,
-	0xFF,
+	0x00, 0xC1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x9C, 0x8E, 0x8F, 0x14, 0x00, 0x96, 0xB9, 0xA2,
+	0xFF, 
 /* GC */
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x02, 0x00,
-	0xFF,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x0F, 0x0F,
+	0xFF, 
 /* AC */
 	0x00, 0x13, 0x15, 0x17, 0x02, 0x04, 0x06, 0x07,
 	0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
-	0x01, 0x00, 0x03, 0x00, 0x00
+	0x01, 0x00, 0x03, 0x00, 0x00, 
 };
 
 //12h
@@ -166,7 +140,7 @@ unsigned char g_640x480x16[] =
 	0x01, 0x00, 0x0F, 0x00, 0x00, 
 };
 
-//Mode X
+//Mode Y
 unsigned char g_320x200x256_modex[] =
 {
 /* MISC */
@@ -568,16 +542,26 @@ void set11HVideoMode()
 void pixel_11H(unsigned char color, unsigned int x, unsigned int y)
 {
 	unsigned char *fb = (unsigned char*)VGA_VRAM;
-	unsigned int offset = y * (640 / 8) + (x / 8);
+	unsigned int offset =(y * 640 + x) / 8;
 	unsigned bit_no = x % 8;
-	bit_write(fb[offset], 1<<(8-bit_no), color ? 1 : 0);
+	bit_write(fb[offset], 1<<(7-bit_no), (color ? 1 : 0));
 }
 
 void set05HVideoMode()
 {
-	memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
-	writeRegisters(g_320x200x4);
+	if(mode == 0x03)
+		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
+	writeRegisters(g_320x200x4b);
 	mode = 0x05;
+}
+
+void pixel_5H(unsigned char color, unsigned int x, unsigned int y)
+{
+	unsigned char *fb = (unsigned char*)VGA_VRAM_2;
+	unsigned int offset = (y/2 * 320 + x)/4;
+	unsigned bit_no = x % 4;
+	bit_write(fb[offset + (y%2 ? 0x2000 : 0)], 1<<(7 - (2 * bit_no)), (color & 0x2));
+	bit_write(fb[offset + (y%2 ? 0x2000 : 0)], 1<<(7 - (2 * bit_no+1)), (color & 0x1));
 }
 
 void set12HVideoMode()
@@ -591,20 +575,20 @@ void set12HVideoMode()
 void pixel_12H(unsigned char color, unsigned int x, unsigned int y)
 {
 	unsigned char *fb = (unsigned char*)VGA_VRAM;
-	unsigned int offset = y * (640 / 2) + (x / 2);
-	unsigned bit_no = x % 2;
-	set_plane(offset % 4);
-	fb[offset / 4] = bit_no ? color << 4: color & 0x0F;
-	/*for(char p = 0; p < 4; p++)
+	unsigned int offset = (y * 640 + x)/8;
+	unsigned bit_no = x % 8;
+	for(char p = 0; p < 4; p++)
 	{
 		set_plane(p);
-		bit_write(fb[offset], 1<<(8-bit_no), (bit_get(color, 1 << p)) ? 1 : 0);
-	}*/
+		bit_write(fb[offset], 1<<(7-bit_no), (bit_get(color, 1 << p)));
+	}
+	set_plane(0);
 }
 
 void setModeXVideoMode()
 {
-	memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
+	if(mode == 0x03)
+		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
 	writeRegisters(g_320x200x256_modex);
 	mode = 0x69;
 }
@@ -772,9 +756,9 @@ void drawDupaIn11H(int color)
 
 void drawDupaIn12H(int color)
 {
-	for (int x = 0; x < 640; x++)
+	for (int y = 0; y < 480; y++)
 	{
-		for (int y = 0; y < 480; y++)
+		for (int x = 0; x < 640; x++)
 			pixel_12H(color, x, y);
 	}
 }
@@ -785,6 +769,15 @@ void drawDupaInX(int color)
 	{
 		for (int y = 0; y < 240; y++)
 			pixel_ModeX(color, x, y);
+	}
+}
+
+void drawDupaIn5H(int color)
+{
+	for (int x = 0; x < 320; x++)
+	{
+		for (int y = 0; y < 200; y++)
+			pixel_5H(color, x, y);
 	}
 }
 

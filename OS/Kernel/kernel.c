@@ -212,11 +212,23 @@ int kmain()
             }
             else if (c.scancode == 63)
             {
-                panic_screen_show(NULL, 0x42, "Someone ask Question about Life, the Universe and Evertything");
+                if (getMode() != 0x11)
+                {
+                    set11HVideoMode();
+                    drawDupaIn11H(0x6);
+                    //pixel_11H(1, 5, 0);
+                }
+                //panic_screen_show(NULL, 0x42, "Someone ask Question about Life, the Universe and Evertything");
             }
             else if (c.scancode == 64)
             {
-                memoryViewer();
+                if (getMode() != 0x5)
+                {
+                    set05HVideoMode();
+                    drawDupaIn5H(0x5);
+                    //pixel_11H(1, 5, 0);
+                }
+                //memoryViewer();
             }
             else
             vga_printchar(c.ascii);

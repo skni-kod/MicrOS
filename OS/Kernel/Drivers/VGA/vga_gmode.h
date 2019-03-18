@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #define VGA_VRAM 0xC00A0000
-#define VGA_VRAM_2 0xC00B0000
+#define VGA_VRAM_2 0xC00B8000
 #define PITCH 320
 
 #define miscPort 0x3c2
@@ -27,13 +27,16 @@ void set13HVideoMode();
 void set3HVideoMode();
 void set11HVideoMode();
 void set12HVideoMode();
+void set05HVideoMode();
 void setModeXVideoMode();
 void pixel_13H(unsigned char color, unsigned int x, unsigned int y);
 void pixel_11H(unsigned char color, unsigned int x, unsigned int y);
 void pixel_12H(unsigned char color, unsigned int x, unsigned int y);
+void pixel_5H(unsigned char color, unsigned int x, unsigned int y);
 void drawDupaIn13H(int color);
 void drawDupaIn11H(int color);
 void drawDupaIn12H(int color);
+void drawDupaIn5H(int color);
 void pixel_ModeX(unsigned char color, unsigned int x, unsigned int y);
 void drawDupaInX(int color);
 
