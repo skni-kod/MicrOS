@@ -5,6 +5,7 @@ void _start(char *path, char *parameters)
     __asm__("finit");
 
     setlocale(LC_ALL, "C");
+    __signal_init();
 
     stdin = __stdio_create_stream();
     streams_set_stream_as_keyboard(stdin);
