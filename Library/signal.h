@@ -21,22 +21,24 @@
 //! (Signal Terminate) Termination request sent to program.
 #define SIGTERM 5
 
-//! Special return value indicating failure.
+//! Ignore Signal: The signal is ignored.
 #define SIG_IGN 0
 
 //! Default handling: The signal is handled by the default action for that particular signal.
 #define SIG_DFL 1
 
-//! Ignore Signal: The signal is ignored.
+//! Special return value indicating failure.
 #define SIG_ERR 2
 
 //! Integral type.
 /*! Integral type of an object that can be accessed as an atomic entity, even in the presence of asynchronous signals. !*/
 typedef int32_t sig_atomic_t;
 
+//! Signal function signature
 typedef void (*signal_func)(int);
 
-extern signal_func signal_handlers[5];
+//! Array containing all signal handlers
+extern signal_func signal_handlers[6];
 
 //! Set function to handle signal.
 /*!
@@ -54,5 +56,53 @@ void (*signal(int sig, signal_func func))(int);
     \return Returns zero if successful, and a value different from zero otherwise.
 */
 int raise(int sig);
+
+//! Default signal handle for SIGABRT.
+/*!
+    This handler can be set by passing SIG_DFL in sig parameter in signal function.
+    \param param Signal parameter.
+*/
+void default_sigabrt_handler(int param);
+
+//! Default signal handle for SIGFPE.
+/*!
+    This handler can be set by passing SIG_DFL in sig parameter in signal function.
+    \param param Signal parameter.
+*/
+void default_sigfpe_handler(int param);
+
+//! Default signal handle for SIGILL.
+/*!
+    This handler can be set by passing SIG_DFL in sig parameter in signal function.
+    \param param Signal parameter.
+*/
+void default_sigill_handler(int param);
+
+//! Default signal handle for SIGINT.
+/*!
+    This handler can be set by passing SIG_DFL in sig parameter in signal function.
+    \param param Signal parameter.
+*/
+void default_sigint_handler(int param);
+
+//! Default signal handle for SIGSEGV.
+/*!
+    This handler can be set by passing SIG_DFL in sig parameter in signal function.
+    \param param Signal parameter.
+*/
+void default_sigsegv_handler(int param);
+
+//! Default signal handle for SIGTERM.
+/*!
+    This handler can be set by passing SIG_DFL in sig parameter in signal function.
+    \param param Signal parameter.
+*/
+void default_sigterm_handler(int param);
+
+//! Initialize default signal handlers.
+/*!
+    Assign default signal handlers to the internal array.
+*/
+void __signal_init();
 
 #endif
