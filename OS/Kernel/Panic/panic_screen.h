@@ -30,4 +30,6 @@ void panic_screen_display_system_clock(uint32_t system_clock);
 void panic_screen_display_fpu_control_word(uint32_t control_word);
 void panic_screen_display_fpu_status_word(uint32_t status_word);
 
+void panic_screen_display_flag_tags(uint32_t value, char **tags);
+
 #endif
