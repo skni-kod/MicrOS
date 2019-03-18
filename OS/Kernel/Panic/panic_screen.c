@@ -79,7 +79,7 @@ void panic_screen_display_diagnostic_view(exception_state *state, uint32_t syste
     panic_screen_display_register_state("edx", state->registers.edx, true);
     panic_screen_display_register_state("esi", state->registers.esi, true);
     panic_screen_display_register_state("edi", state->registers.edi, true);
-    panic_screen_display_register_state("esp", state->registers.esp_unused + STACK_POINTER_OFFSET, true);
+    panic_screen_display_register_state("esp", state->esp, true);
     panic_screen_display_register_state("eip", state->eip, true);
     vga_printstring("\n");
 
@@ -98,7 +98,7 @@ void panic_screen_display_diagnostic_view(exception_state *state, uint32_t syste
     panic_screen_display_descriptor_table("gdtr", state->gdtr, sizeof(gdt_entry));
     panic_screen_display_descriptor_table("idtr", state->idtr, sizeof(idt_entry));
 
-    panic_screen_display_stack(state->registers.esp_unused + STACK_POINTER_OFFSET);
+    panic_screen_display_stack(state->esp);
     panic_screen_display_system_clock(system_clock);
 
     vga_set_cursor_pos(45, 17);

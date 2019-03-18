@@ -77,7 +77,6 @@ idt_exc_wrapper:
   store_register cr3
   store_register cr4
   store_register es
-  store_register ss
   store_register fs
   store_register gs
   
