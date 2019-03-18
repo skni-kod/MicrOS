@@ -28,15 +28,18 @@ void set3HVideoMode();
 void set11HVideoMode();
 void set12HVideoMode();
 void set05HVideoMode();
+void set04HVideoMode();
 void setModeXVideoMode();
 void pixel_13H(unsigned char color, unsigned int x, unsigned int y);
 void pixel_11H(unsigned char color, unsigned int x, unsigned int y);
 void pixel_12H(unsigned char color, unsigned int x, unsigned int y);
 void pixel_5H(unsigned char color, unsigned int x, unsigned int y);
+void pixel_4H(unsigned char color, unsigned int x, unsigned int y);
 void drawDupaIn13H(int color);
 void drawDupaIn11H(int color);
 void drawDupaIn12H(int color);
 void drawDupaIn5H(int color);
+void drawDupaIn4H(int color);
 void pixel_ModeX(unsigned char color, unsigned int x, unsigned int y);
 void drawDupaInX(int color);
 

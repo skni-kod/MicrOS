@@ -230,6 +230,16 @@ int kmain()
                 }
                 //memoryViewer();
             }
+            else if (c.scancode == 65)
+            {
+                if (getMode() != 0x4)
+                {
+                    set04HVideoMode();
+                    drawDupaIn4H(0x2);
+                    //pixel_11H(1, 5, 0);
+                }
+                //memoryViewer();
+            }
             else
             vga_printchar(c.ascii);
         }
