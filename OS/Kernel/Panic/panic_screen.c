@@ -51,8 +51,7 @@ void panic_screen_display_intro(exception_state *state, uint32_t code, const cha
         vga_printchar('\n');
     }
     vga_printstring("Robimy to z bolem serca, ale musimy Ciebie o tym poinformowac... Zjebalo sie.\n");
-    vga_printstring("0x");
-    vga_printstring(itoa(code, buff, 16));
+    vga_printstring(panic_screen_value_to_string(buff, code));
     vga_printchar(' ');
     if (optString != 0x0)
     {
@@ -103,10 +102,13 @@ void panic_screen_display_diagnostic_view(exception_state *state, uint32_t syste
     panic_screen_display_stack(valid_esp, panic_screen_is_privilege_level_changed(state));
     panic_screen_display_system_clock(system_clock);
 
-    vga_set_cursor_pos(45, 17);
+    vga_set_cursor_pos(45, 16);
     vga_printstring("FPU:");
     panic_screen_display_fpu_control_word(state->fpu_state.control_word);
     panic_screen_display_fpu_status_word(state->fpu_state.status_word);
+
+    vga_set_cursor_pos(45, 20);
+    panic_screen_display_register_state("opcode", state->fpu_state.opcode, true);
 
     vga_set_cursor_pos(0, 27);
     vga_printchar(' ');
@@ -146,7 +148,7 @@ char *panic_screen_value_to_string(char *buffer, unsigned int value)
     return buffer;
 }
 
-void panic_screen_display_register_state(char *register_name, int value, bool new_line)
+void panic_screen_display_register_state(char *register_name, unsigned int value, bool new_line)
 {
     char buffer[32] = {0};
     vga_printstring(register_name);
@@ -281,7 +283,7 @@ void panic_screen_display_stack(uint32_t esp, bool user_stack)
     vga_set_cursor_pos(45, 0);
     vga_printstring(user_stack ? "USER stack:\n" : "KERNEL stack:\n");
 
-    for (int i = 2; i < 15; i++)
+    for (int i = 2; i < 14; i++)
     {
         vga_set_cursor_pos(45, i);
 
@@ -330,9 +332,9 @@ void panic_screen_display_fpu_control_word(uint32_t control_word)
 {
     char buffer[16] = {0};
 
-    vga_set_cursor_pos(45, 19);
+    vga_set_cursor_pos(45, 18);
     vga_printstring("cw: 0x");
-    vga_printstring(itoa(control_word, buffer, 10));
+    vga_printstring(panic_screen_value_to_string(buffer, control_word));
 
     vga_printstring(" [");
     if (control_word & (1 << 0))
@@ -354,9 +356,9 @@ void panic_screen_display_fpu_status_word(uint32_t status_word)
 {
     char buffer[16] = {0};
 
-    vga_set_cursor_pos(45, 20);
+    vga_set_cursor_pos(45, 19);
     vga_printstring("sw: 0x");
-    vga_printstring(itoa(status_word, buffer, 10));
+    vga_printstring(panic_screen_value_to_string(buffer, status_word));
 
     vga_printstring(" [");
     if (status_word & (1 << 0))

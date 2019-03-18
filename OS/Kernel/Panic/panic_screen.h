@@ -18,7 +18,7 @@ void panic_screen_wait_for_key_press();
 void panic_screen_display_diagnostic_view(exception_state *state, uint32_t system_clock);
 bool panic_screen_is_privilege_level_changed(exception_state *state);
 char *panic_screen_value_to_string(char *buffer, unsigned int value);
-void panic_screen_display_register_state(char *register_name, int value, bool new_line);
+void panic_screen_display_register_state(char *register_name, unsigned int value, bool new_line);
 
 void panic_screen_display_eflags(uint32_t eflags);
 void panic_screen_display_cr0(uint32_t cr0);
