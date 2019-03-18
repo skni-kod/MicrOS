@@ -71,6 +71,8 @@ void panic_screen_wait_for_key_press()
 }
 void panic_screen_display_diagnostic_view(exception_state *state, uint32_t system_clock)
 {
+    uint32_t valid_esp = panic_screen_is_privilege_level_changed(state) ? state->esp : state->registers.esp_unused + STACK_POINTER_OFFSET;
+
     vga_clear_screen();
     vga_printstring("Registers:\n\n");
     panic_screen_display_register_state("eax", state->registers.eax, true);
@@ -79,7 +81,7 @@ void panic_screen_display_diagnostic_view(exception_state *state, uint32_t syste
     panic_screen_display_register_state("edx", state->registers.edx, true);
     panic_screen_display_register_state("esi", state->registers.esi, true);
     panic_screen_display_register_state("edi", state->registers.edi, true);
-    panic_screen_display_register_state("esp", state->esp, true);
+    panic_screen_display_register_state("esp", valid_esp, true);
     panic_screen_display_register_state("eip", state->eip, true);
     vga_printstring("\n");
 
@@ -98,7 +100,7 @@ void panic_screen_display_diagnostic_view(exception_state *state, uint32_t syste
     panic_screen_display_descriptor_table("gdtr", state->gdtr, sizeof(gdt_entry));
     panic_screen_display_descriptor_table("idtr", state->idtr, sizeof(idt_entry));
 
-    panic_screen_display_stack(state->esp);
+    panic_screen_display_stack(valid_esp, panic_screen_is_privilege_level_changed(state));
     panic_screen_display_system_clock(system_clock);
 
     vga_set_cursor_pos(45, 17);
@@ -109,6 +111,11 @@ void panic_screen_display_diagnostic_view(exception_state *state, uint32_t syste
     vga_set_cursor_pos(0, 27);
     vga_printchar(' ');
     __asm__("hlt");
+}
+
+bool panic_screen_is_privilege_level_changed(exception_state *state)
+{
+    return state->ds == state->ss;
 }
 
 char *panic_screen_value_to_string(char *buffer, unsigned int value)
@@ -266,13 +273,13 @@ void panic_screen_display_cr4(uint32_t cr4)
     vga_printstring(" ]\n");
 }
 
-void panic_screen_display_stack(uint32_t esp)
+void panic_screen_display_stack(uint32_t esp, bool user_stack)
 {
     char buffer[16] = {0};
     uint32_t *addr = (uint32_t *)esp;
 
     vga_set_cursor_pos(45, 0);
-    vga_printstring("Stack:\n");
+    vga_printstring(user_stack ? "USER stack:\n" : "KERNEL stack:\n");
 
     for (int i = 2; i < 15; i++)
     {
