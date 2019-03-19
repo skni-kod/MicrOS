@@ -173,6 +173,8 @@ void process_manager_switch_to_next_process()
         }
     }
 
+    io_disable_interrupts();
+
     process_info *old_process = processes.data[current_process_id];
 
     current_process_id = new_process_id;
