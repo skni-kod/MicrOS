@@ -21,7 +21,6 @@ void process_manager_init()
 
 uint32_t process_manager_create_process(char *path, char *parameters)
 {
-    logger_log_ok("Loading...");
     logger_log_ok(path);
 
     uint32_t path_length = strlen(path) + 1;
@@ -143,25 +142,15 @@ void process_manager_switch_to_next_process()
     uint32_t new_process_id = current_process_id;
     process_info *new_process = NULL;
 
-    logger_log_warning("process_manager_switch_to_next_process");
-
     while (1)
     {
         new_process_id = (new_process_id + 1) % processes.count;
         new_process = processes.data[new_process_id];
 
-        logger_log_warning("Entered first while(1). Old process id: ");
-        vga_printchar('0' + current_process_id);
-        vga_printstring(", new process id: ");
-        vga_printchar('0' + new_process_id);
-        vga_printchar('\n');
-
         if (new_process->status == process_status_waiting_sleep)
         {
-            logger_log_warning("Detected sleeping process");
             if (timer_get_system_clock() >= new_process->sleep_deadline)
             {
-                logger_log_warning("Process awaked");
                 new_process->status = process_status_ready;
                 break;
             }
@@ -169,28 +158,21 @@ void process_manager_switch_to_next_process()
 
         if (new_process->status == process_status_ready)
         {
-            logger_log_warning("Detected process ready to launch!");
             break;
         }
 
         if (new_process_id == current_process_id)
         {
-            logger_log_warning("Old process id is same as the new");
             if (new_process->status == process_status_working)
             {
-                logger_log_warning("Detected process ready to launch!");
                 break;
             }
 
-            logger_log_warning("It seems that nothing is ready. Sleepig...");
             __asm__ volatile("hlt");
-            logger_log_warning("Process manager awaked");
-
             last_task_switch = timer_get_system_clock();
         }
     }
 
-    logger_log_warning("End of first while(1)");
     process_info *old_process = processes.data[current_process_id];
 
     current_process_id = new_process_id;
@@ -200,16 +182,8 @@ void process_manager_switch_to_next_process()
     }
     new_process->status = process_status_working;
 
-    logger_log_warning("Initializing page directory table...");
     paging_set_page_directory(new_process->page_directory);
-
-    logger_log_warning("Initializing user heap...");
     heap_set_user_heap((void *)(new_process->heap));
-
-    logger_log_warning("I'm just before stack change.");
-    logger_log_warning("Something is fucked up in enter_user_space if you see this message.");
-
-    __asm__(" cli \n hlt \n ");
 
     enter_user_space(&new_process->state);
 }
@@ -217,7 +191,6 @@ void process_manager_switch_to_next_process()
 void process_manager_close_current_process()
 {
     // TODO: release process memory
-    logger_log_warning("Closing current process...");
     kvector_remove(&processes, current_process_id);
 
     if (processes.count > 0)
@@ -227,8 +200,6 @@ void process_manager_close_current_process()
     }
     else
     {
-        logger_log_warning("OS suspended");
-
         // TODO: do something better
         io_disable_interrupts();
         __asm__("hlt");
@@ -352,20 +323,16 @@ void process_manager_interrupt_handler(interrupt_state *state)
     }
 
     // TODO: processes.count > 0 is temporary here, idle process will be always present
-    if (run_scheduler_on_next_interrupt || (state->cs == 0x1B && processes.count > 0 && delta >= 10))
+    if (run_scheduler_on_next_interrupt || (state->cs == 0x1B && processes.count > 0 && delta >= 0))
     {
-        logger_log_warning("Entering task switch procedure");
-
         run_scheduler_on_next_interrupt = false;
         last_task_switch = timer_get_system_clock();
 
         if (state->cs == 0x1B)
         {
-            logger_log_warning("Saving process registers");
             process_manager_save_current_process_state(state, delta);
         }
 
-        logger_log_warning("Just before process_manager_switch_to_next_process");
         process_manager_switch_to_next_process(state);
     }
 }
@@ -384,6 +351,5 @@ void process_manager_keyboard_interrupt_handler(interrupt_state *state)
 
 void process_manager_run()
 {
-    logger_log_ok("Process manager start!");
     run_scheduler_on_next_interrupt = true;
 }
