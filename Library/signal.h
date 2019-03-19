@@ -105,4 +105,10 @@ void default_sigterm_handler(int param);
 */
 void __signal_init();
 
+//! Get default handler for the specified signal.
+/*!
+    Gets default signal handler based on the passed signal type.
+*/
+signal_func __signal_get_defualt_handler(int sig);
+
 #endif

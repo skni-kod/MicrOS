@@ -15,6 +15,8 @@ int raise(int sig)
         return SIG_ERR;
     }
 
+    signal_handlers[sig] = __signal_get_defualt_handler(sig);
+
     func(0);
     return 0;
 }
