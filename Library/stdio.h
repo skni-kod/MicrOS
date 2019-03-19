@@ -339,10 +339,33 @@ int feof(FILE *stream);
 */
 int ferror(FILE *stream);
 
+//! Write formatted data to string
+/*!
+    Composes a string with the same text that would be printed if format was used on printf, but instead of being printed, the content is stored as a C string in the buffer pointed by str.
+    \param Pointer to a buffer where the resulting C-string is stored. The buffer should be large enough to contain the resulting string.
+    \param String that contains text to be written to buffer. Can contain embedded format specifiers.
+    \param Additional arguments
+    \return Total number of characters written to buffer
+*/
 int sprintf(char* str, const char* format, ...);
 
+//! Print formatted data to stdout
+/*!
+    Writes the C string pointed by format to the standard output (stdout). If format includes format specifiers (subsequences beginning with %), the additional arguments following format are formatted and inserted in the resulting string replacing their respective specifiers.
+    \param String that contains text to be written to stdout. Can contain embedded format specifiers.
+    \param Additional arguments
+    \return Total number of characters written to stdout
+*/
 int printf(const char* format, ...);
 
+//! Print formatted data to stdoutWrite formatted data to stream
+/*!
+    Writes the C string pointed by format to the stream. If format includes format specifiers (subsequences beginning with %), the additional arguments following format are formatted and inserted in the resulting string replacing their respective specifiers.
+    \param Pointer to a FILE object that identifies an output stream.
+    \param C string that contains the text to be written to the stream.Can contain embedded format specifiers.
+    \param Additional arguments
+    \return Total number of characters written to stream.
+*/
 int fprintf(FILE* file, const char* format, ...);
 
 int __vfprintf(FILE* stream, const char* format, va_list arg);
