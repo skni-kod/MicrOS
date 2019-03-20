@@ -325,7 +325,7 @@ void process_manager_interrupt_handler(interrupt_state *state)
     }
 
     // TODO: processes.count > 0 is temporary here, idle process will be always present
-    if (run_scheduler_on_next_interrupt || (state->cs == 0x1B && processes.count > 0 && delta >= 0))
+    if (run_scheduler_on_next_interrupt || (state->cs == 0x1B && processes.count > 0 && delta >= 10))
     {
         run_scheduler_on_next_interrupt = false;
         last_task_switch = timer_get_system_clock();
