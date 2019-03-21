@@ -368,7 +368,19 @@ int printf(const char* format, ...);
 */
 int fprintf(FILE* file, const char* format, ...);
 
-int __vfprintf(FILE* stream, const char* format, va_list arg);
+// vfprintf
+// vprintf
+// vsprintf
+
+//! Print formatted data from variable argument list to stdout
+/*!
+    Writes the C string pointed by format to the stream. If format includes format specifiers (subsequences beginning with %), the additional arguments stored in arg list are formatted and inserted in the resulting string replacing their respective specifiers.
+    \param Pointer to a FILE object that identifies an output stream.
+    \param C string that contains the text to be written to the stream.Can contain embedded format specifiers.
+    \param A value identifying a variable arguments list initialized with va_start.
+    \return Total number of characters written to stream.
+*/
+int vfprintf(FILE* stream, const char* format, va_list arg);
 
 //! Creates new stream.
 /*!

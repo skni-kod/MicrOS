@@ -63,7 +63,7 @@ char *_itoa(unsigned int number, char *buffer, int base, bool uppercase, int siz
 
     do
     {
-        size_t digit = (number % base);
+        char digit = (number % base);
         buffer[idx--] = uppercase ? uppercase_table[digit] : lowercase_table[digit];
 
         number /= base;
@@ -77,9 +77,6 @@ char *_ftoa(float number, char *buffer, unsigned short flags, int precision)
 {
     float whole = floor(number);
     float frac = number - whole;
-
-    // float i;
-    // float f = modf(number, &i);
 
     if (!(flags & FLAGS_PRECISION))
     {
@@ -505,7 +502,7 @@ unsigned int _parse_number_field(const char **str)
     return ret;
 }
 
-int __vfprintf(FILE *stream, const char *format, va_list arg)
+int vfprintf(FILE *stream, const char *format, va_list arg)
 {
 
     int int_arg;
