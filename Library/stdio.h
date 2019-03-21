@@ -368,11 +368,7 @@ int printf(const char* format, ...);
 */
 int fprintf(FILE* file, const char* format, ...);
 
-// vfprintf
-// vprintf
-// vsprintf
-
-//! Print formatted data from variable argument list to stdout
+//! Print formatted data from variable argument list to stream
 /*!
     Writes the C string pointed by format to the stream. If format includes format specifiers (subsequences beginning with %), the additional arguments stored in arg list are formatted and inserted in the resulting string replacing their respective specifiers.
     \param Pointer to a FILE object that identifies an output stream.
@@ -381,6 +377,25 @@ int fprintf(FILE* file, const char* format, ...);
     \return Total number of characters written to stream.
 */
 int vfprintf(FILE* stream, const char* format, va_list arg);
+
+//! Print formatted data from variable argument list to stdout
+/*!
+    Writes the C string pointed by format to the stream. If format includes format specifiers (subsequences beginning with %), the additional arguments stored in arg list are formatted and inserted in the resulting string replacing their respective specifiers.
+    \param C string that contains the text to be written to the stream.Can contain embedded format specifiers.
+    \param A value identifying a variable arguments list initialized with va_start.
+    \return Total number of characters written to stream.
+*/
+int vprintf(const char* format, va_list arg);
+
+//! Print formatted data from variable argument list to string
+/*!
+    Composes a string with the same text that would be printed if format was used on printf, but using the elements in the variable argument list identified by arg instead of additional function arguments and storing the resulting content as a C string in the buffer pointed by str.
+    \param Pointer to a buffer where the resulting C-string is stored. The buffer should be large enough to contain the resulting string.
+    \param C string that contains the text to be written to the stream.Can contain embedded format specifiers.
+    \param A value identifying a variable arguments list initialized with va_start.
+    \return Total number of characters written to stream.
+*/
+int vsprintf(char* str, const char* format, va_list arg);
 
 //! Creates new stream.
 /*!
