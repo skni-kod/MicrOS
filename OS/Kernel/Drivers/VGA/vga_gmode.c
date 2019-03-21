@@ -129,7 +129,7 @@ unsigned char g_320x200x16[] =
 	};
 
 //eh
-unsigned char g_640x200x8[] =
+unsigned char g_640x200x16[] =
 	{
 	/* MISC */
 		0x63, 
@@ -745,6 +745,126 @@ void drawDupaIn6H(int color)
 	}
 }
 
+void setDHVideoMode()
+{
+	if(mode == 0x03)
+		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
+	writeRegisters(g_320x200x16);
+	mode = 0x0d;
+}
+
+void pixel_DH(unsigned char color, unsigned int x, unsigned int y)
+{
+	unsigned char *fb = (unsigned char*)VGA_VRAM;
+	unsigned int offset = (y * 320 + x)/8;
+	unsigned bit_no = x % 8;
+	for(char p = 0; p < 4; p++)
+	{
+		set_plane(p);
+		bit_write(fb[offset], 1<<(7-bit_no), (bit_get(color, 1 << p)));
+	}
+	set_plane(0);
+}
+
+void drawDupaInDH(int color)
+{
+	for (int x = 0; x < 320; x++)
+	{
+		for (int y = 0; y < 200; y++)
+			pixel_DH(color, x, y);
+	}
+}
+
+void setEHVideoMode()
+{
+	if(mode == 0x03)
+		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
+	writeRegisters(g_640x200x16);
+	mode = 0x0e;
+}
+
+void pixel_EH(unsigned char color, unsigned int x, unsigned int y)
+{
+	unsigned char *fb = (unsigned char*)VGA_VRAM;
+	unsigned int offset = (y * 640 + x)/8;
+	unsigned bit_no = x % 8;
+	for(char p = 0; p < 4; p++)
+	{
+		set_plane(p);
+		bit_write(fb[offset], 1<<(7-bit_no), (bit_get(color, 1 << p)));
+	}
+	set_plane(0);
+}
+
+void drawDupaInEH(int color)
+{
+	for (int x = 0; x < 640; x++)
+	{
+		for (int y = 0; y < 200; y++)
+			pixel_EH(color, x, y);
+	}
+}
+
+void setFHVideoMode()
+{
+	if(mode == 0x03)
+		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
+	writeRegisters(g_640x350x3);
+	mode = 0x0f;
+}
+
+void pixel_FH(unsigned char color, unsigned int x, unsigned int y)
+{
+	unsigned char *fb = (unsigned char*)VGA_VRAM;
+	unsigned int offset = (y * 640 + x)/8;
+	unsigned bit_no = x % 8;
+	for(char p = 0; p <= 2; p+=2)
+	{
+		set_plane(p);
+		bit_write(fb[offset], 1<<(7-bit_no), (bit_get(color, 1 << (p/2))));
+	}
+	set_plane(0);
+}
+
+void drawDupaInFH(int color)
+{
+	for (int x = 0; x < 640; x++)
+	{
+		for (int y = 0; y < 350; y++)
+			pixel_EH(color, x, y);
+	}
+}
+
+
+void set10HVideoMode()
+{
+	if(mode == 0x03)
+		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
+	writeRegisters(g_640x350x16);
+	mode = 0x10;
+}
+
+void pixel_10H(unsigned char color, unsigned int x, unsigned int y)
+{
+	unsigned char *fb = (unsigned char*)VGA_VRAM;
+	unsigned int offset = (y * 640 + x)/8;
+	unsigned bit_no = x % 8;
+	for(char p = 0; p < 4; p++)
+	{
+		set_plane(p);
+		bit_write(fb[offset], 1<<(7-bit_no), (bit_get(color, 1 << p)));
+	}
+	set_plane(0);
+}
+
+void drawDupaIn10H(int color)
+{
+	for (int x = 0; x < 640; x++)
+	{
+		for (int y = 0; y < 350; y++)
+			pixel_EH(color, x, y);
+	}
+}
 
 void set11HVideoMode()
 {

@@ -38,6 +38,22 @@ void set6HVideoMode();
 void pixel_6H(unsigned char color, unsigned int x, unsigned int y);
 void drawDupaIn6H(int color);
 
+void setDHVideoMode();
+void pixel_DH(unsigned char color, unsigned int x, unsigned int y);
+void drawDupaInDH(int color);
+
+void setEHVideoMode();
+void pixel_EH(unsigned char color, unsigned int x, unsigned int y);
+void drawDupaInEH(int color);
+
+void setFHVideoMode();
+void pixel_FH(unsigned char color, unsigned int x, unsigned int y);
+void drawDupaInFH(int color);
+
+void set10HVideoMode();
+void pixel_10H(unsigned char color, unsigned int x, unsigned int y);
+void drawDupaIn10H(int color);
+
 void set11HVideoMode();
 void pixel_11H(unsigned char color, unsigned int x, unsigned int y);
 void drawDupaIn11H(int color);

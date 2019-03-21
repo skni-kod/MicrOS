@@ -250,6 +250,46 @@ int kmain()
                 }
                 //memoryViewer();
             }
+            else if (c.scancode == 67)
+            {
+                if (getMode() != 0xd)
+                {
+                    setDHVideoMode();
+                    drawDupaInDH(0x1);
+                    //pixel_11H(1, 5, 0);
+                }
+                //memoryViewer();
+            }
+            else if (c.scancode == 68)
+            {
+                if (getMode() != 0xe)
+                {
+                    setEHVideoMode();
+                    drawDupaInEH(0x4);
+                    //pixel_11H(1, 5, 0);
+                }
+                //memoryViewer();
+            }
+            else if (c.scancode == 87)
+            {
+                if (getMode() != 0x10)
+                {
+                    set10HVideoMode();
+                    drawDupaIn10H(0xa);
+                    //pixel_11H(1, 5, 0);
+                }
+                //memoryViewer();
+            }
+            else if (c.scancode == 88)
+            {
+                if (getMode() != 0xf)
+                {
+                    setFHVideoMode();
+                    drawDupaInFH(0x2);
+                    //pixel_11H(1, 5, 0);
+                }
+                //memoryViewer();
+            }
             else
             vga_printchar(c.ascii);
         }
