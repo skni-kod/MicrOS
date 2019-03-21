@@ -240,6 +240,16 @@ int kmain()
                 }
                 //memoryViewer();
             }
+            else if (c.scancode == 66)
+            {
+                if (getMode() != 0x6)
+                {
+                    set06HVideoMode();
+                    drawDupaIn6H(0x1);
+                    //pixel_11H(1, 5, 0);
+                }
+                //memoryViewer();
+            }
             else
             vga_printchar(c.ascii);
         }
