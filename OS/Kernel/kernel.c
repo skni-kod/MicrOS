@@ -196,8 +196,8 @@ int kmain()
                 //pc_speaker_enable_sound(1000);
                 if (getMode() != 0x69)
                 {
-                    setModeXVideoMode();
-                    drawDupaInX(0x3);
+                    setModeYVideoMode();
+                    drawDupaInY(0x3);
                     //pixel_11H(1, 5, 0);
                 }
             }
@@ -224,7 +224,7 @@ int kmain()
             {
                 if (getMode() != 0x5)
                 {
-                    set05HVideoMode();
+                    set5HVideoMode();
                     drawDupaIn5H(0x5);
                     //pixel_11H(1, 5, 0);
                 }
@@ -234,7 +234,7 @@ int kmain()
             {
                 if (getMode() != 0x4)
                 {
-                    set04HVideoMode();
+                    set4HVideoMode();
                     drawDupaIn4H(0x2);
                     //pixel_11H(1, 5, 0);
                 }
@@ -244,7 +244,7 @@ int kmain()
             {
                 if (getMode() != 0x6)
                 {
-                    set06HVideoMode();
+                    set6HVideoMode();
                     drawDupaIn6H(0x1);
                     //pixel_11H(1, 5, 0);
                 }

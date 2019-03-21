@@ -23,28 +23,36 @@
 
 void writeRegisters(uint8_t *registers);
 void writeRegistersText(uint8_t *registers);
-void set13HVideoMode();
+
 void set3HVideoMode();
-void set11HVideoMode();
-void set12HVideoMode();
-void set05HVideoMode();
-void set04HVideoMode();
-void set06HVideoMode();
-void setModeXVideoMode();
-void pixel_13H(unsigned char color, unsigned int x, unsigned int y);
-void pixel_11H(unsigned char color, unsigned int x, unsigned int y);
-void pixel_12H(unsigned char color, unsigned int x, unsigned int y);
-void pixel_5H(unsigned char color, unsigned int x, unsigned int y);
+
+void set4HVideoMode();
 void pixel_4H(unsigned char color, unsigned int x, unsigned int y);
-void pixel_6H(unsigned char color, unsigned int x, unsigned int y);
-void drawDupaIn13H(int color);
-void drawDupaIn11H(int color);
-void drawDupaIn12H(int color);
-void drawDupaIn5H(int color);
 void drawDupaIn4H(int color);
+
+void set5HVideoMode();
+void pixel_5H(unsigned char color, unsigned int x, unsigned int y);
+void drawDupaIn5H(int color);
+
+void set6HVideoMode();
+void pixel_6H(unsigned char color, unsigned int x, unsigned int y);
 void drawDupaIn6H(int color);
-void pixel_ModeX(unsigned char color, unsigned int x, unsigned int y);
-void drawDupaInX(int color);
+
+void set11HVideoMode();
+void pixel_11H(unsigned char color, unsigned int x, unsigned int y);
+void drawDupaIn11H(int color);
+
+void set12HVideoMode();
+void pixel_12H(unsigned char color, unsigned int x, unsigned int y);
+void drawDupaIn12H(int color);
+
+void set13HVideoMode();
+void pixel_13H(unsigned char color, unsigned int x, unsigned int y);
+void drawDupaIn13H(int color);
+
+void setModeYVideoMode();
+void pixel_ModeY(unsigned char color, unsigned int x, unsigned int y);
+void drawDupaInY(int color);
 
 static void set_plane(unsigned p);
 
