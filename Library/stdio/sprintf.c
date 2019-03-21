@@ -9,7 +9,7 @@ int sprintf(char *str, const char *format, ...)
     FILE *stream = __stdio_create_stream();
     setvbuf(stream, str, _IOFBF, 0);
 
-    int ret = __vfprintf(stream, format, arg) + 1;
+    int ret = vfprintf(stream, format, arg) + 1;
 
     str[ret] = '\0';
 
