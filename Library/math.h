@@ -168,345 +168,345 @@ extern "C" {
 
 // Trigonometric functions
 
-//! Calculate cosine.
+//! Compute cosine.
 /*! 
     The cos functions compute the cosine of x (measured in radians).
-    \param x First value.
-    \return The cos functions return cos x.
+    \param x Value representing an angle expressed in radians.
+    \return Cosine of x radians.
 */
 double cos(double x);
 
-//! Calculate cosine.
+//! Compute cosine.
 /*! 
     The cosf functions compute the cosine of x (measured in radians).
-    \param x First value.
-    \return The cosf functions return cos x.
+    \param x Value representing an angle expressed in radians.
+    \return Cosine of x radians.
 */
 float cosf(float x);
 
-//! Calculate cosine.
+//! Compute cosine.
 /*! 
     The cosl functions compute the cosine of x (measured in radians).
-    \param x First value.
-    \return The cosl functions return cos x.
+    \param x Value representing an angle expressed in radians.
+    \return Cosine of x radians.
 */
 long double cosl(long double x);
 
-//! Calculate sine.
+//! Compute cosine.
 /*! 
     The sin functions compute the sine of x (measured in radians).
-    \param x First value.
-    \return The sin functions return sin x.
+    \param x Value representing an angle expressed in radians.
+    \return Sine of x radians.
 */
 double sin(double x);
 
-//! Calculate sine.
+//! Compute cosine.
 /*! 
     The sinf functions compute the sine of x (measured in radians).
-    \param x First value.
-    \return The sinf functions return sin x.
+    \param x Value representing an angle expressed in radians.
+    \return Sine of x radians.
 */
 float sinf(float x);
 
-//! Calculate sine.
+//! Compute cosine.
 /*! 
     The sinl functions compute the sine of x (measured in radians).
-    \param x First value.
-    \return The sinl functions return sin x.
+    \param x Value representing an angle expressed in radians.
+    \return Sine of x radians.
 */
 long double sinl(long double x);
 
-//! Calculate tangent.
+//! Compute tangent.
 /*! 
     The tan functions compute the tangent of x (measured in radians).
-    \param x First value.
-    \return The tan functions return tan x.
+    \param x Value representing an angle, expressed in radians.
+    \return Tangent of x radians.
 */
 double tan(double x);
 
-//! Calculate tangent.
+//! Compute tangent.
 /*! 
     The tanf functions compute the tangent of x (measured in radians).
-    \param x First value.
-    \return The tanf functions return tan x.
+    \param x Value representing an angle, expressed in radians.
+    \return Tangent of x radians.
 */
 float tanf(float x);
 
-//! Calculate tangent.
+//! Compute tangent.
 /*! 
     The tanl functions compute the tangent of x (measured in radians).
-    \param x First value.
-    \return The tanl functions return tan x.
+    \param x Value representing an angle, expressed in radians.
+    \return Tangent of x radians.
 */
 long double tanl(long double x);
 
-//! Calculate arc cosine.
+//! Compute arc cosine.
 /*! 
     The acos functions compute the principal value of the arc cosine of x. A domain error occurs for arguments not in the interval [−1, +1].
-    \param x First value.
+    \param x Value whose arc cosine is computed, in the interval [-1,+1].
     \return The acos functions return arccos x in the interval [0,π ] radians.
 */
 double acos(double x);
 
-//! Calculate arc cosine.
+//! Compute arc cosine.
 /*! 
     The acosf functions compute the principal value of the arc cosine of x. A domain error occurs for arguments not in the interval [−1, +1].
-    \param x First value.
+    \param x Value whose arc cosine is computed, in the interval [-1,+1].
     \return The acosf functions return arccos x in the interval [0,π ] radians.
 */
 float acosf(float x);
 
-//! Calculate arc cosine.
+//! Compute arc cosine.
 /*! 
     The acosl functions compute the principal value of the arc cosine of x. A domain error occurs for arguments not in the interval [−1, +1].
-    \param x First value.
+    \param x Value whose arc cosine is computed, in the interval [-1,+1].
     \return The acosl functions return arccos x in the interval [0,π ] radians.
 */
 long double acosl(long double x);
 
-//! Calculate arc sine.
+//! Compute arc sine.
 /*! 
     The asin functions compute the principal value of the arc sine of x. A domain error occurs for arguments not in the interval [−1, +1].
-    \param x First value.
+    \param x Value whose arc cosine is computed, in the interval [-1,+1].
     \return The asin functions return arcsin x in the interval [−π /2, +π /2] radians.
 */
 double asin(double x);
 
-//! Calculate arc sine.
+//! Compute arc sine.
 /*! 
     The asinf functions compute the principal value of the arc sine of x. A domain error occurs for arguments not in the interval [−1, +1].
-    \param x First value.
+    \param x Value whose arc cosine is computed, in the interval [-1,+1].
     \return The asinf functions return arcsin x in the interval [−π /2, +π /2] radians.
 */
 float asinf(float x);
 
-//! Calculate arc sine.
+//! Compute arc sine.
 /*! 
     The asinl functions compute the principal value of the arc sine of x. A domain error occurs for arguments not in the interval [−1, +1].
-    \param x First value.
+    \param x Value whose arc cosine is computed, in the interval [-1,+1].
     \return The asinl functions return arcsin x in the interval [−π /2, +π /2] radians.
 */
 long double asinl(long double x);
 
-//! Calculate arc tangent.
+//! Compute arc tangent.
 /*! 
     The atan functions compute the principal value of the arc tangent of x.
-    \param x First value.
+    \param x Value whose arc tangent is computed.
     \return The atan functions return arctan x in the interval [−π /2, +π /2] radians.
 */
 double atan(double x);
 
-//! Calculate arc tangent.
+//! Compute arc tangent.
 /*! 
     The atanf functions compute the principal value of the arc tangent of x.
-    \param x First value.
+    \param x Value whose arc tangent is computed.
     \return The atanf functions return arctan x in the interval [−π /2, +π /2] radians.
 */
 float atanf(float x);
 
-//! Calculate arc tangent.
+//! Compute arc tangent.
 /*! 
     The atanl functions compute the principal value of the arc tangent of x.
-    \param x First value.
+    \param x Value whose arc tangent is computed.
     \return The atanl functions return arctan x in the interval [−π /2, +π /2] radians.
 */
 long double atanl(long double x);
 
-//! Calculate arc tangent.
+//! Compute arc tangent with two parameters.
 /*! 
     The atan2 functions compute the value of the arc tangent of y/x, using the signs of both arguments to determine the quadrant of the return value. A domain error may occur if both arguments are zero.
-    \param x First value.
-    \param y Second value.
+    \param x Value representing the proportion of the y-coordinate.
+    \param y Value representing the proportion of the x-coordinate.
     \return The atan2 functions return arctan y/x in the interval [−π , +π ] radians.
 */
 double atan2(double x, double y);
 
-//! Calculate arc tangent.
+//! Compute arc tangent with two parameters.
 /*! 
     The atan2f functions compute the value of the arc tangent of y/x, using the signs of both arguments to determine the quadrant of the return value. A domain error may occur if both arguments are zero.
-    \param x First value.
-    \param y Second value.
+    \param x Value representing the proportion of the y-coordinate.
+    \param y Value representing the proportion of the x-coordinate.
     \return The atan2f functions return arctan y/x in the interval [−π , +π ] radians.
 */
 float atan2f(float x, float y);
 
-//! Calculate arc tangent.
+//! Compute arc tangent with two parameters.
 /*! 
     The atan2l functions compute the value of the arc tangent of y/x, using the signs of both arguments to determine the quadrant of the return value. A domain error may occur if both arguments are zero.
-    \param x First value.
-    \param y Second value.
+    \param x Value representing the proportion of the y-coordinate.
+    \param y Value representing the proportion of the x-coordinate.
     \return The atan2l functions return arctan y/x in the interval [−π , +π ] radians.
 */
 long double atan2l(long double x, long double y);
 
 // Hyperbolic functions
 
-//! Calculate hyperbolic cosine.
+//! Compute hyperbolic cosine.
 /*! 
     The cosh functions compute the hyperbolic cosine of x. A range error occurs if the magnitude of x is too large.
-    \param x First value.
+    \param x Value representing a hyperbolic angle.
     \return The cosh functions return cosh x.
 */
 double cosh(double x);
 
-//! Calculate hyperbolic cosine.
+//! Compute hyperbolic cosine.
 /*! 
     The coshf functions compute the hyperbolic cosine of x. A range error occurs if the magnitude of x is too large.
-    \param x First value.
+    \param x Value representing a hyperbolic angle.
     \return The coshf functions return cosh x.
 */
 float coshf(float x);
 
-//! Calculate hyperbolic cosine.
+//! Compute hyperbolic cosine.
 /*! 
     The coshl functions compute the hyperbolic cosine of x. A range error occurs if the magnitude of x is too large.
-    \param x First value.
+    \param x Value representing a hyperbolic angle.
     \return The coshl functions return cosh x.
 */
 long double coshl(long double x);
 
-//! Calculate hyperbolic sine.
+//! Compute hyperbolic sine.
 /*! 
     The sinh functions compute the hyperbolic sine of x. A range error occurs if the magnitude of x is too large.
-    \param x First value.
+    \param x Value representing a hyperbolic angle.
     \return The sinh functions return sinh x.
 */
 double sinh(double x);
 
-//! Calculate hyperbolic sine.
+//! Compute hyperbolic sine.
 /*! 
     The sinhf functions compute the hyperbolic sine of x. A range error occurs if the magnitude of x is too large.
-    \param x First value.
+    \param x Value representing a hyperbolic angle.
     \return The sinhf functions return sinh x.
 */
 float sinhf(float x);
 
-//! Calculate hyperbolic sine.
+//! Compute hyperbolic sine.
 /*! 
     The sinhl functions compute the hyperbolic sine of x. A range error occurs if the magnitude of x is too large.
-    \param x First value.
+    \param x Value representing a hyperbolic angle.
     \return The sinhl functions return sinh x.
 */
 long double sinhl(long double x);
 
-//! Calculate hyperbolic tangent.
+//! Compute hyperbolic tangent.
 /*! 
     The tanh functions compute the hyperbolic tangent of x.
-    \param x First value.
+    \param x Value representing a hyperbolic angle.
     \return The tanh functions return tanh x.
 */
 double tanh(double x);
 
-//! Calculate hyperbolic tangent.
+//! Compute hyperbolic tangent.
 /*! 
     The tanhf functions compute the hyperbolic tangent of x.
-    \param x First value.
+    \param x Value representing a hyperbolic angle.
     \return The tanhf functions return tanh x.
 */
 float tanhf(float x);
 
-//! Calculate hyperbolic tangent.
+//! Compute hyperbolic tangent.
 /*! 
     The tanhl functions compute the hyperbolic tangent of x.
-    \param x First value.
+    \param x Value representing a hyperbolic angle.
     \return The tanhl functions return tanh x.
 */
 long double tanhl(long double x);
 
-//! Calculate arc hyperbolic cosine.
+//! Compute area hyperbolic cosine.
 /*! 
     The acosh functions compute the (nonnegative) arc hyperbolic cosine of x. A domain error occurs for arguments less than 1.
-    \param x First value.
+    \param x Value whose area hyperbolic cosine is computed.
     \return The acosh functions return arcosh x in the interval [0, +∞].
 */
 double acosh(double x);
 
-//! Calculate arc hyperbolic cosine.
+//! Compute area hyperbolic cosine.
 /*! 
     The acoshf functions compute the (nonnegative) arc hyperbolic cosine of x. A domain error occurs for arguments less than 1.
-    \param x First value.
+    \param x Value whose area hyperbolic cosine is computed.
     \return The acoshf functions return arcosh x in the interval [0, +∞].
 */
 float acoshf(float x);
 
-//! Calculate arc hyperbolic cosine.
+//! Compute area hyperbolic cosine.
 /*! 
     The acoshl functions compute the (nonnegative) arc hyperbolic cosine of x. A domain error occurs for arguments less than 1.
-    \param x First value.
+    \param x Value whose area hyperbolic cosine is computed.
     \return The acoshl functions return arcosh x in the interval [0, +∞].
 */
 long double acoshl(long double x);
 
-//! Calculate arc hyperbolic sine.
+//! Compute area hyperbolic sine.
 /*! 
     The asinh functions compute the arc hyperbolic sine of x.
-    \param x First value.
+    \param x Value whose area hyperbolic sine is computed.
     \return The asinh functions return arsinh x.
 */
 double asinh(double x);
 
-//! Calculate arc hyperbolic sine.
+//! Compute area hyperbolic sine.
 /*! 
     The asinhf functions compute the arc hyperbolic sine of x.
-    \param x First value.
+    \param x Value whose area hyperbolic sine is computed.
     \return The asinhf functions return arsinh x.
 */
 float asinhf(float x);
 
-//! Calculate arc hyperbolic sine.
+//! Compute area hyperbolic sine.
 /*! 
     The asinhl functions compute the arc hyperbolic sine of x.
-    \param x First value.
+    \param x Value whose area hyperbolic sine is computed.
     \return The asinhl functions return arsinh x.
 */
 long double asinhl(long double x);
 
-//! Calculate arc hyperbolic tangent.
+//! Compute area hyperbolic tangent.
 /*! 
     The atanh functions compute the arc hyperbolic tangent of x. A domain error occurs for arguments not in the interval [−1, +1]. A pole error may occur if the argument equals −1 or +1.
-    \param x First value.
+    \param x Value whose area hyperbolic tangent is computed, in the interval [-1,+1].
     \return The atanh functions return artanh x.
 */
 double atanh(double x);
 
-//! Calculate arc hyperbolic tangent.
+//! Compute area hyperbolic tangent.
 /*! 
     The atanhf functions compute the arc hyperbolic tangent of x. A domain error occurs for arguments not in the interval [−1, +1]. A pole error may occur if the argument equals −1 or +1.
-    \param x First value.
+    \param x Value whose area hyperbolic tangent is computed, in the interval [-1,+1].
     \return The atanhf functions return artanh x.
 */
 float atanhf(float x);
 
-//! Calculate arc hyperbolic tangent.
+//! Compute area hyperbolic tangent.
 /*! 
     The atanhl functions compute the arc hyperbolic tangent of x. A domain error occurs for arguments not in the interval [−1, +1]. A pole error may occur if the argument equals −1 or +1.
-    \param x First value.
+    \param x Value whose area hyperbolic tangent is computed, in the interval [-1,+1].
     \return The atanhl functions return artanh x.
 */
 long double atanhl(long double x);
 
 // Exponential and logarithmic functions
 
-//! Calculate exponential function.
+//! Compute exponential function.
 /*! 
     The exp functions compute the base-e exponential of x. A range error occurs if the magnitude of x is too large.
-    \param x First value.
+    \param x Value of the exponent.
     \return The exp functions return e^x.
 */
 double exp(double x);
 
-//! Calculate exponential function.
+//! Compute exponential function.
 /*! 
     The expf functions compute the base-e exponential of x. A range error occurs if the magnitude of x is too large.
-    \param x First value.
+    \param x Value of the exponent.
     \return The expf functions return e^x.
 */
 float expf(float x);
 
-//! Calculate exponential function.
+//! Compute exponential function.
 /*! 
     The expl functions compute the base-e exponential of x. A range error occurs if the magnitude of x is too large.
-    \param x First value.
+    \param x Value of the exponent.
     \return The expl functions return e^x.
 */
 long double expl(long double x);
@@ -565,50 +565,50 @@ float ldexpf(float x, int exp);
 */
 long double ldexpl(long double x, int exp);
 
-//! Calculate natural logarithm.
+//! Compute natural logarithm.
 /*! 
     The log functions compute the base-e (natural) logarithm of x. A domain error occurs if the argument is negative. A pole error may occur if the argument is zero.
-    \param x First value.
+    \param x Value whose logarithm is calculated.
     \return The log functions return log_e x.
 */
 double log(double x);
 
-//! Calculate natural logarithm.
+//! Compute natural logarithm.
 /*! 
     The logf functions compute the base-e (natural) logarithm of x. A domain error occurs if the argument is negative. A pole error may occur if the argument is zero.
-    \param x First value.
+    \param x Value whose logarithm is calculated.
     \return The logf functions return log_e x.
 */
 float logf(float x);
 
-//! Calculate natural logarithm.
+//! Compute natural logarithm.
 /*! 
     The logl functions compute the base-e (natural) logarithm of x. A domain error occurs if the argument is negative. A pole error may occur if the argument is zero.
-    \param x First value.
+    \param x Value whose logarithm is calculated.
     \return The logl functions return log_e x.
 */
 long double logl(long double x);
 
-//! Calculate 10 based logarithm.
+//! Compute 10 based logarithm.
 /*! 
     The log10 functions compute the base-10 (common) logarithm of x. A domain error occurs if the argument is negative. A pole error may occur if the argument is zero.
-    \param x First value.
+    \param x Value whose logarithm is calculated.
     \return The log10 functions return log_10 x.
 */
 double log10(double x);
 
-//! Calculate 10 based logarithm.
+//! Compute 10 based logarithm.
 /*! 
     The log10f functions compute the base-10 (common) logarithm of x. A domain error occurs if the argument is negative. A pole error may occur if the argument is zero.
-    \param x First value.
+    \param x Value whose logarithm is calculated.
     \return The log10f functions return log_10 x.
 */
 float log10f(float x);
 
-//! Calculate 10 based logarithm.
+//! Compute 10 based logarithm.
 /*! 
     The log10l functions compute the base-10 (common) logarithm of x. A domain error occurs if the argument is negative. A pole error may occur if the argument is zero.
-    \param x First value.
+    \param x Value whose logarithm is calculated.
     \return The log10l functions return log_10 x.
 */
 long double log10l(long double x);
@@ -616,8 +616,8 @@ long double log10l(long double x);
 //! Break into fractional and integral parts.
 /*! 
     The modf functions break the argument value into integral and fractional parts, each of which has the same type and sign as the argument. They store the integral part (in floating-point format) in the object pointed to by iptr.
-    \param x First value.
-    \param iptr Return of integral part.
+    \param x Floating point value to break into parts.
+    \param iptr Pointer to an object (of the same type as x) where the integral part is stored with the same sign as x.
     \return The modf functions return the signed fractional part of value.
 */
 double modf(double x, double* iptr);
@@ -625,8 +625,8 @@ double modf(double x, double* iptr);
 //! Break into fractional and integral parts.
 /*! 
     The modff functions break the argument value into integral and fractional parts, each of which has the same type and sign as the argument. They store the integral part (in floating-point format) in the object pointed to by iptr.
-    \param x First value.
-    \param iptr Return of integral part.
+    \param x Floating point value to break into parts.
+    \param iptr Pointer to an object (of the same type as x) where the integral part is stored with the same sign as x.
     \return The modff functions return the signed fractional part of value.
 */
 float modff(float x, float* iptr);
@@ -634,56 +634,56 @@ float modff(float x, float* iptr);
 //! Break into fractional and integral parts.
 /*! 
     The modfl functions break the argument value into integral and fractional parts, each of which has the same type and sign as the argument. They store the integral part (in floating-point format) in the object pointed to by iptr.
-    \param x First value.
-    \param iptr Return of integral part.
+    \param x Floating point value to break into parts.
+    \param iptr Pointer to an object (of the same type as x) where the integral part is stored with the same sign as x.
     \return The modfl functions return the signed fractional part of value.
 */
 long double modfl(long double x, long double* iptr);
 
-//! Calculate exponential function 2 based.
+//! Compute exponential function 2 based.
 /*! 
     The exp2 functions compute the base-2 exponential of x. A range error occurs if the magnitude of x is too large.
-    \param x First value.
+    \param x Value of the exponent.
     \return The exp2 functions return 2^x.
 */
 double exp2(double x);
 
-//! Calculate exponential function 2 based.
+//! Compute exponential function 2 based.
 /*! 
     The exp2f functions compute the base-2 exponential of x. A range error occurs if the magnitude of x is too large.
-    \param x First value.
+    \param x Value of the exponent.
     \return The exp2f functions return 2^x.
 */
 float exp2f(float x);
 
-//! Calculate exponential function 2 based.
+//! Compute exponential function 2 based.
 /*! 
     The exp2l functions compute the base-2 exponential of x. A range error occurs if the magnitude of x is too large.
-    \param x First value.
+    \param x Value of the exponent.
     \return The exp2l functions return 2^x.
 */
 long double exp2l(long double x);
 
-//! Calculate exponential function minus 1.
+//! Compute exponential function minus 1.
 /*! 
     The expm1 functions compute the base-e exponential of the argument, minus 1. A range error occurs if x is too large.
-    \param x First value.
+    \param x Value of the exponent.
     \return The expm1 functions return e^x − 1.
 */
 double expm1(double x);
 
-//! Calculate exponential function minus 1.
+//! Compute exponential function minus 1.
 /*! 
     The expm1f functions compute the base-e exponential of the argument, minus 1. A range error occurs if x is too large.
-    \param x First value.
+    \param x Value of the exponent.
     \return The expm1f functions return e^x − 1.
 */
 float expm1f(float x);
 
-//! Calculate exponential function minus 1.
+//! Compute exponential function minus 1.
 /*! 
     The expm1l functions compute the base-e exponential of the argument, minus 1. A range error occurs if x is too large.
-    \param x First value.
+    \param x Value of the exponent.
     \return The expm1l functions return e^x − 1.
 */
 long double expm1l(long double x);
@@ -712,74 +712,74 @@ int ilogbf(float x);
 */
 int ilogbl(long double x);
 
-//! Calculate natural logarithm of value + 1.
+//! Compute natural logarithm of value + 1.
 /*! 
     The log1p functions compute the base-e (natural) logarithm of 1 plus the argument. A domain error occurs if the argument is less than −1. A pole error may occur if the argument equals −1.
-    \param x First value.
+    \param x Value whose logarithm is calculated.
     \return The log1p functions return log_e(1 + x).
 */
 double log1p(double x);
 
-//! Calculate natural logarithm of value + 1.
+//! Compute natural logarithm of value + 1.
 /*! 
     The log1pf functions compute the base-e (natural) logarithm of 1 plus the argument. A domain error occurs if the argument is less than −1. A pole error may occur if the argument equals −1.
-    \param x First value.
+    \param x Value whose logarithm is calculated.
     \return The log1pf functions return log_e(1 + x).
 */
 float log1pf(float x);
 
-//! Calculate natural logarithm of value + 1.
+//! Compute natural logarithm of value + 1.
 /*! 
     The log1pl functions compute the base-e (natural) logarithm of 1 plus the argument. A domain error occurs if the argument is less than −1. A pole error may occur if the argument equals −1.
-    \param x First value.
+    \param x Value whose logarithm is calculated.
     \return The log1pl functions return log_e(1 + x).
 */
 long double log1pl(long double x);
 
-//! Calculate 2 based logarithm.
+//! Compute 2 based logarithm.
 /*! 
     The log2 functions compute the base-2 logarithm of x. A domain error occurs if the argument is less than zero. A pole error may occur if the argument is zero.
-    \param x First value.
+    \param x Value whose logarithm is calculated.
     \return The log2 functions return log_2 x.
 */
 double log2(double x);
 
-//! Calculate 2 based logarithm.
+//! Compute 2 based logarithm.
 /*! 
     The log2f functions compute the base-2 logarithm of x. A domain error occurs if the argument is less than zero. A pole error may occur if the argument is zero.
-    \param x First value.
+    \param x Value whose logarithm is calculated.
     \return The log2f functions return log_2 x.
 */
 float log2f(float x);
 
-//! Calculate 2 based logarithm.
+//! Compute 2 based logarithm.
 /*! 
     The log2l functions compute the base-2 logarithm of x. A domain error occurs if the argument is less than zero. A pole error may occur if the argument is zero.
-    \param x First value.
+    \param x Value whose logarithm is calculated.
     \return The log2l functions return log_2 x.
 */
 long double log2l(long double x);
 
-//! Calculate logarithm using FLT_RADIX.
+//! Compute logarithm using FLT_RADIX.
 /*! 
     The logb functions extract the exponent of x, as a signed integer value in floating-point format. If x is subnormal it is treated as though it were normalized; thus, for positive finite x, 1 ≤ x × FLT_RADIX^(−log_b(x)) < FLT_RADIX. A domain error or pole error may occur if the argument is zero.
-    \param x First value.
+    \param x Value whose logarithm is calculated.
     \return The logb functions return the signed exponent of x.
 */
 double logb(double x);
 
-//! Calculate logarithm using FLT_RADIX.
+//! Compute logarithm using FLT_RADIX.
 /*! 
     The logbf functions extract the exponent of x, as a signed integer value in floating-point format. If x is subnormal it is treated as though it were normalized; thus, for positive finite x, 1 ≤ x × FLT_RADIX^(−log_b(x)) < FLT_RADIX. A domain error or pole error may occur if the argument is zero.
-    \param x First value.
+    \param x Value whose logarithm is calculated.
     \return The logbf functions return the signed exponent of x.
 */
 float logbf(float x);
 
-//! Calculate logarithm using FLT_RADIX.
+//! Compute logarithm using FLT_RADIX.
 /*! 
     The logbl functions extract the exponent of x, as a signed integer value in floating-point format. If x is subnormal it is treated as though it were normalized; thus, for positive finite x, 1 ≤ x × FLT_RADIX^(−log_b(x)) < FLT_RADIX. A domain error or pole error may occur if the argument is zero.
-    \param x First value.
+    \param x Value whose logarithm is calculated.
     \return The logbl functions return the signed exponent of x.
 */
 long double logbl(long double x);
@@ -840,7 +840,7 @@ long double scalblnl(long double x, long int n);
 
 // Power functions 
 
-//! Calculate power.
+//! Compute power.
 /*! 
     The pow functions compute x raised to the power y. A domain error occurs if x is finite and negative and y is finite and not an integer value. A range error may occur. A domain error may occur if x is zero and y is zero. A domain error or pole error may occur if x is zero and y is less than zero.
     \param base Base of power.
@@ -849,7 +849,7 @@ long double scalblnl(long double x, long int n);
 */
 double pow(double base, double exponent);
 
-//! Calculate power.
+//! Compute power.
 /*! 
     The powf functions compute x raised to the power y. A domain error occurs if x is finite and negative and y is finite and not an integer value. A range error may occur. A domain error may occur if x is zero and y is zero. A domain error or pole error may occur if x is zero and y is less than zero.
     \param base Base of power.
@@ -858,7 +858,7 @@ double pow(double base, double exponent);
 */
 float powf(float base, float exponent);
 
-//! Calculate power.
+//! Compute power.
 /*! 
     The powl functions compute x raised to the power y. A domain error occurs if x is finite and negative and y is finite and not an integer value. A range error may occur. A domain error may occur if x is zero and y is zero. A domain error or pole error may occur if x is zero and y is less than zero.
     \param base Base of power.
@@ -867,50 +867,50 @@ float powf(float base, float exponent);
 */
 long double powl(long double base, long double exponent);
 
-//! Calculate square root.
+//! Compute square root.
 /*! 
     The sqrt functions compute the nonnegative square root of x. A domain error occurs if the argument is less than zero.
-    \param x First value.
+    \param x Value whose square root is computed.
     \return The sqrt functions return √x.
 */
 double sqrt(double x);
 
-//! Calculate square root.
+//! Compute square root.
 /*! 
     The sqrtf functions compute the nonnegative square root of x. A domain error occurs if the argument is less than zero.
-    \param x First value.
+    \param x Value whose square root is computed.
     \return The sqrtf functions return √x.
 */
 float sqrtf(float x);
 
-//! Calculate square root.
+//! Compute square root.
 /*! 
     The sqrtl functions compute the nonnegative square root of x. A domain error occurs if the argument is less than zero.
-    \param x First value.
+    \param x Value whose square root is computed.
     \return The sqrtl functions return √x.
 */
 long double sqrtl(long double x);
 
-//! Calculate cubic root.
+//! Compute cubic root.
 /*! 
     The cbrt functions compute the cubic root of x.
-    \param x First value.
+    \param x Value whose cubic root is computed.
     \return The cbrt functions return 3√x.
 */
 double cbrt(double x);
 
-//! Calculate cubic root.
+//! Compute cubic root.
 /*! 
     The cbrtf functions compute the cubic root of x.
-    \param x First value.
+    \param x Value whose cubic root is computed.
     \return The cbrtf functions return 3√x.
 */
 float cbrtf(float x);
 
-//! Calculate cubic root.
+//! Compute cubic root.
 /*! 
     The cbrtl functions compute the cubic root of x.
-    \param x First value.
+    \param x Value whose cubic root is computed.
     \return The cbrtl functions return 3√x.
 */
 long double cbrtl(long double x);
@@ -1042,50 +1042,50 @@ long double lgammal(long double x);
 
 // Nearest integer floating-point operations
 
-//! Rounding up.
+//! Round up value.
 /*! 
     The ceil functions compute the smallest integer value not less than x.
-    \param x First value.
+    \param x Value to round up.
     \return The ceil functions return ⎡x⎤, expressed as a floating-point number.
 */
 double ceil(double x);
 
-//! Rounding up.
+//! Round up value.
 /*! 
     The ceilf functions compute the smallest integer value not less than x.
-    \param x First value.
+    \param x Value to round up.
     \return The ceilf functions return ⎡x⎤, expressed as a floating-point number.
 */
 float ceilf(float x);
 
-//! Rounding up.
+//! Round up value.
 /*! 
     The ceill functions compute the smallest integer value not less than x.
-    \param x First value.
+    \param x Value to round up.
     \return The ceill functions return ⎡x⎤, expressed as a floating-point number.
 */
 long double ceill(long double x);
 
-//! Rounding down.
+//! Round down value.
 /*! 
     The floor functions compute the largest integer value not greater than x.
-    \param x First value.
+    \param x Value to round down.
     \return The floor functions return ⎣x⎦, expressed as a floating-point number.
 */
 double floor(double x);
 
-//! Rounding down.
+//! Round down value.
 /*! 
     The floorf functions compute the largest integer value not greater than x.
-    \param x First value.
+    \param x Value to round down.
     \return The floorf functions return ⎣x⎦, expressed as a floating-point number.
 */
 float floorf(float x);
 
-//! Rounding down.
+//! Round down value.
 /*! 
     The floorl functions compute the largest integer value not greater than x.
-    \param x First value.
+    \param x Value to round down.
     \return The floorl functions return ⎣x⎦, expressed as a floating-point number.
 */
 long double floorl(long double x);
@@ -1093,8 +1093,8 @@ long double floorl(long double x);
 //! Compute remainder of division.
 /*! 
     The fmod functions compute the floating-point remainder of x/y.
-    \param numer Dividend.
-    \param denom Divider.
+    \param numer Value of the quotient numerator.
+    \param denom Value of the quotient denominator.
     \return The fmod functions return the value x − ny, for some integer n such that, if y is nonzero, the result has the same sign as x and magnitude less than the magnitude of y. If y is zero, a domain error occurs and the fmod functions return zero.
 */
 double fmod(double numer, double denom);
@@ -1102,8 +1102,8 @@ double fmod(double numer, double denom);
 //! Compute remainder of division.
 /*! 
     The fmodf functions compute the floating-point remainder of x/y.
-    \param numer Dividend.
-    \param denom Divider.
+    \param numer Value of the quotient numerator.
+    \param denom Value of the quotient denominator.
     \return The fmodf functions return the value x − ny, for some integer n such that, if y is nonzero, the result has the same sign as x and magnitude less than the magnitude of y. If y is zero, a domain error occurs and the fmodf functions return zero.
 */
 float fmodf(float numer, float denom);
@@ -1111,203 +1111,230 @@ float fmodf(float numer, float denom);
 //! Compute remainder of division.
 /*! 
     The fmodl functions compute the floating-point remainder of x/y.
-    \param numer Dividend.
-    \param denom Divider.
+    \param numer Value of the quotient numerator.
+    \param denom Value of the quotient denominator.
     \return The fmodl functions return the value x − ny, for some integer n such that, if y is nonzero, the result has the same sign as x and magnitude less than the magnitude of y. If y is zero, a domain error occurs and the fmod functions return zero.
 */
 long double fmodl(long double numer, long double denom);
 
-//! Rounding towards zero.
+//! Truncate value.
 /*! 
     The trunc functions round their argument to the integer value, in floating format, nearest to but no larger in magnitude than the argument.
-    \param x First value.
+    \param x Value to truncate.
     \return The trunc functions return the truncated integer value.
 */
 double trunc(double x);
 
-//! Rounding towards zero.
+//! Truncate value.
 /*! 
     The truncf functions round their argument to the integer value, in floating format, nearest to but no larger in magnitude than the argument.
-    \param x First value.
+    \param x Value to truncate.
     \return The truncf functions return the truncated integer value.
 */
 float truncf(float x);
 
-//! Rounding towards zero.
+//! Truncate value.
 /*! 
     The truncl functions round their argument to the integer value, in floating format, nearest to but no larger in magnitude than the argument.
-    \param x First value.
+    \param x Value to truncate.
     \return The truncl functions return the truncated integer value.
 */
 long double truncl(long double x);
 
-//! Rounding.
+//! Round to nearest.
 /*! 
     The round functions round their argument to the nearest integer value in floating-point format, rounding halfway cases away from zero, regardless of the current rounding direction.
-    \param x First value.
+    \param x Value to round.
     \return The round functions return the rounded integer value.
 */
 double round(double x);
 
-//! Rounding.
+//! Round to nearest.
 /*! 
     The roundf functions round their argument to the nearest integer value in floating-point format, rounding halfway cases away from zero, regardless of the current rounding direction.
-    \param x First value.
+    \param x Value to round.
     \return The roundf functions return the rounded integer value.
 */
 float roundf(float x);
 
-//! Rounding.
+//! Round to nearest.
 /*! 
     The roundl functions round their argument to the nearest integer value in floating-point format, rounding halfway cases away from zero, regardless of the current rounding direction.
-    \param x First value.
+    \param x Value to round.
     \return The roundl functions return the rounded integer value.
 */
 long double roundl(long double x);
 
-//! Rounding.
+//! Round to nearest and cast to long integer.
 /*! 
     The lround and llround functions round their argument to the nearest integer value, rounding halfway cases away from zero, regardless of the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
-    \param x First value.
+    \param x Value to round.
     \return The lround and llround functions return the rounded integer value.
 */
 long int lround(double x);
 
-//! Rounding.
+//! Round to nearest and cast to long integer.
 /*! 
     The lround and llround functions round their argument to the nearest integer value, rounding halfway cases away from zero, regardless of the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
-    \param x First value.
+    \param x Value to round.
     \return The lround and llround functions return the rounded integer value.
 */
 long int lroundf(float x);
 
-//! Rounding.
+//! Round to nearest and cast to long integer.
 /*! 
     The lroundl and llround functions round their argument to the nearest integer value, rounding halfway cases away from zero, regardless of the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
-    \param x First value.
+    \param x Value to round.
     \return The lroundl and llround functions return the rounded integer value.
 */
 long int lroundl(long double x);
 
-//! Rounding.
+//! Round to nearest and cast to long long integer.
 /*! 
     The lround and llround functions round their argument to the nearest integer value, rounding halfway cases away from zero, regardless of the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
-    \param x First value.
+    \param x Value to round.
     \return The lround and llround functions return the rounded integer value.
 */
 long long int llround(double x);
 
-//! Rounding.
+//! Round to nearest and cast to long long integer.
 /*! 
     The lround and llround functions round their argument to the nearest integer value, rounding halfway cases away from zero, regardless of the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
-    \param x First value.
+    \param x Value to round.
     \return The lround and llround functions return the rounded integer value.
 */
 long long int llroundf(float x);
 
-//! Rounding.
+//! Round to nearest and cast to long long integer.
 /*! 
     The lround and llround functions round their argument to the nearest integer value, rounding halfway cases away from zero, regardless of the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
-    \param x First value.
+    \param x Value to round.
     \return The lround and llround functions return the rounded integer value.
 */
 long long int llroundl(long double x);
 
-//! Rounding.
+//! Round to integral value.
 /*! 
     The rint functions round their argument to an integer value in floating-point format, using the current rounding direction.
-    \param x First value.
+    \param x Value to round.
     \return The rint functions return the rounded integer value.
 */
 double rint(double x);
 
-//! Rounding.
+//! Round to integral value.
 /*! 
     The rintf functions round their argument to an integer value in floating-point format, using the current rounding direction.
-    \param x First value.
+    \param x Value to round.
     \return The rintf functions return the rounded integer value.
 */
 float rintf(float x);
 
-//! Rounding.
+//! Round to integral value.
 /*! 
     The rintl functions round their argument to an integer value in floating-point format, using the current rounding direction.
-    \param x First value.
+    \param x Value to round.
     \return The rintl functions return the rounded integer value.
 */
 long double rintl(long double x);
 
-//! Rounding.
+//! Round and cast to long integer.
 /*! 
     The lrint function round their argument to the nearest integer value, rounding according to the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
-    \param x First value.
+    \param x Value to round.
     \return The lrint function return the rounded integer value.
 */
 long int lrint(double x);
 
-//! Rounding.
+//! Round and cast to long integer.
 /*! 
     The lrintf function round their argument to the nearest integer value, rounding according to the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
-    \param x First value.
+    \param x Value to round.
     \return The lrintf function return the rounded integer value.
 */
 long int lrintf(float x);
 
-//! Rounding.
+//! Round and cast to long integer.
 /*! 
     The lrintl function round their argument to the nearest integer value, rounding according to the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
-    \param x First value.
+    \param x Value to round.
     \return The lrintl function return the rounded integer value.
 */
 long int lrintl(long double x);
 
-//! Rounding.
+//! Round and cast to long long integer.
 /*! 
     The llrint function round their argument to the nearest integer value, rounding according to the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
-    \param x First value.
+    \param x Value to round.
     \return The llrint function return the rounded integer value.
 */
 long long int llrint(double x);
 
-//! Rounding.
+//! Round and cast to long long integer.
 /*! 
     The llrintf function round their argument to the nearest integer value, rounding according to the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
-    \param x First value.
+    \param x Value to round.
     \return The llrintf function return the rounded integer value.
 */
 long long int llrintf(float x);
 
-//! Rounding.
+//! Round and cast to long long integer.
 /*! 
     The llrintl function round their argument to the nearest integer value, rounding according to the current rounding direction. If the rounded value is outside the range of the return type, the numeric result is unspecified and a domain error or range error may occur.
-    \param x First value.
+    \param x Value to round.
     \return The llrintl function return the rounded integer value.
 */
 long long int llrintl(long double x);
 
-//! Rounding.
+//! Round to nearby integral value.
 /*! 
     The nearbyint functions round their argument to an integer value in floating-point format, using the current rounding direction and without raising the ‘‘inexact’’ floatingpoint exception.
-    \param x First value.
+    \param x Value to round.
     \return The nearbyint functions return the rounded integer value.
 */
 double nearbyint(double x);
 
-//! Rounding.
+//! Round to nearby integral value.
 /*! 
     The nearbyintf functions round their argument to an integer value in floating-point format, using the current rounding direction and without raising the ‘‘inexact’’ floatingpoint exception.
-    \param x First value.
+    \param x Value to round.
     \return The nearbyintf functions return the rounded integer value.
 */
 float nearbyintf(float x);
 
-//! Rounding.
+//! Round to nearby integral value.
 /*! 
     The nearbyintl functions round their argument to an integer value in floating-point format, using the current rounding direction and without raising the ‘‘inexact’’ floatingpoint exception.
-    \param x First value.
+    \param x Value to round.
     \return The nearbyintl functions return the rounded integer value.
 */
 long double nearbyintl(long double x);
+
+//! Compute reminder required by IEC 60559.
+/*! 
+    The remainder functions compute the remainder x REM y required by IEC 60559.
+    \param x Value of the quotient numerator..
+    \param y Value of the quotient denominator..
+    \return The remainder functions return x REM y. If y is zero, whether a domain error occurs or the functions return zero is implementation defined.
+*/
+double remainder(double x, double y);
+
+//! Compute reminder required by IEC 60559.
+/*! 
+    The remainderf functions compute the remainder x REM y required by IEC 60559.
+    \param x Value of the quotient numerator..
+    \param y Value of the quotient denominator..
+    \return The remainder functions return x REM y. If y is zero, whether a domain error occurs or the functions return zero is implementation defined.
+*/
+float remainderf(float x, float y);
+
+//! Compute reminder required by IEC 60559.
+/*! 
+    The remainderl functions compute the remainder x REM y required by IEC 60559.
+    \param x Value of the quotient numerator..
+    \param y Value of the quotient denominator..
+    \return The remainderl functions return x REM y. If y is zero, whether a domain error occurs or the functions return zero is implementation defined.
+*/
+long double remainderl(long double x, long double y);
 
 //! Compute remainder and quotient.
 /*! 
@@ -1339,40 +1366,13 @@ float remquof(float numer, float denom, int* quot);
 */
 long double remquol(long double numer, long double denom, int* quot);
 
-//! Compute reminder required by IEC 60559.
-/*! 
-    The remainder functions compute the remainder x REM y required by IEC 60559.
-    \param x Dividend.
-    \param y Divider.
-    \return The remainder functions return x REM y. If y is zero, whether a domain error occurs or the functions return zero is implementation defined.
-*/
-double remainder(double x, double y);
-
-//! Compute reminder required by IEC 60559.
-/*! 
-    The remainderf functions compute the remainder x REM y required by IEC 60559.
-    \param x Dividend.
-    \param y Divider.
-    \return The remainder functions return x REM y. If y is zero, whether a domain error occurs or the functions return zero is implementation defined.
-*/
-float remainderf(float x, float y);
-
-//! Compute reminder required by IEC 60559.
-/*! 
-    The remainderl functions compute the remainder x REM y required by IEC 60559.
-    \param x Dividend.
-    \param y Divider.
-    \return The remainderl functions return x REM y. If y is zero, whether a domain error occurs or the functions return zero is implementation defined.
-*/
-long double remainderl(long double x, long double y);
-
 // Floating-point manipulation functions
 
 //! Copy sign.
 /*! 
     The copysign functions produce a value with the magnitude of x and the sign of y. They produce a NaN (with the sign of y) if x is a NaN. On implementations that represent a signed zero but do not treat negative zero consistently in arithmetic operations, the copysign functions regard the sign of zero as positive.
-    \param x Copy magnitude from.
-    \param y Copy sign from.
+    \param x Value with the magnitude of the resulting value.
+    \param y Value with the sign of the resulting value.
     \return The copysign functions return a value with the magnitude of x and the sign of y.
 */
 double copysign(double x, double y);
@@ -1380,8 +1380,8 @@ double copysign(double x, double y);
 //! Copy sign.
 /*! 
     The copysignf functions produce a value with the magnitude of x and the sign of y. They produce a NaN (with the sign of y) if x is a NaN. On implementations that represent a signed zero but do not treat negative zero consistently in arithmetic operations, the copysign functions regard the sign of zero as positive.
-    \param x Copy magnitude from.
-    \param y Copy sign from.
+    \param x Value with the magnitude of the resulting value.
+    \param y Value with the sign of the resulting value.
     \return The copysignf functions return a value with the magnitude of x and the sign of y.
 */  
 float copysignf(float x, float y);
@@ -1389,8 +1389,8 @@ float copysignf(float x, float y);
 //! Copy sign.
 /*! 
     The copysignl functions produce a value with the magnitude of x and the sign of y. They produce a NaN (with the sign of y) if x is a NaN. On implementations that represent a signed zero but do not treat negative zero consistently in arithmetic operations, the copysign functions regard the sign of zero as positive.
-    \param x Copy magnitude from.
-    \param y Copy sign from.
+    \param x Value with the magnitude of the resulting value.
+    \param y Value with the sign of the resulting value.
     \return The copysignl functions return a value with the magnitude of x and the sign of y.
 */  
 long double copysignl(long double x, long double y);
@@ -1478,8 +1478,8 @@ long double nexttowardl(long double x, long double y);
 //! Positive difference.
 /*! 
     The fdim functions determine the positive difference between their arguments.
-    \param x First value.
-    \param y Second value.
+    \param x Value whose difference is calculated.
+    \param y Value whose difference is calculated.
     \return The fdim functions return the positive difference value.
 */
 double fdim(double x, double y);
@@ -1487,8 +1487,8 @@ double fdim(double x, double y);
 //! Positive difference.
 /*! 
     The fdimf functions determine the positive difference between their arguments.
-    \param x First value.
-    \param y Second value.
+    \param x Value whose difference is calculated.
+    \param y Value whose difference is calculated.
     \return The fdimf functions return the positive difference value.
 */
 float fdimf(float x, float y);
@@ -1496,8 +1496,8 @@ float fdimf(float x, float y);
 //! Positive difference.
 /*! 
     The fdiml functions determine the positive difference between their arguments.
-    \param x First value.
-    \param y Second value.
+    \param x Value whose difference is calculated.
+    \param y Value whose difference is calculated.
     \return The fdiml functions return the positive difference value.
 */
 long double fdiml(long double x, long double y);
@@ -1505,8 +1505,8 @@ long double fdiml(long double x, long double y);
 //! Higher value.
 /*! 
     The fmax functions determine the maximum numeric value of their arguments.
-    \param x First value.
-    \param y Second value.
+    \param x Value among which the function selects a maximum.
+    \param y Value among which the function selects a maximum.
     \return The fmax functions return the maximum numeric value of their arguments.
 */
 double fmax(double x, double y);
@@ -1514,8 +1514,8 @@ double fmax(double x, double y);
 //! Higher value.
 /*! 
     The fmaxf functions determine the maximum numeric value of their arguments.
-    \param x First value.
-    \param y Second value.
+    \param x Value among which the function selects a maximum.
+    \param y Value among which the function selects a maximum.
     \return The fmaxf functions return the maximum numeric value of their arguments.
 */
 float fmaxf(float x, float y);
@@ -1523,8 +1523,8 @@ float fmaxf(float x, float y);
 //! Higher value.
 /*! 
     The fmaxl functions determine the maximum numeric value of their arguments.
-    \param x First value.
-    \param y Second value.
+    \param x Value among which the function selects a maximum.
+    \param y Value among which the function selects a maximum.
     \return The fmaxl functions return the maximum numeric value of their arguments.
 */
 long double fmaxl(long double x, long double y);
@@ -1532,8 +1532,8 @@ long double fmaxl(long double x, long double y);
 //! Lower value.
 /*! 
     The fmin functions determine the minimum numeric value of their arguments.
-    \param x First value.
-    \param y Second value.
+    \param x Value among which the function selects a minimum.
+    \param y Value among which the function selects a minimum.
     \return The fmin functions return the minimum numeric value of their arguments.
 */
 double fmin(double x, double y);
@@ -1541,8 +1541,8 @@ double fmin(double x, double y);
 //! Lower value.
 /*! 
     The fminf functions determine the minimum numeric value of their arguments.
-    \param x First value.
-    \param y Second value.
+    \param x Value among which the function selects a minimum.
+    \param y Value among which the function selects a minimum.
     \return The fminf functions return the minimum numeric value of their arguments.
 */
 float fminf(float x, float y);
@@ -1550,34 +1550,34 @@ float fminf(float x, float y);
 //! Lower value.
 /*! 
     The fminl functions determine the minimum numeric value of their arguments.
-    \param x First value.
-    \param y Second value.
+    \param x Value among which the function selects a minimum.
+    \param y Value among which the function selects a minimum.
     \return The fminl functions return the minimum numeric value of their arguments.
 */
 long double fminl(long double x, long double y);
 
 // Other functions
 
-//! Calculate absolute value.
+//! Compute absolute value.
 /*! 
     The fabs functions compute the absolute value of a floating-point number x.
-    \param x First value.
+    \param x Value among which the function selects a minimum.
     \return The fabs functions return | x |.
 */
 double fabs(double x);
 
-//! Calculate absolute value.
+//! Compute absolute value.
 /*! 
     The fabsf functions compute the absolute value of a floating-point number x.
-    \param x First value.
+    \param x Value among which the function selects a minimum.
     \return The fabsf functions return | x |.
 */
 float fabsf(float x);
 
-//! Calculate absolute value.
+//! Compute absolute value.
 /*! 
     The fabsl functions compute the absolute value of a floating-point number x.
-    \param x First value.
+    \param x Value among which the function selects a minimum.
     \return The fabsl functions return | x |.
 */
 long double fabsl(long double x);
@@ -1585,9 +1585,9 @@ long double fabsl(long double x);
 //! Multiply-add.
 /*! 
     The fma functions compute (x × y) + z, rounded as one ternary operation: they compute the value (as if) to infinite precision and round once to the result format, according to the current rounding mode. A range error may occur.
-    \param x First value.
-    \param y Second value.
-    \param z Third value.
+    \param x Value to be multiplied.
+    \param y Value to be multiplied.
+    \param z Value to be added.
     \return The fma functions return (x × y) + z, rounded as one ternary operation.
 */
 double fma(double x, double y, double z);
@@ -1595,9 +1595,9 @@ double fma(double x, double y, double z);
 //! Multiply-add.
 /*! 
     The fmaf functions compute (x × y) + z, rounded as one ternary operation: they compute the value (as if) to infinite precision and round once to the result format, according to the current rounding mode. A range error may occur.
-    \param x First value.
-    \param y Second value.
-    \param z Third value.
+    \param x Value to be multiplied.
+    \param y Value to be multiplied.
+    \param z Value to be added.
     \return The fmaf functions return (x × y) + z, rounded as one ternary operation.
 */
 float fmaf(float x, float y, float z);
@@ -1605,9 +1605,9 @@ float fmaf(float x, float y, float z);
 //! Multiply-add.
 /*! 
     The fmal functions compute (x × y) + z, rounded as one ternary operation: they compute the value (as if) to infinite precision and round once to the result format, according to the current rounding mode. A range error may occur.
-    \param x First value.
-    \param y Second value.
-    \param z Third value.
+    \param x Value to be multiplied.
+    \param y Value to be multiplied.
+    \param z Value to be added.
     \return The fmal functions return (x × y) + z, rounded as one ternary operation.
 */
 long double fmal(long double x, long double y, long double z);
@@ -1750,9 +1750,9 @@ long double __math_INFl();
 //! Multiply-add.
 /*! 
     Compute (x × y) + z, rounded as one ternary operation: they compute the value (as if) to infinite precision and round once to the result format, according to the current rounding mode. A range error may occur.
-    \param x First value.
-    \param y Second value.
-    \param z Third value.
+    \param x Value to be multiplied.
+    \param y Value to be multiplied.
+    \param z Value to be added.
     \return Return (x × y) + z, rounded as one ternary operation.
 */
 #define FP_FAST_FMA(x, y, z) (fma(x, y, z))
@@ -1760,9 +1760,9 @@ long double __math_INFl();
 //! Multiply-add.
 /*! 
     Compute (x × y) + z, rounded as one ternary operation: they compute the value (as if) to infinite precision and round once to the result format, according to the current rounding mode. A range error may occur.
-    \param x First value.
-    \param y Second value.
-    \param z Third value.
+    \param x Value to be multiplied.
+    \param y Value to be multiplied.
+    \param z Value to be added.
     \return Return (x × y) + z, rounded as one ternary operation.
 */
 #define FP_FAST_FMAF(x, y, z) (fmaf(x, y, z))
@@ -1770,9 +1770,9 @@ long double __math_INFl();
 //! Multiply-add.
 /*! 
     Compute (x × y) + z, rounded as one ternary operation: they compute the value (as if) to infinite precision and round once to the result format, according to the current rounding mode. A range error may occur.
-    \param x First value.
-    \param y Second value.
-    \param z Third value.
+    \param x Value to be multiplied.
+    \param y Value to be multiplied.
+    \param z Value to be added.
     \return Return (x × y) + z, rounded as one ternary operation.
 */
 #define FP_FAST_FMAL(x, y, z) (fmal(x, y, z))
