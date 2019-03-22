@@ -19,6 +19,7 @@ enter_user_space:
     
     ; Load FPU state
     frstor [esp]
+    fwait
     
     ; Move stack pointer (frstor won't do this itself)
     add esp, 108
