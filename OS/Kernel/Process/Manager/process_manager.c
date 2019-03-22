@@ -168,12 +168,13 @@ void process_manager_switch_to_next_process()
                 break;
             }
 
+            io_enable_interrupts();
             __asm__ volatile("hlt");
+            io_disable_interrupts();
+
             last_task_switch = timer_get_system_clock();
         }
     }
-
-    io_disable_interrupts();
 
     process_info *old_process = processes.data[current_process_id];
 
@@ -183,6 +184,9 @@ void process_manager_switch_to_next_process()
         old_process->status = process_status_ready;
     }
     new_process->status = process_status_working;
+
+    uint32_t old_eip = old_process->state.eip;
+    uint32_t new_eip = new_process->state.eip;
 
     paging_set_page_directory(new_process->page_directory);
     heap_set_user_heap((void *)(new_process->heap));
