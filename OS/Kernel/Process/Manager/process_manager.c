@@ -99,6 +99,15 @@ uint32_t process_manager_create_process(char *path, char *parameters)
     process->state.registers.esi = 0;
     process->state.registers.edi = 0;
 
+    process->state.fpu_state.control_word = 0x37F;
+    process->state.fpu_state.status_word = 0;
+    process->state.fpu_state.tag_word = 0xFFFF;
+    process->state.fpu_state.instruction_pointer_offset = 0;
+    process->state.fpu_state.instruction_pointer_selector = 0;
+    process->state.fpu_state.opcode = 0;
+    process->state.fpu_state.operand_pointer_offset = 0;
+    process->state.fpu_state.operand_pointer_selector = 0;
+
     if (processes.count == 0)
     {
         current_process_id = process->id;
