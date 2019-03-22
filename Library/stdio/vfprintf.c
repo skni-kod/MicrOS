@@ -75,6 +75,7 @@ char *_itoa(unsigned int number, char *buffer, int base, bool uppercase, int siz
 
 char *_ftoa(float number, char *buffer, unsigned short flags, int precision)
 {
+
     float whole = floor(number);
     float frac = number - whole;
 
@@ -289,6 +290,28 @@ void _put_signed_integer(FILE *stream, int *put_idx, int number, unsigned short 
 
 void _put_float(FILE *stream, int *put_idx, float number, unsigned short flags, int width, int precision)
 {
+    // Print NAN
+    if (isnan(number))
+    {
+        fputc('n', stream);
+        fputc('a', stream);
+        fputc('n', stream);
+        (*put_idx) += 3;
+        return;
+    }
+
+    // Print INF
+    if (isinf(number))
+    {
+        char sign = number < 0 ? '-' : '+';
+        fputc(sign, stream);
+        fputc('i', stream);
+        fputc('n', stream);
+        fputc('f', stream);
+        (*put_idx) += 4;
+        return;
+    }
+
     bool negative = number < 0;
     if (negative)
     {
