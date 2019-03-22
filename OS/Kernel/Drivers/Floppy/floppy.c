@@ -161,7 +161,7 @@ void floppy_confirm_interrupt(uint8_t *st0, uint8_t *cylinder)
 
 void floppy_set_parameters(uint32_t step_rate, uint32_t head_load_time, uint32_t head_unload_time, bool dma)
 {
-    //uint8_t data = 0;
+    uint8_t data = 0;
 
     // Send SPECIFY command
     floppy_send_command(0x03);
@@ -169,13 +169,13 @@ void floppy_set_parameters(uint32_t step_rate, uint32_t head_load_time, uint32_t
     // S S S S H H H H
     //  S = Step Rate
     //  H = Head Unload Time
-    //data = ((step_rate & 0xf) << 4) | (head_unload_time & 0xf);
-    floppy_send_command(0xdf);
+    data = ((16 - step_rate) << 4) | (head_unload_time / 16);
+    floppy_send_command(data);
 
     // H H H H H H H DMA
     //  H = Head Load Time
-    //data = (head_load_time << 1) | (dma ? 0 : 1);
-    floppy_send_command(0x02);
+    data = ((head_load_time / 16) << 1) | (dma ? 0 : 1);
+    floppy_send_command(data);
 }
 
 bool floppy_calibrate()
