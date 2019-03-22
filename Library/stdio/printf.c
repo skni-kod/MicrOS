@@ -6,7 +6,7 @@ int printf(const char *format, ...)
     va_list arg;
     va_start(arg, format);
 
-    int ret = __vfprintf(stdout, format, arg);
+    int ret = vfprintf(stdout, format, arg);
     va_end(arg);
 
     return ret;

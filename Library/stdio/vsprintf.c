@@ -1,5 +1,5 @@
 #include <stdarg.h>
-#include "stdio.h"
+#include "../stdio.h"
 
 int vsprintf(char *str, const char *format, va_list arg)
 {
