@@ -18,7 +18,6 @@ enter_user_space:
     popa
     
     ; Load FPU state
-    fwait
     frstor [esp]
     
     ; Move stack pointer (frstor won't do this itself)

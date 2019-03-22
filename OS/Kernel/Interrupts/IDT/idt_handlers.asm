@@ -56,8 +56,8 @@ idt_int%1:
 ; Output: nothing
 idt_exc_wrapper:
   ; Save FPU state
-  fwait
   fsave [esp - 108]
+  fwait
   
   ; Move stack pointer (fsave won't do this itself)
   sub esp, 108
@@ -94,7 +94,6 @@ idt_exc_wrapper:
   popa
   
   ; Restore FPU state
-  fwait
   frstor [esp]
   
   ; Move stack pointer (frstor won't do this itself)
@@ -108,8 +107,8 @@ idt_exc_wrapper:
 ; Output: nothing
 idt_int_wrapper:
   ; Save FPU state
-  fwait
   fsave [esp - 108]
+  fwait
   
   ; Move stack pointer (fsave won't do this itself)
   sub esp, 108
@@ -130,7 +129,6 @@ idt_int_wrapper:
   popa
   
   ; Restore FPU state
-  fwait
   frstor [esp]
   
   ; Move stack pointer (frstor won't do this itself)
