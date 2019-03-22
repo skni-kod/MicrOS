@@ -347,7 +347,7 @@ int ferror(FILE *stream);
     \param Additional arguments
     \return Total number of characters written to buffer
 */
-int sprintf(char* str, const char* format, ...);
+int sprintf(char *str, const char *format, ...);
 
 //! Print formatted data to stdout
 /*!
@@ -356,7 +356,7 @@ int sprintf(char* str, const char* format, ...);
     \param Additional arguments
     \return Total number of characters written to stdout
 */
-int printf(const char* format, ...);
+int printf(const char *format, ...);
 
 //! Print formatted data to stdoutWrite formatted data to stream
 /*!
@@ -366,7 +366,7 @@ int printf(const char* format, ...);
     \param Additional arguments
     \return Total number of characters written to stream.
 */
-int fprintf(FILE* file, const char* format, ...);
+int fprintf(FILE *file, const char *format, ...);
 
 //! Print formatted data from variable argument list to stream
 /*!
@@ -376,7 +376,7 @@ int fprintf(FILE* file, const char* format, ...);
     \param A value identifying a variable arguments list initialized with va_start.
     \return Total number of characters written to stream.
 */
-int vfprintf(FILE* stream, const char* format, va_list arg);
+int vfprintf(FILE *stream, const char *format, va_list arg);
 
 //! Print formatted data from variable argument list to stdout
 /*!
@@ -385,7 +385,7 @@ int vfprintf(FILE* stream, const char* format, va_list arg);
     \param A value identifying a variable arguments list initialized with va_start.
     \return Total number of characters written to stream.
 */
-int vprintf(const char* format, va_list arg);
+int vprintf(const char *format, va_list arg);
 
 //! Print formatted data from variable argument list to string
 /*!
@@ -395,7 +395,11 @@ int vprintf(const char* format, va_list arg);
     \param A value identifying a variable arguments list initialized with va_start.
     \return Total number of characters written to stream.
 */
-int vsprintf(char* str, const char* format, va_list arg);
+int vsprintf(char *str, const char *format, va_list arg);
+
+int vfscanf(FILE *stream, const char *format, va_list arg);
+
+int scanf(const char *format, ...);
 
 //! Creates new stream.
 /*!
