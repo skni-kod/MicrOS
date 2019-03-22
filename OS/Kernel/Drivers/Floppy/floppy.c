@@ -225,7 +225,6 @@ void floppy_enable_motor()
         sleep(500);
 
         motor_enabled = true;
-        logger_log_warning("[Floppy] Floppy motor enabled");
     }
 
     time_of_last_activity = timer_get_system_clock();
@@ -239,7 +238,6 @@ void floppy_disable_motor()
         io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x0C);
 
         motor_enabled = false;
-        logger_log_warning("[Floppy] Floppy motor disabled");
     }
 }
 
@@ -379,30 +377,6 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
 
         if (st1 != 0 || st2 != 0)
         {
-            char output[80] = {' '};
-            logger_log_info("[Floppy] DUMP (ST0 ST1 ST2 CD HD SD BPS T H S)");
-            itoa(st0, output, 5);
-            itoa(st1, output + 6, 10);
-            itoa(st2, output + 12, 10);
-            itoa(cylinder_data, output + 18, 10);
-            itoa(head_data, output + 24, 10);
-            itoa(sector_data, output + 30, 10);
-            itoa(bps, output + 36, 10);
-            itoa(track, output + 42, 10);
-            itoa(head, output + 48, 10);
-            itoa(sector, output + 54, 10);
-
-            for (int i = 0; i < 80; i++)
-            {
-                if (output[i] == 0)
-                {
-                    output[i] = ' ';
-                }
-            }
-
-            output[79] = 0;
-            logger_log_info(output);
-
             for (int i = 0; i < 100; i++)
             {
                 if (!floppy_calibrate())

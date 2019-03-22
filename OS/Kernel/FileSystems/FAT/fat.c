@@ -11,34 +11,22 @@ uint32_t directory_length;
 
 void fat_init()
 {
-    logger_log_info("[FAT] Reading FAT array...");
     fat_length = fat_header_data->bytes_per_sector * fat_header_data->sectors_per_fat;
     fat = heap_kernel_alloc(fat_length, 0);
     fat_load_fat();
-    logger_log_info("[FAT] FAT array done...");
 
-    logger_log_info("[FAT] Reading root directory...");
     directory_length = fat_header_data->directory_entries * 32;
     root = heap_kernel_alloc(directory_length, 0);
     fat_load_root();
-    logger_log_info("[FAT] Root directore done...");
 }
 
 void fat_load_fat()
 {
-    char buf[32];
     for (int i = 1; i < fat_header_data->sectors_per_fat; i++)
     {
         uint8_t *buffer = floppy_read_sector(i);
-        if (buffer != NULL)
-        {
-            vga_printstring(itoa(i, buf, 10));
-            vga_printchar(' ');
-        }
-
         memcpy((void *)((uint32_t)fat + ((i - 1) * 512)), buffer, 512);
     }
-    vga_printchar('\n');
 }
 
 void fat_load_root()
@@ -46,19 +34,11 @@ void fat_load_root()
     uint8_t root_first_sector = 1 + (fat_header_data->sectors_per_fat * 2);
     uint8_t root_sectors_count = (fat_header_data->directory_entries * 32) / fat_header_data->bytes_per_sector;
 
-    char buf[32];
     for (int i = root_first_sector; i < root_first_sector + root_sectors_count; i++)
     {
         uint8_t *buffer = floppy_read_sector(i);
-        if (buffer != NULL)
-        {
-            vga_printstring(itoa(i, buf, 10));
-            vga_printchar(' ');
-        }
-
         memcpy((void *)((uint32_t)root + ((i - root_first_sector) * 512)), buffer, 512);
     }
-    vga_printchar('\n');
 }
 
 uint16_t fat_read_sector_value(uint32_t sector_number)
@@ -194,7 +174,6 @@ uint8_t *fat_load_file_from_sector(uint16_t initial_sector, uint16_t sector_offs
     uint8_t *buffer = heap_kernel_alloc(512, 0);
     uint32_t read_sectors = 0;
 
-    char buf[32];
     while (read_sectors < sectors_count && sector < 0xFF0)
     {
         buffer = heap_kernel_realloc(buffer, 512 * (read_sectors + 1), 0);
@@ -202,14 +181,10 @@ uint8_t *fat_load_file_from_sector(uint16_t initial_sector, uint16_t sector_offs
         uint8_t *read_data = floppy_read_sector(sector + 31);
         sector = fat_read_sector_value(sector);
 
-        vga_printstring(itoa(sector, buf, 10));
-        vga_printchar(' ');
-
         memcpy(buffer + (read_sectors * 512), read_data, 512);
         read_sectors++;
     }
 
-    vga_printchar('\n');
     return buffer;
 }
 
@@ -306,9 +281,6 @@ fat_directory_entry *fat_get_info(char *path, bool is_directory)
 {
     kvector *chunks = fat_parse_path(path);
     char *target_filename = chunks->data[chunks->count - 1];
-
-    logger_log_info(is_directory ? "Getting info about directory:" : "Getting info about file:");
-    logger_log_info(path);
 
     kvector_remove(chunks, chunks->count - 1);
 
