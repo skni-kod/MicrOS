@@ -5,6 +5,9 @@ volatile uint8_t *dma_buffer = (uint8_t *)DMA_ADDRESS;
 volatile uint32_t time_of_last_activity = 0;
 volatile bool motor_enabled = false;
 
+volatile uint32_t current_cylinder = 0;
+volatile uint32_t current_head = 0;
+
 volatile bool floppy_interrupt_flag = false;
 
 bool floppy_init()
@@ -202,6 +205,9 @@ bool floppy_calibrate()
 
         if (cylinder == 0)
         {
+            current_cylinder = 0;
+            current_head = 0;
+
             return true;
         }
     }
@@ -430,6 +436,11 @@ bool floppy_seek(uint8_t cylinder, uint8_t head)
 {
     uint8_t st0, interrupt_cylinder;
 
+    if (current_cylinder == cylinder && current_head == head)
+    {
+        return true;
+    }
+
     for (int i = 0; i < 100; i++)
     {
         // Send seek command
@@ -448,6 +459,9 @@ bool floppy_seek(uint8_t cylinder, uint8_t head)
 
         if (interrupt_cylinder == cylinder)
         {
+            current_cylinder = cylinder;
+            current_head = head;
+
             sleep(50);
             return true;
         }
