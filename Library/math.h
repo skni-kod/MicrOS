@@ -1673,6 +1673,27 @@ int __math_fpclasifyf(float x);
 */
 int __math_fpclasifyl(long double x);
 
+//! The signbit determines whether the sign of its argument value is negative.
+/*!
+    \param arg The value to check.
+    \return The signbit returns a nonzero value if and only if the sign of its argument value is negative.
+*/
+int __math_signbit(double x);
+
+//! The signbit determines whether the sign of its argument value is negative.
+/*!
+    \param arg The value to check.
+    \return The signbit returns a nonzero value if and only if the sign of its argument value is negative.
+*/
+int __math_signbitf(float x);
+
+//! The signbit determines whether the sign of its argument value is negative.
+/*!
+    \param arg The value to check.
+    \return The signbit returns a nonzero value if and only if the sign of its argument value is negative.
+*/
+int __math_signbitl(long double x);
+
 //! Returns quiet NAN.
 /*! 
     \return Quiet NAN.
@@ -1743,9 +1764,10 @@ long double __math_INFl();
 
 //! The signbit macro determines whether the sign of its argument value is negative.
 /*!
-    /return The signbit macro returns a nonzero value if and only if the sign of its argument value is negative.
+    \param arg The value to check.
+    \return The signbit macro returns a nonzero value if and only if the sign of its argument value is negative.
 */
-#define signbit(arg) (((unsigned char)(arg)) & (unsigned char)128)
+#define signbit(arg) (sizeof(arg) == sizeof(double) ? __math_signbit(arg) : (sizeof(arg) == sizeof(float) ? __math_signbitf(arg) : __math_signbitl(arg)))
 
 //! Multiply-add.
 /*! 
