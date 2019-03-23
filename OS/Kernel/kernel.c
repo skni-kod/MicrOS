@@ -43,11 +43,11 @@ void startup()
     heap_init_kernel_heap();
     logger_log_ok("Virtual Memory");
 
-    pic_init();
-    logger_log_ok("Programmable Interrupt Controller");
-
     idt_init();
     logger_log_ok("Interrupt Descriptor Table");
+
+    pic_init();
+    logger_log_ok("Programmable Interrupt Controller");
 
     timer_init();
     logger_log_ok("Timer");
@@ -147,31 +147,20 @@ int kmain()
     //startup_music_play();
     logger_log_ok("READY.");
 
-    //process_manager_create_process("/ENV/TASKS.ELF", "Honoka Kotori");
-    /*process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
-    process_manager_run();*/
+    logger_log_ok("Loading tasks...");
+    process_manager_create_process("/ENV/TASKS.ELF", "Honoka Kotori");
 
-    /*while (1)
+    logger_log_ok("Loading shell...");
+    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
+
+    logger_log_ok("Loading shell...");
+    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
+
+    process_manager_run();
+
+    while (1)
         ;
-    */
-    
+
     while (1)
     {
         if (!keyboard_is_buffer_empty())
@@ -299,10 +288,9 @@ int kmain()
                 //memoryViewer();
             }
             else
-            vga_printchar(c.ascii);
+                vga_printchar(c.ascii);
         }
     }
-
 
     return 0;
 }

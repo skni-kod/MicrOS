@@ -55,12 +55,12 @@ idt_int%1:
 ; Input: interrupt number and error code on stack
 ; Output: nothing
 idt_exc_wrapper:
-  ; Save FPU state
-  fwait
-  fsave [esp - 108]
-  
   ; Move stack pointer (fsave won't do this itself)
   sub esp, 108
+  
+  ; Save FPU state
+  fnsave [esp]
+  fwait
   
   ; Save registers
   pusha
@@ -94,8 +94,8 @@ idt_exc_wrapper:
   popa
   
   ; Restore FPU state
-  fwait
   frstor [esp]
+  fwait
   
   ; Move stack pointer (frstor won't do this itself)
   add esp, 108
@@ -107,12 +107,12 @@ idt_exc_wrapper:
 ; Input: interrupt number on stack
 ; Output: nothing
 idt_int_wrapper:
-  ; Save FPU state
-  fwait
-  fsave [esp - 108]
-  
   ; Move stack pointer (fsave won't do this itself)
   sub esp, 108
+  
+  ; Save FPU state
+  fnsave [esp]
+  fwait
   
   ; Save registers
   pusha
@@ -130,8 +130,8 @@ idt_int_wrapper:
   popa
   
   ; Restore FPU state
-  fwait
   frstor [esp]
+  fwait
   
   ; Move stack pointer (frstor won't do this itself)
   add esp, 108

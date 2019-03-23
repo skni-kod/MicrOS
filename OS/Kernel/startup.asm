@@ -294,7 +294,7 @@ enable_paging:
 
     ; Enable paging
     mov ebx, cr0
-    or ebx, 0x80000001
+    or ebx, 0x80000021
     mov cr0, ebx
 
     ret
