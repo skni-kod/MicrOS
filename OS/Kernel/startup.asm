@@ -312,7 +312,7 @@ enable_paging:
 
     ; Enable paging
     mov eax, cr0
-    or eax, 0x80000001
+    or eax, 0x80000021
     mov cr0, eax
 
     jmp .branch
