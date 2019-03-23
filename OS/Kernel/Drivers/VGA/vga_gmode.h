@@ -65,6 +65,7 @@ void drawDupaIn12H(int color);
 void set13HVideoMode();
 void pixel_13H(unsigned char color, unsigned int x, unsigned int y);
 void drawDupaIn13H(int color);
+void drawMicrOSLogoIn13H();
 
 void setModeYVideoMode();
 void pixel_ModeY(unsigned char color, unsigned int x, unsigned int y);
@@ -74,5 +75,10 @@ static void set_plane(unsigned p);
 
 void setFont(uint8_t *buf, uint8_t font_height);
 char getMode();
+
+void dumpRegs();
+void printRegs();
+void test13H();
+void setPalette13H();
 
 #endif

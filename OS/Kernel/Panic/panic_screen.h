@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "../Drivers/VGA/vga.h"
+#include "../Drivers/VGA/vga_gmode.h"
 #include "../Drivers/Keyboard/keyboard.h"
 #include "../Library/kvector.h"
 #include "../Memory/GDT/gdt_entry.h"
