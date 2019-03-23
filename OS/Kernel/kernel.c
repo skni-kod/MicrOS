@@ -181,14 +181,21 @@ int kmain()
             if (c.scancode == 59)
             {
                 if (getMode() != 3)
+                {
                     set3HVideoMode();
+                    //printRegs();
+                }
             }
             else if (c.scancode == 60)
             {
                 if (getMode() != 0x13)
                 {
                     set13HVideoMode();
-                    drawDupaIn13H(10);
+                    drawDupaIn13H(0);
+                    //test13H();
+                    drawMicrOSLogoIn13H();
+                    //dumpRegs();
+                    //drawDupaIn13H(0);
                 }
             }
             else if (c.scancode == 61)
@@ -215,6 +222,7 @@ int kmain()
                 if (getMode() != 0x11)
                 {
                     set11HVideoMode();
+                    //drawMicrOSLogoIn11H();
                     drawDupaIn11H(0x6);
                     //pixel_11H(1, 5, 0);
                 }
