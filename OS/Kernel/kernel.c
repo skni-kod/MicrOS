@@ -147,15 +147,20 @@ int kmain()
     //startup_music_play();
     logger_log_ok("READY.");
 
+    logger_log_ok("Loading tasks...");
     process_manager_create_process("/ENV/TASKS.ELF", "Honoka Kotori");
+
+    logger_log_ok("Loading shell...");
     process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
+
+    logger_log_ok("Loading shell...");
+    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
+
     process_manager_run();
 
     while (1)
         ;
 
-    /*
     while (1)
     {
         if (!keyboard_is_buffer_empty())
@@ -165,37 +170,127 @@ int kmain()
             if (c.scancode == 59)
             {
                 if (getMode() != 3)
+                {
                     set3HVideoMode();
+                    //printRegs();
+                }
             }
             else if (c.scancode == 60)
             {
                 if (getMode() != 0x13)
                 {
                     set13HVideoMode();
-                    drawDupaIn13H(10);
+                    drawDupaIn13H(0);
+                    //test13H();
+                    drawMicrOSLogoIn13H();
+                    //dumpRegs();
+                    //drawDupaIn13H(0);
                 }
             }
             else if (c.scancode == 61)
             {
-                pc_speaker_enable_sound(1000);
+                //pc_speaker_enable_sound(1000);
+                if (getMode() != 0x69)
+                {
+                    setModeYVideoMode();
+                    drawDupaInY(0x3);
+                    //pixel_11H(1, 5, 0);
+                }
             }
             else if (c.scancode == 62)
             {
-                pc_speaker_disable_sound();
+                if (getMode() != 0x12)
+                {
+                    set12HVideoMode();
+                    drawDupaIn12H(0x6);
+                    //pixel_11H(1, 5, 0);
+                }
             }
             else if (c.scancode == 63)
             {
-                panic_screen_show(0x42, "Someone ask Question about Life, the Universe and Evertything");
+                if (getMode() != 0x11)
+                {
+                    set11HVideoMode();
+                    //drawMicrOSLogoIn11H();
+                    drawDupaIn11H(0x6);
+                    //pixel_11H(1, 5, 0);
+                }
+                //panic_screen_show(NULL, 0x42, "Someone ask Question about Life, the Universe and Evertything");
             }
             else if (c.scancode == 64)
             {
-                memoryViewer();
+                if (getMode() != 0x5)
+                {
+                    set5HVideoMode();
+                    drawDupaIn5H(0x5);
+                    //pixel_11H(1, 5, 0);
+                }
+                //memoryViewer();
+            }
+            else if (c.scancode == 65)
+            {
+                if (getMode() != 0x4)
+                {
+                    set4HVideoMode();
+                    drawDupaIn4H(0x2);
+                    //pixel_11H(1, 5, 0);
+                }
+                //memoryViewer();
+            }
+            else if (c.scancode == 66)
+            {
+                if (getMode() != 0x6)
+                {
+                    set6HVideoMode();
+                    drawDupaIn6H(0x1);
+                    //pixel_11H(1, 5, 0);
+                }
+                //memoryViewer();
+            }
+            else if (c.scancode == 67)
+            {
+                if (getMode() != 0xd)
+                {
+                    setDHVideoMode();
+                    drawDupaInDH(0x1);
+                    //pixel_11H(1, 5, 0);
+                }
+                //memoryViewer();
+            }
+            else if (c.scancode == 68)
+            {
+                if (getMode() != 0xe)
+                {
+                    setEHVideoMode();
+                    drawDupaInEH(0x4);
+                    //pixel_11H(1, 5, 0);
+                }
+                //memoryViewer();
+            }
+            else if (c.scancode == 87)
+            {
+                if (getMode() != 0x10)
+                {
+                    set10HVideoMode();
+                    drawDupaIn10H(0xa);
+                    //pixel_11H(1, 5, 0);
+                }
+                //memoryViewer();
+            }
+            else if (c.scancode == 88)
+            {
+                if (getMode() != 0xf)
+                {
+                    setFHVideoMode();
+                    drawDupaInFH(0x2);
+                    //pixel_11H(1, 5, 0);
+                }
+                //memoryViewer();
             }
             else
-            vga_printchar(c.ascii);
+                vga_printchar(c.ascii);
         }
     }
-    */
 
     return 0;
 }
