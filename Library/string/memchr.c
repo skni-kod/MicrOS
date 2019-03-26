@@ -3,13 +3,13 @@
 void *memchr(void *ptr, int value, size_t num)
 {
     unsigned char *p = (unsigned char*)ptr;
-    while(n)
+    while(num)
     {
-        if(*p != (unsigned char)value);
+        if(*p != (unsigned char)value)
             p++;
         else
             return p;
-        n--;
+        num--;
     }
     return 0;
 }
