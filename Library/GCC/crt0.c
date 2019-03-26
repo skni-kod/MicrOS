@@ -2,8 +2,6 @@
 
 void _start(char *path, char *parameters)
 {
-    __asm__("finit");
-
     micros_process_set_current_process_signal_handler(signal_handler);
 
     setlocale(LC_ALL, "C");

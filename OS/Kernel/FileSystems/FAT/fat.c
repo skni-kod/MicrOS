@@ -13,11 +13,10 @@ void fat_init()
 {
     fat_length = fat_header_data->bytes_per_sector * fat_header_data->sectors_per_fat;
     fat = heap_kernel_alloc(fat_length, 0);
+    fat_load_fat();
 
     directory_length = fat_header_data->directory_entries * 32;
     root = heap_kernel_alloc(directory_length, 0);
-
-    fat_load_fat();
     fat_load_root();
 }
 

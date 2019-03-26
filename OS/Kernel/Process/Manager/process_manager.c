@@ -87,6 +87,15 @@ uint32_t process_manager_create_process(char *path, char *parameters)
     process->state.registers.esi = 0;
     process->state.registers.edi = 0;
 
+    process->state.fpu_state.control_word = 0x37F;
+    process->state.fpu_state.status_word = 0;
+    process->state.fpu_state.tag_word = 0xFFFF;
+    process->state.fpu_state.instruction_pointer_offset = 0;
+    process->state.fpu_state.instruction_pointer_selector = 0;
+    process->state.fpu_state.opcode = 0;
+    process->state.fpu_state.operand_pointer_offset = 0;
+    process->state.fpu_state.operand_pointer_selector = 0;
+
     if (processes.count == 0)
     {
         current_process_id = process->id;
@@ -99,6 +108,7 @@ uint32_t process_manager_create_process(char *path, char *parameters)
 
     paging_set_page_directory(page_directory);
     heap_set_user_heap(old_heap);
+
     return process->id;
 }
 
@@ -159,7 +169,10 @@ void process_manager_switch_to_next_process()
                 break;
             }
 
+            io_enable_interrupts();
             __asm__ volatile("hlt");
+            io_disable_interrupts();
+
             last_task_switch = timer_get_system_clock();
         }
     }
@@ -173,14 +186,11 @@ void process_manager_switch_to_next_process()
     }
     new_process->status = process_status_working;
 
+    uint32_t old_eip = old_process->state.eip;
+    uint32_t new_eip = new_process->state.eip;
+
     paging_set_page_directory(new_process->page_directory);
     heap_set_user_heap((void *)(new_process->heap));
-
-    __asm__("mov %0, %%eax\n"
-            "mov %%eax, %%esp"
-            :
-            : "g"(new_process->state.esp)
-            : "eax");
 
     enter_user_space(&new_process->state);
 }

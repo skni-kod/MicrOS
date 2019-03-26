@@ -49,6 +49,10 @@ Main:
     ; https://wiki.osdev.org/Memory_Map_(x86)
     mov esp, 0x7C00
     mov ebp, esp
+    
+    ; Initialize data segment register
+    mov ax, cs
+    mov ds, ax
 
     ; Save device number (DL register) to memory
     mov [INT13Scratchpad], dl

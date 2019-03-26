@@ -43,7 +43,8 @@ void panic_screen_show(exception_state *state, uint32_t code, const char *optStr
 void panic_screen_display_intro(exception_state *state, uint32_t code, const char *optString)
 {
     char buff[100];
-
+    if(getMode() != 0x3)
+        set3HVideoMode();
     vga_clear_screen();
     for (int i = 0; i < 20; i++)
     {
