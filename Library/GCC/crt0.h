@@ -9,6 +9,7 @@
 
 void _start(char *path, char *parameters);
 char **parse_parameters(char *path, char *parameters, int *count);
+void __attribute__((fastcall, noinline)) signal_handler(int code, int parameter);
 
 extern int main(int argc, char *argv[]);
 

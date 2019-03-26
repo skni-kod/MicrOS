@@ -4,6 +4,8 @@ void _start(char *path, char *parameters)
 {
     __asm__("finit");
 
+    micros_process_set_current_process_signal_handler(signal_handler);
+
     setlocale(LC_ALL, "C");
     __signal_init();
 
@@ -85,4 +87,16 @@ char **parse_parameters(char *path, char *parameters, int *count)
 
     argv[(*count) - 1] = 0;
     return argv;
+}
+
+void __attribute__((fastcall, noinline)) signal_handler(int code, int parameter)
+{
+    switch (code)
+    {
+    case 14: //Page fault
+    {
+        raise(SIGSEGV);
+        break;
+    }
+    }
 }

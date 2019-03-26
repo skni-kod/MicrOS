@@ -2,6 +2,7 @@
 #define SIGNAL_H
 
 #include <stdint.h>
+#include "micros.h"
 
 //! (Signal Abort) Abnormal termination, such as is initiated by the abort function.
 #define SIGABRT 0
