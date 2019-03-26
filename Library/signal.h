@@ -58,6 +58,15 @@ void (*signal(int sig, signal_func func))(int);
 */
 int raise(int sig);
 
+//! Generates a signal with the specified parameter.
+/*!
+    The signal value to raise.
+    \param sig The signal value to which a handling function is set.
+    \param param The signal parameter.
+    \return Returns zero if successful, and a value different from zero otherwise.
+*/
+int raise_with_param(int sig, int param);
+
 //! Default signal handle for SIGABRT.
 /*!
     This handler can be set by passing SIG_DFL in sig parameter in signal function.

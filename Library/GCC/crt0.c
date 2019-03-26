@@ -95,7 +95,7 @@ void __attribute__((fastcall, noinline)) signal_handler(int code, int parameter)
     {
     case 14: //Page fault
     {
-        raise(SIGSEGV);
+        raise_with_param(SIGSEGV, parameter);
         break;
     }
     }
