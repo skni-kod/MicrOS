@@ -58,7 +58,7 @@ uint32_t process_manager_create_process(char *path, char *parameters)
     process->user_stack = (void *)(initial_page * 1024 * 1024 * 4 + process->size_in_memory + stack_align) + 1024 * 1024;
     process->heap = (void *)((uint32_t)process->user_stack) + 4;
 
-    heap_entry* old_heap = heap_get_user_heap();
+    heap_entry *old_heap = heap_get_user_heap();
     heap_set_user_heap((void *)(process->heap));
     heap_init_user_heap();
 
@@ -113,6 +113,11 @@ process_info *process_manager_get_process(uint32_t process_id)
     }
 
     return NULL;
+}
+
+process_info *process_manager_get_current_process()
+{
+    return process_manager_get_process(current_process_id);
 }
 
 void process_manager_save_current_process_state(interrupt_state *state, uint32_t delta)
@@ -249,6 +254,18 @@ bool process_manager_set_current_process_name(char *name)
     if (process != NULL)
     {
         memcpy(process->name, name, 32);
+        return true;
+    }
+
+    return false;
+}
+
+bool process_manager_set_current_process_signal_handler(void (*signal_handler)(int))
+{
+    process_info *process = process_manager_get_process_info(current_process_id);
+    if (process != NULL)
+    {
+        process->signal_handler = signal_handler;
         return true;
     }
 
