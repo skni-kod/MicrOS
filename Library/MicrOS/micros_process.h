@@ -28,6 +28,7 @@ bool micros_process_get_process_info(uint32_t id, micros_process_user_info *user
 void micros_process_get_all_processes_info(micros_process_user_info *user_info);
 void micros_process_set_current_process_name(char *name);
 void micros_process_current_process_sleep(uint32_t milliseconds);
-void micros_process_start_process(char* path, char* arguments);
+void micros_process_start_process(char *path, char *arguments);
+bool micros_process_set_current_process_signal_handler(void (*signal_handler)(int));
 
 #endif

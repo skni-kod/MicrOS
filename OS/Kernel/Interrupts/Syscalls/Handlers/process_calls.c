@@ -39,3 +39,8 @@ void syscall_process_start_process(interrupt_state *state)
 {
     process_manager_create_process((char *)state->registers.ebx, (char *)state->registers.ecx);
 }
+
+bool syscall_process_set_current_process_signal_handler(interrupt_state *state)
+{
+    process_manager_set_current_process_signal_handler(state->registers.ebx);
+}
