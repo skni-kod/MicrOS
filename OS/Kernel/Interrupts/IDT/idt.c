@@ -305,11 +305,14 @@ void idt_global_int_handler(interrupt_state *state)
 
 void idt_global_exc_handler(exception_state *state)
 {
-    for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
+    if (state->cs == 27)
     {
-        if (exception_handlers[i].exception_number == state->interrupt_number && exception_handlers[i].handler != 0)
+        for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
         {
-            exception_handlers[i].handler(state);
+            if (exception_handlers[i].exception_number == state->interrupt_number && exception_handlers[i].handler != 0)
+            {
+                exception_handlers[i].handler(state);
+            }
         }
     }
 
