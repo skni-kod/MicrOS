@@ -44,3 +44,8 @@ bool syscall_process_set_current_process_signal_handler(interrupt_state *state)
 {
     process_manager_set_current_process_signal_handler(state->registers.ebx);
 }
+
+void syscall_process_finish_signal_handler(interrupt_state *state)
+{
+    process_manager_finish_signal_handler(state->registers.ebx);
+}
