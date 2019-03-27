@@ -35,46 +35,6 @@
 /*! Integral type of an object that can be accessed as an atomic entity, even in the presence of asynchronous signals. !*/
 typedef int32_t sig_atomic_t;
 
-typedef struct signal_registers_state
-{
-    uint32_t edi;
-    uint32_t esi;
-    uint32_t ebp;
-    uint32_t esp_unused;
-    uint32_t ebx;
-    uint32_t edx;
-    uint32_t ecx;
-    uint32_t eax;
-} signal_registers_state;
-
-typedef struct signal_fpu_state
-{
-    uint32_t control_word;
-    uint32_t status_word;
-    uint32_t tag_word;
-    uint32_t instruction_pointer_offset;
-    uint16_t instruction_pointer_selector;
-    uint16_t opcode;
-    uint32_t operand_pointer_offset;
-    uint32_t operand_pointer_selector;
-    uint8_t registers[80];
-} signal_fpu_state;
-
-typedef struct signal_params
-{
-    uint32_t interrupt_number;
-    uint32_t cr2;
-
-    signal_registers_state registers;
-    signal_fpu_state fpu_state;
-
-    uint32_t eip;
-    uint32_t cs;
-    uint32_t eflags;
-    uint32_t esp;
-    uint32_t ss;
-} signal_params;
-
 //! Signal function signature
 typedef void (*signal_func)(int);
 
