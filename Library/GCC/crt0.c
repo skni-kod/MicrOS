@@ -87,14 +87,6 @@ char **parse_parameters(char *path, char *parameters, int *count)
     return argv;
 }
 
-void __attribute__((fastcall, noinline)) signal_handler(int code, int parameter)
+void signal_handler(signal_params *old_state)
 {
-    switch (code)
-    {
-    case 14: //Page fault
-    {
-        raise_with_param(SIGSEGV, parameter);
-        break;
-    }
-    }
 }
