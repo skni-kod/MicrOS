@@ -282,6 +282,21 @@ bool process_manager_set_current_process_signal_handler(void (*signal_handler)(i
     return false;
 }
 
+bool process_manager_finish_signal_handler(signal_params *old_state)
+{
+    interrupt_state state;
+    state.cs = old_state->cs;
+    state.ss = old_state->ss;
+    state.eip = old_state->eip;
+    state.esp = old_state->esp;
+    state.eflags = old_state->eflags;
+
+    memcpy(&state.registers, &old_state->registers, sizeof(registers_state));
+    memcpy(&state.fpu_state, &old_state->fpu_state, sizeof(fpu_state));
+
+    enter_user_space(&state);
+}
+
 void process_manager_current_process_sleep(uint32_t milliseconds)
 {
     process_info *process = process_manager_get_process_info(current_process_id);
