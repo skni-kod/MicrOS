@@ -33,6 +33,21 @@ typedef struct _driverInitStruct
 
 void initWithDriver(DriverInitStruct initStruct);
 
+void setGetAvailableGraphicVideoModesFunc(VideoMode* (*getAvailableGraphicVideoModes)(uint32_t*));
+void setGetAvailableTextVideoModesFunc(VideoMode* (*getAvailableTextVideoModes)(uint32_t*));
+void setSetVideoModeFunc(int16_t (*setVideoMode)(uint16_t));
+void setIsTextModeFunc(uint8_t (*isTextMode)());
+void setGetCurrentVideoModeFunc(VideoMode* (*getCurrentVideoMode)());
+void setTurnOnBufferFunc(int8_t (*turnOnBuffer)());
+void setTurnOffBufferFunc(int8_t (*turnOffBuffer)());
+void setIsBufferOnFunc(uint8_t (*isBufferOn)());
+void setSwapBuffersFunc(int8_t (*swapBuffers)());
+void setDrawPixelFunc(int8_t (*drawPixel)(uint8_t, int16_t, int16_t));
+void setDrawLineFunc(int8_t (*drawLine)(uint8_t, int16_t, int16_t, int16_t, int16_t));
+void setDrawCircleFunc(int8_t (*drawCircle)(uint8_t, int16_t, int16_t, int16_t));
+void setDrawRectangleFunc(int8_t (*drawRectangle)(uint8_t, int16_t, int16_t, int16_t, int16_t));
+void setClearScreenFunc(int8_t (*clearScreen)());
+
 VideoMode* getAvailableGraphicVideoModes(uint32_t *noOfModes);
 VideoMode* getAvailableTextVideoModes(uint32_t *noOfModes);
 
@@ -42,7 +57,7 @@ uint8_t isTextMode();
 VideoMode* getCurrentVideoMode();
 
 int8_t turnOnBuffer();
-int8_t turnOfBuffer();
+int8_t turnOffBuffer();
 uint8_t isBufferOn();
 
 int8_t swapBuffers();

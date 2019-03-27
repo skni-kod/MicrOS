@@ -36,6 +36,58 @@ void initWithDriver(DriverInitStruct initStruct){
     _clearScreen = initStruct.clearScreen;
 }
 
+void setGetAvailableGraphicVideoModesFunc(VideoMode* (*getAvailableGraphicVideoModes)(uint32_t*)){
+    _getAvailableGraphicVideoModes = getAvailableGraphicVideoModes;
+}
+
+void setGetAvailableTextVideoModesFunc(VideoMode* (*getAvailableTextVideoModes)(uint32_t*)){
+    _getAvailableTextVideoModes = getAvailableTextVideoModes;
+}
+void setSetVideoModeFunc(int16_t (*setVideoMode)(uint16_t)){
+    _setVideoMode = setVideoMode;
+}
+void setIsTextModeFunc(uint8_t (*isTextMode)())
+{
+    _isTextMode = isTextMode;
+}
+void setGetCurrentVideoModeFunc(VideoMode* (*getCurrentVideoMode)())
+{
+    _getCurrentVideoMode = getCurrentVideoMode;
+}
+void setTurnOnBufferFunc(int8_t (*turnOnBuffer)()){
+    _turnOnBuffer = turnOnBuffer;
+}
+void setTurnOffBufferFunc(int8_t (*turnOffBuffer)())
+{
+    _turnOffBuffer = turnOffBuffer;
+}
+void setIsBufferOnFunc(uint8_t (*isBufferOn)())
+{
+    _isBufferOn = isBufferOn;
+}
+void setSwapBuffersFunc(int8_t (*swapBuffers)())
+{
+    _swapBuffers = swapBuffers;
+}
+void setDrawPixelFunc(int8_t (*drawPixel)(uint8_t, int16_t, int16_t))
+{
+    _drawPixel = drawPixel;
+}
+void setDrawLineFunc(int8_t (*drawLine)(uint8_t, int16_t, int16_t, int16_t, int16_t))
+{
+    _drawLine = drawLine;
+}
+void setDrawCircleFunc(int8_t (*drawCircle)(uint8_t, int16_t, int16_t, int16_t))
+{
+    _drawCircle = drawCircle;
+}
+void setDrawRectangleFunc(int8_t (*drawRectangle)(uint8_t, int16_t, int16_t, int16_t, int16_t)){
+    _drawRectangle = drawRectangle;
+}
+void setClearScreenFunc(int8_t (*clearScreen)()){
+    _clearScreen = clearScreen;
+}
+
 VideoMode* getAvailableGraphicVideoModes(uint32_t *noOfModes){
     return (*_getAvailableGraphicVideoModes)(noOfModes);
 }
