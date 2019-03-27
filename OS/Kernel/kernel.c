@@ -147,7 +147,7 @@ int kmain()
     //startup_music_play();
     logger_log_ok("READY.");
 
-    logger_log_ok("Loading tasks...");
+    /*logger_log_ok("Loading tasks...");
     process_manager_create_process("/ENV/TASKS.ELF", "Honoka Kotori");
 
     logger_log_ok("Loading shell...");
@@ -156,10 +156,10 @@ int kmain()
     logger_log_ok("Loading shell...");
     process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
 
-    process_manager_run();
+    process_manager_run();*/
 
-    while (1)
-        ;
+    //while (1)
+    //    ;
 
     while (1)
     {
@@ -180,22 +180,32 @@ int kmain()
                 if (getMode() != 0x13)
                 {
                     set13HVideoMode();
-                    drawDupaIn13H(0);
-                    //test13H();
-                    drawMicrOSLogoIn13H();
                     //dumpRegs();
                     //drawDupaIn13H(0);
                 }
+                drawDupaIn13H(0);
+                //test13H();
+                drawMicrOSLogoIn13H();
             }
             else if (c.scancode == 61)
             {
+                if (getMode() != 0x13)
+                {
+                    set13HVideoMode();
+
+                    //dumpRegs();
+                    //drawDupaIn13H(0);
+                }
+                drawDupaIn13H(0);
+                    //test13H();
+                drawLenaIn13H();
                 //pc_speaker_enable_sound(1000);
-                if (getMode() != 0x69)
+                /*if (getMode() != 0x69)
                 {
                     setModeYVideoMode();
                     drawDupaInY(0x3);
                     //pixel_11H(1, 5, 0);
-                }
+                }*/
             }
             else if (c.scancode == 62)
             {

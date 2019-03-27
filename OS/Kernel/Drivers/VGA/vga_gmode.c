@@ -1034,6 +1034,28 @@ typedef struct _Os21xPaletteElement
 void drawMicrOSLogoIn13H()
 {
 	filesystem_file_info info;
+	filesystem_get_file_info("/ENV/LOGO.BMP", &info);
+
+	uint8_t *buffer = heap_kernel_alloc(info.size, 0);
+	filesystem_read_file("/ENV/LOGO.BMP", buffer, 0, info.size);
+
+	OS2BMPFILEHEADER fh;
+	memcpy(&fh, buffer, sizeof(OS2BMPFILEHEADER));
+
+	OS21XBITMAPHEADER bh;
+	memcpy(&bh, buffer + sizeof(OS2BMPFILEHEADER), sizeof(OS21XBITMAPHEADER));
+
+	for(int x = 0; x < bh.Width; x++)
+		for(int y = 0; y < bh.Height; y++)
+			pixel_13H(buffer[fh.BitmapOffset + (bh.Height * bh.Width - bh.Width - y*bh.Width) + x],x,y);
+
+	heap_kernel_dealloc(buffer);
+}
+
+
+void drawLenaIn13H()
+{
+	filesystem_file_info info;
 	filesystem_get_file_info("/ENV/LENA.BMP", &info);
 
 	uint8_t *buffer = heap_kernel_alloc(info.size, 0);

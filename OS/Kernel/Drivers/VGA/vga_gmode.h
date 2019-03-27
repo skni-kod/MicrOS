@@ -66,6 +66,7 @@ void set13HVideoMode();
 void pixel_13H(unsigned char color, unsigned int x, unsigned int y);
 void drawDupaIn13H(int color);
 void drawMicrOSLogoIn13H();
+void drawLenaIn13H();
 
 void setModeYVideoMode();
 void pixel_ModeY(unsigned char color, unsigned int x, unsigned int y);
