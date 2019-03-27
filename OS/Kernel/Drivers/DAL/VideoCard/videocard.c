@@ -1,4 +1,5 @@
 #include "videocard.h"
+#include <stddef.h>
 
 VideoMode* (*_getAvailableGraphicVideoModes)(uint32_t*) = NULL;
 VideoMode* (*_getAvailableTextVideoModes)(uint32_t*) = NULL;
