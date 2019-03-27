@@ -13,6 +13,26 @@ typedef struct _videoMode
     uint8_t planar;
 } __attribute__((packed)) VideoMode;
 
+typedef struct _driverInitStruct
+{
+    VideoMode* (*getAvailableGraphicVideoModes)(uint32_t*);
+    VideoMode* (*getAvailableTextVideoModes)(uint32_t*);
+    int16_t (*setVideoMode)(uint16_t);
+    uint8_t (*isTextMode)();
+    VideoMode* (*getCurrentVideoMode)();
+    int8_t (*turnOnBuffer)();
+    int8_t (*turnOffBuffer)();
+    uint8_t (*isBufferOn)();
+    int8_t (*swapBuffers)();
+    int8_t (*drawPixel)(uint8_t, int16_t, int16_t);
+    int8_t (*drawLine)(uint8_t, int16_t, int16_t, int16_t, int16_t);
+    int8_t (*drawCircle)(uint8_t, int16_t, int16_t, int16_t);
+    int8_t (*drawRectangle)(uint8_t, int16_t, int16_t, int16_t, int16_t);
+    int8_t (*clearScreen)();
+} __attribute__((packed)) DriverInitStruct;
+
+void initWithDriver(DriverInitStruct initStruct);
+
 VideoMode* getAvailableGraphicVideoModes(uint32_t *noOfModes);
 VideoMode* getAvailableTextVideoModes(uint32_t *noOfModes);
 

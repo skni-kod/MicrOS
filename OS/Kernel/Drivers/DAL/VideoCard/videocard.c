@@ -19,6 +19,23 @@ int8_t (*_drawCircle)(uint8_t, int16_t, int16_t, int16_t) = NULL;
 int8_t (*_drawRectangle)(uint8_t, int16_t, int16_t, int16_t, int16_t) = NULL;
 int8_t (*_clearScreen)() = NULL;
 
+void initWithDriver(DriverInitStruct initStruct){
+    _getAvailableGraphicVideoModes = initStruct.getAvailableGraphicVideoModes;
+    _getAvailableTextVideoModes = initStruct.getAvailableTextVideoModes;
+    _setVideoMode = initStruct.setVideoMode;
+    _isTextMode = initStruct.setVideoMode;
+    _getCurrentVideoMode = initStruct.getCurrentVideoMode;
+    _turnOnBuffer = initStruct.turnOnBuffer;
+    _turnOffBuffer = initStruct.turnOnBuffer;
+    _isBufferOn = initStruct.isBufferOn;
+    _swapBuffers = initStruct.swapBuffers;
+    _drawPixel = initStruct.drawPixel;
+    _drawLine = initStruct.drawLine;
+    _drawCircle = initStruct.drawCircle;
+    _drawRectangle = initStruct.drawRectangle;
+    _clearScreen = initStruct.clearScreen;
+}
+
 VideoMode* getAvailableGraphicVideoModes(uint32_t *noOfModes){
     return (*_getAvailableGraphicVideoModes)(noOfModes);
 }
