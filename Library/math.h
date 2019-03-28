@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <float.h>
 #include "errno.h"
 #include "fenv.h"
