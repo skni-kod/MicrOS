@@ -29,18 +29,6 @@ void setDHVideoMode();
 void pixel_DH(unsigned char color, unsigned int x, unsigned int y);
 void drawDupaInDH(int color);
 
-void setEHVideoMode();
-void pixel_EH(unsigned char color, unsigned int x, unsigned int y);
-void drawDupaInEH(int color);
-
-void setFHVideoMode();
-void pixel_FH(unsigned char color, unsigned int x, unsigned int y);
-void drawDupaInFH(int color);
-
-void set10HVideoMode();
-void pixel_10H(unsigned char color, unsigned int x, unsigned int y);
-void drawDupaIn10H(int color);
-
 /*void drawMicrOSLogoIn13H();
 void drawLenaIn13H();*/
 
