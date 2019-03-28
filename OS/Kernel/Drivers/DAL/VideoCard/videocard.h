@@ -54,7 +54,7 @@ VideoMode* getAvailableTextVideoModes(uint32_t *noOfModes);
 
 int16_t setVideoMode(uint16_t mode);
 uint8_t isTextMode();
-VideoMode* getCurrentVideoMode();
+VideoMode getCurrentVideoMode();
 
 int8_t turnOnBuffer();
 int8_t turnOffBuffer();

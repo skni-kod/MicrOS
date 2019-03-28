@@ -6,7 +6,7 @@ VideoMode* (*_getAvailableTextVideoModes)(uint32_t*) = NULL;
 
 int16_t (*_setVideoMode)(uint16_t) = NULL;
 uint8_t (*_isTextMode)() = NULL;
-VideoMode* (*_getCurrentVideoMode)() = NULL;
+VideoMode (*_getCurrentVideoMode)() = NULL;
 
 int8_t (*_turnOnBuffer)() = NULL;
 int8_t (*_turnOffBuffer)() = NULL;
@@ -106,7 +106,7 @@ uint8_t isTextMode(){
     return (*_isTextMode)();
 }
 
-VideoMode* getCurrentVideoMode(){
+VideoMode getCurrentVideoMode(){
     return (*_getCurrentVideoMode)();
 }
 
