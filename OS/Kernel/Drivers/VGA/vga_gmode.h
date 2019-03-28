@@ -61,9 +61,4 @@ void drawDupaInY(int color);
 
 char getMode();
 
-void dumpRegs();
-void printRegs();
-void test13H();
-void setPalette13H();
-
 #endif
