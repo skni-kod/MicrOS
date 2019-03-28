@@ -4,7 +4,7 @@
 #include "stdint.h"
 
 #define MODE0EH_WIDTH 640
-#define MODE0EH_HEIGHT 480
+#define MODE0EH_HEIGHT 200
 
 int8_t setMode0EH();
 
