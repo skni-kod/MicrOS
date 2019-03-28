@@ -43,11 +43,7 @@ void drawDupaIn10H(int color);
 
 void set11HVideoMode();
 void pixel_11H(unsigned char color, unsigned int x, unsigned int y);
-void drawDupaIn11H(int color);
-
-void set12HVideoMode();
-void pixel_12H(unsigned char color, unsigned int x, unsigned int y);
-void drawDupaIn12H(int color);*/
+void drawDupaIn11H(int color);*/
 
 /*void drawMicrOSLogoIn13H();
 void drawLenaIn13H();*/

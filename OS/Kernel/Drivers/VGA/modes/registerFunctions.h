@@ -20,6 +20,12 @@
 #define attributeControllerWritePort 0x3c0
 #define attributeControllerResetPort 0x3da
 
+#define bit_get(p,m) ((p) & (m))
+#define bit_set(p,m) ((p) |= (m))
+#define bit_clear(p,m) ((p) &= ~(m))
+#define bit_flip(p,m) ((p) ^= (m))
+#define bit_write(p,m,v) ((v) ? bit_set(p,m) : bit_clear(p,m))
+
 void writeRegisters(uint8_t *registers);
 void writeRegistersText(uint8_t *registers);
 void readRegisters(unsigned char *regs);
