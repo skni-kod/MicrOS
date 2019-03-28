@@ -171,27 +171,6 @@ unsigned char g_640x350x3[] =
 		0x0B, 0x01, 0x05, 0x13, 0x00, 
 	};
 
-//10h
-unsigned char g_640x350x16[] =
-	{
-	/* MISC */
-		0xA3, 
-	/* SEQ */
-		0x03, 0x01, 0x0F, 0x00, 0x06, 
-	/* CRTC */
-		0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0xBF, 0x1F,
-		0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x83, 0x85, 0x5D, 0x28, 0x0F, 0x63, 0xBA, 0xE3,
-		0xFF, 
-	/* GC */
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x0F,
-		0xFF, 
-	/* AC */
-		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x14, 0x07,
-		0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F,
-		0x01, 0x00, 0x0F, 0x00, 0x00, 
-	};
-
 //Mode Y
 unsigned char g_320x200x256_modex[] =
 	{
@@ -682,38 +661,7 @@ void drawDupaInFH(int color)
 		for (int y = 0; y < 350; y++)
 			pixel_EH(color, x, y);
 	}
-}
-
-
-void set10HVideoMode()
-{
-	if(mode == 0x03)
-		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
-	writeRegisters(g_640x350x16);
-	mode = 0x10;
-}
-
-void pixel_10H(unsigned char color, unsigned int x, unsigned int y)
-{
-	unsigned char *fb = (unsigned char*)VGA_VRAM;
-	unsigned int offset = (y * 640 + x)/8;
-	unsigned bit_no = x % 8;
-	for(char p = 0; p < 4; p++)
-	{
-		set_plane(p);
-		bit_write(fb[offset], 1<<(7-bit_no), (bit_get(color, 1 << p)));     
-	}
-	set_plane(0);
-}
-
-void drawDupaIn10H(int color)
-{
-	for (int x = 0; x < 640; x++)
-	{
-		for (int y = 0; y < 350; y++)
-			pixel_EH(color, x, y);
-	}
-}                                                                                                                                                
+}                                                                                                                                              
 
 //typedef struct _Os2BmpFileHeader
 //{
