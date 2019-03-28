@@ -14,6 +14,7 @@ double ldexp(double x, int exp)
     {
         return result;
     }
+    // range error
     else
     {
         if(_math_errhandling == MATH_ERRNO)

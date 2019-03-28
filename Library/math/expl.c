@@ -8,6 +8,7 @@ long double expl(long double x)
     {
         return result;
     }
+    // range error
     else
     {
         if(_math_errhandling == MATH_ERRNO)
