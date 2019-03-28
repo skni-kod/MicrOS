@@ -884,64 +884,32 @@ void drawDupaIn12H(int color)
 	}
 }
 
-void set13HVideoMode()
-{
-	if(mode == 0x03)
-		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
-	writeRegisters(g_320x200x256);
-	setPalette13H();
-	mode = 0x13;
-}
+//typedef struct _Os2BmpFileHeader
+//{
+//	uint16_t   FileType;      /* File type identifier */
+//	uint32_t  FileSize;      /* Size of the file in bytes */
+//	uint16_t   XHotSpot;      /* X coordinate of hotspot */
+//	uint16_t   YHotSpot;      /* Y coordinate of hotspot */
+//	uint32_t  BitmapOffset;  /* Starting position of image data in bytes */
+//} __attribute__((packed)) OS2BMPFILEHEADER;
 
-void pixel_13H(unsigned char color, unsigned int x, unsigned int y)
-{
-	unsigned char *fb = (unsigned char *)VGA_VRAM;
-	unsigned int offset = y * PITCH + x;
-	/*uint8_t returnval = 0;
-    for (int i = 0; i < 8; ++i) {
-        uint8_t bit = color & 0x01;
-        returnval <<= 1;
-        returnval += bit;    // Shift the isolated bit into returnval
-        color >>= 1;
-    }*/
-	fb[offset] = color;
-}
+//typedef struct _Os21xBitmapHeader
+//{
+//	uint32_t Size;            /* Size of this header in bytes */
+//	uint32_t  Width;           /* Image width in pixels */
+//	uint32_t  Height;          /* Image height in pixels */
+//	uint16_t  NumPlanes;       /* Number of color planes */
+//	uint16_t  BitsPerPixel;    /* Number of bits per pixel */
+//} __attribute__((packed)) OS21XBITMAPHEADER;
 
-void drawDupaIn13H(int color)
-{
-	for (int x = 0; x < 320; x++)
-	{
-		for (int y = 0; y < 200; y++)
-			pixel_13H(color, x, y);
-	}
-}
+//typedef struct _Os21xPaletteElement
+//{
+//	uint8_t Blue;      /* Blue component */
+//	uint8_t Green;     /* Green component */
+//	uint8_t Red;       /* Red component */
+//} __attribute__((packed)) OS21XPALETTEELEMENT;
 
-typedef struct _Os2BmpFileHeader
-{
-	uint16_t   FileType;      /* File type identifier */
-	uint32_t  FileSize;      /* Size of the file in bytes */
-	uint16_t   XHotSpot;      /* X coordinate of hotspot */
-	uint16_t   YHotSpot;      /* Y coordinate of hotspot */
-	uint32_t  BitmapOffset;  /* Starting position of image data in bytes */
-} __attribute__((packed)) OS2BMPFILEHEADER;
-
-typedef struct _Os21xBitmapHeader
-{
-	uint32_t Size;            /* Size of this header in bytes */
-	uint32_t  Width;           /* Image width in pixels */
-	uint32_t  Height;          /* Image height in pixels */
-	uint16_t  NumPlanes;       /* Number of color planes */
-	uint16_t  BitsPerPixel;    /* Number of bits per pixel */
-} __attribute__((packed)) OS21XBITMAPHEADER;
-
-typedef struct _Os21xPaletteElement
-{
-	uint8_t Blue;      /* Blue component */
-	uint8_t Green;     /* Green component */
-	uint8_t Red;       /* Red component */
-} __attribute__((packed)) OS21XPALETTEELEMENT;
-
-void drawMicrOSLogoIn13H()
+/*void drawMicrOSLogoIn13H()
 {
 	filesystem_file_info info;
 	filesystem_get_file_info("/ENV/LOGO.BMP", &info);
@@ -982,7 +950,7 @@ void drawLenaIn13H()
 			pixel_13H(buffer[fh.BitmapOffset + (bh.Height * bh.Width - bh.Width - y*bh.Width) + x],x,y);
 
 	heap_kernel_dealloc(buffer);
-}
+}*/
 
 void setModeYVideoMode()
 {
