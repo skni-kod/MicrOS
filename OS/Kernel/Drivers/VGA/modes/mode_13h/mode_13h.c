@@ -94,6 +94,9 @@ int8_t turnOnBuffer13H()
     if(MODE13H_BUFFER == NULL)
         return -1;
     setDrawPixelFunc(&drawPixel13HBuffered);
+    setDrawLineFunc(&drawLine13HBuffered);
+    setDrawCircleFunc(&drawCircle13HBuffered);
+    setDrawRectangleFunc(&drawRectangle13HBuffered);
     return 0;
 }
 
@@ -103,6 +106,9 @@ int8_t turnOffBuffer13H()
     heap_kernel_dealloc(MODE13H_BUFFER);
     MODE13H_BUFFER = NULL;
     setDrawPixelFunc(&drawPixel13H);
+    setDrawLineFunc(&drawLine13H);
+    setDrawCircleFunc(&drawCircle13H);
+    setDrawRectangleFunc(&drawRectangle13H);
     return 0;
 }
 
