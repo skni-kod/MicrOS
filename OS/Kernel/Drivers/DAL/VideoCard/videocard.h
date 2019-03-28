@@ -37,7 +37,7 @@ void setGetAvailableGraphicVideoModesFunc(VideoMode* (*getAvailableGraphicVideoM
 void setGetAvailableTextVideoModesFunc(VideoMode* (*getAvailableTextVideoModes)(uint32_t*));
 void setSetVideoModeFunc(int16_t (*setVideoMode)(uint16_t));
 void setIsTextModeFunc(uint8_t (*isTextMode)());
-void setGetCurrentVideoModeFunc(VideoMode* (*getCurrentVideoMode)());
+void setGetCurrentVideoModeFunc(VideoMode (*getCurrentVideoMode)());
 void setTurnOnBufferFunc(int8_t (*turnOnBuffer)());
 void setTurnOffBufferFunc(int8_t (*turnOffBuffer)());
 void setIsBufferOnFunc(uint8_t (*isBufferOn)());

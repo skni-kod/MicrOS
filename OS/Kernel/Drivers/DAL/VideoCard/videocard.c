@@ -24,7 +24,7 @@ void initWithDriver(DriverInitStruct initStruct){
     _getAvailableGraphicVideoModes = initStruct.getAvailableGraphicVideoModes;
     _getAvailableTextVideoModes = initStruct.getAvailableTextVideoModes;
     _setVideoMode = initStruct.setVideoMode;
-    _isTextMode = initStruct.setVideoMode;
+    _isTextMode = initStruct.isTextMode;
     _getCurrentVideoMode = initStruct.getCurrentVideoMode;
     _turnOnBuffer = initStruct.turnOnBuffer;
     _turnOffBuffer = initStruct.turnOnBuffer;
@@ -51,7 +51,7 @@ void setIsTextModeFunc(uint8_t (*isTextMode)())
 {
     _isTextMode = isTextMode;
 }
-void setGetCurrentVideoModeFunc(VideoMode* (*getCurrentVideoMode)())
+void setGetCurrentVideoModeFunc(VideoMode (*getCurrentVideoMode)())
 {
     _getCurrentVideoMode = getCurrentVideoMode;
 }
