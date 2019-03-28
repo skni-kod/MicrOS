@@ -2,6 +2,7 @@
 #define GENERICVGA_H
 
 #include <stdint.h>
+#include "../DAL/VideoCard/videocard.h"
 
 void driverInit();
 

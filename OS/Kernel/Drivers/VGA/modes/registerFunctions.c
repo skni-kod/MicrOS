@@ -124,6 +124,48 @@ void writeRegistersText(uint8_t *registers)
 	io_out_byte(attributeControllerIndexPort, 0x20);
 }
 
+void readRegisters(unsigned char *regs)
+{
+        unsigned int i;
+        unsigned char value;
+        //MISC
+        *regs = io_in_byte(0x3CC);
+        regs++;
+        //SEQ
+        for(i = 0; i<5; i++)
+        {
+            	io_out_byte(sequencerIndexPort, i);
+                value = io_in_byte(sequencerDataPort);
+                *regs = value;
+                regs++;
+        }
+        //CRTC
+        for(i = 0; i< 25; i++)
+        {
+                io_out_byte(crtcIndexPort, i);
+                *regs = io_in_byte(crtcDataPort);
+                regs++;
+        }
+        //GC
+        for(i = 0; i< 9; i++)
+        {
+                io_out_byte(graphicsControllerIndexPort, i);
+                *regs = io_in_byte(graphicsControllerDataPort);
+                regs++;
+        }
+        //AC
+        for(i = 0; i< 21; i++)
+        {
+
+                (void)io_in_byte(attributeControllerResetPort);
+                io_out_byte(attributeControllerIndexPort, i);
+                *regs = io_in_byte(attributeControllerReadPort);
+                regs++;
+        }
+        (void)io_in_byte(attributeControllerResetPort);
+        io_out_byte(attributeControllerIndexPort, 0x20);
+}
+
 void setFont(uint8_t *buf, uint8_t font_height)
 {
 	unsigned char seq2, seq4, gc4, gc5, gc6;

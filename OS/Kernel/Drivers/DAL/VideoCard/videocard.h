@@ -19,7 +19,7 @@ typedef struct _driverInitStruct
     VideoMode* (*getAvailableTextVideoModes)(uint32_t*);
     int16_t (*setVideoMode)(uint16_t);
     uint8_t (*isTextMode)();
-    VideoMode* (*getCurrentVideoMode)();
+    VideoMode (*getCurrentVideoMode)();
     int8_t (*turnOnBuffer)();
     int8_t (*turnOffBuffer)();
     uint8_t (*isBufferOn)();
