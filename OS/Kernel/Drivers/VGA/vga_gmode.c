@@ -361,34 +361,7 @@ uint8_t regs_dump[61];
 //	vga_clear_screen();
 //	memcpy((void *)VGA_BASE_ADDR, text_dump, 4000);
 //	mode = 3;
-//}
-
-/*void set4HVideoMode()
-{
-	if(mode == 0x03)
-		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
-	writeRegisters(g_320x200x4c);
-	mode = 0x04;
-}
-
-void pixel_4H(unsigned char color, unsigned int x, unsigned int y)
-{
-	unsigned char *fb = (unsigned char*)VGA_VRAM_2;
-	unsigned int offset = (y/2 * 320 + x)/4;
-	unsigned bit_no = x % 4;
-	bit_write(fb[offset + (y%2 ? 0x2000 : 0)], 1<<(7 - (2 * bit_no)), (color & 0x2));
-	bit_write(fb[offset + (y%2 ? 0x2000 : 0)], 1<<(7 - (2 * bit_no+1)), (color & 0x1));
-}
-
-void drawDupaIn4H(int color)
-{
-	for (int x = 0; x < 320; x++)
-	{
-		for (int y = 0; y < 200; y++)
-			pixel_4H(color, x, y);
-	}
-}
-*/                                                                                                                                    
+//}                                                                                                                                   
 
 //typedef struct _Os2BmpFileHeader
 //{

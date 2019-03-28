@@ -3,14 +3,6 @@
 
 #include <stdint.h>
 
-#define VGA_VRAM 0xC00A0000
-#define VGA_VRAM_2 0xC00B8000
-#define PITCH 320
-
-
-
-
-
 /*void set3HVideoMode();
 
 /*void drawMicrOSLogoIn13H();
