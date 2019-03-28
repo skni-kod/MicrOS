@@ -233,27 +233,6 @@ unsigned char g_640x480x16[] =
 		0x01, 0x00, 0x0F, 0x00, 0x00, 
 	};
 
-//13h
-uint8_t g_320x200x256[] =
-	{
-	/* MISC */
-		0x63, 
-	/* SEQ */
-		0x03, 0x01, 0x0F, 0x00, 0x0E, 
-	/* CRTC */
-		0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0xBF, 0x1F,
-		0x00, 0x41, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x9C, 0x8E, 0x8F, 0x28, 0x40, 0x96, 0xB9, 0xA3,
-		0xFF, 
-	/* GC */
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x05, 0x0F,
-		0xFF, 
-	/* AC */
-		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-		0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
-		0x41, 0x00, 0x0F, 0x00, 0x00, 
-	};
-
 //Mode Y
 unsigned char g_320x200x256_modex[] =
 	{
@@ -537,57 +516,6 @@ unsigned char g_8x16_font[4096] =
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 		};
 
-//-------------- PALETTE for 13h ----------------//
-unsigned char palette13H[] = {
-	0, 0, 0, 0, 0, 42, 0, 42, 0, 0, 42, 42, 42, 0, 0,
-	42, 0, 42, 42, 21, 0, 42, 42, 42, 21, 21, 21, 21,
-	21, 63, 21, 63, 21, 21, 63, 63, 63, 21, 21, 63, 21,
-	63, 63, 63, 21, 63, 63, 63, 0, 0, 0, 5, 5, 5, 8, 8, 8,
-	11, 11, 11, 14, 14, 14, 17, 17, 17, 20, 20, 20, 24, 24,
-	24, 28, 28, 28, 32, 32, 32, 36, 36, 36, 40, 40, 40, 45,
-	45, 45, 50, 50, 50, 56, 56, 56, 63, 63, 63, 0, 0, 63, 16,
-	0, 63, 31, 0, 63, 47, 0, 63, 63, 0, 63, 63, 0, 47, 63, 0,
-	31, 63, 0, 16, 63, 0, 0, 63, 16, 0, 63, 31, 0, 63, 47, 0,
-	63, 63, 0, 47, 63, 0, 31, 63, 0, 16, 63, 0, 0, 63, 0, 0,
-	63, 16, 0, 63, 31, 0, 63, 47, 0, 63, 63, 0, 47, 63, 0, 31,
-	63, 0, 16, 63, 31, 31, 63, 39, 31, 63, 47, 31, 63, 55, 31,
-	63, 63, 31, 63, 63, 31, 55, 63, 31, 47, 63, 31, 39, 63, 31,
-	31, 63, 39, 31, 63, 47, 31, 63, 55, 31, 63, 63, 31, 55, 63,
-	31, 47, 63, 31, 39, 63, 31, 31, 63, 31, 31, 63, 39, 31, 63,
-	47, 31, 63, 55, 31, 63, 63, 31, 55, 63, 31, 47, 63, 31, 39,
-	63, 45, 45, 63, 49, 45, 63, 54, 45, 63, 58, 45, 63, 63, 45,
-	63, 63, 45, 58, 63, 45, 54, 63, 45, 49, 63, 45, 45, 63, 49,
-	45, 63, 54, 45, 63, 58, 45, 63, 63, 45, 58, 63, 45, 54, 63,
-	45, 49, 63, 45, 45, 63, 45, 45, 63, 49, 45, 63, 54, 45, 63,
-	58, 45, 63, 63, 45, 58, 63, 45, 54, 63, 45, 49, 63, 0, 0,
-	28, 7, 0, 28, 14, 0, 28, 21, 0, 28, 28, 0, 28, 28, 0, 21,
-	28, 0, 14, 28, 0, 7, 28, 0, 0, 28, 7, 0, 28, 14, 0, 28, 21,
-	0, 28, 28, 0, 21, 28, 0, 14, 28, 0, 7, 28, 0, 0, 28, 0, 0,
-	28, 7, 0, 28, 14, 0, 28, 21, 0, 28, 28, 0, 21, 28, 0, 14, 28,
-	0, 7, 28, 14, 14, 28, 17, 14, 28, 21, 14, 28, 24, 14, 28, 28,
-	14, 28, 28, 14, 24, 28, 14, 21, 28, 14, 17, 28, 14, 14, 28,
-	17, 14, 28, 21, 14, 28, 24, 14, 28, 28, 14, 24, 28, 14, 21,
-	28, 14, 17, 28, 14, 14, 28, 14, 14, 28, 17, 14, 28, 21, 14, 28,
-	24, 14, 28, 28, 14, 24, 28, 14, 21, 28, 14, 17, 28, 20, 20, 28,
-	22, 20, 28, 24, 20, 28, 26, 20, 28, 28, 20, 28, 28, 20, 26, 28,
-	20, 24, 28, 20, 22, 28, 20, 20, 28, 22, 20, 28, 24, 20, 28, 26,
-	20, 28, 28, 20, 26, 28, 20, 24, 28, 20, 22, 28, 20, 20, 28, 20,
-	20, 28, 22, 20, 28, 24, 20, 28, 26, 20, 28, 28, 20, 26, 28, 20,
-	24, 28, 20, 22, 28, 0, 0, 16, 4, 0, 16, 8, 0, 16, 12, 0, 16, 16,
-	0, 16, 16, 0, 12, 16, 0, 8, 16, 0, 4, 16, 0, 0, 16, 4, 0, 16, 8,
-	0, 16, 12, 0, 16, 16, 0, 12, 16, 0, 8, 16, 0, 4, 16, 0, 0, 16, 0,
-	0, 16, 4, 0, 16, 8, 0, 16, 12, 0, 16, 16, 0, 12, 16, 0, 8, 16, 0,
-	4, 16, 8, 8, 16, 10, 8, 16, 12, 8, 16, 14, 8, 16, 16, 8, 16, 16,
-	8, 14, 16, 8, 12, 16, 8, 10, 16, 8, 8, 16, 10, 8, 16, 12, 8, 16,
-	14, 8, 16, 16, 8, 14, 16, 8, 12, 16, 8, 10, 16, 8, 8, 16, 8, 8, 16,
-	10, 8, 16, 12, 8, 16, 14, 8, 16, 16, 8, 14, 16, 8, 12, 16, 8, 10, 16,
-	11, 11, 16, 12, 11, 16, 13, 11, 16, 15, 11, 16, 16, 11, 16, 16, 11, 15,
-	16, 11, 13, 16, 11, 12, 16, 11, 11, 16, 12, 11, 16, 13, 11, 16, 15, 11,
-	16, 16, 11, 15, 16, 11, 13, 16, 11, 12, 16, 11, 11, 16, 11, 11, 16, 12,
-	11, 16, 13, 11, 16, 15, 11, 16, 16, 11, 15, 16, 11, 13, 16, 11, 12, 16,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-};
-
 //-------------- PLACE TO DUMP TEXT MODE CONTENT ------------------//
 uint8_t text_dump[4000];
 uint8_t regs_dump[61];
@@ -595,38 +523,38 @@ uint8_t regs_dump[61];
 
 
 //-------------- FUNCTIONS FOR MODES -----------------//
-void set3HVideoMode()
-{
-	unsigned rows, cols, ht, i;
-	cols = 80;
-	rows = 25;
-	ht = 16;
+//void set3HVideoMode()
+//{
+//	unsigned rows, cols, ht, i;
+//	cols = 80;
+//	rows = 25;
+//	ht = 16;
 
-	writeRegisters(g_80x25_text);
-	setFont(g_8x16_font, 16);
+//	writeRegisters(g_80x25_text);
+//	setFont(g_8x16_font, 16);
 
 	/* tell the BIOS what we've done, so BIOS text output works OK */
-	pokew(0xC0000040, 0xC000004A, cols);			/* columns on screen */
-	pokew(0xC0000040, 0xC000004C, cols * rows * 2); /* framebuffer size */
-	pokew(0xC0000040, 0xC0000050, 0);				/* cursor pos'n */
-	pokeb(0xC0000040, 0xC0000060, ht - 1);			/* cursor shape */
-	pokeb(0xC0000040, 0xC0000061, ht - 2);
-	pokeb(0xC0000040, 0xC0000084, rows - 1); /* rows on screen - 1 */
-	pokeb(0xC0000040, 0xC0000085, ht);		 /* char height */
+//	pokew(0xC0000040, 0xC000004A, cols);			/* columns on screen */
+//	pokew(0xC0000040, 0xC000004C, cols * rows * 2); /* framebuffer size */
+//	pokew(0xC0000040, 0xC0000050, 0);				/* cursor pos'n */
+//	pokeb(0xC0000040, 0xC0000060, ht - 1);			/* cursor shape */
+//	pokeb(0xC0000040, 0xC0000061, ht - 2);
+//	pokeb(0xC0000040, 0xC0000084, rows - 1); /* rows on screen - 1 */
+//	pokeb(0xC0000040, 0xC0000085, ht);		 /* char height */
 											 /* set white-on-black attributes for all text */
-	vga_clear_screen();
-	vga_color col;
-	col.color_without_blink.letter = VGA_COLOR_WHITE;
-	col.color_without_blink.background = VGA_COLOR_BLACK;
-	for(int i = 0; i < 80; i++)
-		for(int j = 0; j < 25; j++)
-			vga_set_color(i, j, col);
-	vga_clear_screen();
-	memcpy((void *)VGA_BASE_ADDR, text_dump, 4000);
-	mode = 3;
-}
+//	vga_clear_screen();
+//	vga_color col;
+//	col.color_without_blink.letter = VGA_COLOR_WHITE;
+//	col.color_without_blink.background = VGA_COLOR_BLACK;
+//	for(int i = 0; i < 80; i++)
+//		for(int j = 0; j < 25; j++)
+//			vga_set_color(i, j, col);
+//	vga_clear_screen();
+//	memcpy((void *)VGA_BASE_ADDR, text_dump, 4000);
+//	mode = 3;
+//}
 
-void set4HVideoMode()
+/*void set4HVideoMode()
 {
 	if(mode == 0x03)
 		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
@@ -676,29 +604,29 @@ void drawDupaIn5H(int color)
 		for (int y = 0; y < 200; y++)
 			pixel_5H(color, x, y);
 	}
-}
+}*/
 
-void set6HVideoMode()
-{
-	if(mode == 0x03)
-		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
-	writeRegisters(g_640x200x2);
-	mode = 0x06;
-}
+//void set6HVideoMode()
+//{
+//	if(mode == 0x03)
+//		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
+//	writeRegisters(g_640x200x2);
+//	mode = 0x06;
+//}
 
-void pixel_6H(unsigned char color, unsigned int x, unsigned int y)
-{
-	unsigned char *fb = (unsigned char*)VGA_VRAM_2;
-	unsigned int offset = (y/2 * 640 + x)/8;
-	unsigned bit_no = x % 8;
+//void pixel_6H(unsigned char color, unsigned int x, unsigned int y)
+//{
+//	unsigned char *fb = (unsigned char*)VGA_VRAM_2;
+//	unsigned int offset = (y/2 * 640 + x)/8;
+//	unsigned bit_no = x % 8;
 	/*if(y%2)
 		bit_write(fb[offset], (1<<(7 - bit_no)), (color & 0x1));
 	else
 		bit_write(fb[offset + 0x2000], (1<<(7 - bit_no)), (0));*/
-	bit_write(fb[offset + (y%2 ? 0x2000 : 0)], (1<<(7 - bit_no)), (color & 0x1));
-}
+//	bit_write(fb[offset + (y%2 ? 0x2000 : 0)], (1<<(7 - bit_no)), (color & 0x1));
+//}
 
-void drawDupaIn6H(int color)
+/*void drawDupaIn6H(int color)
 {
 	for (int x = 0; x < 640; x++)
 	{
@@ -882,7 +810,7 @@ void drawDupaIn12H(int color)
 		for (int x = 0; x < 640; x++)
 			pixel_12H(color, x, y);
 	}
-}
+}*/
 
 //typedef struct _Os2BmpFileHeader
 //{
@@ -952,7 +880,7 @@ void drawLenaIn13H()
 	heap_kernel_dealloc(buffer);
 }*/
 
-void setModeYVideoMode()
+/*void setModeYVideoMode()
 {
 	if(mode == 0x03)
 		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
@@ -981,4 +909,4 @@ void drawDupaInY(int color)
 char getMode()
 {
 	return mode;
-}
+}*/

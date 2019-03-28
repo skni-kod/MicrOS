@@ -11,7 +11,7 @@
 
 
 
-void set3HVideoMode();
+/*void set3HVideoMode();
 
 void set4HVideoMode();
 void pixel_4H(unsigned char color, unsigned int x, unsigned int y);
@@ -47,16 +47,14 @@ void drawDupaIn11H(int color);
 
 void set12HVideoMode();
 void pixel_12H(unsigned char color, unsigned int x, unsigned int y);
-void drawDupaIn12H(int color);
+void drawDupaIn12H(int color);*/
 
 /*void drawMicrOSLogoIn13H();
 void drawLenaIn13H();*/
 
-void setModeYVideoMode();
+/*void setModeYVideoMode();
 void pixel_ModeY(unsigned char color, unsigned int x, unsigned int y);
-void drawDupaInY(int color);
-
-
+void drawDupaInY(int color);*/
 
 
 char getMode();

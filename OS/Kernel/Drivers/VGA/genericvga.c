@@ -1,6 +1,6 @@
 #include "genericvga.h"
 #include "../DAL/VideoCard/videocard.h"
-#include "modes/mode_13h.h"
+#include "modes/mode_13h/mode_13h.h"
 
 VideoMode currentVideoMode;
 uint8_t textMode;
@@ -8,13 +8,13 @@ uint8_t textMode;
 void driverInit()
 {
     DriverInitStruct s;
-    s.setVideoMode = &setVideoMode;
-    s.isTextMode = &isTextMode;
-    s.getCurrentVideoMode = &getCurrentVideoMode;
+    s.setVideoMode = &setVideoModeVGA;
+    s.isTextMode = &isTextModeVGA;
+    s.getCurrentVideoMode = &getCurrentVideoModeVGA;
     initWithDriver(s);
 }
 
-int16_t setVideoMode(uint16_t mode){
+int16_t setVideoModeVGA(uint16_t mode){
     switch(mode)
     {
         case 0x13:
@@ -25,12 +25,12 @@ int16_t setVideoMode(uint16_t mode){
     }
 }
 
-uint8_t isTextMode()
+uint8_t isTextModeVGA()
 {
     return textMode;
 }
 
-VideoMode getCurrentVideoMode()
+VideoMode getCurrentVideoModeVGA()
 {
     return currentVideoMode;
 }
