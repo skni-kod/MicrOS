@@ -2,35 +2,26 @@
 #include "../../Assembly/io.h"
 #include <string.h>
 #include "vga.h"
+#include "../FileSystems/filesystem.h"
 
 #define peekb(S, O) *(unsigned char *)(16uL * (S) + (O))
 #define pokeb(S, O, V) *(unsigned char *)(16uL * (S) + (O)) = (V)
 #define pokew(S, O, V) *(unsigned short *)(16uL * (S) + (O)) = (V)
 #define _vmemwr(DS, DO, S, N) memcpy((char *)((DS)*16 + (DO)), S, N)
 
+#define bit_get(p,m) ((p) & (m))
+#define bit_set(p,m) ((p) |= (m))
+#define bit_clear(p,m) ((p) &= ~(m))
+#define bit_flip(p,m) ((p) ^= (m))
+#define bit_write(p,m,v) (v ? bit_set(p,m) : bit_clear(p,m))
+
 // TODO: Set some prefix for functions.
 
 static char mode = 3;
 
-uint8_t g_320x200x256[] =
-	{
-		/* MISC */
-		0x63,
-		/* SEQ */
-		0x03, 0x01, 0x0F, 0x00, 0x0E,
-		/* CRTC */
-		0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0xBF, 0x1F,
-		0x00, 0x41, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x9C, 0x0E, 0x8F, 0x28, 0x40, 0x96, 0xB9, 0xA3,
-		0xFF,
-		/* GC */
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x05, 0x0F,
-		0xFF,
-		/* AC */
-		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-		0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
-		0x41, 0x00, 0x0F, 0x00, 0x00};
+//-------REGISTER VALUES ------------//
 
+//3h
 uint8_t g_80x25_text[] =
 	{
 		/* MISC */
@@ -48,8 +39,244 @@ uint8_t g_80x25_text[] =
 		/* AC */
 		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x14, 0x07,
 		0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F,
-		0x0C, 0x00, 0x0F, 0x08, 0x00};
+		0x0C, 0x00, 0x0F, 0x08, 0x00
+		};
 
+//4h
+unsigned char g_320x200x4c[] =
+	{
+	/* MISC */
+		0x63, 
+	/* SEQ */
+		0x03, 0x09, 0x03, 0x00, 0x02, 
+	/* CRTC */
+		0x2D, 0x27, 0x28, 0x90, 0x2B, 0x80, 0xBF, 0x1F,
+		0x00, 0xC1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x9C, 0x8E, 0x8F, 0x14, 0x00, 0x96, 0xB9, 0xA2,
+		0xFF, 
+	/* GC */
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x0F, 0x0F,
+		0xFF, 
+	/* AC */
+		0x00, 0x13, 0x15, 0x17, 0x02, 0x04, 0x06, 0x07,
+		0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+		0x01, 0x00, 0x03, 0x00, 0x00, 
+	};
+
+
+//5h
+unsigned char g_320x200x4b[] =
+	{
+	/* MISC */
+		0x63, 
+	/* SEQ */
+		0x03, 0x09, 0x03, 0x00, 0x02, 
+	/* CRTC */
+		0x2D, 0x27, 0x28, 0x90, 0x2B, 0x80, 0xBF, 0x1F,
+		0x00, 0xC1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x9C, 0x8E, 0x8F, 0x14, 0x00, 0x96, 0xB9, 0xA2,
+		0xFF, 
+	/* GC */
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x0F, 0x0F,
+		0xFF, 
+	/* AC */
+		0x00, 0x13, 0x15, 0x17, 0x02, 0x04, 0x06, 0x07,
+		0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+		0x01, 0x00, 0x03, 0x00, 0x00, 
+	};
+
+//6h
+unsigned char g_640x200x2[] =
+	{
+	/* MISC */
+		0x63, 
+	/* SEQ */
+		0x03, 0x01, 0x01, 0x00, 0x06, 
+	/* CRTC */
+		0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0xBF, 0x1F,
+		0x00, 0xC1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x9C, 0x8E, 0x8F, 0x28, 0x00, 0x96, 0xB9, 0xC2,
+		0xFF, 
+	/* GC */
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0D, 0x00,
+		0xFF, 
+	/* AC */
+		0x0,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,
+		0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,
+		/*0x00, 0x17, 0x17, 0x17, 0x17, 0x17, 0x17, 0x17,
+		0x17, 0x17, 0x17, 0x17, 0x17, 0x17, 0x17, 0x17,*/
+		0x01, 0x00, 0x01, 0x00, 0x00, 
+	};
+
+//dh
+unsigned char g_320x200x16[] =
+	{
+	/* MISC */
+		0x63, 
+	/* SEQ */
+		0x03, 0x09, 0x0F, 0x00, 0x06, 
+	/* CRTC */
+		0x2D, 0x27, 0x28, 0x90, 0x2B, 0x80, 0xBF, 0x1F,
+		0x00, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x9C, 0x8E, 0x8F, 0x14, 0x00, 0x96, 0xB9, 0xE3,
+		0xFF, 
+	/* GC */
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x0F,
+		0xFF, 
+	/* AC */
+		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+		0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+		0x01, 0x00, 0x0F, 0x00, 0x00, 
+	};
+
+//eh
+unsigned char g_640x200x16[] =
+	{
+	/* MISC */
+		0x63, 
+	/* SEQ */
+		0x03, 0x01, 0x0F, 0x00, 0x06, 
+	/* CRTC */
+		0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0xBF, 0x1F,
+		0x00, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x9C, 0x8E, 0x8F, 0x28, 0x00, 0x96, 0xB9, 0xE3,
+		0xFF, 
+	/* GC */
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x0F,
+		0xFF, 
+	/* AC */
+		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+		0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+		0x01, 0x00, 0x0F, 0x00, 0x00, 
+	};
+
+//fh
+unsigned char g_640x350x3[] =
+	{
+	/* MISC */
+		0xA2, 
+	/* SEQ */
+		0x03, 0x01, 0x0F, 0x00, 0x06, 
+	/* CRTC */
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+		0xFF, 
+	/* GC */
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x05,
+		0xFF, 
+	/* AC */
+		0x00, 0x01, 0x00, 0x03, 0x18, 0x05, 0x00, 0x07,
+		0x00, 0x09, 0x00, 0x0B, 0x00, 0x0D, 0x00, 0x0F,
+		0x0B, 0x01, 0x05, 0x13, 0x00, 
+	};
+
+//10h
+unsigned char g_640x350x16[] =
+	{
+	/* MISC */
+		0xA3, 
+	/* SEQ */
+		0x03, 0x01, 0x0F, 0x00, 0x06, 
+	/* CRTC */
+		0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0xBF, 0x1F,
+		0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x83, 0x85, 0x5D, 0x28, 0x0F, 0x63, 0xBA, 0xE3,
+		0xFF, 
+	/* GC */
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x0F,
+		0xFF, 
+	/* AC */
+		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x14, 0x07,
+		0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F,
+		0x01, 0x00, 0x0F, 0x00, 0x00, 
+	};
+
+//11h
+unsigned char g_640x480x2[] =
+	{
+	/* MISC */
+		0xE3,
+	/* SEQ */
+		0x03, 0x01, 0x0F, 0x00, 0x06,
+	/* CRTC */
+		0x5F, 0x4F,0x50,0x82,0x54,0x80,0xB,0x3E,
+		0x0,0x40,0x0,0x0,0x0,0x0,0x0,0x59,0xEA,
+		0x8C,0xDF,0x28,0x0,0xE7,0x4,0xC3,0xFF,
+	/* GC */
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x05,
+		0xFF,
+	/* AC */
+		0x0,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,
+		0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,0x3F,
+		0x1,0x0,0x0F,0x0,0x0
+	};
+
+//12h
+unsigned char g_640x480x16[] =
+	{
+	/* MISC */
+		0xE3, 
+	/* SEQ */
+		0x03, 0x01, 0x0F, 0x00, 0x06, 
+	/* CRTC */
+		0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0x0B, 0x3E,
+		0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0xEA, 0x8C, 0xDF, 0x28, 0x00, 0xE7, 0x04, 0xE3,
+		0xFF, 
+	/* GC */
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x0F,
+		0xFF, 
+	/* AC */
+		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x14, 0x07,
+		0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F,
+		0x01, 0x00, 0x0F, 0x00, 0x00, 
+	};
+
+//13h
+uint8_t g_320x200x256[] =
+	{
+	/* MISC */
+		0x63, 
+	/* SEQ */
+		0x03, 0x01, 0x0F, 0x00, 0x0E, 
+	/* CRTC */
+		0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0xBF, 0x1F,
+		0x00, 0x41, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x9C, 0x8E, 0x8F, 0x28, 0x40, 0x96, 0xB9, 0xA3,
+		0xFF, 
+	/* GC */
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x05, 0x0F,
+		0xFF, 
+	/* AC */
+		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+		0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+		0x41, 0x00, 0x0F, 0x00, 0x00, 
+	};
+
+//Mode Y
+unsigned char g_320x200x256_modex[] =
+	{
+	/* MISC */
+		0x63,
+	/* SEQ */
+		0x03, 0x01, 0x0F, 0x00, 0x06,
+	/* CRTC */
+		0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0xBF, 0x1F,
+		0x00, 0x41, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x9C, 0x0E, 0x8F, 0x28, 0x00, 0x96, 0xB9, 0xE3,
+		0xFF,
+	/* GC */
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x05, 0x0F,
+		0xFF,
+	/* AC */
+		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+		0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+		0x41, 0x00, 0x0F, 0x00, 0x00
+	};
+
+//--------------- FONTS VALUES -------------------------//
+//3h
 unsigned char g_8x16_font[4096] =
 	{
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -307,10 +534,64 @@ unsigned char g_8x16_font[4096] =
 		0x00, 0xD8, 0x6C, 0x6C, 0x6C, 0x6C, 0x6C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x70, 0x98, 0x30, 0x60, 0xC8, 0xF8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x7C, 0x7C, 0x7C, 0x7C, 0x7C, 0x7C, 0x7C, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+		};
 
+//-------------- PALETTE for 13h ----------------//
+unsigned char palette13H[] = {
+	0, 0, 0, 0, 0, 42, 0, 42, 0, 0, 42, 42, 42, 0, 0,
+	42, 0, 42, 42, 21, 0, 42, 42, 42, 21, 21, 21, 21,
+	21, 63, 21, 63, 21, 21, 63, 63, 63, 21, 21, 63, 21,
+	63, 63, 63, 21, 63, 63, 63, 0, 0, 0, 5, 5, 5, 8, 8, 8,
+	11, 11, 11, 14, 14, 14, 17, 17, 17, 20, 20, 20, 24, 24,
+	24, 28, 28, 28, 32, 32, 32, 36, 36, 36, 40, 40, 40, 45,
+	45, 45, 50, 50, 50, 56, 56, 56, 63, 63, 63, 0, 0, 63, 16,
+	0, 63, 31, 0, 63, 47, 0, 63, 63, 0, 63, 63, 0, 47, 63, 0,
+	31, 63, 0, 16, 63, 0, 0, 63, 16, 0, 63, 31, 0, 63, 47, 0,
+	63, 63, 0, 47, 63, 0, 31, 63, 0, 16, 63, 0, 0, 63, 0, 0,
+	63, 16, 0, 63, 31, 0, 63, 47, 0, 63, 63, 0, 47, 63, 0, 31,
+	63, 0, 16, 63, 31, 31, 63, 39, 31, 63, 47, 31, 63, 55, 31,
+	63, 63, 31, 63, 63, 31, 55, 63, 31, 47, 63, 31, 39, 63, 31,
+	31, 63, 39, 31, 63, 47, 31, 63, 55, 31, 63, 63, 31, 55, 63,
+	31, 47, 63, 31, 39, 63, 31, 31, 63, 31, 31, 63, 39, 31, 63,
+	47, 31, 63, 55, 31, 63, 63, 31, 55, 63, 31, 47, 63, 31, 39,
+	63, 45, 45, 63, 49, 45, 63, 54, 45, 63, 58, 45, 63, 63, 45,
+	63, 63, 45, 58, 63, 45, 54, 63, 45, 49, 63, 45, 45, 63, 49,
+	45, 63, 54, 45, 63, 58, 45, 63, 63, 45, 58, 63, 45, 54, 63,
+	45, 49, 63, 45, 45, 63, 45, 45, 63, 49, 45, 63, 54, 45, 63,
+	58, 45, 63, 63, 45, 58, 63, 45, 54, 63, 45, 49, 63, 0, 0,
+	28, 7, 0, 28, 14, 0, 28, 21, 0, 28, 28, 0, 28, 28, 0, 21,
+	28, 0, 14, 28, 0, 7, 28, 0, 0, 28, 7, 0, 28, 14, 0, 28, 21,
+	0, 28, 28, 0, 21, 28, 0, 14, 28, 0, 7, 28, 0, 0, 28, 0, 0,
+	28, 7, 0, 28, 14, 0, 28, 21, 0, 28, 28, 0, 21, 28, 0, 14, 28,
+	0, 7, 28, 14, 14, 28, 17, 14, 28, 21, 14, 28, 24, 14, 28, 28,
+	14, 28, 28, 14, 24, 28, 14, 21, 28, 14, 17, 28, 14, 14, 28,
+	17, 14, 28, 21, 14, 28, 24, 14, 28, 28, 14, 24, 28, 14, 21,
+	28, 14, 17, 28, 14, 14, 28, 14, 14, 28, 17, 14, 28, 21, 14, 28,
+	24, 14, 28, 28, 14, 24, 28, 14, 21, 28, 14, 17, 28, 20, 20, 28,
+	22, 20, 28, 24, 20, 28, 26, 20, 28, 28, 20, 28, 28, 20, 26, 28,
+	20, 24, 28, 20, 22, 28, 20, 20, 28, 22, 20, 28, 24, 20, 28, 26,
+	20, 28, 28, 20, 26, 28, 20, 24, 28, 20, 22, 28, 20, 20, 28, 20,
+	20, 28, 22, 20, 28, 24, 20, 28, 26, 20, 28, 28, 20, 26, 28, 20,
+	24, 28, 20, 22, 28, 0, 0, 16, 4, 0, 16, 8, 0, 16, 12, 0, 16, 16,
+	0, 16, 16, 0, 12, 16, 0, 8, 16, 0, 4, 16, 0, 0, 16, 4, 0, 16, 8,
+	0, 16, 12, 0, 16, 16, 0, 12, 16, 0, 8, 16, 0, 4, 16, 0, 0, 16, 0,
+	0, 16, 4, 0, 16, 8, 0, 16, 12, 0, 16, 16, 0, 12, 16, 0, 8, 16, 0,
+	4, 16, 8, 8, 16, 10, 8, 16, 12, 8, 16, 14, 8, 16, 16, 8, 16, 16,
+	8, 14, 16, 8, 12, 16, 8, 10, 16, 8, 8, 16, 10, 8, 16, 12, 8, 16,
+	14, 8, 16, 16, 8, 14, 16, 8, 12, 16, 8, 10, 16, 8, 8, 16, 8, 8, 16,
+	10, 8, 16, 12, 8, 16, 14, 8, 16, 16, 8, 14, 16, 8, 12, 16, 8, 10, 16,
+	11, 11, 16, 12, 11, 16, 13, 11, 16, 15, 11, 16, 16, 11, 16, 16, 11, 15,
+	16, 11, 13, 16, 11, 12, 16, 11, 11, 16, 12, 11, 16, 13, 11, 16, 15, 11,
+	16, 16, 11, 15, 16, 11, 13, 16, 11, 12, 16, 11, 11, 16, 11, 11, 16, 12,
+	11, 16, 13, 11, 16, 15, 11, 16, 16, 11, 15, 16, 11, 13, 16, 11, 12, 16,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+
+//-------------- PLACE TO DUMP TEXT MODE CONTENT ------------------//
 uint8_t text_dump[4000];
-
+uint8_t regs_dump[61];
+//------------- FUNCTIONS TO WRITE REGISTERS -------------//
 void writeRegisters(uint8_t *registers)
 {
 	io_out_byte(miscPort, *(registers));
@@ -329,7 +610,7 @@ void writeRegisters(uint8_t *registers)
 	io_out_byte(crtcDataPort, io_in_byte(crtcDataPort) & ~0x80);
 
 	registers[0x03] = registers[0x03] | 0x80;
-	registers[0x11] = registers[0x11] & ~0x80;
+	//registers[0x11] = registers[0x11] & ~0x80;
 
 	for (uint8_t i = 0; i < 25; i++)
 	{
@@ -403,13 +684,7 @@ void writeRegistersText(uint8_t *registers)
 	io_out_byte(attributeControllerIndexPort, 0x20);
 }
 
-void set13HVideoMode()
-{
-	memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
-	writeRegisters(g_320x200x256);
-	mode = 0x13;
-}
-
+//-------------- FUNCTIONS FOR MODES -----------------//
 void set3HVideoMode()
 {
 	unsigned rows, cols, ht, i;
@@ -429,11 +704,378 @@ void set3HVideoMode()
 	pokeb(0xC0000040, 0xC0000084, rows - 1); /* rows on screen - 1 */
 	pokeb(0xC0000040, 0xC0000085, ht);		 /* char height */
 											 /* set white-on-black attributes for all text */
-	for (i = 0; i < cols * rows; i++)
-		pokeb(0xC00B8000, i * 2 + 1, 7);
-
+	vga_clear_screen();
+	vga_color col;
+	col.color_without_blink.letter = VGA_COLOR_WHITE;
+	col.color_without_blink.background = VGA_COLOR_BLACK;
+	for(int i = 0; i < 80; i++)
+		for(int j = 0; j < 25; j++)
+			vga_set_color(i, j, col);
+	vga_clear_screen();
 	memcpy((void *)VGA_BASE_ADDR, text_dump, 4000);
 	mode = 3;
+}
+
+void set4HVideoMode()
+{
+	if(mode == 0x03)
+		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
+	writeRegisters(g_320x200x4c);
+	mode = 0x04;
+}
+
+void pixel_4H(unsigned char color, unsigned int x, unsigned int y)
+{
+	unsigned char *fb = (unsigned char*)VGA_VRAM_2;
+	unsigned int offset = (y/2 * 320 + x)/4;
+	unsigned bit_no = x % 4;
+	bit_write(fb[offset + (y%2 ? 0x2000 : 0)], 1<<(7 - (2 * bit_no)), (color & 0x2));
+	bit_write(fb[offset + (y%2 ? 0x2000 : 0)], 1<<(7 - (2 * bit_no+1)), (color & 0x1));
+}
+
+void drawDupaIn4H(int color)
+{
+	for (int x = 0; x < 320; x++)
+	{
+		for (int y = 0; y < 200; y++)
+			pixel_4H(color, x, y);
+	}
+}
+
+void set5HVideoMode()
+{
+	if(mode == 0x03)
+		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
+	writeRegisters(g_320x200x4b);
+	mode = 0x05;
+}
+
+void pixel_5H(unsigned char color, unsigned int x, unsigned int y)
+{
+	unsigned char *fb = (unsigned char*)VGA_VRAM_2;
+	unsigned int offset = (y/2 * 320 + x)/4;
+	unsigned bit_no = x % 4;
+	bit_write(fb[offset + (y%2 ? 0x2000 : 0)], 1<<(7 - (2 * bit_no)), (color & 0x2));
+	bit_write(fb[offset + (y%2 ? 0x2000 : 0)], 1<<(7 - (2 * bit_no+1)), (color & 0x1));
+}
+
+void drawDupaIn5H(int color)
+{
+	for (int x = 0; x < 320; x++)
+	{
+		for (int y = 0; y < 200; y++)
+			pixel_5H(color, x, y);
+	}
+}
+
+void set6HVideoMode()
+{
+	if(mode == 0x03)
+		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
+	writeRegisters(g_640x200x2);
+	mode = 0x06;
+}
+
+void pixel_6H(unsigned char color, unsigned int x, unsigned int y)
+{
+	unsigned char *fb = (unsigned char*)VGA_VRAM_2;
+	unsigned int offset = (y/2 * 640 + x)/8;
+	unsigned bit_no = x % 8;
+	/*if(y%2)
+		bit_write(fb[offset], (1<<(7 - bit_no)), (color & 0x1));
+	else
+		bit_write(fb[offset + 0x2000], (1<<(7 - bit_no)), (0));*/
+	bit_write(fb[offset + (y%2 ? 0x2000 : 0)], (1<<(7 - bit_no)), (color & 0x1));
+}
+
+void drawDupaIn6H(int color)
+{
+	for (int x = 0; x < 640; x++)
+	{
+		for (int y = 0; y < 200; y++)
+			pixel_6H(color, x, y);
+	}
+}
+
+void setDHVideoMode()
+{
+	if(mode == 0x03)
+		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
+	writeRegisters(g_320x200x16);
+	mode = 0x0d;
+}
+
+void pixel_DH(unsigned char color, unsigned int x, unsigned int y)
+{
+	unsigned char *fb = (unsigned char*)VGA_VRAM;
+	unsigned int offset = (y * 320 + x)/8;
+	unsigned bit_no = x % 8;
+	for(char p = 0; p < 4; p++)
+	{
+		set_plane(p);
+		bit_write(fb[offset], 1<<(7-bit_no), (bit_get(color, 1 << p)));
+	}
+	set_plane(0);
+}
+
+void drawDupaInDH(int color)
+{
+	for (int x = 0; x < 320; x++)
+	{
+		for (int y = 0; y < 200; y++)
+			pixel_DH(color, x, y);
+	}
+}
+
+void setEHVideoMode()
+{
+	if(mode == 0x03)
+		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
+	writeRegisters(g_640x200x16);
+	mode = 0x0e;
+}
+
+void pixel_EH(unsigned char color, unsigned int x, unsigned int y)
+{
+	unsigned char *fb = (unsigned char*)VGA_VRAM;
+	unsigned int offset = (y * 640 + x)/8;
+	unsigned bit_no = x % 8;
+	for(char p = 0; p < 4; p++)
+	{
+		set_plane(p);
+		bit_write(fb[offset], 1<<(7-bit_no), (bit_get(color, 1 << p)));
+	}
+	set_plane(0);
+}
+
+void drawDupaInEH(int color)
+{
+	for (int x = 0; x < 640; x++)
+	{
+		for (int y = 0; y < 200; y++)
+			pixel_EH(color, x, y);
+	}
+}
+
+void setFHVideoMode()
+{
+	if(mode == 0x03)
+		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
+	writeRegisters(g_640x350x3);
+	mode = 0x0f;
+}
+
+void pixel_FH(unsigned char color, unsigned int x, unsigned int y)
+{
+	unsigned char *fb = (unsigned char*)VGA_VRAM;
+	unsigned int offset = (y * 640 + x)/8;
+	unsigned bit_no = x % 8;
+	for(char p = 0; p <= 2; p+=2)
+	{
+		set_plane(p);
+		bit_write(fb[offset], 1<<(7-bit_no), (bit_get(color, 1 << (p/2))));
+	}
+	set_plane(0);
+}
+
+void drawDupaInFH(int color)
+{
+	for (int x = 0; x < 640; x++)
+	{
+		for (int y = 0; y < 350; y++)
+			pixel_EH(color, x, y);
+	}
+}
+
+
+void set10HVideoMode()
+{
+	if(mode == 0x03)
+		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
+	writeRegisters(g_640x350x16);
+	mode = 0x10;
+}
+
+void pixel_10H(unsigned char color, unsigned int x, unsigned int y)
+{
+	unsigned char *fb = (unsigned char*)VGA_VRAM;
+	unsigned int offset = (y * 640 + x)/8;
+	unsigned bit_no = x % 8;
+	for(char p = 0; p < 4; p++)
+	{
+		set_plane(p);
+		bit_write(fb[offset], 1<<(7-bit_no), (bit_get(color, 1 << p)));
+	}
+	set_plane(0);
+}
+
+void drawDupaIn10H(int color)
+{
+	for (int x = 0; x < 640; x++)
+	{
+		for (int y = 0; y < 350; y++)
+			pixel_EH(color, x, y);
+	}
+}
+
+void set11HVideoMode()
+{
+	if(mode == 0x03)
+		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
+	writeRegisters(g_640x480x2);
+	mode = 0x11;
+}
+
+void pixel_11H(unsigned char color, unsigned int x, unsigned int y)
+{
+	unsigned char *fb = (unsigned char*)VGA_VRAM;
+	unsigned int offset =(y * 640 + x) / 8;
+	unsigned bit_no = x % 8;
+	bit_write(fb[offset], 1<<(7-bit_no), (color ? 1 : 0));
+}
+
+void drawDupaIn11H(int color)
+{
+	set_plane(1);
+	for (int x = 0; x < 640; x++)
+	{
+		for (int y = 0; y < 480; y++)
+			pixel_11H(color, x, y);
+	}
+}
+
+void set12HVideoMode()
+{
+	if(mode == 0x03)
+		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
+	writeRegisters(g_640x480x16);
+	mode = 0x12;
+}
+
+void pixel_12H(unsigned char color, unsigned int x, unsigned int y)
+{
+	unsigned char *fb = (unsigned char*)VGA_VRAM;
+	unsigned int offset = (y * 640 + x)/8;
+	unsigned bit_no = x % 8;
+	for(char p = 0; p < 4; p++)
+	{
+		set_plane(p);
+		bit_write(fb[offset], 1<<(7-bit_no), (bit_get(color, 1 << p)));
+	}
+	set_plane(0);
+}
+
+void drawDupaIn12H(int color)
+{
+	for (int y = 0; y < 480; y++)
+	{
+		for (int x = 0; x < 640; x++)
+			pixel_12H(color, x, y);
+	}
+}
+
+void set13HVideoMode()
+{
+	if(mode == 0x03)
+		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
+	writeRegisters(g_320x200x256);
+	setPalette13H();
+	mode = 0x13;
+}
+
+void pixel_13H(unsigned char color, unsigned int x, unsigned int y)
+{
+	unsigned char *fb = (unsigned char *)VGA_VRAM;
+	unsigned int offset = y * PITCH + x;
+	/*uint8_t returnval = 0;
+    for (int i = 0; i < 8; ++i) {
+        uint8_t bit = color & 0x01;
+        returnval <<= 1;
+        returnval += bit;    // Shift the isolated bit into returnval
+        color >>= 1;
+    }*/
+	fb[offset] = color;
+}
+
+void drawDupaIn13H(int color)
+{
+	for (int x = 0; x < 320; x++)
+	{
+		for (int y = 0; y < 200; y++)
+			pixel_13H(color, x, y);
+	}
+}
+
+typedef struct _Os2BmpFileHeader
+{
+	uint16_t   FileType;      /* File type identifier */
+	uint32_t  FileSize;      /* Size of the file in bytes */
+	uint16_t   XHotSpot;      /* X coordinate of hotspot */
+	uint16_t   YHotSpot;      /* Y coordinate of hotspot */
+	uint32_t  BitmapOffset;  /* Starting position of image data in bytes */
+} __attribute__((packed)) OS2BMPFILEHEADER;
+
+typedef struct _Os21xBitmapHeader
+{
+	uint32_t Size;            /* Size of this header in bytes */
+	uint32_t  Width;           /* Image width in pixels */
+	uint32_t  Height;          /* Image height in pixels */
+	uint16_t  NumPlanes;       /* Number of color planes */
+	uint16_t  BitsPerPixel;    /* Number of bits per pixel */
+} __attribute__((packed)) OS21XBITMAPHEADER;
+
+typedef struct _Os21xPaletteElement
+{
+	uint8_t Blue;      /* Blue component */
+	uint8_t Green;     /* Green component */
+	uint8_t Red;       /* Red component */
+} __attribute__((packed)) OS21XPALETTEELEMENT;
+
+void drawMicrOSLogoIn13H()
+{
+	filesystem_file_info info;
+	filesystem_get_file_info("/ENV/LENA.BMP", &info);
+
+	uint8_t *buffer = heap_kernel_alloc(info.size, 0);
+	filesystem_read_file("/ENV/LENA.BMP", buffer, 0, info.size);
+
+	OS2BMPFILEHEADER fh;
+	memcpy(&fh, buffer, sizeof(OS2BMPFILEHEADER));
+
+	OS21XBITMAPHEADER bh;
+	memcpy(&bh, buffer + sizeof(OS2BMPFILEHEADER), sizeof(OS21XBITMAPHEADER));
+
+	for(int x = 0; x < bh.Width; x++)
+		for(int y = 0; y < bh.Height; y++)
+			pixel_13H(buffer[fh.BitmapOffset + (bh.Height * bh.Width - bh.Width - y*bh.Width) + x],x,y);
+
+	heap_kernel_dealloc(buffer);
+}
+
+void setModeYVideoMode()
+{
+	if(mode == 0x03)
+		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
+	writeRegisters(g_320x200x256_modex);
+	mode = 0x69;
+}
+
+void pixel_ModeY(unsigned char color, unsigned int x, unsigned int y)
+{
+	unsigned char *fb = (unsigned char*)VGA_VRAM;
+	unsigned int offset = y * 320 + x;
+	set_plane(offset%4);
+	fb[offset/4] = color;
+	set_plane(0);
+}
+
+void drawDupaInY(int color)
+{
+	for (int x = 0; x < 320; x++)
+	{
+		for (int y = 0; y < 240; y++)
+			pixel_ModeY(color, x, y);
+	}
 }
 
 static unsigned get_fb_seg(void)
@@ -485,14 +1127,14 @@ void setFont(uint8_t *buf, uint8_t font_height)
 	unsigned i;
 
 	/* save registers
-set_plane() modifies GC 4 and SEQ 2, so save them as well */
+	set_plane() modifies GC 4 and SEQ 2, so save them as well */
 	io_out_byte(sequencerIndexPort, 2);
 	seq2 = io_in_byte(sequencerDataPort);
 
 	io_out_byte(sequencerIndexPort, 4);
 	seq4 = io_in_byte(sequencerDataPort);
 	/* turn off even-odd addressing (set flat addressing)
-assume: chain-4 addressing already off */
+	assume: chain-4 addressing already off */
 	io_out_byte(sequencerDataPort, seq4 | 0x04);
 
 	io_out_byte(graphicsControllerIndexPort, 4);
@@ -517,14 +1159,14 @@ assume: chain-4 addressing already off */
 	}
 
 	// TODO: Check if this block is necessary.
-#if 0
-/* write font 1 */
+	#if 0
+	/* write font 1 */
 	for(i = 0; i < 256; i++)
 	{
 		vmemwr(16384u * 1 + i * 32, buf, font_height);
 		buf += font_height;
 	}
-#endif
+	#endif
 	/* restore registers */
 	io_out_byte(sequencerIndexPort, 2);
 	io_out_byte(sequencerDataPort, seq2);
@@ -538,23 +1180,88 @@ assume: chain-4 addressing already off */
 	io_out_byte(graphicsControllerDataPort, gc6);
 }
 
-void pixel_256(unsigned char color, unsigned int x, unsigned int y)
-{
-	unsigned char *fb = (unsigned char *)VGA_VRAM;
-	unsigned int offset = y * PITCH + x;
-	fb[offset] = color;
-}
-
-void drawDupaIn13H(int color)
-{
-	for (int x = 0; x < 320; x++)
-	{
-		for (int y = 0; y < 200; y++)
-			pixel_256(color, x, y);
-	}
-}
-
 char getMode()
 {
 	return mode;
+}
+
+void read_regs(unsigned char *regs)
+{
+        unsigned int i;
+        unsigned char value;
+        //MISC
+        *regs = io_in_byte(0x3CC);
+        regs++;
+        //SEQ
+        for(i = 0; i<5; i++)
+        {
+            	io_out_byte(sequencerIndexPort, i);
+                //delay(1000);
+                value = io_in_byte(sequencerDataPort);
+                *regs = value;
+                regs++;
+        }
+        //CRTC
+        for(i = 0; i< 25; i++)
+        {
+                io_out_byte(crtcIndexPort, i);
+                //delay(1000);
+                *regs = io_in_byte(crtcDataPort);
+                regs++;
+        }
+        //GC
+        for(i = 0; i< 9; i++)
+        {
+                io_out_byte(graphicsControllerIndexPort, i);
+                //delay(1000);
+                *regs = io_in_byte(graphicsControllerDataPort);
+                regs++;
+        }
+        //AC
+        for(i = 0; i< 21; i++)
+        {
+
+                (void)io_in_byte(attributeControllerResetPort);
+                //delay(1000);
+                io_out_byte(attributeControllerIndexPort, i);
+                //delay(1000);
+                *regs = io_in_byte(attributeControllerReadPort);
+                regs++;
+        }
+        (void)io_in_byte(attributeControllerResetPort);
+        io_out_byte(attributeControllerIndexPort, 0x20);
+}
+
+void dumpRegs()
+{
+	read_regs(regs_dump);
+}
+
+void printRegs()
+{
+	vga_clear_screen();
+	char s[] = "000";
+	for(int i = 0 ; i<61; i++)
+	{
+		itoa(regs_dump[i], s, 16);
+		vga_printstring(s);
+		vga_printchar(' ');
+	}
+}
+
+void test13H()
+{
+	for(unsigned int i = 0; i<256; i++)
+	{
+		pixel_13H(i, i % 16, i/16);
+	}
+}
+
+void setPalette13H()
+{
+	io_out_byte(0x3C8, 0);
+	for(int i = 0; i<768; i++)
+	{
+		io_out_byte(0x3C9, palette13H[i]);
+	}
 }
