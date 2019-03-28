@@ -24,10 +24,10 @@ typedef struct _driverInitStruct
     int8_t (*turnOffBuffer)();
     uint8_t (*isBufferOn)();
     int8_t (*swapBuffers)();
-    int8_t (*drawPixel)(uint8_t, int16_t, int16_t);
-    int8_t (*drawLine)(uint8_t, int16_t, int16_t, int16_t, int16_t);
-    int8_t (*drawCircle)(uint8_t, int16_t, int16_t, int16_t);
-    int8_t (*drawRectangle)(uint8_t, int16_t, int16_t, int16_t, int16_t);
+    int8_t (*drawPixel)(uint8_t, uint16_t, uint16_t);
+    int8_t (*drawLine)(uint8_t, uint16_t, uint16_t, uint16_t, uint16_t);
+    int8_t (*drawCircle)(uint8_t, uint16_t, uint16_t, uint16_t);
+    int8_t (*drawRectangle)(uint8_t, uint16_t, uint16_t, uint16_t, uint16_t);
     int8_t (*clearScreen)();
 } __attribute__((packed)) DriverInitStruct;
 
@@ -42,10 +42,10 @@ void setTurnOnBufferFunc(int8_t (*turnOnBuffer)());
 void setTurnOffBufferFunc(int8_t (*turnOffBuffer)());
 void setIsBufferOnFunc(uint8_t (*isBufferOn)());
 void setSwapBuffersFunc(int8_t (*swapBuffers)());
-void setDrawPixelFunc(int8_t (*drawPixel)(uint8_t, int16_t, int16_t));
-void setDrawLineFunc(int8_t (*drawLine)(uint8_t, int16_t, int16_t, int16_t, int16_t));
-void setDrawCircleFunc(int8_t (*drawCircle)(uint8_t, int16_t, int16_t, int16_t));
-void setDrawRectangleFunc(int8_t (*drawRectangle)(uint8_t, int16_t, int16_t, int16_t, int16_t));
+void setDrawPixelFunc(int8_t (*drawPixel)(uint8_t, uint16_t, uint16_t));
+void setDrawLineFunc(int8_t (*drawLine)(uint8_t, uint16_t, uint16_t, uint16_t, uint16_t));
+void setDrawCircleFunc(int8_t (*drawCircle)(uint8_t, uint16_t, uint16_t, uint16_t));
+void setDrawRectangleFunc(int8_t (*drawRectangle)(uint8_t, uint16_t, uint16_t, uint16_t, uint16_t));
 void setClearScreenFunc(int8_t (*clearScreen)());
 
 VideoMode* getAvailableGraphicVideoModes(uint32_t *noOfModes);
@@ -62,10 +62,10 @@ uint8_t isBufferOn();
 
 int8_t swapBuffers();
 
-int8_t drawPixel(uint8_t color, int16_t x, int16_t y);
-int8_t drawLine(uint8_t color, int16_t ax, int16_t ay, int16_t bx, int16_t by);
-int8_t drawCircle(uint8_t color, int16_t x, int16_t y, int16_t radius);
-int8_t drawRectangle(uint8_t color, int16_t ax, int16_t ay, int16_t bx, int16_t by);
+int8_t drawPixel(uint8_t color, uint16_t x, uint16_t y);
+int8_t drawLine(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
+int8_t drawCircle(uint8_t color, uint16_t x, uint16_t y, uint16_t radius);
+int8_t drawRectangle(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
 int8_t clearScreen();
 
 
