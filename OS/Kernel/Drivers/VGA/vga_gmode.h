@@ -8,9 +8,6 @@
 /*void drawMicrOSLogoIn13H();
 void drawLenaIn13H();*/
 
-/*void setModeYVideoMode();
-void pixel_ModeY(unsigned char color, unsigned int x, unsigned int y);
-void drawDupaInY(int color);*/
 
 
 char getMode();

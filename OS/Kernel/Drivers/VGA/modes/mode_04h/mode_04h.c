@@ -93,7 +93,7 @@ int8_t turnOnBuffer04H()
     if(bufferTurnedOn04H) return -1;
     for(int i = 1; i >= 0; i--)
     {
-        MODE04H_BUFFER[i] = heap_kernel_alloc(MODE04H_HEIGHT * MODE04H_WIDTH / 16, 0);
+        MODE04H_BUFFER[i] = heap_kernel_alloc(MODE04H_HEIGHT * MODE04H_WIDTH / 8, 0);
         if(MODE04H_BUFFER[i] == NULL)
         {
             for(int j = 1; j >= i; j--)
@@ -136,8 +136,8 @@ uint8_t isBufferOn04H()
 int8_t swapBuffers04H()
 {
     if(!bufferTurnedOn04H) return -1;
-    memcpy(VGA_VRAM_2, MODE04H_BUFFER[0], MODE04H_WIDTH * MODE04H_HEIGHT / 16);
-    memcpy(VGA_VRAM_2 + 0x2000, MODE04H_BUFFER[1], MODE04H_WIDTH * MODE04H_HEIGHT / 16);
+    memcpy(VGA_VRAM_2, MODE04H_BUFFER[0], MODE04H_WIDTH * MODE04H_HEIGHT / 8);
+    memcpy(VGA_VRAM_2 + 0x2000, MODE04H_BUFFER[1], MODE04H_WIDTH * MODE04H_HEIGHT / 8);
     //memcpy(VGA_VRAM, MODE13H_BUFFER, MODE13H_HEIGHT * MODE13H_WIDTH);
     return 0;
 }
