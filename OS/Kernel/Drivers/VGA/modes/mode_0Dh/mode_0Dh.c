@@ -170,7 +170,7 @@ int8_t drawCircle0DH(uint8_t color, uint16_t x, uint16_t y, uint16_t radius)
     return 0;
 }
 
-int8_t drawRectangle0DH(uint8_t color, uint16_t ax, int16_t ay, uint16_t bx, uint16_t by)
+int8_t drawRectangle0DH(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
 {
     return 0;
 }
