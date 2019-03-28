@@ -701,7 +701,7 @@ void pixel_10H(unsigned char color, unsigned int x, unsigned int y)
 	for(char p = 0; p < 4; p++)
 	{
 		set_plane(p);
-		bit_write(fb[offset], 1<<(7-bit_no), (bit_get(color, 1 << p)));
+		bit_write(fb[offset], 1<<(7-bit_no), (bit_get(color, 1 << p)));     
 	}
 	set_plane(0);
 }
@@ -713,7 +713,7 @@ void drawDupaIn10H(int color)
 		for (int y = 0; y < 350; y++)
 			pixel_EH(color, x, y);
 	}
-}
+}                                                                                                                                                
 
 //typedef struct _Os2BmpFileHeader
 //{
