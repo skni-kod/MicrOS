@@ -150,27 +150,6 @@ unsigned char g_640x200x16[] =
 		0x01, 0x00, 0x0F, 0x00, 0x00, 
 	};
 
-//fh
-unsigned char g_640x350x3[] =
-	{
-	/* MISC */
-		0xA2, 
-	/* SEQ */
-		0x03, 0x01, 0x0F, 0x00, 0x06, 
-	/* CRTC */
-		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-		0xFF, 
-	/* GC */
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x05,
-		0xFF, 
-	/* AC */
-		0x00, 0x01, 0x00, 0x03, 0x18, 0x05, 0x00, 0x07,
-		0x00, 0x09, 0x00, 0x0B, 0x00, 0x0D, 0x00, 0x0F,
-		0x0B, 0x01, 0x05, 0x13, 0x00, 
-	};
-
 //Mode Y
 unsigned char g_320x200x256_modex[] =
 	{
@@ -631,37 +610,7 @@ void drawDupaInEH(int color)
 		for (int y = 0; y < 200; y++)
 			pixel_EH(color, x, y);
 	}
-}
-
-void setFHVideoMode()
-{
-	if(mode == 0x03)
-		memcpy(text_dump, (void *)VGA_BASE_ADDR, 4000);
-	writeRegisters(g_640x350x3);
-	mode = 0x0f;
-}
-
-void pixel_FH(unsigned char color, unsigned int x, unsigned int y)
-{
-	unsigned char *fb = (unsigned char*)VGA_VRAM;
-	unsigned int offset = (y * 640 + x)/8;
-	unsigned bit_no = x % 8;
-	for(char p = 0; p <= 2; p+=2)
-	{
-		set_plane(p);
-		bit_write(fb[offset], 1<<(7-bit_no), (bit_get(color, 1 << (p/2))));
-	}
-	set_plane(0);
-}
-
-void drawDupaInFH(int color)
-{
-	for (int x = 0; x < 640; x++)
-	{
-		for (int y = 0; y < 350; y++)
-			pixel_EH(color, x, y);
-	}
-}                                                                                                                                              
+}                                                                                                                                            
 
 //typedef struct _Os2BmpFileHeader
 //{
