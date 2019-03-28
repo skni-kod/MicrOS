@@ -1,4 +1,7 @@
 #include "mode_13h.h"
+#include "../registerFunctions.h"
+#include "../../../../Memory/Manager/Heap/heap.h"
+#include "../../../DAL/VideoCard/videocard.h"
 
 //REGISTER VALUES
 uint8_t g_320x200x256[] =
@@ -73,3 +76,97 @@ unsigned char palette13H[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
+//DOUBLE BUFFER POINTER;
+
+unsigned char *MODE13H_BUFFER = NULL;
+
+int8_t setMode13H()
+{
+    writeRegisters(g_320x200x256);
+    set_vga_palette(palette13H);
+    return 0x13;
+}
+
+int8_t turnOnBuffer13H()
+{
+    if(MODE13H_BUFFER != NULL) return -1;
+    MODE13H_BUFFER = heap_kernel_alloc(MODE13H_HEIGHT * MODE13H_WIDTH, 0);
+    if(MODE13H_BUFFER == NULL)
+        return -1;
+    setDrawPixelFunc(&drawPixel13HBuffered);
+    return 0;
+}
+
+int8_t turnOffBuffer13H()
+{
+    if(MODE13H_BUFFER == NULL) return -1;
+    heap_kernel_dealloc(MODE13H_BUFFER);
+    MODE13H_BUFFER = NULL;
+    setDrawPixelFunc(&drawPixel13H);
+    return 0;
+}
+
+uint8_t isBufferOn13H()
+{
+    return MODE13H_BUFFER != NULL;
+}
+
+int8_t swapBuffers13H()
+{
+    if(MODE13H_BUFFER == NULL) return -1;
+    memcpy(VGA_VRAM, MODE13H_BUFFER, MODE13H_HEIGHT * MODE13H_WIDTH);
+    return 0;
+}
+
+int8_t drawPixel13H(uint8_t color, uint16_t x, uint16_t y)
+{
+    if((x>=MODE13H_WIDTH) || (y >=MODE13H_HEIGHT))
+        return -1;
+    unsigned char *fb = (unsigned char *) VGA_VRAM;
+    fb[y * MODE13H_WIDTH + x] = color;
+    return 0;
+}
+
+int8_t drawLine13H(uint8_t color, uint16_t ax, uint16_t ay, int16_t bx, uint16_t by)
+{
+    return 0;
+}
+
+int8_t drawCircle13H(uint8_t color, uint16_t x, uint16_t y, uint16_t radius) 
+{
+    return 0;
+}
+
+int8_t drawRectangle13H(uint8_t color, uint16_t ax, int16_t ay, uint16_t bx, uint16_t by)
+{
+    return 0;
+}
+int8_t clearScreen13H()
+{
+    return 0;
+}
+
+int8_t drawPixel13HBuffered(uint8_t color, uint16_t x, uint16_t y)
+{
+    if((MODE13H_BUFFER == NULL) || (x>=MODE13H_WIDTH) || (y >=MODE13H_HEIGHT))
+        return -1;
+    MODE13H_BUFFER[y * MODE13H_WIDTH + x] = color;
+    return 0;
+}
+
+int8_t drawLine13HBuffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
+{
+    return 0;
+}
+int8_t drawCircle13HBuffered(uint8_t color, uint16_t x, uint16_t y, uint16_t radius)
+{
+    return 0;
+}
+int8_t drawRectangle13HBuffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
+{
+    return 0;
+}
+int8_t clearScreen13HBuffered()
+{
+    return 0;
+}

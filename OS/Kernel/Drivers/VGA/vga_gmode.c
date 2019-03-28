@@ -1010,36 +1010,6 @@ void drawDupaInY(int color)
 	}
 }
 
-static unsigned get_fb_seg(void)
-{
-	unsigned seg;
-
-	io_out_byte(graphicsControllerIndexPort, 6);
-	seg = io_in_byte(graphicsControllerDataPort);
-	seg >>= 2;
-	seg &= 3;
-	switch (seg)
-	{
-	case 0:
-	case 1:
-		seg = 0xC00A000;
-		break;
-	case 2:
-		seg = 0xC00B000;
-		break;
-	case 3:
-		seg = 0xC00B800;
-		break;
-	}
-	return seg;
-}
-
-static void vmemwr(unsigned dst_off, unsigned char *src, unsigned count)
-{
-	_vmemwr(get_fb_seg(), dst_off, src, count);
-}
-
-
 char getMode()
 {
 	return mode;
@@ -1056,7 +1026,6 @@ void read_regs(unsigned char *regs)
         for(i = 0; i<5; i++)
         {
             	io_out_byte(sequencerIndexPort, i);
-                //delay(1000);
                 value = io_in_byte(sequencerDataPort);
                 *regs = value;
                 regs++;
@@ -1065,7 +1034,6 @@ void read_regs(unsigned char *regs)
         for(i = 0; i< 25; i++)
         {
                 io_out_byte(crtcIndexPort, i);
-                //delay(1000);
                 *regs = io_in_byte(crtcDataPort);
                 regs++;
         }
@@ -1073,7 +1041,6 @@ void read_regs(unsigned char *regs)
         for(i = 0; i< 9; i++)
         {
                 io_out_byte(graphicsControllerIndexPort, i);
-                //delay(1000);
                 *regs = io_in_byte(graphicsControllerDataPort);
                 regs++;
         }
@@ -1082,9 +1049,7 @@ void read_regs(unsigned char *regs)
         {
 
                 (void)io_in_byte(attributeControllerResetPort);
-                //delay(1000);
                 io_out_byte(attributeControllerIndexPort, i);
-                //delay(1000);
                 *regs = io_in_byte(attributeControllerReadPort);
                 regs++;
         }
