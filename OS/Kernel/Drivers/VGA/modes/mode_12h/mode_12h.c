@@ -150,7 +150,7 @@ int8_t drawPixel12H(uint8_t color, uint16_t x, uint16_t y)
     if((x>=MODE12H_WIDTH) || (y >=MODE12H_HEIGHT))
         return -1;
     unsigned char *fb = (unsigned char *) VGA_VRAM;
-    unsigned int offset = (y * 640 + x)/8;
+    unsigned int offset = (y * MODE12H_WIDTH + x)/8;
 	unsigned bit_no = x % 8;
 	for(char p = 3; p >= 0; p--)
 	{
@@ -183,11 +183,10 @@ int8_t drawPixel12HBuffered(uint8_t color, uint16_t x, uint16_t y)
 {
     if((!bufferTurnedOn12H) || (x>=MODE12H_WIDTH) || (y >=MODE12H_HEIGHT))
         return -1;
-    unsigned int offset = (y * 640 + x)/8;
+    unsigned int offset = (y * MODE12H_WIDTH + x)/8;
 	unsigned bit_no = x % 8;
 	for(char p = 3; p >= 0; p--)
 	{
-		set_plane(p);
 		bit_write(MODE12H_BUFFER[p][offset], 1<<(7-bit_no), (bit_get(color, 1 << p)));
 	}
     return 0;

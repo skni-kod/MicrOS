@@ -132,7 +132,7 @@ int8_t drawPixel11H(uint8_t color, uint16_t x, uint16_t y)
     if((x>=MODE11H_WIDTH) || (y >=MODE11H_HEIGHT))
         return -1;
     unsigned char *fb = (unsigned char *) VGA_VRAM;
-    unsigned int offset = (y * 640 + x)/8;
+    unsigned int offset = (y * MODE11H_WIDTH + x)/8;
 	unsigned bit_no = x % 8;
 	bit_write(fb[offset], 1<<(7-bit_no), (color % 2));
     return 0;
@@ -161,7 +161,7 @@ int8_t drawPixel11HBuffered(uint8_t color, uint16_t x, uint16_t y)
 {
     if((!bufferTurnedOn11H) || (x>=MODE11H_WIDTH) || (y >=MODE11H_HEIGHT))
         return -1;
-    unsigned int offset = (y * 640 + x)/8;
+    unsigned int offset = (y * MODE11H_WIDTH + x)/8;
 	unsigned bit_no = x % 8;
 	bit_write(MODE11H_BUFFER[offset], 1<<(7-bit_no), (color % 2));
     return 0;

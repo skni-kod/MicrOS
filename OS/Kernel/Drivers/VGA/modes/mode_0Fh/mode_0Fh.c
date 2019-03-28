@@ -150,7 +150,7 @@ int8_t drawPixel0FH(uint8_t color, uint16_t x, uint16_t y)
     if((x>=MODE0FH_WIDTH) || (y >=MODE0FH_HEIGHT))
         return -1;
     unsigned char *fb = (unsigned char *) VGA_VRAM;
-    unsigned int offset = (y * 640 + x)/8;
+    unsigned int offset = (y * MODE0FH_WIDTH + x)/8;
 	unsigned bit_no = x % 8;
 	for(char p = 1; p >= 0; p--)
 	{
