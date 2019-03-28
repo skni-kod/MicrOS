@@ -146,7 +146,7 @@ int8_t drawPixel05H(uint8_t color, uint16_t x, uint16_t y)
 {
     if((x>=MODE05H_WIDTH) || (y >=MODE05H_HEIGHT))
         return -1;
-    unsigned char *fb = (unsigned char *) VGA_VRAM;
+    unsigned char *fb = (unsigned char *) VGA_VRAM_2;
     unsigned int offset = (y/2 * MODE05H_WIDTH + x)/4;
 	unsigned bit_no = x % 4;
 	bit_write(fb[offset + (y%2 ? 0x2000 : 0)], 1<<(7 - (2 * bit_no)), (color & 0x2));

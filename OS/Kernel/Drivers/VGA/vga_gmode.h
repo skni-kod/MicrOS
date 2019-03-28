@@ -13,10 +13,6 @@
 
 /*void set3HVideoMode();
 
-void set4HVideoMode();
-void pixel_4H(unsigned char color, unsigned int x, unsigned int y);
-void drawDupaIn4H(int color);
-
 /*void drawMicrOSLogoIn13H();
 void drawLenaIn13H();*/
 
