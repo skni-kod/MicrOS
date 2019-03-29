@@ -1,4 +1,4 @@
-#include "stdio.h"
+#include "../stdio.h"
 
 FILE *__stdio_create_stream()
 {
