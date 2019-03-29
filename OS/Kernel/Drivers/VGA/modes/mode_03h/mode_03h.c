@@ -365,7 +365,16 @@ int8_t setMode03H()
 			vga_set_color(i, j, col);
 	vga_clear_screen();
     set_vga_palette(palette03H);
-    return 0x3;
+	setTurnOnBufferFunc(&turnOffBuffer03H);
+    setTurnOffBufferFunc(&turnOffBuffer03H);
+    setIsBufferOnFunc(&isBufferOn03H);
+    setSwapBuffersFunc(&swapBuffers03H);
+    setDrawPixelFunc(&drawPixel03H);
+    setDrawLineFunc(&drawLine03H);
+    setDrawCircleFunc(&drawCircle03H);
+    setDrawRectangleFunc(&drawRectangle03H);
+    setClearScreenFunc(&clearScreen03H);
+    return 0x03;
 }
 
 int8_t turnOnBuffer03H()

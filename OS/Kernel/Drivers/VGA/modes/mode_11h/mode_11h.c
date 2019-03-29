@@ -85,7 +85,16 @@ int8_t setMode11H()
 {
     writeRegisters(g_640x480x2);
     set_vga_palette(palette11H);
-    return 0x13;
+    setTurnOnBufferFunc(&turnOffBuffer11H);
+    setTurnOffBufferFunc(&turnOffBuffer11H);
+    setIsBufferOnFunc(&isBufferOn11H);
+    setSwapBuffersFunc(&swapBuffers11H);
+    setDrawPixelFunc(&drawPixel11H);
+    setDrawLineFunc(&drawLine11H);
+    setDrawCircleFunc(&drawCircle11H);
+    setDrawRectangleFunc(&drawRectangle11H);
+    setClearScreenFunc(&clearScreen11H);
+    return 0x11;
 }
 
 int8_t turnOnBuffer11H()
@@ -97,6 +106,7 @@ int8_t turnOnBuffer11H()
     setDrawLineFunc(&drawLine11HBuffered);
     setDrawCircleFunc(&drawCircle11HBuffered);
     setDrawRectangleFunc(&drawRectangle11HBuffered);
+    setClearScreenFunc(&clearScreen11HBuffered);
     bufferTurnedOn11H = 1;
     return 0;
 }
@@ -110,6 +120,7 @@ int8_t turnOffBuffer11H()
     setDrawLineFunc(&drawLine11H);
     setDrawCircleFunc(&drawCircle11H);
     setDrawRectangleFunc(&drawRectangle11H);
+    setClearScreenFunc(&clearScreen11H);
     bufferTurnedOn11H = 0;
     return 0;
 }
