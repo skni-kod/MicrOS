@@ -20,6 +20,10 @@
 #define attributeControllerWritePort 0x3c0
 #define attributeControllerResetPort 0x3da
 
+#define peekb(S, O) *(unsigned char *)(16uL * (S) + (O))
+#define pokeb(S, O, V) *(unsigned char *)(16uL * (S) + (O)) = (V)
+#define pokew(S, O, V) *(unsigned short *)(16uL * (S) + (O)) = (V)
+
 #define bit_get(p,m) ((p) & (m))
 #define bit_set(p,m) ((p) |= (m))
 #define bit_clear(p,m) ((p) &= ~(m))
