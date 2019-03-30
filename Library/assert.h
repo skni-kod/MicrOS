@@ -3,11 +3,11 @@
 
 #include "stdio.h"
 
-#define assert(expression)                                                      \
-    if (!(expression))                                                          \
-    {                                                                           \
-        fprintf(stderr, "Assertion failed: %s at line %d", __FILE__, __LINE__); \
-        abort();                                                                \
+#define assert(expression)                                                                          \
+    if (!(expression))                                                                              \
+    {                                                                                               \
+        fprintf(stderr, "Assertion failed (%s): %s at line %d", #expression, __FILE__, __LINE__);   \
+        abort();                                                                                    \
     }
 
 #endif
