@@ -6,7 +6,7 @@ int fprintf(FILE *file, const char *format, ...)
     va_list arg;
     va_start(arg, format);
 
-    int ret = __vfprintf(file, format, arg);
+    int ret = vfprintf(file, format, arg);
     va_end(arg);
 
     return ret;
