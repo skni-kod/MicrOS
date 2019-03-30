@@ -4,7 +4,7 @@
 #include "../locale.h"
 #include "../stdlib.h"
 #include "../stdio.h"
-#include "../Streams/streams.h"
+#include "../stdio/streams/streams.h"
 #include "../signal.h"
 #include "../micros.h"
 
