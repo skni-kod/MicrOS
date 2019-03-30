@@ -60,6 +60,8 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0x95, syscall_process_set_current_process_name);
     syscalls_manager_attach_handler(0x96, syscall_process_current_process_sleep);
     syscalls_manager_attach_handler(0x97, syscall_process_start_process);
+    syscalls_manager_attach_handler(0x98, syscall_process_set_current_process_signal_handler);
+    syscalls_manager_attach_handler(0x99, syscall_process_finish_signal_handler);
 
     // 0xAX - Memory
     syscalls_manager_attach_handler(0xA0, syscall_memory_get_physical_memory_stats);

@@ -2,7 +2,10 @@
 
 void _start(char *path, char *parameters)
 {
+    micros_process_set_current_process_signal_handler(signal_handler);
+
     setlocale(LC_ALL, "C");
+    __signal_init();
 
     stdin = __stdio_create_stream();
     streams_set_stream_as_keyboard(stdin);
@@ -82,4 +85,25 @@ char **parse_parameters(char *path, char *parameters, int *count)
 
     argv[(*count) - 1] = 0;
     return argv;
+}
+
+void signal_handler(micros_signal_params *old_state)
+{
+    micros_signal_params local_old_state;
+
+    // We do local copy of old state and frees it (because we don't know if handler will end with
+    // micros_process_finish_signal_handler or some longjmp).
+    memcpy(&local_old_state, old_state, sizeof(micros_signal_params));
+    free(old_state);
+
+    switch (local_old_state.interrupt_number)
+    {
+    case 14: //Page fault
+    {
+        raise_with_param(SIGSEGV, local_old_state.cr2);
+        break;
+    }
+    }
+
+    micros_process_finish_signal_handler(&local_old_state);
 }
