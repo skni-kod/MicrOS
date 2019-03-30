@@ -20,6 +20,7 @@
 #include "Process/ELF/Loader/elf_loader.h"
 #include "Process/Manager/process_manager.h"
 #include "Interrupts/Syscalls/syscalls_manager.h"
+#include "Interrupts/Signals/signals_manager.h"
 #include "TSS/tss.h"
 #include <stdint.h>
 
@@ -66,6 +67,9 @@ void startup()
 
     syscalls_manager_init();
     logger_log_ok("Syscalls manager");
+    
+    signals_manager_init();
+    logger_log_ok("Signals manager");
 
     /*pci_init();
     logger_log_ok("PCI");
