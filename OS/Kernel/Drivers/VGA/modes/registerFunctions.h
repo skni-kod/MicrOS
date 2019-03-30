@@ -38,4 +38,9 @@ void setFont(uint8_t *buf, uint8_t font_height);
 void set_plane(unsigned p);
 void set_vga_palette(unsigned char* palette);
 
+static inline int32_t _abs(int32_t _x)
+{
+    return (_x < 0) ? _x * (-1) : _x;
+}
+
 #endif

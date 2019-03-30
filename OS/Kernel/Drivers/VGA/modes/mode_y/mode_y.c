@@ -170,6 +170,31 @@ int8_t drawPixelY(uint8_t color, uint16_t x, uint16_t y)
 
 int8_t drawLineY(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
 {
+    if(ax == bx) return -1;
+    int32_t dx = (int32_t)bx - ax;
+    int32_t dy = (int32_t)by - ay;
+    if(_abs(dx) >= _abs(dy))
+    {
+        float a = dy/(float)(dx);
+        float b = ay - a * ax;
+        if(ax > bx)
+            for(int x = bx; x <= ax; ++x)
+                drawPixelY(color, x, a * x + b);
+        else
+            for(int x = ax; x <= bx; ++x)
+                drawPixelY(color, x, a * x + b);
+    }
+    else
+    {
+        float a = dx/(float)(dy);
+        float b = ax - a * ay;
+        if(ay > by)
+            for(int y = by; y <= ay; ++ y)
+                drawPixelY(color, a * y + b, y);
+        else
+            for(int y = ay; y <= by; ++ y)
+                drawPixelY(color, a * y + b, y);
+    }
     return 0;
 }
 
@@ -203,6 +228,32 @@ int8_t drawPixelYBuffered(uint8_t color, uint16_t x, uint16_t y)
 
 int8_t drawLineYBuffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
 {
+    if(!bufferTurnedOnY) return -1;
+    if(ax == bx) return -1;
+    int32_t dx = (int32_t)bx - ax;
+    int32_t dy = (int32_t)by - ay;
+    if(_abs(dx) >= _abs(dy))
+    {
+        float a = dy/(float)(dx);
+        float b = ay - a * ax;
+        if(ax > bx)
+            for(int x = bx; x <= ax; ++x)
+                drawPixelYBuffered(color, x, a * x + b);
+        else
+            for(int x = ax; x <= bx; ++x)
+                drawPixelYBuffered(color, x, a * x + b);
+    }
+    else
+    {
+        float a = dx/(float)(dy);
+        float b = ax - a * ay;
+        if(ay > by)
+            for(int y = by; y <= ay; ++ y)
+                drawPixelYBuffered(color, a * y + b, y);
+        else
+            for(int y = ay; y <= by; ++ y)
+                drawPixelYBuffered(color, a * y + b, y);
+    }
     return 0;
 }
 int8_t drawCircleYBuffered(uint8_t color, uint16_t x, uint16_t y, uint16_t radius)

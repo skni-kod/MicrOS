@@ -174,6 +174,31 @@ int8_t drawPixel0FH(uint8_t color, uint16_t x, uint16_t y)
 
 int8_t drawLine0FH(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
 {
+    if(ax == bx) return -1;
+    int32_t dx = (int32_t)bx - ax;
+    int32_t dy = (int32_t)by - ay;
+    if(_abs(dx) >= _abs(dy))
+    {
+        float a = dy/(float)(dx);
+        float b = ay - a * ax;
+        if(ax > bx)
+            for(int x = bx; x <= ax; ++x)
+                drawPixel0FH(color, x, a * x + b);
+        else
+            for(int x = ax; x <= bx; ++x)
+                drawPixel0FH(color, x, a * x + b);
+    }
+    else
+    {
+        float a = dx/(float)(dy);
+        float b = ax - a * ay;
+        if(ay > by)
+            for(int y = by; y <= ay; ++ y)
+                drawPixel0FH(color, a * y + b, y);
+        else
+            for(int y = ay; y <= by; ++ y)
+                drawPixel0FH(color, a * y + b, y);
+    }
     return 0;
 }
 
@@ -209,6 +234,32 @@ int8_t drawPixel0FHBuffered(uint8_t color, uint16_t x, uint16_t y)
 
 int8_t drawLine0FHBuffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
 {
+    if(!bufferTurnedOn0FH) return -1;
+    if(ax == bx) return -1;
+    int32_t dx = (int32_t)bx - ax;
+    int32_t dy = (int32_t)by - ay;
+    if(_abs(dx) >= _abs(dy))
+    {
+        float a = dy/(float)(dx);
+        float b = ay - a * ax;
+        if(ax > bx)
+            for(int x = bx; x <= ax; ++x)
+                drawPixel0FHBuffered(color, x, a * x + b);
+        else
+            for(int x = ax; x <= bx; ++x)
+                drawPixel0FHBuffered(color, x, a * x + b);
+    }
+    else
+    {
+        float a = dx/(float)(dy);
+        float b = ax - a * ay;
+        if(ay > by)
+            for(int y = by; y <= ay; ++ y)
+                drawPixel0FHBuffered(color, a * y + b, y);
+        else
+            for(int y = ay; y <= by; ++ y)
+                drawPixel0FHBuffered(color, a * y + b, y);
+    }
     return 0;
 }
 int8_t drawCircle0FHBuffered(uint8_t color, uint16_t x, uint16_t y, uint16_t radius)

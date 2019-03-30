@@ -27,7 +27,17 @@
 #include <stdlib.h>
 #include <time.h>
 
+typedef struct _linesStruct
+{
+    uint16_t ax;
+    uint16_t bx;
+    uint16_t ay;
+    uint16_t by;
+    uint8_t color;
+} linesStruct;
+
 char buff[50];
+linesStruct ssBuffer[64];
 
 void startup()
 {
@@ -171,6 +181,8 @@ int kmain()
     char buff[50];
     VideoMode currentMode;
     srand(clock());
+    char shouldDrawLines = 0;
+    char screenSaver = 0;
     while (1)
     {
         if (!keyboard_is_buffer_empty())
@@ -427,13 +439,60 @@ int kmain()
             {
                 turnOnBuffer();
             }
-            else if(c.scancode == 27) // ]
+            else if(c.scancode == 27) //]
             {
                 turnOffBuffer();
+            }
+            else if(c.scancode == 41) //`
+            {
+                screenSaver = 0;
+                shouldDrawLines = !shouldDrawLines;
+            }
+            else if(c.scancode == 13) //=
+            {
+                shouldDrawLines = 0;
+                screenSaver = !screenSaver;
             }
             else{
                 if(isTextMode())
                     vga_printchar(c.ascii);
+            }
+        }
+        if(shouldDrawLines)
+        {
+            currentMode = getCurrentVideoMode();
+            uint8_t color = (rand() % (currentMode.colors - 1) + 1);
+            uint16_t ax = (rand() % (currentMode.width));
+            uint16_t ay = (rand() % (currentMode.height));
+            uint16_t bx = (rand() % (currentMode.width));
+            uint16_t by = (rand() % (currentMode.height));
+            drawLine(color, ax, ay, bx, by);
+            if(isBufferOn())
+                swapBuffers();
+        }
+        if(screenSaver)
+        {
+            if(isBufferOn())
+            {
+                linesStruct s;
+                currentMode = getCurrentVideoMode();
+                s.color = (rand() % (currentMode.colors - 1) + 1);
+                //s.ax = (rand() % (currentMode.width));
+                //s.ay = (rand() % (currentMode.height));
+                s.ax = ssBuffer[63].bx;
+                s.ay = ssBuffer[63].by;
+                s.bx = (rand() % (currentMode.width));
+                s.by = (rand() % (currentMode.height));
+                clearScreen();
+                for(int i = 0; i < 64; i++)
+                {
+                    drawLine(ssBuffer[i].color, ssBuffer[i].ax, ssBuffer[i].ay, ssBuffer[i].bx, ssBuffer[i].by);
+                    if(i)
+                        ssBuffer[i-1] = ssBuffer[i];
+                }
+                ssBuffer[63] = s;
+                //drawLine(color, ax, ay, bx, by);
+                swapBuffers();
             }
         }
     }
