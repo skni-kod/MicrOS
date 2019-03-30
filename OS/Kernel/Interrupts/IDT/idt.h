@@ -11,6 +11,7 @@
 #include "interrupt_state.h"
 #include "exception_state.h"
 #include "interrupt_handler_definition.h"
+#include "exception_handler_definition.h"
 #include "exception_definition.h"
 #include "../PIC/pic.h"
 #include "../../Panic/panic_screen.h"
@@ -19,8 +20,12 @@
 void idt_init();
 void idt_set(uint8_t index, uint32_t (*handler)(interrupt_state *state), bool user_interrupt);
 void idt_unset(uint8_t index);
+
 void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)(interrupt_state *state));
 void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)(interrupt_state *state));
+
+void idt_attach_exception_handler(uint8_t exception_number, void (*handler)(exception_state *state));
+void idt_detach_exception_handler(uint8_t exception_number, void (*handler)(exception_state *state));
 
 void idt_attach_process_manager(void (*handler)(interrupt_state *state));
 void idt_attach_syscalls_manager(void (*handler)(interrupt_state *state));

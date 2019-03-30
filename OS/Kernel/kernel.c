@@ -20,6 +20,7 @@
 #include "Process/ELF/Loader/elf_loader.h"
 #include "Process/Manager/process_manager.h"
 #include "Interrupts/Syscalls/syscalls_manager.h"
+#include "Interrupts/Signals/signals_manager.h"
 #include "TSS/tss.h"
 #include "Drivers/DAL/VideoCard/videocard.h"
 #include "Drivers/VGA/genericvga.h"
@@ -61,11 +62,11 @@ void startup()
     heap_init_kernel_heap();
     logger_log_ok("Virtual Memory");
 
-    idt_init();
-    logger_log_ok("Interrupt Descriptor Table");
-
     pic_init();
     logger_log_ok("Programmable Interrupt Controller");
+
+    idt_init();
+    logger_log_ok("Interrupt Descriptor Table");
 
     timer_init();
     logger_log_ok("Timer");
@@ -84,6 +85,9 @@ void startup()
 
     syscalls_manager_init();
     logger_log_ok("Syscalls manager");
+    
+    signals_manager_init();
+    logger_log_ok("Signals manager");
 
     /*pci_init();
     logger_log_ok("PCI");

@@ -39,3 +39,13 @@ void micros_process_start_process(char *path, char *arguments)
 {
     micros_interrupt_2a(0x97, (uint32_t)path, (uint32_t)arguments);
 }
+
+bool micros_process_set_current_process_signal_handler(void (*signal_handler)(int))
+{
+    micros_interrupt_1a(0x98, (uint32_t)signal_handler);
+}
+
+void micros_process_finish_signal_handler(micros_signal_params *old_state)
+{
+    micros_interrupt_1a(0x99, (uint32_t)old_state);
+}

@@ -3,6 +3,7 @@
 volatile idt_entry idt_entries[IDT_INTERRUPT_DESCRIPTOR_TABLE_LENGTH];
 volatile idt_info idt_information;
 volatile interrupt_handler_definition interrupt_handlers[IDT_MAX_INTERRUPT_HANDLERS];
+volatile exception_handler_definition exception_handlers[IDT_MAX_INTERRUPT_HANDLERS];
 
 void (*process_manager_handler)(interrupt_state *state);
 void (*syscalls_manager_handler)(interrupt_state *state);
@@ -248,6 +249,31 @@ void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)(inte
     }
 }
 
+void idt_attach_exception_handler(uint8_t exception_number, void (*handler)(exception_state *state))
+{
+    for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
+    {
+        if (exception_handlers[i].handler == 0)
+        {
+            exception_handlers[i].exception_number = exception_number;
+            exception_handlers[i].handler = handler;
+            break;
+        }
+    }
+}
+
+void idt_detach_exception_handler(uint8_t exception_number, void (*handler)(exception_state *state))
+{
+    for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
+    {
+        if (exception_handlers[i].exception_number == exception_number && exception_handlers[i].handler == handler)
+        {
+            exception_handlers[i].handler = 0;
+            break;
+        }
+    }
+}
+
 void idt_attach_process_manager(void (*handler)(interrupt_state *state))
 {
     process_manager_handler = handler;
@@ -279,6 +305,17 @@ void idt_global_int_handler(interrupt_state *state)
 
 void idt_global_exc_handler(exception_state *state)
 {
+    if (state->cs == 27)
+    {
+        for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
+        {
+            if (exception_handlers[i].exception_number == state->interrupt_number && exception_handlers[i].handler != 0)
+            {
+                exception_handlers[i].handler(state);
+            }
+        }
+    }
+
     for (int i = 0; i < 32; i++)
     {
         if (exceptions[i].interrupt_number == state->interrupt_number)

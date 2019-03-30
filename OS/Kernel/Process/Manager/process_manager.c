@@ -125,6 +125,11 @@ process_info *process_manager_get_process(uint32_t process_id)
     return NULL;
 }
 
+process_info *process_manager_get_current_process()
+{
+    return process_manager_get_process(current_process_id);
+}
+
 void process_manager_save_current_process_state(interrupt_state *state, uint32_t delta)
 {
     process_info *old_process = processes.data[current_process_id];
@@ -263,6 +268,33 @@ bool process_manager_set_current_process_name(char *name)
     }
 
     return false;
+}
+
+bool process_manager_set_current_process_signal_handler(void (*signal_handler)(int))
+{
+    process_info *process = process_manager_get_process_info(current_process_id);
+    if (process != NULL)
+    {
+        process->signal_handler = signal_handler;
+        return true;
+    }
+
+    return false;
+}
+
+bool process_manager_finish_signal_handler(signal_params *old_state)
+{
+    interrupt_state state;
+    state.cs = old_state->cs;
+    state.ss = old_state->ss;
+    state.eip = old_state->eip;
+    state.esp = old_state->esp;
+    state.eflags = old_state->eflags;
+
+    memcpy(&state.registers, &old_state->registers, sizeof(registers_state));
+    memcpy(&state.fpu_state, &old_state->fpu_state, sizeof(fpu_state));
+
+    enter_user_space(&state);
 }
 
 void process_manager_current_process_sleep(uint32_t milliseconds)
