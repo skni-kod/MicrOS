@@ -2,6 +2,7 @@
 #include "../registerFunctions.h"
 #include "../../../../Memory/Manager/Heap/heap.h"
 #include "../../../DAL/VideoCard/videocard.h"
+#include "../../../VGA/vga.h"
 
 //REGISTER VALUES
 uint8_t g_80x25_text[] =
@@ -337,6 +338,9 @@ unsigned char g_8x16_font[4096] =
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 		};
 
+//DOUBLE BUFFER POINTER;
+screen *MODE03H_BUFFER = NULL;
+
 int8_t setMode03H()
 {
     unsigned rows, cols, ht;
@@ -379,12 +383,29 @@ int8_t setMode03H()
 
 int8_t turnOnBuffer03H()
 {
-    return -1;
+    if(MODE03H_BUFFER != NULL) return -1;
+    MODE03H_BUFFER = heap_kernel_alloc(MODE03H_HEIGHT * MODE03H_WIDTH * sizeof(screen), 0);
+    if(MODE03H_BUFFER == NULL)
+        return -1;
+    setDrawPixelFunc(&drawPixel03HBuffered);
+    setDrawLineFunc(&drawLine03HBuffered);
+    setDrawCircleFunc(&drawCircle03HBuffered);
+    setDrawRectangleFunc(&drawRectangle03HBuffered);
+    setClearScreenFunc(&clearScreen03HBuffered);
+    return 0;
 }
 
 int8_t turnOffBuffer03H()
 {
-    return -1;
+    if(MODE03H_BUFFER == NULL) return -1;
+    heap_kernel_dealloc(MODE03H_BUFFER);
+    MODE03H_BUFFER = NULL;
+    setDrawPixelFunc(&drawPixel03H);
+    setDrawLineFunc(&drawLine03H);
+    setDrawCircleFunc(&drawCircle03H);
+    setDrawRectangleFunc(&drawRectangle03H);
+    setClearScreenFunc(&clearScreen03H);
+    return 0;
 }
 
 uint8_t isBufferOn03H()
@@ -394,17 +415,55 @@ uint8_t isBufferOn03H()
 
 int8_t swapBuffers03H()
 {
-    return -1;
+    if(MODE03H_BUFFER == NULL) return -1;
+    memcpy((screen*)VGA_BASE_ADDR, MODE03H_BUFFER, MODE03H_HEIGHT * MODE03H_WIDTH * sizeof(screen));
+    return 0;
 }
 
 int8_t drawPixel03H(uint8_t color, uint16_t x, uint16_t y)
 {
-    return -1;
+    if((x>=MODE03H_WIDTH) || (y >=MODE03H_HEIGHT)) return -1;
+	vga_color c;
+	c.color_without_blink.letter = color & 0x0F;
+	c.color_without_blink.background = color & 0x0F;
+	vga_character ch;
+	ch.code = ' ';
+	ch.color = c;
+	vga_screen_pos pos;
+	pos.x = x;
+	pos.y = y;
+	vga_set_character_struct(pos, ch);
+	return 0;
 }
 
 int8_t drawLine03H(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
 {
-    return -1;
+    if(ax == bx) return -1;
+    int32_t dx = (int32_t)bx - ax;
+    int32_t dy = (int32_t)by - ay;
+    if(_abs(dx) >= _abs(dy))
+    {
+        float a = dy/(float)(dx);
+        float b = ay - a * ax;
+        if(ax > bx)
+            for(int x = bx; x <= ax; ++x)
+                drawPixel03H(color, x, a * x + b);
+        else
+            for(int x = ax; x <= bx; ++x)
+                drawPixel03H(color, x, a * x + b);
+    }
+    else
+    {
+        float a = dx/(float)(dy);
+        float b = ax - a * ay;
+        if(ay > by)
+            for(int y = by; y <= ay; ++ y)
+                drawPixel03H(color, a * y + b, y);
+        else
+            for(int y = ay; y <= by; ++ y)
+                drawPixel03H(color, a * y + b, y);
+    }
+    return 0;
 }
 
 int8_t drawCircle03H(uint8_t color, uint16_t x, uint16_t y, uint16_t radius) 
@@ -424,12 +483,44 @@ int8_t clearScreen03H()
 
 int8_t drawPixel03HBuffered(uint8_t color, uint16_t x, uint16_t y)
 {
-    return -1;
+    if((MODE03H_BUFFER == NULL)|| (x>=MODE03H_WIDTH) || (y >=MODE03H_HEIGHT)) return -1;
+	screen s;
+	s.c.code = ' ';
+	s.c.color.color_without_blink.background = color & 0x0F;
+	s.c.color.color_without_blink.letter = color & 0x0F;
+	MODE03H_BUFFER[vga_calcualte_position_without_offset(x, y)] = s;
+	return 0;
 }
 
 int8_t drawLine03HBuffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
 {
-    return -1;
+	if(MODE03H_BUFFER == NULL) return -1;
+    if(ax == bx) return -1;
+    int32_t dx = (int32_t)bx - ax;
+    int32_t dy = (int32_t)by - ay;
+    if(_abs(dx) >= _abs(dy))
+    {
+        float a = dy/(float)(dx);
+        float b = ay - a * ax;
+        if(ax > bx)
+            for(int x = bx; x <= ax; ++x)
+                drawPixel03H(color, x, a * x + b);
+        else
+            for(int x = ax; x <= bx; ++x)
+                drawPixel03H(color, x, a * x + b);
+    }
+    else
+    {
+        float a = dx/(float)(dy);
+        float b = ax - a * ay;
+        if(ay > by)
+            for(int y = by; y <= ay; ++ y)
+                drawPixel03H(color, a * y + b, y);
+        else
+            for(int y = ay; y <= by; ++ y)
+                drawPixel03H(color, a * y + b, y);
+    }
+    return 0;
 }
 int8_t drawCircle03HBuffered(uint8_t color, uint16_t x, uint16_t y, uint16_t radius)
 {
@@ -441,5 +532,18 @@ int8_t drawRectangle03HBuffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_
 }
 int8_t clearScreen03HBuffered()
 {
-    return -1;
+	if(MODE03H_BUFFER == NULL) return -1;
+    vga_color_without_blink col = {.background = VGA_COLOR_BLACK, .letter = VGA_COLOR_LIGHT_GRAY};
+	for (uint16_t i = 0; i < VGA_SCREEN_ROWS; ++i)
+    {
+        // Clear all lines
+        for (uint16_t j = 0; j < VGA_SCREEN_COLUMNS; ++j)
+        {
+            uint16_t pos = vga_calcualte_position_without_offset(j, i);
+            // Clear
+            MODE03H_BUFFER[pos].c.code = 0;
+            MODE03H_BUFFER[pos].c.color.color_without_blink = col;
+        }
+    }
+	return 0;
 }
