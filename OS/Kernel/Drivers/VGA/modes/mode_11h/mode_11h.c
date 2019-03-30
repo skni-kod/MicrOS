@@ -86,7 +86,7 @@ int8_t setMode11H()
     writeRegisters(g_640x480x2);
     set_vga_palette(palette11H);
     clearScreen11H();
-    setTurnOnBufferFunc(&turnOffBuffer11H);
+    setTurnOnBufferFunc(&turnOnBuffer11H);
     setTurnOffBufferFunc(&turnOffBuffer11H);
     setIsBufferOnFunc(&isBufferOn11H);
     setSwapBuffersFunc(&swapBuffers11H);

@@ -85,7 +85,7 @@ int8_t setMode13H()
     writeRegisters(g_320x200x256);
     set_vga_palette(palette13H);
     clearScreen13H();
-    setTurnOnBufferFunc(&turnOffBuffer13H);
+    setTurnOnBufferFunc(&turnOnBuffer13H);
     setTurnOffBufferFunc(&turnOffBuffer13H);
     setIsBufferOnFunc(&isBufferOn13H);
     setSwapBuffersFunc(&swapBuffers13H);

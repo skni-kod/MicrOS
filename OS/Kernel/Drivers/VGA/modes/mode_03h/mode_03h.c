@@ -365,7 +365,7 @@ int8_t setMode03H()
 			vga_set_color(i, j, col);
 	vga_clear_screen();
     set_vga_palette(palette03H);
-	setTurnOnBufferFunc(&turnOffBuffer03H);
+	setTurnOnBufferFunc(&turnOnBuffer03H);
     setTurnOffBufferFunc(&turnOffBuffer03H);
     setIsBufferOnFunc(&isBufferOn03H);
     setSwapBuffersFunc(&swapBuffers03H);
