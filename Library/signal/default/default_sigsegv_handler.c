@@ -2,7 +2,6 @@
 
 void default_sigsegv_handler(int param)
 {
-    // TODO: Replace with printf and add param
-    micros_console_print_string("SIGSEGV received. Address:\n");
+    fprintf(stderr, "SIGSEGV received. Address: %#x\n", param);
     micros_process_exit(-1);
 }
