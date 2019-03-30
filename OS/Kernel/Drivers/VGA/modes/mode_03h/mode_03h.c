@@ -418,7 +418,8 @@ int8_t drawRectangle03H(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, ui
 }
 int8_t clearScreen03H()
 {
-    return -1;
+	vga_clear_screen();
+    return 0;
 }
 
 int8_t drawPixel03HBuffered(uint8_t color, uint16_t x, uint16_t y)

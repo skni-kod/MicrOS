@@ -85,6 +85,7 @@ int8_t setMode12H()
 {
     writeRegisters(g_640x480x16);
     set_vga_palette(palette12H);
+    clearScreen12H();
     setTurnOnBufferFunc(&turnOffBuffer12H);
     setTurnOffBufferFunc(&turnOffBuffer12H);
     setIsBufferOnFunc(&isBufferOn12H);
@@ -187,6 +188,11 @@ int8_t drawRectangle12H(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, ui
 }
 int8_t clearScreen12H()
 {
+    for(uint8_t p = 3; p < 4; p--)
+    {
+        set_plane(p);
+        memset(VGA_VRAM, 0, 64 * 1024);
+    }
     return 0;
 }
 
@@ -217,5 +223,8 @@ int8_t drawRectangle12HBuffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_
 }
 int8_t clearScreen12HBuffered()
 {
+    if(!bufferTurnedOn12H) return -1;
+    for(uint8_t p = 3; p < 4; p--)
+        memset(MODE12H_BUFFER[p], 0, 64*1024);
     return 0;
 }

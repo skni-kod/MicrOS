@@ -85,6 +85,7 @@ int8_t setMode11H()
 {
     writeRegisters(g_640x480x2);
     set_vga_palette(palette11H);
+    clearScreen11H();
     setTurnOnBufferFunc(&turnOffBuffer11H);
     setTurnOffBufferFunc(&turnOffBuffer11H);
     setIsBufferOnFunc(&isBufferOn11H);
@@ -165,6 +166,7 @@ int8_t drawRectangle11H(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, ui
 }
 int8_t clearScreen11H()
 {
+    memset(VGA_VRAM, 0, 64*1024);
     return 0;
 }
 
@@ -192,5 +194,7 @@ int8_t drawRectangle11HBuffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_
 }
 int8_t clearScreen11HBuffered()
 {
+    if(!bufferTurnedOn11H) return -1;
+    memset(MODE11H_BUFFER, 0, 64*1024);
     return 0;
 }

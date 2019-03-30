@@ -85,6 +85,7 @@ int8_t setMode10H()
 {
     writeRegisters(g_640x350x16);
     set_vga_palette(palette10H);
+    clearScreen10H();
     setTurnOnBufferFunc(&turnOffBuffer10H);
     setTurnOffBufferFunc(&turnOffBuffer10H);
     setIsBufferOnFunc(&isBufferOn10H);
@@ -187,6 +188,11 @@ int8_t drawRectangle10H(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, ui
 }
 int8_t clearScreen10H()
 {
+    for(uint8_t p = 3; p < 4; p--)
+    {
+        set_plane(p);
+        memset(VGA_VRAM, 0, 64 * 1024);
+    }
     return 0;
 }
 
@@ -197,9 +203,7 @@ int8_t drawPixel10HBuffered(uint8_t color, uint16_t x, uint16_t y)
     unsigned int offset = (y * MODE10H_WIDTH + x)/8;
 	unsigned bit_no = x % 8;
 	for(uint8_t p = 3; p < 4; p--)
-	{
 		bit_write(MODE10H_BUFFER[p][offset], 1<<(7-bit_no), (bit_get(color, 1 << p)));
-	}
     return 0;
 }
 
@@ -217,5 +221,8 @@ int8_t drawRectangle10HBuffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_
 }
 int8_t clearScreen10HBuffered()
 {
+    if(!bufferTurnedOn10H) return -1;
+    for(uint8_t p = 3; p < 4; p--)
+        memset(MODE10H_BUFFER[p], 0, 64*1024);
     return 0;
 }

@@ -85,6 +85,7 @@ int8_t setMode05H()
 {
     writeRegisters(g_320x200x4b);
     set_vga_palette(palette05H);
+    clearScreen05H();
     setTurnOnBufferFunc(&turnOffBuffer05H);
     setTurnOffBufferFunc(&turnOffBuffer05H);
     setIsBufferOnFunc(&isBufferOn05H);
@@ -181,6 +182,8 @@ int8_t drawRectangle05H(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, ui
 }
 int8_t clearScreen05H()
 {
+    memset(VGA_VRAM_2, 0, 8000);
+    memset(VGA_VRAM_2 + 0x2000, 0, 8000);
     return 0;
 }
 
@@ -209,5 +212,8 @@ int8_t drawRectangle05HBuffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_
 }
 int8_t clearScreen05HBuffered()
 {
+    if(!bufferTurnedOn05H) return -1;
+    memset(MODE05H_BUFFER[0], 0, 8000);
+    memset(MODE05H_BUFFER[1], 0, 8000);
     return 0;
 }

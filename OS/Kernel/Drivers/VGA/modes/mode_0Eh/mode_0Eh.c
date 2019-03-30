@@ -85,6 +85,7 @@ int8_t setMode0EH()
 {
     writeRegisters(g_640x200x16);
     set_vga_palette(palette0EH);
+    clearScreen0EH();
     setTurnOnBufferFunc(&turnOffBuffer0EH);
     setTurnOffBufferFunc(&turnOffBuffer0EH);
     setIsBufferOnFunc(&isBufferOn0EH);
@@ -152,7 +153,6 @@ int8_t swapBuffers0EH()
         set_plane(p);
         memcpy(VGA_VRAM, MODE0EH_BUFFER[p], MODE0EH_WIDTH * MODE0EH_HEIGHT / 8);
     }
-    //memcpy(VGA_VRAM, MODE13H_BUFFER, MODE13H_HEIGHT * MODE13H_WIDTH);
     return 0;
 }
 
@@ -187,6 +187,11 @@ int8_t drawRectangle0EH(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, ui
 }
 int8_t clearScreen0EH()
 {
+    for(uint8_t p = 3; p < 4; p--)
+    {
+        set_plane(p);
+        memset(VGA_VRAM, 0, 64 * 1024);
+    }
     return 0;
 }
 
@@ -197,9 +202,7 @@ int8_t drawPixel0EHBuffered(uint8_t color, uint16_t x, uint16_t y)
     unsigned int offset = (y * MODE0EH_WIDTH + x)/8;
 	unsigned bit_no = x % 8;
 	for(uint8_t p = 3; p < 4; p--)
-	{
 		bit_write(MODE0EH_BUFFER[p][offset], 1<<(7-bit_no), (bit_get(color, 1 << p)));
-	}
     return 0;
 }
 
@@ -217,5 +220,8 @@ int8_t drawRectangle0EHBuffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_
 }
 int8_t clearScreen0EHBuffered()
 {
+    if(!bufferTurnedOn0EH) return -1;
+    for(uint8_t p = 3; p < 4; p--)
+        memset(MODE0EH_BUFFER[p], 0, 64*1024);
     return 0;
 }

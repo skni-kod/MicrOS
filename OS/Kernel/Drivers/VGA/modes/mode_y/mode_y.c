@@ -85,6 +85,7 @@ int8_t setModeY()
 {
     writeRegisters(g_320x200x256_modey);
     set_vga_palette(paletteY);
+    clearScreenY();
     setTurnOnBufferFunc(&turnOffBufferY);
     setTurnOffBufferFunc(&turnOffBufferY);
     setIsBufferOnFunc(&isBufferOnY);
@@ -184,6 +185,11 @@ int8_t drawRectangleY(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint
 }
 int8_t clearScreenY()
 {
+    for(uint8_t p = 3; p < 4; p--)
+    {
+        set_plane(p);
+        memset(VGA_VRAM, 0, 64 * 1024);
+    }
     return 0;
 }
 
@@ -210,5 +216,8 @@ int8_t drawRectangleYBuffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_t 
 }
 int8_t clearScreenYBuffered()
 {
+    if(!bufferTurnedOnY) return -1;
+    for(uint8_t p = 3; p < 4; p--)
+        memset(MODEY_BUFFER[p], 0, 64*1024);
     return 0;
 }
