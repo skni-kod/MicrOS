@@ -196,7 +196,7 @@ int8_t drawPixel0FHBuffered(uint8_t color, uint16_t x, uint16_t y)
         return -1;
     unsigned int offset = (y * MODE0FH_WIDTH + x)/8;
 	unsigned bit_no = x % 8;
-	for(uint8_t p = 1; p < 4; p--)
+	for(uint8_t p = 1; p < 2; p--)
 	{
 		bit_write(MODE0FH_BUFFER[p][offset], 1<<(7-bit_no), (bit_get(color, 1 << p)));
 	}

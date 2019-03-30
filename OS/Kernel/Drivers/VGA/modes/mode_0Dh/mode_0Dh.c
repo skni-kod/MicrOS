@@ -163,7 +163,7 @@ int8_t drawPixel0DH(uint8_t color, uint16_t x, uint16_t y)
     unsigned char *fb = (unsigned char *) VGA_VRAM;
     unsigned int offset = (y * MODE0DH_WIDTH + x)/8;
 	unsigned bit_no = x % 8;
-	for(char p = 3; p >= 0; p--)
+	for(uint8_t p = 3; p < 4; p--)
 	{
 		set_plane(p);
 		bit_write(fb[offset], 1<<(7-bit_no), (bit_get(color, 1 << p)));
