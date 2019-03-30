@@ -2,8 +2,6 @@
 
 void _start(char *path, char *parameters)
 {
-    __asm__("finit");
-
     setlocale(LC_ALL, "C");
 
     stdin = __stdio_create_stream();

@@ -31,21 +31,21 @@
 #include "../../Timer/timer.h"
 #include <ktime.h>
 
-void floppy_init();
+bool floppy_init();
 void floppy_lba_to_chs(uint16_t lba, uint8_t *head, uint8_t *track, uint8_t *sector);
-int8_t floppy_reset();
-int8_t floppy_wait_until_ready();
-int8_t floppy_send_command(uint8_t cmd);
+bool floppy_reset();
+bool floppy_wait_until_ready();
+bool floppy_send_command(uint8_t cmd);
 uint8_t floppy_read_data();
 void floppy_confirm_interrupt(uint8_t *st0, uint8_t *cylinder);
 void floppy_set_parameters(uint32_t step_rate, uint32_t head_load_time, uint32_t head_unload_time, bool dma);
-int8_t floppy_calibrate();
+bool floppy_calibrate();
 uint8_t *floppy_read_sector(uint16_t sector);
 void floppy_write_sector(uint16_t sector, uint8_t *content);
 uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sector, bool read);
 void floppy_enable_motor();
 void floppy_disable_motor();
-int floppy_seek(uint32_t cylinder, uint32_t head);
+bool floppy_seek(uint8_t cylinder, uint8_t head);
 
 void floppy_dma_init(bool read);
 
