@@ -15,7 +15,7 @@ uint8_t isBufferOn05H();
 int8_t swapBuffers05H();
 
 int8_t drawPixel05H(uint8_t color, uint16_t x, uint16_t y);
-int8_t drawLine05H(uint8_t color, uint16_t ax, uint16_t ay, int16_t bx, uint16_t by);
+int8_t drawLine05H(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
 int8_t drawCircle05H(uint8_t color, uint16_t x, uint16_t y, uint16_t radius);
 int8_t drawRectangle05H(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
 int8_t clearScreen05H();

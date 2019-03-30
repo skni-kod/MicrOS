@@ -165,7 +165,7 @@ int8_t drawPixel05H(uint8_t color, uint16_t x, uint16_t y)
     return 0;
 }
 
-int8_t drawLine05H(uint8_t color, uint16_t ax, uint16_t ay, int16_t bx, uint16_t by)
+int8_t drawLine05H(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
 {
     return 0;
 }

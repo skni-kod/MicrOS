@@ -339,7 +339,7 @@ unsigned char g_8x16_font[4096] =
 
 int8_t setMode03H()
 {
-    unsigned rows, cols, ht, i;
+    unsigned rows, cols, ht;
 	cols = 80;
 	rows = 25;
 	ht = 16;
@@ -402,7 +402,7 @@ int8_t drawPixel03H(uint8_t color, uint16_t x, uint16_t y)
     return -1;
 }
 
-int8_t drawLine03H(uint8_t color, uint16_t ax, uint16_t ay, int16_t bx, uint16_t by)
+int8_t drawLine03H(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
 {
     return -1;
 }

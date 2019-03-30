@@ -147,7 +147,7 @@ uint8_t isBufferOnY()
 int8_t swapBuffersY()
 {
     if(!bufferTurnedOnY) return -1;
-    for(char p = 3; p >= 0; p--)
+    for(uint8_t p = 3; p < 4; p--)
     {
         set_plane(p);
         memcpy(VGA_VRAM, MODEY_BUFFER[p], MODEY_WIDTH * MODEY_HEIGHT / 8);
@@ -168,7 +168,7 @@ int8_t drawPixelY(uint8_t color, uint16_t x, uint16_t y)
     return 0;
 }
 
-int8_t drawLineY(uint8_t color, uint16_t ax, uint16_t ay, int16_t bx, uint16_t by)
+int8_t drawLineY(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
 {
     return 0;
 }
@@ -178,7 +178,7 @@ int8_t drawCircleY(uint8_t color, uint16_t x, uint16_t y, uint16_t radius)
     return 0;
 }
 
-int8_t drawRectangleY(uint8_t color, uint16_t ax, int16_t ay, uint16_t bx, uint16_t by)
+int8_t drawRectangleY(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
 {
     return 0;
 }

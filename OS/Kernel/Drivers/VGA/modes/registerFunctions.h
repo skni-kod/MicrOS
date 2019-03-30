@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-#define VGA_VRAM 0xC00A0000
-#define VGA_VRAM_2 0xC00B8000
+#define VGA_VRAM (unsigned char*)0xC00A0000
+#define VGA_VRAM_2 (unsigned char*)0xC00B8000
 
 #define miscPort 0x3c2
 #define crtcIndexPort 0x3d4

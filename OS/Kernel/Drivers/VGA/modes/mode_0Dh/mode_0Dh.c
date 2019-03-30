@@ -147,7 +147,7 @@ uint8_t isBufferOn0DH()
 int8_t swapBuffers0DH()
 {
     if(!bufferTurnedOn0DH) return -1;
-    for(char p = 3; p >= 0; p--)
+    for(uint8_t p = 3; p < 4; p--)
     {
         set_plane(p);
         memcpy(VGA_VRAM, MODE0DH_BUFFER[p], MODE0DH_WIDTH * MODE0DH_HEIGHT / 8);
@@ -171,7 +171,7 @@ int8_t drawPixel0DH(uint8_t color, uint16_t x, uint16_t y)
     return 0;
 }
 
-int8_t drawLine0DH(uint8_t color, uint16_t ax, uint16_t ay, int16_t bx, uint16_t by)
+int8_t drawLine0DH(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
 {
     return 0;
 }
@@ -196,7 +196,7 @@ int8_t drawPixel0DHBuffered(uint8_t color, uint16_t x, uint16_t y)
         return -1;
     unsigned int offset = (y * MODE0DH_WIDTH + x)/8;
 	unsigned bit_no = x % 8;
-	for(char p = 3; p >= 0; p--)
+	for(uint8_t p = 3; p < 4; p--)
 	{
 		bit_write(MODE0DH_BUFFER[p][offset], 1<<(7-bit_no), (bit_get(color, 1 << p)));
 	}
