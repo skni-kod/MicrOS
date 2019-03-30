@@ -410,14 +410,18 @@ int kmain()
             else if(c.scancode == 01) //ESC
             {
                 clearScreen();
+                if(isBufferOn())
+                    swapBuffers();
             }
-            else if(c.scancode == 41) // `
+            else if(c.scancode == 15) // TAB
             {
                 currentMode = getCurrentVideoMode();
                 uint8_t color = (rand() % (currentMode.colors - 1) + 1);
                 for(uint32_t x = 0; x < currentMode.width; x++)
                     for(uint32_t y = 0; y < currentMode.height; y++)
                         drawPixel(color, x, y);
+                if(isBufferOn())
+                    swapBuffers();
             }
             else if(c.scancode == 26) //[
             {

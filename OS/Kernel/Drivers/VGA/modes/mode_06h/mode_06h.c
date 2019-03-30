@@ -190,7 +190,7 @@ int8_t drawPixel06HBuffered(uint8_t color, uint16_t x, uint16_t y)
 {
     if((!bufferTurnedOn06H) || (x>=MODE06H_WIDTH) || (y >=MODE06H_HEIGHT))
         return -1;
-    unsigned int offset = (y * MODE06H_WIDTH + x)/8;
+    unsigned int offset = (y/2 * MODE06H_WIDTH + x)/8;
 	unsigned bit_no = x % 8;
     bit_write(MODE06H_BUFFER[y%2][offset], (1<<(7 - bit_no)), (color & 0x1));
     return 0;

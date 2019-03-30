@@ -191,7 +191,7 @@ int8_t drawPixel04HBuffered(uint8_t color, uint16_t x, uint16_t y)
 {
     if((!bufferTurnedOn04H) || (x>=MODE04H_WIDTH) || (y >=MODE04H_HEIGHT))
         return -1;
-    unsigned int offset = (y * MODE04H_WIDTH + x)/4;
+    unsigned int offset = (y/2 * MODE04H_WIDTH + x)/4;
 	unsigned bit_no = x % 4;
     bit_write(MODE04H_BUFFER[y%2][offset], (1<<(7 - (2 * bit_no))), (color & 0x2));
     bit_write(MODE04H_BUFFER[y%2][offset], (1<<(7 - (2 * bit_no+1))), (color & 0x1));

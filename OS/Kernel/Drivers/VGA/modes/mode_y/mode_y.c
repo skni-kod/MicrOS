@@ -151,9 +151,8 @@ int8_t swapBuffersY()
     for(uint8_t p = 3; p < 4; p--)
     {
         set_plane(p);
-        memcpy(VGA_VRAM, MODEY_BUFFER[p], MODEY_WIDTH * MODEY_HEIGHT / 8);
+        memcpy(VGA_VRAM, MODEY_BUFFER[p], MODEY_WIDTH * MODEY_HEIGHT / 4);
     }
-    //memcpy(VGA_VRAM, MODE13H_BUFFER, MODE13H_HEIGHT * MODE13H_WIDTH);
     return 0;
 }
 
