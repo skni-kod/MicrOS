@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     {
         micros_console_clear();
 
-        micros_console_print_string("TASKS v1.0 @ MicrOS\n");
+        micros_console_print_string("TASKS v1.1 @ MicrOS\n");
         micros_console_print_string("\n");
 
         uint32_t processes_count = micros_process_get_processes_count();
