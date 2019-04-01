@@ -14,6 +14,7 @@ typedef enum micros_process_status
 typedef struct micros_process_user_info
 {
     uint32_t id;
+    uint32_t parent_id;
     char name[32];
 
     micros_process_status status;

@@ -1,10 +1,11 @@
 #include "process_manager.h"
 
 kvector processes;
-volatile uint32_t current_process_id = 0;
+volatile uint32_t current_process_id = 1;
 volatile uint32_t next_process_id = 0;
 volatile uint32_t last_task_switch = 0;
 volatile uint32_t last_cpu_recalculation = 0;
+volatile uint32_t root_process_id = 0;
 volatile bool run_scheduler_on_next_interrupt = false;
 
 extern void enter_user_space(interrupt_state *address);
@@ -19,7 +20,7 @@ void process_manager_init()
     idt_attach_interrupt_handler(1, process_manager_keyboard_interrupt_handler);
 }
 
-uint32_t process_manager_create_process(char *path, char *parameters)
+uint32_t process_manager_create_process(char *path, char *parameters, uint32_t parent_id)
 {
     uint32_t path_length = strlen(path) + 1;
     uint32_t parameters_length = strlen(parameters) + 1;
@@ -32,6 +33,7 @@ uint32_t process_manager_create_process(char *path, char *parameters)
 
     process_info *process = (process_info *)heap_kernel_alloc(sizeof(process_info), 0);
     process->id = next_process_id++;
+    process->parent_id = parent_id;
     process->status = process_status_ready;
     process->current_cpu_usage = 0;
     process->last_cpu_usage = 0;
@@ -128,6 +130,16 @@ process_info *process_manager_get_process(uint32_t process_id)
 process_info *process_manager_get_current_process()
 {
     return process_manager_get_process(current_process_id);
+}
+
+void process_manager_set_root_process(uint32_t process_id)
+{
+    root_process_id = process_id;
+}
+
+uint32_t process_manager_get_root_process()
+{
+    return root_process_id;
 }
 
 void process_manager_save_current_process_state(interrupt_state *state, uint32_t delta)
@@ -317,6 +329,7 @@ void process_manager_current_process_wait_for_key_press()
 void process_manager_convert_process_info_to_user_info(process_info *process, process_user_info *user_info)
 {
     user_info->id = process->id;
+    user_info->parent_id = process->parent_id;
     memcpy(user_info->name, process->name, 32);
 
     user_info->status = (uint32_t)process->status;
