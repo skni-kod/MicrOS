@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 void draw_process_tree(micros_process_user_info *processes, int root_id, int level, int count);
+void print_total_process_count(int process_count);
 void draw_bar(uint32_t filled_entries, uint32_t total_entries);
 void draw_cpu_usage_bar(uint32_t cpu_usage, uint32_t bar_length);
 void draw_memory_usage_bar(micros_physical_memory_stats *memory_stats, uint32_t bar_length);
@@ -42,8 +43,9 @@ int main(int argc, char *argv[])
         micros_console_print_char('\n');
 
         draw_process_tree(processes, 0, 0, processes_count);
+        print_total_process_count(processes_count);
 
-        micros_console_print_string("\n");
+        micros_console_print_string("\n\n");
         print_memory_stats(&memory_stats);
 
         free(processes);
@@ -85,6 +87,13 @@ void draw_process_tree(micros_process_user_info *processes, int root_id, int lev
             draw_process_tree(processes, process->id, level + 2, count);
         }
     }
+}
+
+void print_total_process_count(int process_count)
+{
+    char buffer[32];
+    micros_console_print_string("Total: ");
+    micros_console_print_string(itoa(process_count, buffer, 10));
 }
 
 void draw_bar(uint32_t filled_entries, uint32_t total_entries)
