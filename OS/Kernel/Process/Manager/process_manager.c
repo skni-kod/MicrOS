@@ -243,9 +243,7 @@ void process_manager_close_process(uint32_t process_id)
     }
     else
     {
-        // TODO: do something better
-        io_disable_interrupts();
-        __asm__("hlt");
+        panic_screen_show(NULL, 31, "No active process");
     }
 }
 
