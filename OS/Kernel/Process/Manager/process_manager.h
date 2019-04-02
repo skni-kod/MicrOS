@@ -12,6 +12,7 @@
 #include "../../Assembly/io.h"
 #include "../../Interrupts/IDT/idt.h"
 #include "../../Interrupts/Signals/signal_params.h"
+#include "../../Memory/Manager/Heap/heap.h"
 
 void process_manager_init();
 uint32_t process_manager_create_process(char *path, char *parameters, uint32_t parent_id);
@@ -24,6 +25,7 @@ uint32_t process_manager_get_root_process();
 void process_manager_save_current_process_state(interrupt_state *state, uint32_t delta);
 void process_manager_switch_to_next_process();
 void process_manager_close_current_process();
+void process_manager_close_process(uint32_t process_id);
 uint32_t process_manager_get_processes_count();
 process_info *process_manager_get_process_info(uint32_t id);
 void process_manager_get_current_process_user_info(process_user_info *user_info);

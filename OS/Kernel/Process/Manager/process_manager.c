@@ -209,8 +209,32 @@ void process_manager_switch_to_next_process()
 
 void process_manager_close_current_process()
 {
-    // TODO: release process memory
-    kvector_remove(&processes, current_process_id);
+    process_manager_close_process(current_process_id);
+}
+
+void process_manager_close_process(uint32_t process_id)
+{
+    io_disable_interrupts();
+    
+    process_info* process = processes.data[process_id];
+    kvector_remove(&processes, process_id);
+    
+    void *page_directory_backup = (uint32_t*)paging_get_page_directory();
+    void *heap_backup = (uint32_t*)heap_get_user_heap();
+    
+    paging_set_page_directory(process->page_directory);
+    heap_set_user_heap((void *)(process->heap));
+    
+    uint32_t allocated_pages_count = virtual_memory_get_allocated_pages_count(false);
+    for(uint32_t i=0; i<allocated_pages_count; i++)
+    {
+        virtual_memory_dealloc_last_page(false);
+    }
+    
+    paging_set_page_directory(page_directory_backup);
+    heap_set_user_heap(heap_backup);
+    
+    io_enable_interrupts();
 
     if (processes.count > 0)
     {

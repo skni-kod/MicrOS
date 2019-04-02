@@ -93,7 +93,7 @@ uint32_t paging_get_physical_index_of_virtual_page(uint32_t page_index)
     paging_table_entry *page_directory_entry = (paging_table_entry *)((uint32_t)page_directory + (page_index * 4));
     paging_table_entry *page_table = (paging_table_entry *)(0xC0000000 + ((uint32_t)page_directory_entry->physical_page_address << 12));
 
-    return page_table->physical_page_address;
+    return page_table->physical_page_address / 1024;
 }
 
 bool paging_is_page_mapped(uint32_t page_index)
