@@ -216,8 +216,9 @@ void process_manager_close_process(uint32_t process_id)
 {
     io_disable_interrupts();
     
-    process_info* process = processes.data[process_id];
-    kvector_remove(&processes, process_id);
+    uint32_t process_index = process_manager_get_process_index(process_id);
+    process_info* process = processes.data[process_index];
+    kvector_remove(&processes, process_index);
     
     void *page_directory_backup = (uint32_t*)paging_get_page_directory();
     void *heap_backup = (uint32_t*)heap_get_user_heap();
@@ -234,12 +235,30 @@ void process_manager_close_process(uint32_t process_id)
     paging_set_page_directory(page_directory_backup);
     heap_set_user_heap(heap_backup);
     
+    for(int i = processes.count - 1; i >= 0; i--)
+    {
+        process_info* potential_child_process = processes.data[i];
+        if(potential_child_process->parent_id == process->id)
+        {
+            process_manager_close_process(potential_child_process->id);
+        }
+    }
+    
     io_enable_interrupts();
 
     if (processes.count > 0)
     {
-        current_process_id--;
-        process_manager_switch_to_next_process();
+        bool switch_to_next_process = process->id == current_process_id;
+        
+        if(process->id <= current_process_id)
+        {
+            current_process_id--;
+        }
+        
+        if(switch_to_next_process)
+        {
+            process_manager_switch_to_next_process();
+        }
     }
     else
     {
@@ -250,6 +269,18 @@ void process_manager_close_process(uint32_t process_id)
 uint32_t process_manager_get_processes_count()
 {
     return processes.count;
+}
+
+uint32_t process_manager_get_process_index(uint32_t process_id)
+{
+    for (uint32_t i = 0; i < processes.count; i++)
+    {
+        process_info *process = processes.data[i];
+        if (process->id == process_id)
+        {
+            return i;
+        }
+    }
 }
 
 process_info *process_manager_get_process_info(uint32_t id)
