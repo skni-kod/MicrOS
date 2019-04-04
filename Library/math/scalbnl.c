@@ -4,7 +4,7 @@ long double scalbnl(long double x, int n)
 {
     // This should be FLX_RADIX based but, the value is 2 on all machines we know of except the IBM 360 and derivatives.
     // So we just call ldexpl.
-    long double = ldexpl(x, n);
+    long double result = ldexpl(x, n);
     fexcept_t exceptions = __FPU_read_status_word();
     if(exceptions.overflow == 0 && exceptions.underflow == 0)
     {
