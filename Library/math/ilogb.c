@@ -51,7 +51,7 @@ int ilogb(double x)
     fexcept_t exceptions = __FPU_read_status_word();
     if(exceptions.overflow == 0)
     {
-        return (int)exponent;;
+        return (int)exponent;
     }
     // range error
     else
