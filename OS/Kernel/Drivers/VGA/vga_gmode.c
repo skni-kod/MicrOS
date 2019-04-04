@@ -15,8 +15,6 @@
 #define bit_flip(p,m) ((p) ^= (m))
 #define bit_write(p,m,v) (v ? bit_set(p,m) : bit_clear(p,m))
 
-// TODO: Set some prefix for functions.
-
 static char mode = 3;
 
                                                                                                                              
