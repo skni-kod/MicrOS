@@ -23,6 +23,7 @@ typedef struct tm
 } tm;
 
 clock_t clock();
-time_t time (time_t* timer);
+time_t mktime(tm * timeptr);
+time_t time(time_t* timer);
 
 #endif
