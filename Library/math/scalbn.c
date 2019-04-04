@@ -21,7 +21,7 @@ double scalbn(double x, int n)
         // In other case overflow is already set so we don't need to cover _math_errhandling == MATH_ERREXCEPT
         return x > 0 ? HUGE_VAL : copysign(HUGE_VAL, -1.0);
     }
-    // range error (exceptions.underflow == 0)
+    // range error (exceptions.underflow == 1)
     else
     {
         if(_math_errhandling == MATH_ERRNO)

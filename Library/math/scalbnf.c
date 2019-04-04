@@ -21,7 +21,7 @@ float scalbnf(float x, int n)
         // In other case overflow is already set so we don't need to cover _math_errhandling == MATH_ERREXCEPT
         return x > 0 ? HUGE_VALF : copysignf(HUGE_VALF, -1.0);
     }
-    // range error (exceptions.underflow == 0)
+    // range error (exceptions.underflow == 1)
     else
     {
         if(_math_errhandling == MATH_ERRNO)
