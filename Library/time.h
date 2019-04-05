@@ -22,6 +22,8 @@ typedef struct tm
     uint32_t tm_isdst;
 } tm;
 
+tm converted_time;
+
 clock_t clock();
 double difftime(time_t end, time_t beginning);
 time_t mktime(tm * timeptr);
