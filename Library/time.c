@@ -33,6 +33,12 @@ time_t time(time_t* timer)
     time.tm_min = rtc_time.minute;
     time.tm_sec = rtc_time.second;
     
+    time_t current_time = mktime(&time);
+    if(timer != 0)
+    {
+        *timer = current_time;
+    }
+    
     return mktime(&time);
 }
 
