@@ -7,18 +7,14 @@ clock_t clock()
 
 time_t mktime(tm * timeptr)
 {
-    static const int days[2][13] = {
-        {0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334},
-        {0, 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335}
-    };
-    
-    uint32_t leap = (timeptr->tm_year % 4 == 0 && timeptr->tm_year % 100 != 0) || (timeptr->tm_year % 400 == 0);
     uint32_t leap_years_count = ((timeptr->tm_year - 1970) - 2) / 4;
-    uint32_t day_of_year = days[leap][timeptr->tm_mon] + timeptr->tm_mday;
+    
+    timeptr->tm_wday = __time_get_day_of_week(timeptr->tm_mday + 4, timeptr->tm_mon, timeptr->tm_year);
+    timeptr->tm_yday = __time_get_day_of_year(timeptr->tm_mday, timeptr->tm_mon, timeptr->tm_year);
     
     return ((timeptr->tm_year - 1970) * 365 * 24 * 60 * 60) + 
            (leap_years_count * 24 * 60 * 60) +
-           (day_of_year * 24 * 60 * 60) +
+           (timeptr->tm_yday * 24 * 60 * 60) +
            (timeptr->tm_hour * 60 * 60) +
            (timeptr->tm_min * 60) +
            (timeptr->tm_sec);
@@ -38,4 +34,25 @@ time_t time(time_t* timer)
     time.tm_sec = rtc_time.second;
     
     return mktime(&time);
+}
+
+uint32_t __time_get_day_of_year(uint32_t day, uint32_t month, uint32_t year)
+{
+    static const int days[2][13] = {
+        {0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334},
+        {0, 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335}
+    };
+    
+    uint32_t leap = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+    uint32_t day_of_year = days[leap][month] + day;
+    
+    return day_of_year;
+}
+
+uint32_t __time_get_day_of_week(uint32_t day, uint32_t month, uint32_t year)
+{
+    static int t[] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
+    year -= month < 3;
+    
+    return (year + year/4 - year/100 + year/400 + t[month-1] + day) % 7;
 }
