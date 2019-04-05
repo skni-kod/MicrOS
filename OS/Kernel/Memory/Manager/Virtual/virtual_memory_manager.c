@@ -35,6 +35,8 @@ bool virtual_memory_dealloc_last_page(bool supervisor)
         if (!paging_is_page_mapped(i + 1))
         {
             uint32_t physical_page_index = paging_get_physical_index_of_virtual_page(i);
+            paging_unmap_page(i);
+            
             return physical_memory_dealloc_page(physical_page_index);
         }
     }
