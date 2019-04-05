@@ -23,8 +23,11 @@ typedef struct tm
 } tm;
 
 clock_t clock();
+double difftime(time_t end, time_t beginning);
 time_t mktime(tm * timeptr);
 time_t time(time_t* timer);
+
+tm *gmtime(const time_t *timer);
 
 uint32_t __time_get_day_of_year(uint32_t day, uint32_t month, uint32_t year);
 uint32_t __time_get_day_of_week(uint32_t day, uint32_t month, uint32_t year);

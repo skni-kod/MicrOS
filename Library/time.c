@@ -1,15 +1,22 @@
 #include "time.h"
 
+tm converted_time;
+
 clock_t clock()
 {
     return micros_timer_get_system_clock();
+}
+
+double difftime(time_t end, time_t beginning)
+{
+    return end - beginning;
 }
 
 time_t mktime(tm * timeptr)
 {
     uint32_t leap_years_count = ((timeptr->tm_year - 1970) - 2) / 4;
     
-    timeptr->tm_wday = __time_get_day_of_week(timeptr->tm_mday + 4, timeptr->tm_mon, timeptr->tm_year);
+    timeptr->tm_wday = __time_get_day_of_week(timeptr->tm_mday, timeptr->tm_mon, timeptr->tm_year);
     timeptr->tm_yday = __time_get_day_of_year(timeptr->tm_mday, timeptr->tm_mon, timeptr->tm_year);
     
     return ((timeptr->tm_year - 1970) * 365 * 24 * 60 * 60) + 
@@ -40,6 +47,45 @@ time_t time(time_t* timer)
     }
     
     return mktime(&time);
+}
+
+tm *gmtime(const time_t *timer)
+{
+    uint32_t s = *timer % 86400;
+    uint32_t ts = *timer / 86400;
+    uint32_t h = s / 3600;
+    uint32_t m = s / 60 % 60;
+    s = s % 60;
+    uint32_t x = (ts * 4 + 102032) / 146097 + 15;
+    uint32_t b = ts + 2442113 + x - (x / 4);
+    uint32_t c = (b * 20 - 2442) / 7305;
+    uint32_t d = b - 365 * c - c / 4;
+    uint32_t e = d * 1000 / 30601;
+    uint32_t f = d - e * 30 - e * 601 / 1000;
+    
+    if(e < 13)
+    {
+        converted_time.tm_year = c - 4716;
+        converted_time.tm_mon = e - 1;
+        converted_time.tm_mday = f;
+        converted_time.tm_hour = h;
+        converted_time.tm_min = m;
+        converted_time.tm_sec = s;
+    }
+    else
+    {
+        converted_time.tm_year = c - 4715;
+        converted_time.tm_mon = e - 13;
+        converted_time.tm_mday = f;
+        converted_time.tm_hour = h;
+        converted_time.tm_min = m;
+        converted_time.tm_sec = s;
+    }
+    
+    converted_time.tm_wday = __time_get_day_of_week(converted_time.tm_mday, converted_time.tm_mon, converted_time.tm_year);
+    converted_time.tm_yday = __time_get_day_of_year(converted_time.tm_mday, converted_time.tm_mon, converted_time.tm_year);
+    
+    return &converted_time;
 }
 
 uint32_t __time_get_day_of_year(uint32_t day, uint32_t month, uint32_t year)
