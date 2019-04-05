@@ -198,9 +198,6 @@ void process_manager_switch_to_next_process()
     }
     new_process->status = process_status_working;
 
-    uint32_t old_eip = old_process->state.eip;
-    uint32_t new_eip = new_process->state.eip;
-
     paging_set_page_directory(new_process->page_directory);
     heap_set_user_heap((void *)(new_process->heap));
 
@@ -281,6 +278,8 @@ uint32_t process_manager_get_process_index(uint32_t process_id)
             return i;
         }
     }
+    
+    return 0;
 }
 
 process_info *process_manager_get_process_info(uint32_t id)
@@ -347,7 +346,7 @@ bool process_manager_set_current_process_signal_handler(void (*signal_handler)(i
     return false;
 }
 
-bool process_manager_finish_signal_handler(signal_params *old_state)
+void process_manager_finish_signal_handler(signal_params *old_state)
 {
     interrupt_state state;
     state.cs = old_state->cs;

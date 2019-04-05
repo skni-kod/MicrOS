@@ -18,5 +18,5 @@ signal_func __signal_get_defualt_handler(int sig)
         return default_sigterm_handler;
     }
 
-    return SIG_ERR;
+    return (signal_func)SIG_ERR;
 }

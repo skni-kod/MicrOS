@@ -34,7 +34,7 @@ bool process_manager_get_process_user_info(uint32_t id, process_user_info *user_
 void process_manager_get_all_processes_user_info(process_user_info *user_info);
 bool process_manager_set_current_process_name(char *name);
 bool process_manager_set_current_process_signal_handler(void (*signal_handler)(int));
-bool process_manager_finish_signal_handler(signal_params *old_state);
+void process_manager_finish_signal_handler(signal_params *old_state);
 
 void process_manager_current_process_sleep(uint32_t milliseconds);
 void process_manager_current_process_wait_for_key_press();

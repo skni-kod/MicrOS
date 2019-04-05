@@ -320,12 +320,12 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
         floppy_wait_for_interrupt();
 
         // Read command status
-        uint8_t st0 = floppy_read_data();
+        /*uint8_t st0 =*/ floppy_read_data();
         uint8_t st1 = floppy_read_data();
         uint8_t st2 = floppy_read_data();
-        uint8_t cylinder_data = floppy_read_data();
-        uint8_t head_data = floppy_read_data();
-        uint8_t sector_data = floppy_read_data();
+        /*uint8_t cylinder_data =*/ floppy_read_data();
+        /*uint8_t head_data =*/ floppy_read_data();
+        /*uint8_t sector_data =*/ floppy_read_data();
         uint8_t bps = floppy_read_data();
 
         if (st1 & 0x80)
