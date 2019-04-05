@@ -4,6 +4,8 @@ extern tm converted_time;
 
 tm *gmtime(const time_t *timer)
 {
+    // Source of algorithm: http://ptspts.blogspot.com/2009/11/how-to-convert-unix-timestamp-to-civil.html
+    
     uint32_t s = *timer % 86400;
     uint32_t ts = *timer / 86400;
     uint32_t h = s / 3600;
