@@ -35,9 +35,9 @@ void micros_process_current_process_sleep(uint32_t milliseconds)
     micros_interrupt_1a(0x96, milliseconds);
 }
 
-void micros_process_start_process(char *path, char *arguments)
+void micros_process_start_process(char *path, char *arguments, bool child)
 {
-    micros_interrupt_2a(0x97, (uint32_t)path, (uint32_t)arguments);
+    micros_interrupt_3a(0x97, (uint32_t)path, (uint32_t)arguments, (uint32_t)child);
 }
 
 bool micros_process_set_current_process_signal_handler(void (*signal_handler)(int))
