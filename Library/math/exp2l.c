@@ -2,7 +2,10 @@
 
 long double exp2l(long double x)
 {
+    feclearexcept(FE_OVERFLOW);
+
     long double result = powl(2, x);
+    
     fexcept_t exceptions = __FPU_read_status_word();
     if(exceptions.overflow == 0)
     {

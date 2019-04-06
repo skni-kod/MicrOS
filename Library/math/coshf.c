@@ -2,7 +2,10 @@
 
 float coshf(float x)
 {
+    feclearexcept(FE_OVERFLOW);
+
     float result = (expf(x) + expf(-x)) / 2;
+    
     fexcept_t exceptions = __FPU_read_status_word();
     if(exceptions.overflow == 0)
     {

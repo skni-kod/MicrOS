@@ -2,7 +2,10 @@
 
 float erfcf(float x)
 {
-    return 1 - erff(x);
+    feclearexcept(FE_UNDERFLOW);
+
+    float result = 1 - erff(x);
+
     fexcept_t exceptions = __FPU_read_status_word();
     if(exceptions.underflow == 1)
     {
@@ -13,4 +16,5 @@ float erfcf(float x)
         }
         return 0;
     }
+    return result;
 }

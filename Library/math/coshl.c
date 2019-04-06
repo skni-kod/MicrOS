@@ -2,7 +2,10 @@
 
 long double coshl(long double x)
 {
+    feclearexcept(FE_OVERFLOW);
+
     long double result = (expl(x) + expl(-x)) / 2;
+    
     fexcept_t exceptions = __FPU_read_status_word();
     if(exceptions.overflow == 0)
     {

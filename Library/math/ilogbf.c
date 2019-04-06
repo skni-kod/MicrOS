@@ -2,6 +2,8 @@
 
 int ilogbf(float x)
 {
+    feclearexcept(FE_OVERFLOW);
+    
     if(x == 0)
     {
         // domain error
@@ -51,7 +53,7 @@ int ilogbf(float x)
     fexcept_t exceptions = __FPU_read_status_word();
     if(exceptions.overflow == 0)
     {
-        return (int)exponent;;
+        return (int)exponent;
     }
     // range error
     else

@@ -2,6 +2,9 @@
 
 float powf(float base, float exponent)
 {
+    feclearexcept(FE_OVERFLOW);
+    feclearexcept(FE_UNDERFLOW);
+    
     if(base < 0 && ceilf(exponent) == exponent && floorf(exponent) == exponent)
     {
         //domain error

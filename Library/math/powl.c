@@ -2,6 +2,9 @@
 
 long double powl(long double base, long double exponent)
 {
+    feclearexcept(FE_OVERFLOW);
+    feclearexcept(FE_UNDERFLOW);
+    
     if(base < 0 && ceill(exponent) == exponent && floorl(exponent) == exponent)
     {
         //domain error

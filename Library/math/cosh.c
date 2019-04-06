@@ -2,7 +2,10 @@
 
 double cosh(double x)
 {
+    feclearexcept(FE_OVERFLOW);
+
     double result = (exp(x) + exp(-x)) / 2;
+    
     fexcept_t exceptions = __FPU_read_status_word();
     if(exceptions.overflow == 0)
     {

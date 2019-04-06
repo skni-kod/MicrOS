@@ -2,7 +2,10 @@
 
 float exp2f(float x)
 {
+    feclearexcept(FE_OVERFLOW);
+
     float result = powf(2, x);
+    
     fexcept_t exceptions = __FPU_read_status_word();
     if(exceptions.overflow == 0)
     {

@@ -2,7 +2,10 @@
 
 double expm1(double x)
 {
+    feclearexcept(FE_OVERFLOW);
+
     double result = pow(M_E, x) - 1;
+    
     fexcept_t exceptions = __FPU_read_status_word();
     if(exceptions.overflow == 0)
     {

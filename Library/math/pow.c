@@ -2,6 +2,9 @@
 
 double pow(double base, double exponent)
 {
+    feclearexcept(FE_OVERFLOW);
+    feclearexcept(FE_UNDERFLOW);
+
     if(base < 0 && ceil(exponent) == exponent && floor(exponent) == exponent)
     {
         //domain error

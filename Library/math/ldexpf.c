@@ -2,6 +2,8 @@
 
 float ldexpf(float x, int exp)
 {
+    feclearexcept(FE_OVERFLOW);
+    
     float result;
     __asm__ (
         "fild %2 \n" \

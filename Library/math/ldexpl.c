@@ -2,6 +2,8 @@
 
 long double ldexpl(long double x, int exp)
 {
+    feclearexcept(FE_OVERFLOW);
+    
     long double result;
     __asm__ (
         "fild %2 \n" \

@@ -2,6 +2,8 @@
 
 int ilogb(double x)
 {
+    feclearexcept(FE_OVERFLOW);
+    
     if(x == 0)
     {
         // domain error
