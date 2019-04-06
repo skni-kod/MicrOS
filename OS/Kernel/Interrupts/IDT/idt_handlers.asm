@@ -52,8 +52,39 @@ idt_int%1:
 %assign i i+1 
 %endrep
 
+; Input: interrupt number and error code on stack
+; Output: nothing
 idt_exc_wrapper:
+  ; Move stack pointer (fsave won't do this itself)
+  sub esp, 108
+  
+  ; Save FPU state
+  fnsave [esp]
+  fwait
+  
+  ; Save registers
   pusha
+  
+  ; Save other registers for diagnostic view
+%macro store_register 1
+  mov eax, %1
+  push eax
+%endmacro
+
+  store_register ds
+  store_register cr0
+  store_register cr2
+  store_register cr3
+  store_register cr4
+  store_register es
+  store_register fs
+  store_register gs
+  
+  sub esp, 8
+  sgdt [esp]
+  sub esp, 8
+  sidt [esp]
+  
   push esp
 
   call idt_global_exc_handler
@@ -61,19 +92,51 @@ idt_exc_wrapper:
   pop esp
   popa
   
+  ; Restore FPU state
+  frstor [esp]
+  fwait
+  
+  ; Move stack pointer (frstor won't do this itself)
+  add esp, 108
+  
   ; Skip interrupt number and error code
   add esp, 8
   iret
 
+; Input: interrupt number on stack
+; Output: nothing
 idt_int_wrapper:
+  ; Move stack pointer (fsave won't do this itself)
+  sub esp, 108
+  
+  ; Save FPU state
+  fnsave [esp]
+  fwait
+  
+  ; Save registers
   pusha
+  
+  ; Push stack pointer (because esp in pusha is not valid for us)
   push esp
 
+  ; Process interrupt
   call idt_global_int_handler
 
+  ; Restore original stack pointer
   pop esp
+  
+  ; Restore registers
   popa
+  
+  ; Restore FPU state
+  frstor [esp]
+  fwait
+  
+  ; Move stack pointer (frstor won't do this itself)
+  add esp, 108
   
   ; Skip interrupt number
   add esp, 4
+  
+  ; Bye!
   iret

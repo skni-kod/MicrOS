@@ -13,11 +13,10 @@ void fat_init()
 {
     fat_length = fat_header_data->bytes_per_sector * fat_header_data->sectors_per_fat;
     fat = heap_kernel_alloc(fat_length, 0);
+    fat_load_fat();
 
     directory_length = fat_header_data->directory_entries * 32;
     root = heap_kernel_alloc(directory_length, 0);
-
-    fat_load_fat();
     fat_load_root();
 }
 
@@ -52,7 +51,7 @@ uint16_t fat_read_sector_value(uint32_t sector_number)
         high_byte = *(fat + (uint32_t)(sector_number * 1.5f + 1)) & 0x0F;
         low_byte = *(fat + (uint32_t)(sector_number * 1.5f));
 
-        return high_byte << 4 | low_byte;
+        return high_byte << 8 | low_byte;
     }
     else
     {

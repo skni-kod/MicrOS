@@ -32,6 +32,11 @@ paging_table_entry *paging_get_page_directory()
     return page_directory;
 }
 
+paging_table_entry *paging_get_kernel_page_directory()
+{
+    return (paging_table_entry *)KERNEL_PAGE_DIRECTORY_ADDRESS;
+}
+
 void paging_set_page_directory(void *address)
 {
     page_directory = (paging_table_entry *)address;
@@ -77,9 +82,6 @@ uint32_t paging_get_first_free_page_index(uint32_t from_index)
         }
     }
 
-    // TODO: Malloc should return 0 instead of panic screen.
-    panic_screen_show(0xA0, "Out of memory");
-
     return 0;
 }
 
@@ -88,7 +90,7 @@ uint32_t paging_get_physical_index_of_virtual_page(uint32_t page_index)
     paging_table_entry *page_directory_entry = (paging_table_entry *)((uint32_t)page_directory + (page_index * 4));
     paging_table_entry *page_table = (paging_table_entry *)(0xC0000000 + ((uint32_t)page_directory_entry->physical_page_address << 12));
 
-    return page_table->physical_page_address;
+    return page_table->physical_page_address / 1024;
 }
 
 bool paging_is_page_mapped(uint32_t page_index)

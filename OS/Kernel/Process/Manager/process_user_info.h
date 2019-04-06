@@ -4,6 +4,7 @@
 typedef struct process_user_info
 {
     uint32_t id;
+    uint32_t parent_id;
     char name[32];
 
     uint32_t status;

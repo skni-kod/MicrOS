@@ -44,11 +44,29 @@ NonDataSectors                  dw 0x0000
 
 ; Entry point of bootloader
 Main:
+    ; Disable interrupts (will be enabled again during kernel initialization sequence)
+    cli
+    
+    ; Clear DF flag in EFLAGS register
+    cld
+    
+    ; Clear segment registers
+    xor ax, ax
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+
     ; Set stack pointer to be directly under bootloader
     ; About 30 KiB of memory is free here
     ; https://wiki.osdev.org/Memory_Map_(x86)
     mov esp, 0x7C00
     mov ebp, esp
+    
+    ; Initialize data segment register
+    mov ax, cs
+    mov ds, ax
 
     ; Save device number (DL register) to memory
     mov [INT13Scratchpad], dl
@@ -326,7 +344,6 @@ LoadKernel:
     mov dx, 0x200
     mul dx
     mov bx, ax
-    add bx, 0xF000
 
     cmp bx, 0
     jne LoadKernel_Increment
@@ -372,7 +389,7 @@ LoadKernel:
 ; Input: nothing
 ; Output: nothing
 JumpToKernel:
-    jmp 0x0000:0xF000
+    jmp 0x1000:0x0000
 
 times 510 - ($ - $$) db 0
 dw 0xAA55

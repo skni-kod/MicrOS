@@ -3,10 +3,12 @@
 
 #include <stdint.h>
 #include "registers_state.h"
+#include "fpu_state.h"
 
 typedef struct interrupt_state
 {
     registers_state registers;
+    fpu_state fpu_state;
 
     uint32_t interrupt_number;
 

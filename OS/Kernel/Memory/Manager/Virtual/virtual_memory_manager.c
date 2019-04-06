@@ -10,14 +10,18 @@ uint32_t virtual_memory_alloc_page(bool supervisor)
     uint32_t physical_page_index = physical_memory_alloc_page();
     uint32_t virtual_page_index = paging_get_first_free_page_index(base_page_index);
 
+    if(physical_page_index == 0 || virtual_memory_alloc_page == 0)
+    {
+        return 0;
+    }
+    
     paging_map_page(physical_page_index, virtual_page_index, supervisor);
-
     return virtual_page_index;
 }
 
 bool virtual_memory_dealloc_page(uint32_t page_index)
 {
-    uint32_t physical_index = paging_get_physical_index_of_virtual_page(page_index) / 1024 / 4;
+    uint32_t physical_index = paging_get_physical_index_of_virtual_page(page_index);
     paging_unmap_page(page_index);
 
     return physical_memory_dealloc_page(physical_index);
@@ -30,7 +34,10 @@ bool virtual_memory_dealloc_last_page(bool supervisor)
     {
         if (!paging_is_page_mapped(i + 1))
         {
-            return physical_memory_dealloc_page(i);
+            uint32_t physical_page_index = paging_get_physical_index_of_virtual_page(i);
+            paging_unmap_page(i);
+            
+            return physical_memory_dealloc_page(physical_page_index);
         }
     }
 

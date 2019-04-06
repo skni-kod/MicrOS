@@ -13,7 +13,6 @@ void *heap_user_alloc(uint32_t size, uint32_t align)
     return heap_alloc(size, align, false);
 }
 
-// TODO: This function should return 0 if there is no available memory to allocate instead of panic screen.
 void *heap_alloc(uint32_t size, uint32_t align, bool supervisor)
 {
     heap_entry *current_entry = supervisor ? kernel_heap : user_heap;
@@ -76,7 +75,11 @@ void *heap_alloc(uint32_t size, uint32_t align, bool supervisor)
                 {
                     while (current_entry->size < size + align_fix + ENTRY_HEADER_SIZE)
                     {
-                        virtual_memory_alloc_page(supervisor);
+                        if(virtual_memory_alloc_page(supervisor) == 0)
+                        {
+                            return 0;
+                        }
+                        
                         current_entry->size += 4 * 1024 * 1024;
                     }
 
