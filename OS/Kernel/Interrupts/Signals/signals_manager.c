@@ -27,7 +27,7 @@ void signals_page_fault(exception_state *state)
         memcpy(&params->fpu_state, &state->fpu_state, sizeof(fpu_state));
 
         interrupt_state new_state = {0};
-        new_state.eip = info->signal_handler;
+        new_state.eip = (uint32_t)info->signal_handler;
         new_state.cs = state->cs;
         new_state.ss = state->ss;
         new_state.eflags = state->eflags;

@@ -1,6 +1,8 @@
 #include <micros.h>
 #include <stdlib.h>
 
+void draw_process_tree(micros_process_user_info *processes, int root_id, int level, int count);
+void print_total_process_count(int process_count);
 void draw_bar(uint32_t filled_entries, uint32_t total_entries);
 void draw_cpu_usage_bar(uint32_t cpu_usage, uint32_t bar_length);
 void draw_memory_usage_bar(micros_physical_memory_stats *memory_stats, uint32_t bar_length);
@@ -15,7 +17,7 @@ int main(int argc, char *argv[])
     {
         micros_console_clear();
 
-        micros_console_print_string("TASKS v1.0 @ MicrOS\n");
+        micros_console_print_string("TASKS v1.1 @ MicrOS\n");
         micros_console_print_string("\n");
 
         uint32_t processes_count = micros_process_get_processes_count();
@@ -40,21 +42,58 @@ int main(int argc, char *argv[])
 
         micros_console_print_char('\n');
 
-        for (uint32_t i = 0; i < processes_count; i++)
-        {
-            micros_process_user_info *process = &processes[i];
-            print_process_info(process);
+        draw_process_tree(processes, 0, 0, processes_count);
+        print_total_process_count(processes_count);
 
-            micros_console_print_string("\n");
-        }
-
-        micros_console_print_string("\n");
+        micros_console_print_string("\n\n");
         print_memory_stats(&memory_stats);
 
         free(processes);
         micros_process_current_process_sleep(1500);
     }
     return 0;
+}
+
+void draw_process_tree(micros_process_user_info *processes, int root_id, int level, int count)
+{
+    micros_process_user_info *root_process = NULL;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        micros_process_user_info *process = &processes[i];
+        if(process->id == root_id)
+        {
+            root_process = &processes[i];
+        }
+    }
+    
+    if(level != 0)
+    {
+        for(int i=0; i<level; i++)
+        {
+            micros_console_print_char(' ');
+        }
+                
+        micros_console_print_string("> ");
+    }
+    
+    print_process_info(root_process);
+    micros_console_print_string("\n");
+    
+    for (uint32_t i = 0; i < count; i++)
+    {
+        micros_process_user_info *process = &processes[i];
+        if(process->id != 0 && process->parent_id == root_id)
+        {
+            draw_process_tree(processes, process->id, level + 2, count);
+        }
+    }
+}
+
+void print_total_process_count(int process_count)
+{
+    char buffer[32];
+    micros_console_print_string("Total: ");
+    micros_console_print_string(itoa(process_count, buffer, 10));
 }
 
 void draw_bar(uint32_t filled_entries, uint32_t total_entries)
@@ -112,6 +151,13 @@ void print_process_info(micros_process_user_info *process_info)
     micros_console_print_string("ID: ");
     itoa(process_info->id, buffer, 10);
     micros_console_print_string(buffer);
+    
+    if(process_info->id != process_info->parent_id)
+    {
+        micros_console_print_string(", Parent: ");
+        itoa(process_info->parent_id, buffer, 10);
+        micros_console_print_string(buffer);
+    }
 
     micros_console_print_string(", Status: ");
     itoa(process_info->status, buffer, 10);

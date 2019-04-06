@@ -14,6 +14,7 @@ typedef enum micros_process_status
 typedef struct micros_process_user_info
 {
     uint32_t id;
+    uint32_t parent_id;
     char name[32];
 
     micros_process_status status;
@@ -68,8 +69,8 @@ bool micros_process_get_process_info(uint32_t id, micros_process_user_info *user
 void micros_process_get_all_processes_info(micros_process_user_info *user_info);
 void micros_process_set_current_process_name(char *name);
 void micros_process_current_process_sleep(uint32_t milliseconds);
-void micros_process_start_process(char *path, char *arguments);
-bool micros_process_set_current_process_signal_handler(void (*signal_handler)(int));
+void micros_process_start_process(char *path, char *arguments, bool child);
+void micros_process_set_current_process_signal_handler(void (*signal_handler)(micros_signal_params*));
 void micros_process_finish_signal_handler(micros_signal_params *old_state);
 
 #endif

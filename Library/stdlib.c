@@ -106,8 +106,7 @@ int rand()
 
     if (seed == 0)
     {
-        // TODO: Use time() instead of clock()
-        seed = clock();
+        seed = time(NULL);
     }
 
     seed = (multiplier * seed + increment) % modulus;
