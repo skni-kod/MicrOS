@@ -15,6 +15,7 @@ typedef enum process_status
 typedef struct process_info
 {
     uint32_t id;
+    uint32_t parent_id;
     char name[32];
 
     process_status status;
@@ -29,6 +30,7 @@ typedef struct process_info
     uint32_t sleep_deadline;
 
     interrupt_state state;
+    void (*signal_handler)(int);
 } process_info;
 
 #endif

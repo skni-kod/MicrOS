@@ -106,8 +106,7 @@ int rand()
 
     if (seed == 0)
     {
-        // TODO: Use time() instead of clock()
-        seed = clock();
+        seed = time(NULL);
     }
 
     seed = (multiplier * seed + increment) % modulus;
@@ -117,6 +116,11 @@ int rand()
 void srand(unsigned int new_seed)
 {
     seed = new_seed;
+}
+
+void abort()
+{
+    micros_process_exit(-1);
 }
 
 void exit(int status)

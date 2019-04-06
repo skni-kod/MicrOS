@@ -20,6 +20,7 @@ void free(void *ptr);
 int rand();
 void srand(unsigned int new_seed);
 
+void abort();
 void exit(int status);
 
 #endif

@@ -1,4 +1,5 @@
 #include "panic_screen.h"
+#include "../Drivers/DAL/VideoCard/videocard.h"
 
 const char *img[] =
     {
@@ -43,8 +44,10 @@ void panic_screen_show(exception_state *state, uint32_t code, const char *optStr
 void panic_screen_display_intro(exception_state *state, uint32_t code, const char *optString)
 {
     char buff[100];
-    if(getMode() != 0x3)
-        set3HVideoMode();
+    //if(getMode() != 0x3)
+    //    set3HVideoMode();
+    if(!isTextMode())
+        setVideoMode(0x3);
     vga_clear_screen();
     for (int i = 0; i < 20; i++)
     {
@@ -52,8 +55,7 @@ void panic_screen_display_intro(exception_state *state, uint32_t code, const cha
         vga_printchar('\n');
     }
     vga_printstring("Robimy to z bolem serca, ale musimy Ciebie o tym poinformowac... Zjebalo sie.\n");
-    vga_printstring("0x");
-    vga_printstring(itoa(code, buff, 16));
+    vga_printstring(panic_screen_value_to_string(buff, code));
     vga_printchar(' ');
     if (optString != 0x0)
     {
@@ -72,6 +74,8 @@ void panic_screen_wait_for_key_press()
 }
 void panic_screen_display_diagnostic_view(exception_state *state, uint32_t system_clock)
 {
+    uint32_t valid_esp = panic_screen_is_privilege_level_changed(state) ? state->esp : state->registers.esp_unused + STACK_POINTER_OFFSET;
+
     vga_clear_screen();
     vga_printstring("Registers:\n\n");
     panic_screen_display_register_state("eax", state->registers.eax, true);
@@ -80,7 +84,7 @@ void panic_screen_display_diagnostic_view(exception_state *state, uint32_t syste
     panic_screen_display_register_state("edx", state->registers.edx, true);
     panic_screen_display_register_state("esi", state->registers.esi, true);
     panic_screen_display_register_state("edi", state->registers.edi, true);
-    panic_screen_display_register_state("esp", state->registers.esp_unused + STACK_POINTER_OFFSET, true);
+    panic_screen_display_register_state("esp", valid_esp, true);
     panic_screen_display_register_state("eip", state->eip, true);
     vga_printstring("\n");
 
@@ -99,17 +103,25 @@ void panic_screen_display_diagnostic_view(exception_state *state, uint32_t syste
     panic_screen_display_descriptor_table("gdtr", state->gdtr, sizeof(gdt_entry));
     panic_screen_display_descriptor_table("idtr", state->idtr, sizeof(idt_entry));
 
-    panic_screen_display_stack(state->registers.esp_unused + STACK_POINTER_OFFSET);
+    panic_screen_display_stack(valid_esp, panic_screen_is_privilege_level_changed(state));
     panic_screen_display_system_clock(system_clock);
 
-    vga_set_cursor_pos(45, 17);
+    vga_set_cursor_pos(45, 16);
     vga_printstring("FPU:");
     panic_screen_display_fpu_control_word(state->fpu_state.control_word);
     panic_screen_display_fpu_status_word(state->fpu_state.status_word);
 
+    vga_set_cursor_pos(45, 20);
+    panic_screen_display_register_state("opcode", state->fpu_state.opcode, true);
+
     vga_set_cursor_pos(0, 27);
     vga_printchar(' ');
     __asm__("hlt");
+}
+
+bool panic_screen_is_privilege_level_changed(exception_state *state)
+{
+    return state->ds == state->ss;
 }
 
 char *panic_screen_value_to_string(char *buffer, unsigned int value)
@@ -140,7 +152,7 @@ char *panic_screen_value_to_string(char *buffer, unsigned int value)
     return buffer;
 }
 
-void panic_screen_display_register_state(char *register_name, int value, bool new_line)
+void panic_screen_display_register_state(char *register_name, unsigned int value, bool new_line)
 {
     char buffer[32];
     vga_printstring(register_name);
@@ -155,127 +167,37 @@ void panic_screen_display_register_state(char *register_name, int value, bool ne
 
 void panic_screen_display_eflags(uint32_t eflags)
 {
-    panic_screen_display_register_state("eflags", eflags, false);
+    char *tags[] = {"CF", "", "PF", "", "AF", "", "ZF", "SF", "TF", "IF", "DF", "OF", "", "", "NT", "", "RF", "VM", "AC", "VIF", "VIP", "ID", 0};
 
-    vga_printstring(" [");
-    if (eflags & (1 << 0))
-        vga_printstring(" CF");
-    if (eflags & (1 << 2))
-        vga_printstring(" PF");
-    if (eflags & (1 << 4))
-        vga_printstring(" AF");
-    if (eflags & (1 << 6))
-        vga_printstring(" ZF");
-    if (eflags & (1 << 7))
-        vga_printstring(" SF");
-    if (eflags & (1 << 8))
-        vga_printstring(" TF");
-    if (eflags & (1 << 9))
-        vga_printstring(" IF");
-    if (eflags & (1 << 10))
-        vga_printstring(" DF");
-    if (eflags & (1 << 11))
-        vga_printstring(" OF");
-    if (eflags & (1 << 14))
-        vga_printstring(" NT");
-    if (eflags & (1 << 16))
-        vga_printstring(" RF");
-    if (eflags & (1 << 17))
-        vga_printstring(" VM");
-    if (eflags & (1 << 18))
-        vga_printstring(" AC");
-    if (eflags & (1 << 19))
-        vga_printstring(" VIF");
-    if (eflags & (1 << 20))
-        vga_printstring(" VIP");
-    if (eflags & (1 << 21))
-        vga_printstring(" ID");
-    vga_printstring(" ]\n");
+    panic_screen_display_register_state("eflags", eflags, false);
+    panic_screen_display_flag_tags(eflags, tags);
 }
 
 void panic_screen_display_cr0(uint32_t cr0)
 {
-    panic_screen_display_register_state("cr0", cr0, false);
+    char *tags[] = {"PE", "MP", "EM", "TS", "ET", "NE", "", "", "", "", "", "", "", "", "", "", "WP", "", "AM", "", "", "", "", "", "", "", "", "", "", "NW", "CD", "PG", 0};
 
-    vga_printstring(" [");
-    if (cr0 & (1 << 0))
-        vga_printstring(" PE");
-    if (cr0 & (1 << 1))
-        vga_printstring(" MP");
-    if (cr0 & (1 << 2))
-        vga_printstring(" EM");
-    if (cr0 & (1 << 3))
-        vga_printstring(" TS");
-    if (cr0 & (1 << 4))
-        vga_printstring(" ET");
-    if (cr0 & (1 << 5))
-        vga_printstring(" NE");
-    if (cr0 & (1 << 16))
-        vga_printstring(" WP");
-    if (cr0 & (1 << 18))
-        vga_printstring(" AM");
-    if (cr0 & (1 << 29))
-        vga_printstring(" NW");
-    if (cr0 & (1 << 30))
-        vga_printstring(" CD");
-    if (cr0 & (1 << 31))
-        vga_printstring(" PG");
-    vga_printstring(" ]\n");
+    panic_screen_display_register_state("cr0", cr0, false);
+    panic_screen_display_flag_tags(cr0, tags);
 }
 
 void panic_screen_display_cr4(uint32_t cr4)
 {
-    panic_screen_display_register_state("cr4", cr4, false);
+    char *tags[] = {"VME", "PVI", "TSD", "DE", "PSE", "PAE", "MCE", "PGE", "PCE", "OSFXSR", "OSXMMEXCPT", "UMIP", "", "VMXE", "SMXE", "", "", "PCIDE", "OSXSAVE", "", "SMEP", "SMAP", 0};
 
-    vga_printstring(" [");
-    if (cr4 & (1 << 0))
-        vga_printstring(" VME");
-    if (cr4 & (1 << 1))
-        vga_printstring(" PVI");
-    if (cr4 & (1 << 2))
-        vga_printstring(" TSD");
-    if (cr4 & (1 << 3))
-        vga_printstring(" DE");
-    if (cr4 & (1 << 4))
-        vga_printstring(" PSE");
-    if (cr4 & (1 << 5))
-        vga_printstring(" PAE");
-    if (cr4 & (1 << 6))
-        vga_printstring(" MCE");
-    if (cr4 & (1 << 7))
-        vga_printstring(" PGE");
-    if (cr4 & (1 << 8))
-        vga_printstring(" PCE");
-    if (cr4 & (1 << 9))
-        vga_printstring(" OSFXSR");
-    if (cr4 & (1 << 10))
-        vga_printstring(" OSXMMEXCPT");
-    if (cr4 & (1 << 11))
-        vga_printstring(" UMIP");
-    if (cr4 & (1 << 13))
-        vga_printstring(" VMXE");
-    if (cr4 & (1 << 14))
-        vga_printstring(" SMXE");
-    if (cr4 & (1 << 17))
-        vga_printstring(" PCIDE");
-    if (cr4 & (1 << 18))
-        vga_printstring(" OSXSAVE");
-    if (cr4 & (1 << 20))
-        vga_printstring(" SMEP");
-    if (cr4 & (1 << 21))
-        vga_printstring(" SMAP");
-    vga_printstring(" ]\n");
+    panic_screen_display_register_state("cr4", cr4, false);
+    panic_screen_display_flag_tags(cr4, tags);
 }
 
-void panic_screen_display_stack(uint32_t esp)
+void panic_screen_display_stack(uint32_t esp, bool user_stack)
 {
     char buffer[16];
     uint32_t *addr = (uint32_t *)esp;
 
     vga_set_cursor_pos(45, 0);
-    vga_printstring("Stack:\n");
+    vga_printstring(user_stack ? "USER stack:\n" : "KERNEL stack:\n");
 
-    for (int i = 2; i < 15; i++)
+    for (int i = 2; i < 14; i++)
     {
         vga_set_cursor_pos(45, i);
 
@@ -323,51 +245,42 @@ void panic_screen_display_system_clock(uint32_t system_clock)
 void panic_screen_display_fpu_control_word(uint32_t control_word)
 {
     char buffer[16];
+    char *tags[] = {"IM", "DM", "ZM", "OM", "UM", "PM", 0};
 
-    vga_set_cursor_pos(45, 19);
+    vga_set_cursor_pos(45, 18);
     vga_printstring("cw: 0x");
-    vga_printstring(itoa(control_word, buffer, 10));
+    vga_printstring(panic_screen_value_to_string(buffer, control_word));
 
-    vga_printstring(" [");
-    if (control_word & (1 << 0))
-        vga_printstring(" IM");
-    if (control_word & (1 << 1))
-        vga_printstring(" DM");
-    if (control_word & (1 << 2))
-        vga_printstring(" ZM");
-    if (control_word & (1 << 3))
-        vga_printstring(" OM");
-    if (control_word & (1 << 4))
-        vga_printstring(" UM");
-    if (control_word & (1 << 5))
-        vga_printstring(" PM");
-    vga_printstring(" ]\n");
+    panic_screen_display_flag_tags(control_word, tags);
 }
 
 void panic_screen_display_fpu_status_word(uint32_t status_word)
 {
     char buffer[16];
+    char *tags[] = {"IE", "DE", "ZE", "OE", "UE", "PE", "SF", "ES", "C0", "C1", "C2", "", "", "", "C3", "B", 0};
 
-    vga_set_cursor_pos(45, 20);
+    vga_set_cursor_pos(45, 19);
     vga_printstring("sw: 0x");
-    vga_printstring(itoa(status_word, buffer, 10));
 
-    vga_printstring(" [");
-    if (status_word & (1 << 0))
-        vga_printstring(" IE");
-    if (status_word & (1 << 1))
-        vga_printstring(" DE");
-    if (status_word & (1 << 2))
-        vga_printstring(" ZE");
-    if (status_word & (1 << 3))
-        vga_printstring(" OE");
-    if (status_word & (1 << 4))
-        vga_printstring(" UE");
-    if (status_word & (1 << 5))
-        vga_printstring(" PE");
-    if (status_word & (1 << 6))
-        vga_printstring(" SF");
-    if (status_word & (1 << 7))
-        vga_printstring(" ES");
-    vga_printstring(" ]\n");
+    vga_printstring(panic_screen_value_to_string(buffer, status_word));
+    panic_screen_display_flag_tags(status_word, tags);
+}
+
+void panic_screen_display_flag_tags(uint32_t value, char **tags)
+{
+    vga_printstring(" [ ");
+
+    int index = 0;
+    while (tags[index] != 0)
+    {
+        if (value & (1 << index) && tags[index][0] != 0)
+        {
+            vga_printstring(tags[index]);
+            vga_printstring(" ");
+        }
+
+        index++;
+    }
+
+    vga_printstring("]\n");
 }
