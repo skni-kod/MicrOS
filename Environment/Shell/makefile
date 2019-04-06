@@ -16,7 +16,7 @@ DEPS := $(C_OBJECTS:.o=.d)
 $(OUTPUT_FILE): $(C_OBJECTS) $(ASM_OBJECTS)
 	@echo "=== Linking output file $(OUTPUT_FILE) ==="
 	@mkdir -p '$(@D)'
-	@$(GCC) $(C_OBJECTS) -o $(OUTPUT_FILE) -L../../Library/bin -lc -nostdlib 
+	@$(GCC) $(C_OBJECTS) -o $(OUTPUT_FILE) -L../../Library/bin -lc -lgcc -nostdlib 
 	@echo "=== $(OUTPUT_FILE) done ==="
 
 $(OBJ_DIR)/%.o: %.c

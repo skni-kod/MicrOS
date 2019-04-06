@@ -7,8 +7,7 @@ char *setlocale(int category, const char *locale)
         locale_state = calloc(1, sizeof(lconv));
     }
 
-    // TODO: replace it with strcmp
-    if (locale[0] == 'C')
+    if (strcmp(locale, "C") == 0)
     {
         __locale_set_neutral_locale(category);
 

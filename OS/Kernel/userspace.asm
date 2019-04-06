@@ -1,6 +1,6 @@
 global enter_user_space
 
-; Input: interrupt number on stack
+; Input: interrupt state on stack
 ; Output: nothing
 enter_user_space:
     ; Set data segments (0x20 + 0x03 (ring 3))
@@ -18,8 +18,8 @@ enter_user_space:
     popa
     
     ; Load FPU state
-    fwait
     frstor [esp]
+    fwait
     
     ; Move stack pointer (frstor won't do this itself)
     add esp, 108

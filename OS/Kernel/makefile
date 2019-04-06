@@ -19,7 +19,7 @@ DEPS := $(C_OBJECTS:.o=.d)
 $(OUTPUT_FILE): $(C_OBJECTS) $(ASM_OBJECTS)
 	@echo "=== Linking output file $(OUTPUT_FILE) ==="
 	@mkdir -p '$(@D)'
-	@$(GCC) $(C_OBJECTS) $(ASM_OBJECTS) -o $(OUTPUT_FILE) -T ../linker.ld -L../../Library/bin -lc -nostdlib 
+	@$(GCC) $(C_OBJECTS) $(ASM_OBJECTS) -o $(OUTPUT_FILE) -T ../linker.ld -L../../Library/bin -lc -lgcc -nostdlib -lgcc
 	@echo "=== Creating binary version of kernel elf ==="
 	@$(OBJCOPY) -O binary $(OUTPUT_FILE) $(BIN_DIR)/kernel.bin
 	@echo "=== $(OUTPUT_FILE) done ==="

@@ -28,40 +28,42 @@ int32_t atoi(const char *string)
 
 char *itoa(int input, char *buffer, int base)
 {
-    int8_t index = 0;
-    int8_t kappa = 0;
+    int idx = 0;
+    static const char lowercase_table[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
-    int8_t sign = 0;
-    if (input < 0)
-    {
+    bool negative = input < 0;
+    if (negative)
         input *= -1;
-        sign = 1;
-    }
 
+    // put number to buffer in reverse order
     do
     {
-        kappa = input % base;
-        buffer[index] = (kappa >= 10 ? kappa - 10 + 'a' : kappa + '0');
+        size_t digit = (input % base);
+        buffer[idx++] = lowercase_table[digit];
 
         input /= base;
+    } while (input);
 
-        ++index;
-    } while (input > 0);
-
-    if (sign)
+    //put sign
+    if (negative)
     {
-        buffer[index] = '-';
-        ++index;
+        buffer[idx++] = '-';
     }
 
-    for (int i = 0; i < index / 2; i++)
+    int size = idx;
+    idx--;
+
+    // revert string
+    for (size_t i = 0; i < size / 2; i++)
     {
         char tmp = buffer[i];
-        buffer[i] = buffer[index - i - 1];
-        buffer[index - i - 1] = tmp;
+        buffer[i] = buffer[idx];
+        buffer[idx] = tmp;
+
+        idx--;
     }
 
-    buffer[index] = '\0';
+    buffer[size] = '\0';
 
     return buffer;
 }
@@ -104,8 +106,7 @@ int rand()
 
     if (seed == 0)
     {
-        // TODO: Use time() instead of clock()
-        seed = clock();
+        seed = time(NULL);
     }
 
     seed = (multiplier * seed + increment) % modulus;
@@ -115,6 +116,11 @@ int rand()
 void srand(unsigned int new_seed)
 {
     seed = new_seed;
+}
+
+void abort()
+{
+    micros_process_exit(-1);
 }
 
 void exit(int status)
