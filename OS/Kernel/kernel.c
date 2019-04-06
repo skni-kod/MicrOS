@@ -25,9 +25,6 @@
 #include "Drivers/DAL/VideoCard/videocard.h"
 #include "Drivers/VGA/genericvga.h"
 #include <stdint.h>
-<<<<<<< HEAD
-#include "Drivers/CPU/cpuid.h"
-=======
 #include <stdlib.h>
 #include <time.h>
 
@@ -39,7 +36,6 @@ typedef struct _linesStruct
     uint16_t by;
     uint8_t color;
 } linesStruct;
->>>>>>> develop
 
 char buff[50];
 linesStruct ssBuffer[64];
@@ -173,42 +169,14 @@ int kmain()
     //startup_music_play();
     logger_log_ok("READY.");
 
-<<<<<<< HEAD
-    //process_manager_create_process("/ENV/TASKS.ELF", "Honoka Kotori");
-    /*process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
-=======
     /*logger_log_ok("Loading tasks...");
     process_manager_create_process("/ENV/TASKS.ELF", "Honoka Kotori");
 
     logger_log_ok("Loading shell...");
->>>>>>> develop
     process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
 
     logger_log_ok("Loading shell...");
     process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-<<<<<<< HEAD
-    process_manager_create_process("/ENV/SHELL.ELF", "Umi Rin");
-    process_manager_run();*/
-
-    /*while (1)
-        ;
-    */
-    
-=======
 
     process_manager_run();*/
 
@@ -219,7 +187,6 @@ int kmain()
     srand(clock());
     char shouldDrawLines = 0;
     char screenSaver = 0;
->>>>>>> develop
     while (1)
     {
         if (!keyboard_is_buffer_empty())
@@ -268,10 +235,6 @@ int kmain()
             }
             else if(c.scancode == 2) //1
             {
-<<<<<<< HEAD
-                printCpu();
-                printBrand();
-=======
                 setVideoMode(0x04);
                 currentMode = getCurrentVideoMode();
                 turnOnBuffer();
@@ -279,7 +242,6 @@ int kmain()
                     for(uint32_t y = 0; y < currentMode.height; y++)
                         drawPixel(0x02, x, y);
                 swapBuffers();
->>>>>>> develop
             }
             else if(c.scancode == 61) //F3
             {
@@ -291,9 +253,6 @@ int kmain()
             }
             else if(c.scancode == 3) //2
             {
-<<<<<<< HEAD
-                panic_screen_show(NULL, 0x42, "Someone ask Question about Life, the Universe and Evertything");
-=======
                 setVideoMode(0x05);
                 currentMode = getCurrentVideoMode();
                 turnOnBuffer();
@@ -301,7 +260,6 @@ int kmain()
                     for(uint32_t y = 0; y < currentMode.height; y++)
                         drawPixel(0x01, x, y);
                 swapBuffers();
->>>>>>> develop
             }
             else if(c.scancode == 62) //F4
             {
