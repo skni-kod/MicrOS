@@ -19,13 +19,13 @@
 #define FE_ALL_EXCEPT   (FE_INVALID | FE_DENORMAL | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW | FE_INEXACT)
 
 //! Rounding to nearest.
-#define FE_TONEAREST    0x0000
+#define FE_TONEAREST    0
 //! Rounding downward.
-#define FE_DOWNWARD     0x0400
+#define FE_DOWNWARD     1
 //! Rounding upward.
-#define FE_UPWARD       0x0800
+#define FE_UPWARD       2
 //! Rounding towards zero.
-#define FE_TOWARDZERO   0x0c00
+#define FE_TOWARDZERO   3
 
 //! Type represent state of floating point control word.
 /*! Includes exception falgs and control modes to precision, rounding and infnity control. */
