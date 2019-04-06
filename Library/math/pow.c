@@ -2,6 +2,46 @@
 
 double pow(double base, double exponent)
 {
+    if(base < 0 && ceil(exponent) == exponent && floor(exponent) == exponent)
+    {
+        //domain error
+        if(_math_errhandling == MATH_ERRNO)
+        {
+            errno = EDOM;
+        }
+        else if(_math_errhandling == MATH_ERREXCEPT)
+        {
+            feraiseexcept(FE_INVALID);  
+        }
+        return 0;
+    }
+    if(base == 0 && exponent == 0)
+    {
+        //domain error
+        if(_math_errhandling == MATH_ERRNO)
+        {
+            errno = EDOM;
+        }
+        else if(_math_errhandling == MATH_ERREXCEPT)
+        {
+            feraiseexcept(FE_INVALID);  
+        }
+        return 0;
+    }
+    if(base == 0 && exponent < 0)
+    {
+        //domain error
+        if(_math_errhandling == MATH_ERRNO)
+        {
+            errno = EDOM;
+        }
+        else if(_math_errhandling == MATH_ERREXCEPT)
+        {
+            feraiseexcept(FE_INVALID);  
+        }
+        return 0;
+    }
+    
     // Use 2^(y*log2(x)) 
     // Compute y*log2(x)
     double ex;
@@ -34,5 +74,19 @@ double pow(double base, double exponent)
         "fscale \n" \
         "fstpl %0"
         : "=m"(result): "m"(resultBeforeScale), "m"(integer));
+
+    fexcept_t exceptions = __FPU_read_status_word();
+    // range error
+    if(exceptions.overflow == 1 || exceptions.underflow == 1)
+    {
+        if(_math_errhandling == MATH_ERRNO)
+        {
+            errno = ERANGE;
+            feclearexcept(FE_OVERFLOW);
+            feclearexcept(FE_UNDERFLOW);
+        }
+        // In other case overflow or underflow is already set so we don't need to cover _math_errhandling == MATH_ERREXCEPT
+        return 0;
+    }
     return result;  
 }
