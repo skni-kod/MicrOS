@@ -126,7 +126,7 @@ bool panic_screen_is_privilege_level_changed(exception_state *state)
 
 char *panic_screen_value_to_string(char *buffer, unsigned int value)
 {
-    unsigned int numbers[32] = {0};
+    unsigned int numbers[32];
     int length = 0;
 
     while (value != 0)
@@ -154,7 +154,7 @@ char *panic_screen_value_to_string(char *buffer, unsigned int value)
 
 void panic_screen_display_register_state(char *register_name, unsigned int value, bool new_line)
 {
-    char buffer[32] = {0};
+    char buffer[32];
     vga_printstring(register_name);
     vga_printstring(": 0x");
     vga_printstring(panic_screen_value_to_string(buffer, value));
@@ -191,7 +191,7 @@ void panic_screen_display_cr4(uint32_t cr4)
 
 void panic_screen_display_stack(uint32_t esp, bool user_stack)
 {
-    char buffer[16] = {0};
+    char buffer[16];
     uint32_t *addr = (uint32_t *)esp;
 
     vga_set_cursor_pos(45, 0);
@@ -234,7 +234,7 @@ void panic_screen_display_descriptor_table(char *name, uint64_t value, uint32_t 
 
 void panic_screen_display_system_clock(uint32_t system_clock)
 {
-    char buffer[16] = {0};
+    char buffer[16];
 
     vga_set_cursor_pos(45, 22);
     vga_printstring("System clock: ");
@@ -244,7 +244,7 @@ void panic_screen_display_system_clock(uint32_t system_clock)
 
 void panic_screen_display_fpu_control_word(uint32_t control_word)
 {
-    char buffer[16] = {0};
+    char buffer[16];
     char *tags[] = {"IM", "DM", "ZM", "OM", "UM", "PM", 0};
 
     vga_set_cursor_pos(45, 18);
@@ -256,7 +256,7 @@ void panic_screen_display_fpu_control_word(uint32_t control_word)
 
 void panic_screen_display_fpu_status_word(uint32_t status_word)
 {
-    char buffer[16] = {0};
+    char buffer[16];
     char *tags[] = {"IE", "DE", "ZE", "OE", "UE", "PE", "SF", "ES", "C0", "C1", "C2", "", "", "", "C3", "B", 0};
 
     vga_set_cursor_pos(45, 19);

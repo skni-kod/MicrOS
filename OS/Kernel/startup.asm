@@ -10,6 +10,14 @@
 
 [BITS 16]
 
+%define PAGE_DIRECTORY_BASE 0x00006000
+%define PAGE_TABLES_BASE    0x01100000
+%define PAGES_COUNT         6
+
+; %define PAGE_DIRECTORY_BASE 0x09000000
+; %define PAGE_TABLES_BASE    0x0A000000
+; %define PAGES_COUNT         6
+
 jmp main
 
 ; Entry frame: https://wiki.osdev.org/GDT
@@ -93,9 +101,6 @@ main:
 
     call load_memory_map
 
-    ; Disable interrupts
-    cli
-
     ; Load GDT table
     lgdt [dword gdt_description]
 
@@ -138,6 +143,9 @@ load_memory_map:
     ; Read memory map
     mov eax, 0xe820
     int 0x15
+    
+    ; Disable interrupts (can be enabled by int 0x15)
+    cli
 
     ; Exit if ebx is equal to zero (reading has ended)
     cmp ebx, 0
@@ -156,6 +164,9 @@ main_protected_area:
     mov ax, 0x10
     mov ds, ax
     mov ss, ax
+    
+    call clear_page_directory
+    call clear_page_tables
 
     call create_page_directory
     call create_identity_page_table
@@ -168,66 +179,73 @@ main_protected_area:
 
     ; Init FPU
     finit
-
+    
     ; Jump to kmain and start kernel work
     extern kmain
     call kmain
 
     ; Something went wrong, but no problem!
     JMP $
+    
+; Output: nothing
+clear_page_directory:
+    ; Index
+    mov eax, 0
+
+    clear_page_directory_loop:
+    ; Clear entry
+    mov [PAGE_DIRECTORY_BASE + eax], byte 0
+
+    ; Increment index
+    inc eax
+
+    ; Leave loop if we cleared all entries
+    cmp eax, 0x1000
+    jl clear_page_directory_loop
+
+    ret
+
+; Input: nothing
+; Output: nothing
+clear_page_tables:
+    ; Index
+    mov eax, 0
+
+    clear_page_tables_loop:
+    ; Clear entry
+    mov [PAGE_TABLES_BASE + eax], byte 0
+
+    ; Increment index
+    inc eax
+
+    ; Leave loop if we cleared all entries
+    cmp eax, 0x400000
+    jl clear_page_tables_loop
+
+    ret
 
 ; Input: nothing
 ; Output: nothing
 create_page_directory:
-    ; Add temporary identity entry (physical address: 0x00000000, virtual address: 0x00000000, 24 MB)
-    ; 0 - 4 MB
-    mov eax, 0x01100003
-    mov [0x00006000], eax
-
-    ; 4 - 8 MB
-    mov eax, 0x01101003
-    mov [0x00006000 + 4], eax
-
-    ; 8 - 12 MB
-    mov eax, 0x01102003
-    mov [0x00006000 + 8], eax
-
-    ; 12 - 16 MB
-    mov eax, 0x01103003
-    mov [0x00006000 + 12], eax
-
-    ; 16 - 20 MB
-    mov eax, 0x01104003
-    mov [0x00006000 + 16], eax
+    ; Page definition macro
+    %macro page_directory_definition 3
+    mov eax, %1 + 3
+    mov [%2 + %3], eax
+    %endmacro
     
-    ; 20 - 24 MB
-    mov eax, 0x01105003
-    mov [0x00006000 + 20], eax
+    ; Add temporary identity entry (physical address: 0x00000000, virtual address: 0x00000000, 24 MB)
+    %assign i 0 
+    %rep    PAGES_COUNT 
+    page_directory_definition PAGE_TABLES_BASE + (i * 0x1000), PAGE_DIRECTORY_BASE, i * 4
+    %assign i i+1 
+    %endrep
 
     ; Add kernel entry (physical address: 0x00000000, virtual address: 0xC0000000, 24 MB)
-    ; 0 - 4 MB
-    mov eax, 0x01400003
-    mov [0x00006000 + 0x300 * 4], eax
-    
-    ; 4 - 8 MB
-    mov eax, 0x01401003
-    mov [0x00006000 + 0x301 * 4], eax
-
-    ; 8 - 12 MB
-    mov eax, 0x01402003
-    mov [0x00006000 + 0x302 * 4], eax
-
-    ; 12 - 16 MB
-    mov eax, 0x01403003
-    mov [0x00006000 + 0x303 * 4], eax
-
-    ; 16 - 20 MB
-    mov eax, 0x01404003
-    mov [0x00006000 + 0x304 * 4], eax
-    
-    ; 20 - 24 MB
-    mov eax, 0x01405003
-    mov [0x00006000 + 0x305 * 4], eax
+    %assign i 0 
+    %rep    PAGES_COUNT 
+    page_directory_definition PAGE_TABLES_BASE + 0x00300000 + (i * 0x1000), PAGE_DIRECTORY_BASE + 0xC00, i * 4
+    %assign i i+1 
+    %endrep
 
     ret
 
@@ -246,14 +264,14 @@ create_identity_page_table:
     or ecx, 3
     
     ; Set entry
-    mov [0x01100000 + eax*4], ecx
+    mov [PAGE_TABLES_BASE + eax*4], ecx
 
     ; Go to the next entry
     add ebx, 0x1000
     inc eax
 
-    ; Leave loop if we filled all entries for the first megabyte
-    cmp eax, 0x6000
+    ; Leave loop if we filled all entries for the first 6 megabytes
+    cmp eax, PAGES_COUNT * 0x1000
     jl fill_identity_page_table_loop
 
     ret
@@ -273,14 +291,14 @@ create_kernel_page_table:
     or ecx, 3
     
     ; Set entry
-    mov [0x01400000 + eax*4], ecx
+    mov [PAGE_TABLES_BASE + 0x00300000 + eax*4], ecx
 
     ; Go to the next entry
     add ebx, 0x1000
     inc eax
 
     ; Leave loop if we filled all entries for the first megabyte
-    cmp eax, 0x6000
+    cmp eax, PAGES_COUNT * 0x1000
     jl fill_kernel_page_table_loop
 
     ret
@@ -289,12 +307,20 @@ create_kernel_page_table:
 ; Output: nothing
 enable_paging:
     ; Set address of the directory table
-    mov eax, 0x00006000
+    mov eax, PAGE_DIRECTORY_BASE
     mov cr3, eax
 
     ; Enable paging
-    mov ebx, cr0
-    or ebx, 0x80000020
-    mov cr0, ebx
+    mov eax, cr0
+    or eax, 0x80000020
+    mov cr0, eax
+
+    jmp .branch
+    nop
+    nop
+    nop
+    nop
+    nop
+    .branch:
 
     ret
