@@ -6,14 +6,14 @@ BIN_DIR := bin
 OUTPUT_FILE := $(BIN_DIR)/tasks.elf
 
 C_SOURCES := $(shell find $(SRC_DIR) -name "*.c")
-C_OBJECTS := $(C_SOURCES:%.c=$(OBJ_DIR)/%.o)
+C_OBJECTS := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(C_SOURCES))
 
 ASM_SOUCES := $(shell find $(SRC_DIR) -name "*.asm")
-ASM_OBJECTS := $(ASM_SOUCES:%.asm=$(OBJ_DIR)/%.o)
+ASM_OBJECTS := $(patsubst $(SRC_DIR)/%.asm,$(OBJ_DIR)/%.o,$(ASM_SOUCES))
 
 DEPS := $(C_OBJECTS:.o=.d)
 
-GCC_COMPILE_FLAGS := -I../../Library -ffreestanding -Wall -Wextra -Wno-unused-parameter
+GCC_COMPILE_FLAGS := -I../../library/src -ffreestanding -Wall -Wextra -Wno-unused-parameter
 GCC_LINK_FLAGS := -L../../Library/bin -lc -lgcc -nostdlib
 
 ifeq ($(MODE),release)
@@ -25,19 +25,19 @@ endif
 
 $(OUTPUT_FILE): $(C_OBJECTS) $(ASM_OBJECTS)
 	@echo "=== Linking output file $(OUTPUT_FILE) ==="
-	@mkdir -p '$(subst $(SRC_DIR),,$(@D))'
-	@$(GCC) $(subst $(SRC_DIR),,$(C_OBJECTS)) -o $(OUTPUT_FILE) $(GCC_LINK_FLAGS)
+	@mkdir -p '$(@D)'
+	@$(GCC) $(C_OBJECTS) -o $(OUTPUT_FILE) $(GCC_LINK_FLAGS)
 	@echo "=== $(OUTPUT_FILE) done ==="
 
-$(OBJ_DIR)/%.o: %.c
-	@echo "=== Compiling C file $< into object $(subst $(SRC_DIR),,$@) ==="
-	@mkdir -p '$(subst $(SRC_DIR),,$(@D))'
-	@$(GCC) -c $(PWD)/$< -o $(subst $(SRC_DIR),,$@) -MMD -MF $(subst $(SRC_DIR),,$(@:.o=.d)) $(GCC_COMPILE_FLAGS)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	@echo "=== Compiling C file $< into object $@ ==="
+	@mkdir -p '$(@D)'
+	@$(GCC) -c $(PWD)/$< -o $@ -MMD -MF $(@:.o=.d) $(GCC_COMPILE_FLAGS)
 
-$(OBJ_DIR)/%.o: %.asm
-	@echo "=== Compiling asm file $< into object $(subst $(SRC_DIR),,$@) ==="
-	@mkdir -p '$(subst $(SRC_DIR),,$(@D))'
-	@$(NASM) $(PWD)/$< -f elf32 -o $(subst $(SRC_DIR),,$@)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.asm
+	@echo "=== Compiling asm file $< into object $@ ==="
+	@mkdir -p '$(@D)'
+	@$(NASM) $(PWD)/$< -f elf32 -o $@
 
 -include $(DEPS)
 
