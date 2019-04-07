@@ -8,6 +8,8 @@
 #include "time.h"
 #include "micros.h"
 
+unsigned int seed;
+
 int32_t atoi(const char *string);
 char *itoa(int input, char *buffer, int base);
 
