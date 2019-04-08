@@ -62,6 +62,10 @@ typedef struct micros_signal_params
     uint32_t ss;
 } micros_signal_params;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void micros_process_exit(int status);
 uint32_t micros_process_get_processes_count();
 void micros_process_get_current_process_info(micros_process_user_info *user_info);
@@ -72,5 +76,9 @@ void micros_process_current_process_sleep(uint32_t milliseconds);
 void micros_process_start_process(char *path, char *arguments, bool child);
 void micros_process_set_current_process_signal_handler(void (*signal_handler)(micros_signal_params*));
 void micros_process_finish_signal_handler(micros_signal_params *old_state);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

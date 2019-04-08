@@ -10,6 +10,10 @@
 
 unsigned int seed;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int32_t atoi(const char *string);
 char *itoa(int input, char *buffer, int base);
 
@@ -24,5 +28,9 @@ void srand(unsigned int new_seed);
 
 void abort();
 void exit(int status);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

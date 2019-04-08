@@ -24,6 +24,10 @@ typedef struct tm
 
 tm converted_time;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 clock_t clock();
 double difftime(time_t end, time_t beginning);
 time_t mktime(tm * timeptr);
@@ -33,5 +37,9 @@ tm *gmtime(const time_t *timer);
 
 uint32_t __time_get_day_of_year(uint32_t day, uint32_t month, uint32_t year);
 uint32_t __time_get_day_of_week(uint32_t day, uint32_t month, uint32_t year);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

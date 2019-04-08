@@ -14,6 +14,14 @@ typedef struct micros_rtc_time
     unsigned int year;
 } micros_rtc_time;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void micros_rtc_read_time(micros_rtc_time *time);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

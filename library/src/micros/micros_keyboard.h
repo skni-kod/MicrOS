@@ -10,8 +10,16 @@ typedef struct micros_keyboard_scan_ascii_pair
     unsigned char ascii;
 } micros_keyboard_scan_ascii_pair;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 bool micros_keyboard_is_key_pressed();
 bool micros_keyboard_get_pressed_key(micros_keyboard_scan_ascii_pair *scan_ascii_pair);
 void micros_keyboard_wait_for_key_press();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

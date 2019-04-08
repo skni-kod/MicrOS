@@ -34,6 +34,10 @@ typedef struct fmicros_s_directory_info
     micros_filesystem_time create_time;
 } micros_filesystem_directory_info;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 bool micros_filesystem_get_file_info(char *path, micros_filesystem_file_info *file_info);
 bool micros_filesystem_get_directory_info(char *path, micros_filesystem_directory_info *directory_info);
 bool micros_filesystem_read_file(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length);
@@ -41,5 +45,9 @@ uint32_t micros_filesystem_get_entries_count_in_directory(char *path);
 bool micros_filesystem_get_entries_in_directory(char *path, char *entries);
 bool micros_filesystem_is_file(char *path);
 bool micros_filesystem_is_directory(char *path);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

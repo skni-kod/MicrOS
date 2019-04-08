@@ -6,6 +6,10 @@
 //! Type to hold information to restore calling environment. Contains ebx, esi, edi, ebp, return address.
 typedef uint32_t jmp_buf[5];
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //! Long jump.
 /*!
     Restores the environment to the state indicated by env, evaluating the setjmp expression that filled env as val. 
@@ -21,5 +25,9 @@ extern void longjmp(jmp_buf env, int val);
     \return This macro may return more than once: A first time, on its direct invocation; In this case it always returns zero. When longjmp is called with the information set to env, the macro returns again; this time it returns the value passed to longjmp as second argument if this is different from zero, or 1 if it is zero.
 */
 extern int setjmp(jmp_buf env);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

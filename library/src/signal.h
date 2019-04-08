@@ -42,6 +42,10 @@ typedef void (*signal_func)(int);
 //! Array containing all signal handlers
 extern signal_func signal_handlers[6];
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //! Set function to handle signal.
 /*!
     Specifies a way to handle the signals with the signal number specified by sig.
@@ -121,5 +125,9 @@ void __signal_init();
     Gets default signal handler based on the passed signal type.
 */
 signal_func __signal_get_defualt_handler(int sig);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

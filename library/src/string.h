@@ -7,6 +7,10 @@
 //! Unsigned integral type.
 typedef size_t uint32_t;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //! Copy block of memory.
 /*!
     Copies the values of num bytes from the location pointed to by source directly to the memory block pointed to by destination.
@@ -211,5 +215,9 @@ char *strerror(int errnum);
     \return The length of string. 
 */
 size_t strlen(const char *str);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

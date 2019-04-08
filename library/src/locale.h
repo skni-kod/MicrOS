@@ -105,6 +105,10 @@ lconv *locale_state;
 //! Current locale name.
 char *locale_name;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //! Set or retrieve locale.
 /*!
     Sets locale information to be used by the current program, either changing the entire locale or portions of it. The function can also be used to retrieve the current locale's name by passing NULL as the value for argument locale.
@@ -141,5 +145,9 @@ char *__locale_set_char_field_value(const char *value);
     \param category Portion of the locale affected (LC_ALL, LC_COLLATE, LC_CTYPE, LC_MONETARY, LC_NUMERIC, LC_TIME).
 */
 void __locale_set_neutral_locale(int category);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

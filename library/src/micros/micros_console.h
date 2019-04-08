@@ -31,6 +31,10 @@ typedef enum micros_console_color
     micros_console_color_white = 0x0F
 } micros_console_color;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void micros_console_print_char(char c);
 void micros_console_print_string(const char *str);
 char micros_console_get_char_at_position(micros_console_position *position);
@@ -40,5 +44,9 @@ void micros_console_set_cursor_position(micros_console_position *position);
 void micros_console_get_cursor_position(micros_console_position *micros_console_position);
 void micros_console_clear();
 void micros_console_set_cursor_visibility(bool visibility);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

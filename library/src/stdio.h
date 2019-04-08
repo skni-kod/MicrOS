@@ -104,6 +104,10 @@ FILE *stdout;
 //! Standard error output (default is console).
 FILE *stderr;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //! Open file.
 /*!
     Opens the file whose name is specified in the parameter filename and associates it with a stream that can be identified in future operations by the FILE pointer returned. The returned stream is fully buffered by default. 
@@ -407,5 +411,9 @@ int scanf(const char *format, ...);
     \return A newly created stream.
 */
 FILE *__stdio_create_stream();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
