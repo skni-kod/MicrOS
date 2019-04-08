@@ -1,6 +1,6 @@
 #include "mode_04H.h"
 #include "drivers/vga/modes/registerFunctions.h"
-#include "memory/manager/heap/heap.h"
+#include "memory/heap/heap.h"
 #include "drivers/dal/videocard/videocard.h"
 
 //REGISTER VALUES

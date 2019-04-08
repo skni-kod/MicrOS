@@ -2,7 +2,7 @@
 #define VGA_CALLS_H
 
 #include <stdbool.h>
-#include "interrupts/idt/interrupt_state.h"
+#include "cpu/idt/interrupt_state.h"
 #include "drivers/vga/vga.h"
 
 void syscall_vga_print_char(interrupt_state *state);

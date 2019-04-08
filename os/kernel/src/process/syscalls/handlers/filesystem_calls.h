@@ -4,7 +4,7 @@
 #include "fileSystems/filesystem.h"
 #include "FileSystems/generic/filesystem_file_info.h"
 #include "FileSystems/generic/filesystem_directory_info.h"
-#include "memory/manager/heap/heap.h"
+#include "memory/heap/heap.h"
 
 void syscall_filesystem_get_file_info(interrupt_state *state);
 void syscall_filesystem_get_directory_info(interrupt_state *state);

@@ -5,15 +5,15 @@
 #include <kvector.h>
 #include "process_info.h"
 #include "process_user_info.h"
-#include "memory/paging/paging.h"
+#include "cpu/paging/paging.h"
 #include "process/elf/parser/elf_header.h"
 #include "process/elf/Loader/elf_loader.h"
 #include "filesystems/fat/fat.h"
 #include "assembly/io.h"
-#include "interrupts/idt/idt.h"
-#include "interrupts/signals/signals_manager.h"
-#include "interrupts/signals/signal_params.h"
-#include "memory/manager/heap/heap.h"
+#include "cpu/idt/idt.h"
+#include "process/signals/signals_manager.h"
+#include "process/signals/signal_params.h"
+#include "memory/heap/heap.h"
 
 void process_manager_init();
 uint32_t process_manager_create_process(char *path, char *parameters, uint32_t parent_id);

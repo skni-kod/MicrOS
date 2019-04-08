@@ -13,8 +13,8 @@
 #include "interrupt_handler_definition.h"
 #include "exception_handler_definition.h"
 #include "exception_definition.h"
-#include "interrupts/pic/pic.h"
-#include "panic/panic_screen.h"
+#include "cpu/pic/pic.h"
+#include "cpu/panic/panic_screen.h"
 #include "drivers/keyboard/keyboard.h"
 
 void idt_init();

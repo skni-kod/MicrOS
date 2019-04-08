@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "paging_table_entry.h"
-#include "panic/panic_screen.h"
+#include "cpu/panic/panic_screen.h"
 
 void paging_init();
 void paging_remove_identity();

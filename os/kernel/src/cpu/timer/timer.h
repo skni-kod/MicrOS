@@ -7,8 +7,8 @@
 #define TIMER_FREQUENCY_HZ 1193182
 #define TARGET_FREQUENCY 1000
 
-#include "interrupts/pic/pic.h"
-#include "interrupts/idt/idt.h"
+#include "cpu/pic/pic.h"
+#include "cpu/idt/idt.h"
 #include "assembly/io.h"
 
 void timer_init();

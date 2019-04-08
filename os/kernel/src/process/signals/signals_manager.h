@@ -1,8 +1,8 @@
 #ifndef SIGNALS_MANAGER_H
 #define SIGNALS_MANAGER_H
 
-#include "interrupts/idt/idt.h"
-#include "interrupts/idt/interrupt_state.h"
+#include "cpu/idt/idt.h"
+#include "cpu/idt/interrupt_state.h"
 #include "process/manager/process_manager.h"
 #include "signal_params.h"
 

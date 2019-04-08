@@ -3,7 +3,7 @@
 
 #define SYSCALLS_MANAGER_MAX_HANDLERS 256
 
-#include "interrupts/idt/idt.h"
+#include "cpu/idt/idt.h"
 #include "handlers/heap_calls.h"
 #include "handlers/time_calls.h"
 #include "handlers/vga_calls.h"

@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "memory/paging/paging.h"
-#include "memory/manager/physical/physical_memory_manager.h"
+#include "cpu/paging/paging.h"
+#include "memory/physical/physical_memory_manager.h"
 
 uint32_t virtual_memory_alloc_page(bool supervisor);
 bool virtual_memory_dealloc_page(uint32_t index);

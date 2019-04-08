@@ -9,9 +9,9 @@
 #include "drivers/vga/vga_gmode.h"
 #include "drivers/keyboard/keyboard.h"
 #include "klibrary/kvector.h"
-#include "memory/gdt/gdt_entry.h"
-#include "interrupts/idt/idt_entry.h"
-#include "timer/timer.h"
+#include "cpu/gdt/gdt_entry.h"
+#include "cpu/idt/idt_entry.h"
+#include "cpu/timer/timer.h"
 
 void panic_screen_show(exception_state *state, uint32_t code, const char *optString);
 void panic_screen_display_intro(exception_state *state, uint32_t code, const char *optString);

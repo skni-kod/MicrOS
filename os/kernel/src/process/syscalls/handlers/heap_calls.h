@@ -1,8 +1,8 @@
 #ifndef HEAP_CALLS_H
 #define HEAP_CALLS_H
 
-#include "interrupts/idt/interrupt_state.h"
-#include "memory/manager/heap/heap.h"
+#include "cpu/idt/interrupt_state.h"
+#include "memory/heap/heap.h"
 
 void syscall_heap_alloc_memory(interrupt_state *state);
 void syscall_heap_realloc_memory(interrupt_state *state);

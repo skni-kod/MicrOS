@@ -2,7 +2,7 @@
 #define PROCESS_INFO_H
 
 #include <stdbool.h>
-#include "interrupts/idt/interrupt_state.h"
+#include "cpu/idt/interrupt_state.h"
 
 typedef enum process_status
 {
