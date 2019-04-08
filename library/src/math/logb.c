@@ -31,7 +31,7 @@ double logb(double x)
     // FLT_RADIX is guaranteed to be a constant expression.
     #if FLT_RADIX == 2
         return log2(x);
-    #elif
+    #else
         return log2(x)/log2(FLT_RADIX);
     #endif 
 }
