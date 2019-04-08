@@ -2,7 +2,7 @@
 #define RTC_H
 
 #include <stdint.h>
-#include "../../Assembly/io.h"
+#include "Assembly/io.h"
 
 typedef struct rtc_time
 {

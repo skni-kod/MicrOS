@@ -2,8 +2,8 @@
 #define KEYBOARD_H
 #pragma pack(1)
 
-#include "../../Interrupts/IDT/idt.h"
-#include "../../Interrupts/PIC/pic.h"
+#include "Interrupts/IDT/idt.h"
+#include "Interrupts/PIC/pic.h"
 #include "keyboard_extended_state_flags.h"
 #include "keyboard_state_flags.h"
 #include "keyboard_scan_acii_pair.h"

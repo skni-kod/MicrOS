@@ -1,5 +1,5 @@
 #include "keyboard.h"
-#include "../../Drivers/VGA/vga.h"
+#include "Drivers/VGA/vga.h"
 
 unsigned char kbdus[128] =
     {

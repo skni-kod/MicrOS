@@ -5,12 +5,12 @@
 
 #include <stdlib.h>
 #include <kvector.h>
-#include "../Logger/logger.h"
+#include "Logger/logger.h"
 #include "fat_directory_entry.h"
-#include "../Drivers/Floppy/floppy_header.h"
-#include "../Drivers/Floppy/floppy.h"
-#include "../Generic/filesystem_file_info.h"
-#include "../Generic/filesystem_directory_info.h"
+#include "Drivers/Floppy/floppy_header.h"
+#include "Drivers/Floppy/floppy.h"
+#include "FileSystems/Generic/filesystem_file_info.h"
+#include "FileSystems/Generic/filesystem_directory_info.h"
 
 void fat_init();
 void fat_load_fat();

@@ -1,7 +1,7 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include "../Drivers/VGA/vga.h"
+#include "Drivers/VGA/vga.h"
 
 void logger_log_info(char *content);
 void logger_log_ok(char *content);

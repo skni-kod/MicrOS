@@ -7,9 +7,9 @@
 #define TIMER_FREQUENCY_HZ 1193182
 #define TARGET_FREQUENCY 1000
 
-#include "../Interrupts/PIC/pic.h"
-#include "../Interrupts/IDT/idt.h"
-#include "../Assembly/io.h"
+#include "Interrupts/PIC/pic.h"
+#include "Interrupts/IDT/idt.h"
+#include "Assembly/io.h"
 
 void timer_init();
 uint16_t timer_get_reload_value();

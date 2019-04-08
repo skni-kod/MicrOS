@@ -2,10 +2,10 @@
 #define PHYSICAL_MEMORY_MANAGER_H
 
 #include <stdbool.h>
-#include "../../Map/memory_map.h"
-#include "../../Map/memory_map_entry.h"
-#include "../../../Drivers/VGA/vga.h"
-#include "../../../Drivers/Keyboard/keyboard.h"
+#include "Memory/Map/memory_map.h"
+#include "Memory/Map/memory_map_entry.h"
+#include "Drivers/VGA/vga.h"
+#include "Drivers/Keyboard/keyboard.h"
 #include <stdlib.h>
 #include "physical_memory_entry.h"
 #include "physical_memory_entry_type.h"

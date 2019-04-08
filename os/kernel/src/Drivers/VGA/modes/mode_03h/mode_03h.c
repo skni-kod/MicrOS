@@ -1,8 +1,8 @@
 #include "mode_03H.h"
-#include "../registerFunctions.h"
-#include "../../../../Memory/Manager/Heap/heap.h"
-#include "../../../DAL/VideoCard/videocard.h"
-#include "../../../VGA/vga.h"
+#include "Drivers/VGA/modes/registerFunctions.h"
+#include "Memory/Manager/Heap/heap.h"
+#include "Drivers/DAL/VideoCard/videocard.h"
+#include "Drivers/VGA/vga.h"
 
 //REGISTER VALUES
 uint8_t g_80x25_text[] =

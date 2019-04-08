@@ -1,5 +1,5 @@
 #include "pc_speaker.h"
-#include "../../Assembly/io.h"
+#include "Assembly/io.h"
 
 uint16_t old_value = 0;
 

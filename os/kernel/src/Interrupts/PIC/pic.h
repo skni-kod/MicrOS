@@ -8,7 +8,7 @@
 #define SLAVE_PIC_DATA 0xA1
 
 #include <stdint.h>
-#include "../../Assembly/io.h"
+#include "Assembly/io.h"
 
 void pic_init();
 void pic_remap(uint32_t master_offset, uint32_t slave_offset);

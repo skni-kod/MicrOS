@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 #include "heap_entry.h"
-#include "../Virtual/virtual_memory_manager.h"
+#include "Memory/Manager/Virtual/virtual_memory_manager.h"
 
 void *heap_kernel_alloc(uint32_t size, uint32_t align);
 void *heap_user_alloc(uint32_t size, uint32_t align);

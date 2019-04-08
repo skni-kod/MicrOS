@@ -2,7 +2,7 @@
 #define VGA_H
 
 #include <stdint.h>
-#include "../../Assembly/io.h"
+#include "Assembly/io.h"
 
 #define VGA_BASE_ADDR 0xC00B8000
 #define VGA_SCREEN_COLUMNS 80

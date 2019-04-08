@@ -1,7 +1,7 @@
 #include "mode_13h.h"
-#include "../registerFunctions.h"
-#include "../../../../Memory/Manager/Heap/heap.h"
-#include "../../../DAL/VideoCard/videocard.h"
+#include "Drivers/VGA/modes/registerFunctions.h"
+#include "Memory/Manager/Heap/heap.h"
+#include "Drivers/DAL/VideoCard/videocard.h"
 
 
 
