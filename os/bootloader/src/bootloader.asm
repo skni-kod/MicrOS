@@ -344,7 +344,8 @@ LoadKernel:
     mov dx, 0x200
     mul dx
     mov bx, ax
-
+    add bx, 0xF000
+    
     cmp bx, 0
     jne LoadKernel_Increment
 
@@ -389,7 +390,7 @@ LoadKernel:
 ; Input: nothing
 ; Output: nothing
 JumpToKernel:
-    jmp 0x1000:0x0000
+    jmp 0x0000:0xF000
 
 times 510 - ($ - $$) db 0
 dw 0xAA55
