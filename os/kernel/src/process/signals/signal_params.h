@@ -1,8 +1,8 @@
 #ifndef SIGNAL_PARAMS_H
 #define SIGNAL_PARAMS_H
 
-#include "cpu/idt/interrupt_state.h"
-#include "cpu/idt/fpu_state.h"
+#include "cpu/idt/state/interrupt_state.h"
+#include "cpu/idt/state/fpu_state.h"
 
 typedef struct signal_params
 {

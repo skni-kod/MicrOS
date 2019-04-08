@@ -5,7 +5,6 @@
 
 #include <stdlib.h>
 #include <kvector.h>
-#include "logger/logger.h"
 #include "fat_directory_entry.h"
 #include "Drivers/Floppy/floppy_header.h"
 #include "Drivers/Floppy/floppy.h"

@@ -2,7 +2,7 @@
 #define SIGNALS_MANAGER_H
 
 #include "cpu/idt/idt.h"
-#include "cpu/idt/interrupt_state.h"
+#include "cpu/idt/state/interrupt_state.h"
 #include "process/manager/process_manager.h"
 #include "signal_params.h"
 
