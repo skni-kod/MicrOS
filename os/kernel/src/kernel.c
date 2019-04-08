@@ -13,7 +13,7 @@
 #include "memory/gdt/gdt.h"
 #include "memory/paging/paging.h"
 #include "memory/map/memory_map.h"
-#include "memory/manager/physic/physical_memory_manager.h"
+#include "memory/manager/physical/physical_memory_manager.h"
 #include "fileSystems/filesystem.h"
 #include "panic/panic_screen.h"
 #include "process/elf/parser/elf_parser.h"

@@ -8,7 +8,7 @@
 #include "drivers/vga/vga.h"
 #include "drivers/vga/vga_gmode.h"
 #include "drivers/keyboard/keyboard.h"
-#include "library/kvector.h"
+#include "klibrary/kvector.h"
 #include "memory/gdt/gdt_entry.h"
 #include "interrupts/idt/idt_entry.h"
 #include "timer/timer.h"

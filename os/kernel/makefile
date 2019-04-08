@@ -16,8 +16,8 @@ ASM_OBJECTS := $(patsubst $(SRC_DIR)/%.asm,$(OBJ_DIR)/%.o,$(ASM_SOUCES))
 
 DEPS := $(C_OBJECTS:.o=.d)
 
-GCC_COMPILE_FLAGS := -I$(SRC_DIR) -I../../Library/src -Isrc/Library -ggdb3 -O0 -ffreestanding -Wall -Wextra -Wno-unused-parameter -fshort-enums
-GCC_LINK_FLAGS := -T ../linker.ld -L../../Library/bin -lc -lgcc -nostdlib
+GCC_COMPILE_FLAGS := -I$(SRC_DIR) -I../../library/src -I$(SRC_DIR)/klibrary -ggdb3 -O0 -ffreestanding -Wall -Wextra -Wno-unused-parameter -fshort-enums
+GCC_LINK_FLAGS := -T ../linker.ld -L../../library/bin -lc -lgcc -nostdlib
 
 ifeq ($(MODE),release)
 GCC_COMPILE_FLAGS += -O2

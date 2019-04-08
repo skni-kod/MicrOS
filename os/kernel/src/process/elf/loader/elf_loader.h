@@ -3,7 +3,7 @@
 
 #include "process/elf/parser/elf_parser.h"
 #include "memory/paging/paging.h"
-#include "memory/manager/physic/physical_memory_manager.h"
+#include "memory/manager/physical/physical_memory_manager.h"
 
 uint32_t elf_loader_load(uint8_t *content);
 
