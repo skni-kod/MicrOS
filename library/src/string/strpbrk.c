@@ -2,7 +2,7 @@
 
 char *strpbrk(char *str1, const char *str2)
 {
-    char *ret = str2;
+    char *ret = (char *)str2;
     while(*str1 != '\0')
     {
         while(*str2 != '\0')

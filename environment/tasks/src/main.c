@@ -1,7 +1,7 @@
 #include <micros.h>
 #include <stdlib.h>
 
-void draw_process_tree(micros_process_user_info *processes, int root_id, int level, int count);
+void draw_process_tree(micros_process_user_info *processes, uint32_t root_id, uint32_t level, uint32_t count);
 void print_total_process_count(int process_count);
 void draw_bar(uint32_t filled_entries, uint32_t total_entries);
 void draw_cpu_usage_bar(uint32_t cpu_usage, uint32_t bar_length);
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void draw_process_tree(micros_process_user_info *processes, int root_id, int level, int count)
+void draw_process_tree(micros_process_user_info *processes, uint32_t root_id, uint32_t level, uint32_t count)
 {
     micros_process_user_info *root_process = NULL;
     for (uint32_t i = 0; i < count; i++)
@@ -68,7 +68,7 @@ void draw_process_tree(micros_process_user_info *processes, int root_id, int lev
     
     if(level != 0)
     {
-        for(int i=0; i<level; i++)
+        for(uint32_t i = 0; i < level; i++)
         {
             micros_console_print_char(' ');
         }

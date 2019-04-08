@@ -10,7 +10,7 @@ uint32_t virtual_memory_alloc_page(bool supervisor)
     uint32_t physical_page_index = physical_memory_alloc_page();
     uint32_t virtual_page_index = paging_get_first_free_page_index(base_page_index);
 
-    if(physical_page_index == 0 || virtual_memory_alloc_page == 0)
+    if(physical_page_index == 0 || virtual_page_index == 0)
     {
         return 0;
     }

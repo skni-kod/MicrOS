@@ -11,7 +11,8 @@
 #include "filesystems/fat/fat.h"
 #include "assembly/io.h"
 #include "interrupts/idt/idt.h"
-#include "Interrupts/Signals/signal_params.h"
+#include "interrupts/signals/signals_manager.h"
+#include "interrupts/signals/signal_params.h"
 #include "memory/manager/heap/heap.h"
 
 void process_manager_init();
