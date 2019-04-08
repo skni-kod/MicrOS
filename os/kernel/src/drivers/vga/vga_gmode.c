@@ -1,8 +1,8 @@
 #include "vga_gmode.h"
-#include "Assembly/io.h"
+#include "assembly/io.h"
 #include <string.h>
 #include "vga.h"
-#include "FileSystems/filesystem.h"
+#include "fileSystems/filesystem.h"
 
 #define peekb(S, O) *(unsigned char *)(16uL * (S) + (O))
 #define pokeb(S, O, V) *(unsigned char *)(16uL * (S) + (O)) = (V)

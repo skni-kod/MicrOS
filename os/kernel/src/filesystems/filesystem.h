@@ -2,9 +2,9 @@
 #define FILESYSTEM_H
 
 #include <stdbool.h>
-#include "FAT/fat.h"
-#include "Generic/filesystem_file_info.h"
-#include "Generic/filesystem_directory_info.h"
+#include "fat/fat.h"
+#include "generic/filesystem_file_info.h"
+#include "generic/filesystem_directory_info.h"
 
 // This is the common entry point for all filesystems. Now it will support only FAT, so every
 // method with fat_ prefix will be called directly. It will be changed in the future if there

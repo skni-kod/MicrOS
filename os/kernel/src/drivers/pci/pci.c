@@ -1,6 +1,6 @@
 #include "pci.h"
-#include "Assembly/io.h"
-#include "Logger/logger.h"
+#include "assembly/io.h"
+#include "logger/logger.h"
 #include <stdlib.h>
 
 static pci_device devices[32];

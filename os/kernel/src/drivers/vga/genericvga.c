@@ -1,5 +1,5 @@
 #include "genericvga.h"
-#include "Drivers/DAL/VideoCard/videocard.h"
+#include "drivers/dal/videocard/videocard.h"
 #include "modes/mode_03h/mode_03h.h"
 #include "modes/mode_04h/mode_04h.h"
 #include "modes/mode_05h/mode_05h.h"

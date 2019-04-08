@@ -2,7 +2,7 @@
 #define STARTUP_MUSIC_H
 
 #include <stdint.h>
-#include "Drivers/PCSpeaker/pc_speaker.h"
+#include "drivers/pcspeaker/pc_speaker.h"
 #include <stdlib.h>
 #include <ktime.h>
 

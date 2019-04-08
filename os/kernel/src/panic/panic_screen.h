@@ -5,13 +5,13 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include "Drivers/VGA/vga.h"
-#include "Drivers/VGA/vga_gmode.h"
-#include "Drivers/Keyboard/keyboard.h"
-#include "Library/kvector.h"
-#include "Memory/GDT/gdt_entry.h"
-#include "Interrupts/IDT/idt_entry.h"
-#include "Timer/timer.h"
+#include "drivers/vga/vga.h"
+#include "drivers/vga/vga_gmode.h"
+#include "drivers/keyboard/keyboard.h"
+#include "library/kvector.h"
+#include "memory/gdt/gdt_entry.h"
+#include "interrupts/idt/idt_entry.h"
+#include "timer/timer.h"
 
 void panic_screen_show(exception_state *state, uint32_t code, const char *optString);
 void panic_screen_display_intro(exception_state *state, uint32_t code, const char *optString);

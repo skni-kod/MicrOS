@@ -3,16 +3,16 @@
 
 #define SYSCALLS_MANAGER_MAX_HANDLERS 256
 
-#include "Interrupts/IDT/idt.h"
-#include "Handlers/heap_calls.h"
-#include "Handlers/time_calls.h"
-#include "Handlers/vga_calls.h"
-#include "Handlers/pc_speaker_calls.h"
-#include "Handlers/rtc_calls.h"
-#include "Handlers/filesystem_calls.h"
-#include "Handlers/process_calls.h"
-#include "Handlers/memory_calls.h"
-#include "Handlers/keyboard_calls.h"
+#include "interrupts/idt/idt.h"
+#include "handlers/heap_calls.h"
+#include "handlers/time_calls.h"
+#include "handlers/vga_calls.h"
+#include "handlers/pc_speaker_calls.h"
+#include "handlers/rtc_calls.h"
+#include "handlers/filesystem_calls.h"
+#include "handlers/process_calls.h"
+#include "handlers/memory_calls.h"
+#include "handlers/keyboard_calls.h"
 
 void syscalls_manager_init();
 void syscalls_manager_attach_handler(uint8_t function_number, void (*handler)(interrupt_state *state));

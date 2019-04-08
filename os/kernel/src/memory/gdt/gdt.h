@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include "gdt_entry.h"
 #include "gdt_info.h"
-#include "TSS/tss_entry.h"
+#include "tss/tss_entry.h"
 
 void gdt_init();
 void gdt_fill_entry(int index, bool executable, uint8_t privilege_level);

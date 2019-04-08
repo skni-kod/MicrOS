@@ -13,9 +13,9 @@
 #include "interrupt_handler_definition.h"
 #include "exception_handler_definition.h"
 #include "exception_definition.h"
-#include "Interrupts/PIC/pic.h"
-#include "Panic/panic_screen.h"
-#include "Drivers/Keyboard/keyboard.h"
+#include "interrupts/pic/pic.h"
+#include "panic/panic_screen.h"
+#include "drivers/keyboard/keyboard.h"
 
 void idt_init();
 void idt_set(uint8_t index, uint32_t (*handler)(interrupt_state *state), bool user_interrupt);

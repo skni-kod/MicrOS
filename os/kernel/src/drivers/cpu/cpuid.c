@@ -1,5 +1,5 @@
 #include "cpuid.h"
-#include "Drivers/VGA/vga.h"
+#include "drivers/vga/vga.h"
 
 uint32_t values[4];
 unsigned char text[13];

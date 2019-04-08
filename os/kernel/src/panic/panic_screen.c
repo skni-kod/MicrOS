@@ -1,5 +1,5 @@
 #include "panic_screen.h"
-#include "Drivers/DAL/VideoCard/videocard.h"
+#include "drivers/dal/videocard/videocard.h"
 
 const char *img[] =
     {

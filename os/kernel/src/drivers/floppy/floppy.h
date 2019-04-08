@@ -22,13 +22,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "floppy_header.h"
-#include "Interrupts/PIC/pic.h"
-#include "Interrupts/IDT/idt.h"
-#include "Assembly/io.h"
+#include "interrupts/pic/pic.h"
+#include "interrupts/idt/idt.h"
+#include "assembly/io.h"
 #include <stdlib.h>
 #include <string.h>
-#include "Logger/logger.h"
-#include "Timer/timer.h"
+#include "logger/logger.h"
+#include "timer/timer.h"
 #include <ktime.h>
 
 bool floppy_init();

@@ -5,7 +5,7 @@
 #define MEMORY_MAP_BUFFER MEMORY_MAP_ENTRIES_COUNT + 24
 
 #include <stdint.h>
-#include "Drivers/VGA/vga.h"
+#include "drivers/vga/vga.h"
 #include <stdlib.h>
 #include "memory_map_entry.h"
 

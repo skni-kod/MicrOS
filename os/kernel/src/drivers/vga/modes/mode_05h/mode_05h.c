@@ -1,7 +1,7 @@
 #include "mode_05H.h"
-#include "Drivers/VGA/modes/registerFunctions.h"
-#include "Memory/Manager/Heap/heap.h"
-#include "Drivers/DAL/VideoCard/videocard.h"
+#include "drivers/vga/modes/registerFunctions.h"
+#include "memory/manager/heap/heap.h"
+#include "drivers/dal/videocard/videocard.h"
 
 //REGISTER VALUES
 unsigned char g_320x200x4b[] =
