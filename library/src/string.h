@@ -134,7 +134,7 @@ void *memchr(void *ptr, int value, size_t num);
     \param character Character to be located. It is passed as its int promotion, but it is internally converted back to char for the comparison.
     \return A pointer to the first occurrence of value in the block of memory pointed by ptr. If the value is not found, the function returns a null pointer.
 */
-char *strchr(char *str, int character);
+char *strchr(const char *str, int character);
 
 //! Get span until character in string.
 /*!
@@ -179,7 +179,7 @@ size_t strspn(const char *str1, const char *str2);
     \param str2 C string containing the characters to match.
     \return A pointer to the first occurrence in str1 of the entire sequence of characters specified in str2, or a null pointer if the sequence is not present in str1.
 */
-char *strstr(char *str1, const char *str2);
+char *strstr(const char *str1, const char *str2);
 
 //! Split string into tokens.
 /*!
