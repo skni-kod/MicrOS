@@ -2,13 +2,23 @@
 
 void *memcpy(void *destination, const void *source, size_t size)
 {
-    uint8_t *destination_ptr = destination;
-    const uint8_t *source_ptr = source;
+    uint64_t *long_destination_ptr = destination;
+    const uint64_t *long_source_ptr = source;
 
-    for (size_t i = 0; i < size; i++)
+    while(size >= 8)
     {
-        destination_ptr[i] = source_ptr[i];
+        *long_destination_ptr++ = *long_source_ptr++;
+        size -= 8;
+    }
+    
+    uint8_t *short_destination_ptr = (uint8_t *)long_destination_ptr;
+    const uint8_t *short_source_ptr = (const uint8_t *)long_source_ptr;
+
+    while(size > 0)
+    {
+        *short_destination_ptr++ = *short_source_ptr++;
+        size--;
     }
 
-    return destination_ptr;
+    return destination;
 }
