@@ -11,7 +11,7 @@ typedef struct _videoMode
     uint64_t colors;
     uint8_t monochrome;
     uint8_t planar;
-} __attribute__((packed)) VideoMode;
+} VideoMode;
 
 typedef struct _driverInitStruct
 {
@@ -29,7 +29,7 @@ typedef struct _driverInitStruct
     int8_t (*drawCircle)(uint8_t, uint16_t, uint16_t, uint16_t);
     int8_t (*drawRectangle)(uint8_t, uint16_t, uint16_t, uint16_t, uint16_t);
     int8_t (*clearScreen)();
-} __attribute__((packed)) DriverInitStruct;
+} DriverInitStruct;
 
 void initWithDriver(DriverInitStruct* initStruct);
 

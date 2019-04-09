@@ -6,8 +6,6 @@
 /*void drawMicrOSLogoIn13H();
 void drawLenaIn13H();*/
 
-
-
-char getMode();
+char vga_gmode_get_mode();
 
 #endif

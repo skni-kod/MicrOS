@@ -52,7 +52,7 @@ void startup()
     logger_log_ok("BASIC TEXT VGA Driver");
 
     //Loading Generic VGA Driver
-    driverInit();
+    generic_vga_driver_init();
     logger_log_ok("Loaded DAL, and Generic VGA Driver");
 
     physical_memory_init();

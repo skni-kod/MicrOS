@@ -16,12 +16,12 @@
 VideoMode currentVideoMode;
 uint8_t textMode;
 
-void driverInit()
+void generic_vga_driver_init()
 {
     DriverInitStruct s;
-    s.setVideoMode = setVideoModeVGA;
-    s.isTextMode = isTextModeVGA;
-    s.getCurrentVideoMode = getCurrentVideoModeVGA;
+    s.setVideoMode = generic_vga_set_video_mode;
+    s.isTextMode = generic_vga_is_text_mode;
+    s.getCurrentVideoMode = generic_vga_get_current_video_mode;
     s.turnOnBuffer = turnOnBuffer03H;
     s.turnOffBuffer = turnOffBuffer03H;
     s.isBufferOn = isBufferOn03H;
@@ -43,7 +43,7 @@ void driverInit()
     textMode = 1;
 }
 
-int16_t setVideoModeVGA(uint16_t mode){
+int16_t generic_vga_set_video_mode(uint16_t mode){
     switch(mode)
     {
         case 0x03:
@@ -182,12 +182,12 @@ int16_t setVideoModeVGA(uint16_t mode){
     }
 }
 
-uint8_t isTextModeVGA()
+uint8_t generic_vga_is_text_mode()
 {
     return textMode;
 }
 
-VideoMode *getCurrentVideoModeVGA()
+VideoMode *generic_vga_get_current_video_mode()
 {
     return &currentVideoMode;
 }

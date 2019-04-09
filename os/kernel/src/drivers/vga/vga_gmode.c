@@ -87,7 +87,7 @@ void drawLenaIn13H()
 	heap_kernel_dealloc(buffer);
 }*/
 
-char getMode()
+char vga_gmode_get_mode()
 {
 	return mode;
 }

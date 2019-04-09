@@ -44,7 +44,7 @@ void panic_screen_show(exception_state *state, uint32_t code, const char *optStr
 void panic_screen_display_intro(exception_state *state, uint32_t code, const char *optString)
 {
     char buff[100];
-    //if(getMode() != 0x3)
+    //if(vga_gmode_get_mode() != 0x3)
     //    set3HVideoMode();
     if(!isTextMode())
         setVideoMode(0x3);
