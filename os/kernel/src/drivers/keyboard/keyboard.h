@@ -1,6 +1,5 @@
 #ifndef KEYBOARD_H /* Include guard */
 #define KEYBOARD_H
-#pragma pack(1)
 
 #include "cpu/idt/idt.h"
 #include "cpu/pic/pic.h"

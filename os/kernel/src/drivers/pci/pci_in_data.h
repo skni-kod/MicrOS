@@ -1,6 +1,5 @@
 #ifndef PCI_IN_DATA
 #define PCI_IN_DATA
-#pragma pack(1)
 
 typedef union pci_in_data {
     uint32_t bits;
@@ -14,6 +13,6 @@ typedef union pci_in_data {
         uint32_t reserved : 7;
         uint32_t enable : 1;
     };
-} pci_in_data;
+} __attribute__((packed)) pci_in_data;
 
 #endif

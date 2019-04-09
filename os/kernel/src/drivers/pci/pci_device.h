@@ -1,6 +1,5 @@
 #ifndef PCI_DEVICE
 #define PCI_DEVICE
-#pragma pack(1)
 
 typedef union pci_device {
     uint8_t bits_8[64];
@@ -37,6 +36,6 @@ typedef union pci_device {
         uint8_t min_grant;
         uint8_t max_latency;
     };
-} pci_device;
+} __attribute__((packed)) pci_device;
 
 #endif

@@ -1,6 +1,5 @@
 #ifndef FLOPPY_HEADER
 #define FLOPPY_HEADER
-#pragma pack(1)
 
 #include <stdint.h>
 
@@ -29,6 +28,6 @@ typedef struct floppy_header
     uint32_t volume_id;
     char volume_label[11];
     char system_identifier[8];
-} floppy_header;
+} __attribute__((packed)) floppy_header;
 
 #endif

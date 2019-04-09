@@ -1,6 +1,5 @@
 #ifndef TSS_ENTRY_H
 #define TSS_ENTRY_H
-#pragma pack(1)
 
 #include <stdint.h>
 
@@ -33,6 +32,6 @@ typedef struct tss_entry
     uint32_t ldt;
     uint16_t trap;
     uint16_t iomap_base;
-} tss_entry;
+} __attribute__((packed)) tss_entry;
 
 #endif

@@ -1,6 +1,5 @@
 #ifndef EXCEPTION_DEFINITION_H
 #define EXCEPTION_DEFINITION_H
-#pragma pack(1)
 
 #include <stdint.h>
 #include <stdbool.h>

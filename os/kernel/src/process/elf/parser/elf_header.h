@@ -1,6 +1,5 @@
 #ifndef ELF_HEADER_H
 #define ELF_HEADER_H
-#pragma pack(1)
 
 #include <stdint.h>
 
@@ -64,6 +63,6 @@ typedef struct elf_header
     uint16_t section_header_table_entry_in_section_size;
     uint16_t section_header_table_entries_in_section_count;
     uint16_t section_header_table_section_names_index;
-} elf_header;
+} __attribute__((packed)) elf_header;
 
 #endif

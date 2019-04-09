@@ -1,6 +1,5 @@
 #ifndef ELF_PROGRAM_HEADER_H
 #define ELF_PROGRAM_HEADER_H
-#pragma pack(1)
 
 #include <stdint.h>
 
@@ -20,7 +19,7 @@ typedef struct elf_program_header_flags
     uint8_t writable : 1;
     uint8_t readable : 1;
     uint8_t reserved : 5;
-} elf_program_header_flags;
+} __attribute__((packed)) elf_program_header_flags;
 
 typedef struct elf_program_header
 {
@@ -32,6 +31,6 @@ typedef struct elf_program_header
     uint32_t size_in_memory;
     elf_program_header_flags flags;
     uint32_t alignment;
-} elf_program_header;
+} __attribute__((packed)) elf_program_header;
 
 #endif

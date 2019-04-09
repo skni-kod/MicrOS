@@ -1,6 +1,5 @@
 #ifndef ELF_SECTION_HEADER_H
 #define ELF_SECTION_HEADER_H
-#pragma pack(1)
 
 typedef enum elf_section_header_type
 {
@@ -39,7 +38,7 @@ typedef struct elf_section_header_flags
     uint8_t section_is_member_of_group : 1;
     uint8_t section_hold_thread_local_data : 1;
     uint32_t reserved : 22;
-} elf_section_header_flags;
+} __attribute__((packed)) elf_section_header_flags;
 
 typedef struct elf_section_header
 {
@@ -53,6 +52,6 @@ typedef struct elf_section_header
     uint32_t extra_information;
     uint32_t alignment;
     uint32_t entry_size;
-} elf_section_header;
+} __attribute__((packed)) elf_section_header;
 
 #endif
