@@ -19,19 +19,19 @@ uint8_t textMode;
 void driverInit()
 {
     DriverInitStruct s;
-    s.setVideoMode = &setVideoModeVGA;
-    s.isTextMode = &isTextModeVGA;
-    s.getCurrentVideoMode = &getCurrentVideoModeVGA;
-    s.turnOnBuffer = &turnOnBuffer03H;
-    s.turnOffBuffer = &turnOffBuffer03H;
-    s.isBufferOn = &isBufferOn03H;
-    s.swapBuffers = &swapBuffers03H;
-    s.drawPixel = &drawPixel03H;
-    s.drawLine = &drawLine03H;
-    s.drawCircle = &drawCircle03H;
-    s.drawRectangle = &drawRectangle03H;
-    s.clearScreen = &clearScreen03H;
-    initWithDriver(s);
+    s.setVideoMode = setVideoModeVGA;
+    s.isTextMode = isTextModeVGA;
+    s.getCurrentVideoMode = getCurrentVideoModeVGA;
+    s.turnOnBuffer = turnOnBuffer03H;
+    s.turnOffBuffer = turnOffBuffer03H;
+    s.isBufferOn = isBufferOn03H;
+    s.swapBuffers = swapBuffers03H;
+    s.drawPixel = drawPixel03H;
+    s.drawLine = drawLine03H;
+    s.drawCircle = drawCircle03H;
+    s.drawRectangle = drawRectangle03H;
+    s.clearScreen = clearScreen03H;
+    initWithDriver(&s);
 
     currentVideoMode.colors = 16;
     currentVideoMode.height = 25;
@@ -187,7 +187,7 @@ uint8_t isTextModeVGA()
     return textMode;
 }
 
-VideoMode getCurrentVideoModeVGA()
+VideoMode *getCurrentVideoModeVGA()
 {
-    return currentVideoMode;
+    return &currentVideoMode;
 }

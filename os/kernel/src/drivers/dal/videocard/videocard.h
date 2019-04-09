@@ -31,7 +31,7 @@ typedef struct _driverInitStruct
     int8_t (*clearScreen)();
 } __attribute__((packed)) DriverInitStruct;
 
-void initWithDriver(DriverInitStruct initStruct);
+void initWithDriver(DriverInitStruct* initStruct);
 
 void setGetAvailableGraphicVideoModesFunc(VideoMode* (*getAvailableGraphicVideoModes)(uint32_t*));
 void setGetAvailableTextVideoModesFunc(VideoMode* (*getAvailableTextVideoModes)(uint32_t*));
@@ -54,7 +54,7 @@ VideoMode* getAvailableTextVideoModes(uint32_t *noOfModes);
 
 int16_t setVideoMode(uint16_t mode);
 uint8_t isTextMode();
-VideoMode getCurrentVideoMode();
+VideoMode* getCurrentVideoMode();
 
 int8_t turnOnBuffer();
 int8_t turnOffBuffer();

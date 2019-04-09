@@ -8,6 +8,6 @@ void driverInit();
 
 int16_t setVideoModeVGA(uint16_t mode);
 uint8_t isTextModeVGA();
-VideoMode getCurrentVideoModeVGA();
+VideoMode *getCurrentVideoModeVGA();
 
 #endif

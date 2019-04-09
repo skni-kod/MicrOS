@@ -183,7 +183,7 @@ int kmain()
     //while (1)
     //    ;
     char buff[50];
-    VideoMode currentMode;
+    VideoMode* currentMode;
     srand(clock());
     char shouldDrawLines = 0;
     char screenSaver = 0;
@@ -199,23 +199,23 @@ int kmain()
                     logger_log_ok("UDALO SIE WSKOCZYC na 0x03\n");
                     currentMode = getCurrentVideoMode();
                     vga_printstring("Szerokosc Trybu: ");
-                    itoa(currentMode.width, buff, 10);
+                    itoa(currentMode->width, buff, 10);
                     vga_printstring(buff);
                     vga_newline();
                     vga_printstring("Wysokosc Trybu: ");
-                    itoa(currentMode.height, buff, 10);
+                    itoa(currentMode->height, buff, 10);
                     vga_printstring(buff);
                     vga_newline();
                     vga_printstring("Ilosc Kolorow: ");
-                    itoa(currentMode.colors, buff, 10);
+                    itoa(currentMode->colors, buff, 10);
                     vga_printstring(buff);
                     vga_newline();
                     vga_printstring("Monochromatyczny: ");
-                    itoa(currentMode.monochrome, buff, 10);
+                    itoa(currentMode->monochrome, buff, 10);
                     vga_printstring(buff);
                     vga_newline();
                     vga_printstring("Pamiec platowa: ");
-                    itoa(currentMode.planar, buff, 10);
+                    itoa(currentMode->planar, buff, 10);
                     vga_printstring(buff);
                     vga_newline();
                     vga_printstring("-------TESTY INNYCH FUNKCJI-------:\n");
@@ -227,10 +227,10 @@ int kmain()
             }
             else if(c.scancode == 60) //F2
             {
-                setVideoMode(0x04);
+                setVideoMode(0x03);
                 currentMode = getCurrentVideoMode();
-                for(uint32_t x = 0; x < currentMode.width; x++)
-                    for(uint32_t y = 0; y < currentMode.height; y++)
+                for(uint32_t x = 0; x < currentMode->width; x++)
+                    for(uint32_t y = 0; y < currentMode->height; y++)
                         drawPixel(0x01, x, y);
             }
             else if(c.scancode == 2) //1
@@ -238,8 +238,8 @@ int kmain()
                 setVideoMode(0x04);
                 currentMode = getCurrentVideoMode();
                 turnOnBuffer();
-                for(uint32_t x = 0; x < currentMode.width; x++)
-                    for(uint32_t y = 0; y < currentMode.height; y++)
+                for(uint32_t x = 0; x < currentMode->width; x++)
+                    for(uint32_t y = 0; y < currentMode->height; y++)
                         drawPixel(0x02, x, y);
                 swapBuffers();
             }
@@ -247,8 +247,8 @@ int kmain()
             {
                 setVideoMode(0x05);
                 currentMode = getCurrentVideoMode();
-                for(uint32_t x = 0; x < currentMode.width; x++)
-                    for(uint32_t y = 0; y < currentMode.height; y++)
+                for(uint32_t x = 0; x < currentMode->width; x++)
+                    for(uint32_t y = 0; y < currentMode->height; y++)
                         drawPixel(0x03, x, y);
             }
             else if(c.scancode == 3) //2
@@ -256,8 +256,8 @@ int kmain()
                 setVideoMode(0x05);
                 currentMode = getCurrentVideoMode();
                 turnOnBuffer();
-                for(uint32_t x = 0; x < currentMode.width; x++)
-                    for(uint32_t y = 0; y < currentMode.height; y++)
+                for(uint32_t x = 0; x < currentMode->width; x++)
+                    for(uint32_t y = 0; y < currentMode->height; y++)
                         drawPixel(0x01, x, y);
                 swapBuffers();
             }
@@ -265,8 +265,8 @@ int kmain()
             {
                 setVideoMode(0x06);
                 currentMode = getCurrentVideoMode();
-                for(uint32_t x = 0; x < currentMode.width; x++)
-                    for(uint32_t y = 0; y < currentMode.height; y++)
+                for(uint32_t x = 0; x < currentMode->width; x++)
+                    for(uint32_t y = 0; y < currentMode->height; y++)
                         drawPixel(0x01, x, y);
             }
             else if(c.scancode == 4) //3
@@ -274,8 +274,8 @@ int kmain()
                 setVideoMode(0x06);
                 currentMode = getCurrentVideoMode();
                 turnOnBuffer();
-                for(uint32_t x = 0; x < currentMode.width; x++)
-                    for(uint32_t y = 0; y < currentMode.height; y++)
+                for(uint32_t x = 0; x < currentMode->width; x++)
+                    for(uint32_t y = 0; y < currentMode->height; y++)
                         drawPixel(0x01, x, y);
                 swapBuffers();
             }
@@ -283,8 +283,8 @@ int kmain()
             {
                 setVideoMode(0x0d);
                 currentMode = getCurrentVideoMode();
-                for(uint32_t x = 0; x < currentMode.width; x++)
-                    for(uint32_t y = 0; y < currentMode.height; y++)
+                for(uint32_t x = 0; x < currentMode->width; x++)
+                    for(uint32_t y = 0; y < currentMode->height; y++)
                         drawPixel(0x04, x, y);
             }
             else if(c.scancode == 5) //4
@@ -292,8 +292,8 @@ int kmain()
                 setVideoMode(0x0d);
                 currentMode = getCurrentVideoMode();
                 turnOnBuffer();
-                for(uint32_t x = 0; x < currentMode.width; x++)
-                    for(uint32_t y = 0; y < currentMode.height; y++)
+                for(uint32_t x = 0; x < currentMode->width; x++)
+                    for(uint32_t y = 0; y < currentMode->height; y++)
                         drawPixel(0x05, x, y);
                 swapBuffers();
             }
@@ -301,8 +301,8 @@ int kmain()
             {
                 setVideoMode(0x0e);
                 currentMode = getCurrentVideoMode();
-                for(uint32_t x = 0; x < currentMode.width; x++)
-                    for(uint32_t y = 0; y < currentMode.height; y++)
+                for(uint32_t x = 0; x < currentMode->width; x++)
+                    for(uint32_t y = 0; y < currentMode->height; y++)
                         drawPixel(0x06, x, y);
             }
             else if(c.scancode == 6) //5
@@ -310,8 +310,8 @@ int kmain()
                 setVideoMode(0x0e);
                 currentMode = getCurrentVideoMode();
                 turnOnBuffer();
-                for(uint32_t x = 0; x < currentMode.width; x++)
-                    for(uint32_t y = 0; y < currentMode.height; y++)
+                for(uint32_t x = 0; x < currentMode->width; x++)
+                    for(uint32_t y = 0; y < currentMode->height; y++)
                         drawPixel(0x07, x, y);
                 swapBuffers();
             }
@@ -319,8 +319,8 @@ int kmain()
             {
                 setVideoMode(0x0f);
                 currentMode = getCurrentVideoMode();
-                for(uint32_t x = 0; x < currentMode.width; x++)
-                    for(uint32_t y = 0; y < currentMode.height; y++)
+                for(uint32_t x = 0; x < currentMode->width; x++)
+                    for(uint32_t y = 0; y < currentMode->height; y++)
                         drawPixel(0x01, x, y);
             }
             else if(c.scancode == 7) //6
@@ -328,8 +328,8 @@ int kmain()
                 setVideoMode(0x0f);
                 currentMode = getCurrentVideoMode();
                 turnOnBuffer();
-                for(uint32_t x = 0; x < currentMode.width; x++)
-                    for(uint32_t y = 0; y < currentMode.height; y++)
+                for(uint32_t x = 0; x < currentMode->width; x++)
+                    for(uint32_t y = 0; y < currentMode->height; y++)
                         drawPixel(0x02, x, y);
                 swapBuffers();
             }
@@ -337,8 +337,8 @@ int kmain()
             {
                 setVideoMode(0x10);
                 currentMode = getCurrentVideoMode();
-                for(uint32_t x = 0; x < currentMode.width; x++)
-                    for(uint32_t y = 0; y < currentMode.height; y++)
+                for(uint32_t x = 0; x < currentMode->width; x++)
+                    for(uint32_t y = 0; y < currentMode->height; y++)
                         drawPixel(0x08, x, y);
             }
             else if(c.scancode == 8) //7
@@ -346,8 +346,8 @@ int kmain()
                 setVideoMode(0x10);
                 currentMode = getCurrentVideoMode();
                 turnOnBuffer();
-                for(uint32_t x = 0; x < currentMode.width; x++)
-                    for(uint32_t y = 0; y < currentMode.height; y++)
+                for(uint32_t x = 0; x < currentMode->width; x++)
+                    for(uint32_t y = 0; y < currentMode->height; y++)
                         drawPixel(0x09, x, y);
                 swapBuffers();
             }
@@ -355,8 +355,8 @@ int kmain()
             {
                 setVideoMode(0x11);
                 currentMode = getCurrentVideoMode();
-                for(uint32_t x = 0; x < currentMode.width; x++)
-                    for(uint32_t y = 0; y < currentMode.height; y++)
+                for(uint32_t x = 0; x < currentMode->width; x++)
+                    for(uint32_t y = 0; y < currentMode->height; y++)
                         drawPixel(0x01, x, y);
             }
             else if(c.scancode == 9) //8
@@ -364,8 +364,8 @@ int kmain()
                 setVideoMode(0x11);
                 currentMode = getCurrentVideoMode();
                 turnOnBuffer();
-                for(uint32_t x = 0; x < currentMode.width; x++)
-                    for(uint32_t y = 0; y < currentMode.height; y++)
+                for(uint32_t x = 0; x < currentMode->width; x++)
+                    for(uint32_t y = 0; y < currentMode->height; y++)
                         drawPixel(0x01, x, y);
                 swapBuffers();
             }
@@ -373,8 +373,8 @@ int kmain()
             {
                 setVideoMode(0x12);
                 currentMode = getCurrentVideoMode();
-                for(uint32_t x = 0; x < currentMode.width; x++)
-                    for(uint32_t y = 0; y < currentMode.height; y++)
+                for(uint32_t x = 0; x < currentMode->width; x++)
+                    for(uint32_t y = 0; y < currentMode->height; y++)
                         drawPixel(0x0A, x, y);
             }
             else if(c.scancode == 10) //9
@@ -382,8 +382,8 @@ int kmain()
                 setVideoMode(0x12);
                 currentMode = getCurrentVideoMode();
                 turnOnBuffer();
-                for(uint32_t x = 0; x < currentMode.width; x++)
-                    for(uint32_t y = 0; y < currentMode.height; y++)
+                for(uint32_t x = 0; x < currentMode->width; x++)
+                    for(uint32_t y = 0; y < currentMode->height; y++)
                         drawPixel(0x0B, x, y);
                 swapBuffers();
             }
@@ -391,8 +391,8 @@ int kmain()
             {
                 setVideoMode(0x13);
                 currentMode = getCurrentVideoMode();
-                for(uint32_t x = 0; x < currentMode.width; x++)
-                    for(uint32_t y = 0; y < currentMode.height; y++)
+                for(uint32_t x = 0; x < currentMode->width; x++)
+                    for(uint32_t y = 0; y < currentMode->height; y++)
                         drawPixel(0x10, x, y);
             }
             else if(c.scancode == 11) //0
@@ -400,8 +400,8 @@ int kmain()
                 setVideoMode(0x13);
                 currentMode = getCurrentVideoMode();
                 turnOnBuffer();
-                for(uint32_t x = 0; x < currentMode.width; x++)
-                    for(uint32_t y = 0; y < currentMode.height; y++)
+                for(uint32_t x = 0; x < currentMode->width; x++)
+                    for(uint32_t y = 0; y < currentMode->height; y++)
                         drawPixel(0x25, x, y);
                 swapBuffers();
             }
@@ -409,8 +409,8 @@ int kmain()
             {
                 setVideoMode(0x69);
                 currentMode = getCurrentVideoMode();
-                for(uint32_t x = 0; x < currentMode.width; x++)
-                    for(uint32_t y = 0; y < currentMode.height; y++)
+                for(uint32_t x = 0; x < currentMode->width; x++)
+                    for(uint32_t y = 0; y < currentMode->height; y++)
                         drawPixel(0x45, x, y);
             }
             else if(c.scancode == 12) //-
@@ -418,8 +418,8 @@ int kmain()
                 setVideoMode(0x69);
                 currentMode = getCurrentVideoMode();
                 turnOnBuffer();
-                for(uint32_t x = 0; x < currentMode.width; x++)
-                    for(uint32_t y = 0; y < currentMode.height; y++)
+                for(uint32_t x = 0; x < currentMode->width; x++)
+                    for(uint32_t y = 0; y < currentMode->height; y++)
                         drawPixel(0x8, x, y);
                 swapBuffers();
             }
@@ -432,9 +432,9 @@ int kmain()
             else if(c.scancode == 15) // TAB
             {
                 currentMode = getCurrentVideoMode();
-                uint8_t color = (rand() % (currentMode.colors - 1) + 1);
-                for(uint32_t x = 0; x < currentMode.width; x++)
-                    for(uint32_t y = 0; y < currentMode.height; y++)
+                uint8_t color = (rand() % (currentMode->colors - 1) + 1);
+                for(uint32_t x = 0; x < currentMode->width; x++)
+                    for(uint32_t y = 0; y < currentMode->height; y++)
                         drawPixel(color, x, y);
                 if(isBufferOn())
                     swapBuffers();
@@ -465,11 +465,11 @@ int kmain()
         if(shouldDrawLines)
         {
             currentMode = getCurrentVideoMode();
-            uint8_t color = (rand() % (currentMode.colors - 1) + 1);
-            uint16_t ax = (rand() % (currentMode.width));
-            uint16_t ay = (rand() % (currentMode.height));
-            uint16_t bx = (rand() % (currentMode.width));
-            uint16_t by = (rand() % (currentMode.height));
+            uint8_t color = (rand() % (currentMode->colors - 1) + 1);
+            uint16_t ax = (rand() % (currentMode->width));
+            uint16_t ay = (rand() % (currentMode->height));
+            uint16_t bx = (rand() % (currentMode->width));
+            uint16_t by = (rand() % (currentMode->height));
             drawLine(color, ax, ay, bx, by);
             if(isBufferOn())
                 swapBuffers();
@@ -480,13 +480,13 @@ int kmain()
             {
                 linesStruct s;
                 currentMode = getCurrentVideoMode();
-                s.color = (rand() % (currentMode.colors - 1) + 1);
-                //s.ax = (rand() % (currentMode.width));
-                //s.ay = (rand() % (currentMode.height));
+                s.color = (rand() % (currentMode->colors - 1) + 1);
+                //s.ax = (rand() % (currentMode->width));
+                //s.ay = (rand() % (currentMode->height));
                 s.ax = ssBuffer[63].bx;
                 s.ay = ssBuffer[63].by;
-                s.bx = (rand() % (currentMode.width));
-                s.by = (rand() % (currentMode.height));
+                s.bx = (rand() % (currentMode->width));
+                s.by = (rand() % (currentMode->height));
                 clearScreen();
                 for(int i = 0; i < 64; i++)
                 {
