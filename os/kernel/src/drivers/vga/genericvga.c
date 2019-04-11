@@ -92,7 +92,7 @@ int16_t generic_vga_set_video_mode(uint16_t mode){
             return 0x06;
         case 0x0D:
             video_card_turn_off_buffer();
-            if(mode0Dh_set_mode() != 0x0D) return -1;
+            if(mode0dh_set_mode() != 0x0D) return -1;
             currentvideo_mode.colors = 16;
             currentvideo_mode.height = 200;
             currentvideo_mode.width = 320;
@@ -103,7 +103,7 @@ int16_t generic_vga_set_video_mode(uint16_t mode){
             return 0x0D;
         case 0x0E:
             video_card_turn_off_buffer();
-            if(mode0Eh_set_mode() != 0x0E) return -1;
+            if(mode0eh_set_mode() != 0x0E) return -1;
             currentvideo_mode.colors = 16;
             currentvideo_mode.height = 200;
             currentvideo_mode.width = 640;
@@ -114,7 +114,7 @@ int16_t generic_vga_set_video_mode(uint16_t mode){
             return 0x0E;
         case 0x0F:
             video_card_turn_off_buffer();
-            if(mode0Fh_set_mode() != 0x0F) return -1;
+            if(mode0fh_set_mode() != 0x0F) return -1;
             currentvideo_mode.colors = 4;
             currentvideo_mode.height = 350;
             currentvideo_mode.width = 640;
