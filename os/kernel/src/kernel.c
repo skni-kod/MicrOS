@@ -183,7 +183,7 @@ int kmain()
     //while (1)
     //    ;
     char buff[50];
-    VideoMode* currentMode;
+    video_mode* currentMode;
     srand(clock());
     char shouldDrawLines = 0;
     char screenSaver = 0;

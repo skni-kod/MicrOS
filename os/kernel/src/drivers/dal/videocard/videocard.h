@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-typedef struct _videoMode
+typedef struct _video_mode
 {
     uint16_t id;
     uint32_t width;
@@ -11,49 +11,49 @@ typedef struct _videoMode
     uint64_t colors;
     uint8_t monochrome;
     uint8_t planar;
-} VideoMode;
+} video_mode;
 
-typedef struct _driverInitStruct
+typedef struct _driver_init_struct
 {
-    VideoMode* (*getAvailableGraphicVideoModes)(uint32_t*);
-    VideoMode* (*getAvailableTextVideoModes)(uint32_t*);
-    int16_t (*setVideoMode)(uint16_t);
-    uint8_t (*isTextMode)();
-    VideoMode (*getCurrentVideoMode)();
-    int8_t (*turnOnBuffer)();
-    int8_t (*turnOffBuffer)();
-    uint8_t (*isBufferOn)();
-    int8_t (*swapBuffers)();
-    int8_t (*drawPixel)(uint8_t, uint16_t, uint16_t);
-    int8_t (*drawLine)(uint8_t, uint16_t, uint16_t, uint16_t, uint16_t);
-    int8_t (*drawCircle)(uint8_t, uint16_t, uint16_t, uint16_t);
-    int8_t (*drawRectangle)(uint8_t, uint16_t, uint16_t, uint16_t, uint16_t);
-    int8_t (*clearScreen)();
-} DriverInitStruct;
+    video_mode* (*get_available_graphic_video_modes)(uint32_t*);
+    video_mode* (*get_available_text_video_modes)(uint32_t*);
+    int16_t (*set_video_mode)(uint16_t);
+    uint8_t (*is_text_mode)();
+    video_mode (*get_current_video_mode)();
+    int8_t (*turn_on_buffer)();
+    int8_t (*turn_off_buffer)();
+    uint8_t (*is_buffer_on)();
+    int8_t (*swap_buffers)();
+    int8_t (*draw_pixel)(uint8_t, uint16_t, uint16_t);
+    int8_t (*draw_line)(uint8_t, uint16_t, uint16_t, uint16_t, uint16_t);
+    int8_t (*draw_circle)(uint8_t, uint16_t, uint16_t, uint16_t);
+    int8_t (*draw_rectangle)(uint8_t, uint16_t, uint16_t, uint16_t, uint16_t);
+    int8_t (*clear_screen)();
+} driver_init_struct;
 
-void video_card_init_with_driver(DriverInitStruct* initStruct);
+void video_card_init_with_driver(driver_init_struct* init_struct);
 
-void video_card_set_get_available_graphic_video_modes_func(VideoMode* (*getAvailableGraphicVideoModes)(uint32_t*));
-void video_card_set_get_available_text_video_modes_func(VideoMode* (*getAvailableTextVideoModes)(uint32_t*));
-void video_card_set_set_video_mode_func(int16_t (*setVideoMode)(uint16_t));
-void video_card_set_is_text_mode_func(uint8_t (*isTextMode)());
-void video_card_set_get_current_video_mode_func(VideoMode (*getCurrentVideoMode)());
-void video_card_set_turn_on_buffer_func(int8_t (*turnOnBuffer)());
-void video_card_set_turn_off_buffer_func(int8_t (*turnOffBuffer)());
-void video_card_set_is_buffer_on_func(uint8_t (*isBufferOn)());
-void video_card_set_swap_buffers_func(int8_t (*swapBuffers)());
-void video_card_set_draw_pixel_func(int8_t (*drawPixel)(uint8_t, uint16_t, uint16_t));
-void video_card_set_draw_line_func(int8_t (*drawLine)(uint8_t, uint16_t, uint16_t, uint16_t, uint16_t));
-void video_card_set_draw_circle_func(int8_t (*drawCircle)(uint8_t, uint16_t, uint16_t, uint16_t));
-void video_card_set_draw_rectangle_func(int8_t (*drawRectangle)(uint8_t, uint16_t, uint16_t, uint16_t, uint16_t));
-void video_card_set_clear_screen_func(int8_t (*clearScreen)());
+void video_card_set_get_available_graphic_video_modes_func(video_mode* (*get_available_graphic_video_modes)(uint32_t*));
+void video_card_set_get_available_text_video_modes_func(video_mode* (*get_available_text_video_modes)(uint32_t*));
+void video_card_set_set_video_mode_func(int16_t (*set_video_mode)(uint16_t));
+void video_card_set_is_text_mode_func(uint8_t (*is_text_mode)());
+void video_card_set_get_current_video_mode_func(video_mode (*get_current_video_mode)());
+void video_card_set_turn_on_buffer_func(int8_t (*turn_on_buffer)());
+void video_card_set_turn_off_buffer_func(int8_t (*turn_off_buffer)());
+void video_card_set_is_buffer_on_func(uint8_t (*is_buffer_on)());
+void video_card_set_swap_buffers_func(int8_t (*swap_buffers)());
+void video_card_set_draw_pixel_func(int8_t (*draw_pixel)(uint8_t, uint16_t, uint16_t));
+void video_card_set_draw_line_func(int8_t (*draw_line)(uint8_t, uint16_t, uint16_t, uint16_t, uint16_t));
+void video_card_set_draw_circle_func(int8_t (*draw_circle)(uint8_t, uint16_t, uint16_t, uint16_t));
+void video_card_set_draw_rectangle_func(int8_t (*draw_rectangle)(uint8_t, uint16_t, uint16_t, uint16_t, uint16_t));
+void video_card_set_clear_screen_func(int8_t (*clear_screen)());
 
-VideoMode* getAvailableGraphicVideoModes(uint32_t *noOfModes);
-VideoMode* getAvailableTextVideoModes(uint32_t *noOfModes);
+video_mode* video_card_get_available_graphic_modes(uint32_t *noOfModes);
+video_mode* video_card_get_available_text_modes(uint32_t *noOfModes);
 
 int16_t video_card_set_video_mode(uint16_t mode);
 uint8_t video_card_is_text_mode();
-VideoMode* video_card_get_current_video_mode();
+video_mode* video_card_get_current_video_mode();
 
 int8_t video_card_turn_on_buffer();
 int8_t video_card_turn_off_buffer();

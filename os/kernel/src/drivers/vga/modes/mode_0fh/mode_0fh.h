@@ -3,27 +3,27 @@
 
 #include "stdint.h"
 
-#define MODE0FH_WIDTH 640
-#define MODE0FH_HEIGHT 350
+#define mode0Fh_WIDTH 640
+#define mode0Fh_HEIGHT 350
 
-int8_t setMode0FH();
+int8_t mode0Fh_set_mode();
 
-int8_t turnOnBuffer0FH();
-int8_t turnOffBuffer0FH();
-uint8_t isBufferOn0FH();
+int8_t mode0Fh_turn_on_buffer();
+int8_t mode0Fh_turn_off_buffer();
+uint8_t mode0Fh_is_buffer_on();
 
-int8_t swapBuffers0FH();
+int8_t mode0Fh_swap_buffers();
 
-int8_t drawPixel0FH(uint8_t color, uint16_t x, uint16_t y);
-int8_t drawLine0FH(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
-int8_t drawCircle0FH(uint8_t color, uint16_t x, uint16_t y, uint16_t radius);
-int8_t drawRectangle0FH(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
-int8_t clearScreen0FH();
+int8_t mode0Fh_draw_pixel(uint8_t color, uint16_t x, uint16_t y);
+int8_t mode0Fh_draw_line(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
+int8_t mode0Fh_draw_circle(uint8_t color, uint16_t x, uint16_t y, uint16_t radius);
+int8_t mode0Fh_draw_rectangle(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
+int8_t mode0Fh_clear_screen();
 
-int8_t drawPixel0FHBuffered(uint8_t color, uint16_t x, uint16_t y);
-int8_t drawLine0FHBuffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
-int8_t drawCircle0FHBuffered(uint8_t color, uint16_t x, uint16_t y, uint16_t radius);
-int8_t drawRectangle0FHBuffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
-int8_t clearScreen0FHBuffered();
+int8_t mode0Fh_draw_pixel_buffered(uint8_t color, uint16_t x, uint16_t y);
+int8_t mode0Fh_draw_line_buffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
+int8_t mode0Fh_draw_circle_buffered(uint8_t color, uint16_t x, uint16_t y, uint16_t radius);
+int8_t mode0Fh_draw_rectangle_buffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
+int8_t mode0Fh_clear_screen_buffered();
 
 #endif

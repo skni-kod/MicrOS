@@ -81,24 +81,24 @@ unsigned char paletteY[] = {
 unsigned char *MODEY_BUFFER[] = {NULL, NULL, NULL, NULL};
 unsigned char bufferTurnedOnY = 0;
 
-int8_t setModeY()
+int8_t modey_set_mode()
 {
     writeRegisters(g_320x200x256_modey);
     set_vga_palette(paletteY);
-    clearScreenY();
-    video_card_set_turn_on_buffer_func(&turnOnBufferY);
-    video_card_set_turn_off_buffer_func(&turnOffBufferY);
-    video_card_set_is_buffer_on_func(&isBufferOnY);
-    video_card_set_swap_buffers_func(&swapBuffersY);
-    video_card_set_draw_pixel_func(&drawPixelY);
-    video_card_set_draw_line_func(&drawLineY);
-    video_card_set_draw_circle_func(&drawCircleY);
-    video_card_set_draw_rectangle_func(&drawRectangleY);
-    video_card_set_clear_screen_func(&clearScreenY);
+    modey_clear_screen();
+    video_card_set_turn_on_buffer_func(&modey_turn_on_buffer);
+    video_card_set_turn_off_buffer_func(&modey_turn_off_buffer);
+    video_card_set_is_buffer_on_func(&modey_is_buffer_on);
+    video_card_set_swap_buffers_func(&modey_swap_buffers);
+    video_card_set_draw_pixel_func(&modey_draw_pixel);
+    video_card_set_draw_line_func(&modey_draw_line);
+    video_card_set_draw_circle_func(&modey_draw_circle);
+    video_card_set_draw_rectangle_func(&modey_draw_rectangle);
+    video_card_set_clear_screen_func(&modey_clear_screen);
     return 0x69;
 }
 
-int8_t turnOnBufferY()
+int8_t modey_turn_on_buffer()
 {
     if(bufferTurnedOnY) return -1;
     for(int i = 3; i >= 0; i--)
@@ -114,16 +114,16 @@ int8_t turnOnBufferY()
             return -1;
         }
     }
-    video_card_set_draw_pixel_func(&drawPixelYBuffered);
-    video_card_set_draw_line_func(&drawLineYBuffered);
-    video_card_set_draw_circle_func(&drawCircleYBuffered);
-    video_card_set_draw_rectangle_func(&drawRectangleYBuffered);
-    video_card_set_clear_screen_func(&clearScreenYBuffered);
+    video_card_set_draw_pixel_func(&modey_draw_pixel_buffered);
+    video_card_set_draw_line_func(&modey_draw_line_buffered);
+    video_card_set_draw_circle_func(&modey_draw_circle_buffered);
+    video_card_set_draw_rectangle_func(&modey_draw_rectangle_buffered);
+    video_card_set_clear_screen_func(&modey_clear_screen_buffered);
     bufferTurnedOnY = 1;
     return 0;
 }
 
-int8_t turnOffBufferY()
+int8_t modey_turn_off_buffer()
 {
     if(!bufferTurnedOnY) return -1;
     for(int i = 3; i >= 0; i--)
@@ -131,21 +131,21 @@ int8_t turnOffBufferY()
         heap_kernel_dealloc(MODEY_BUFFER[i]);
         MODEY_BUFFER[i] = NULL;
     }
-    video_card_set_draw_pixel_func(&drawPixelY);
-    video_card_set_draw_line_func(&drawLineY);
-    video_card_set_draw_circle_func(&drawCircleY);
-    video_card_set_draw_rectangle_func(&drawRectangleY);
-    video_card_set_clear_screen_func(&clearScreenY);
+    video_card_set_draw_pixel_func(&modey_draw_pixel);
+    video_card_set_draw_line_func(&modey_draw_line);
+    video_card_set_draw_circle_func(&modey_draw_circle);
+    video_card_set_draw_rectangle_func(&modey_draw_rectangle);
+    video_card_set_clear_screen_func(&modey_clear_screen);
     bufferTurnedOnY = 0;
     return 0;
 }
 
-uint8_t isBufferOnY()
+uint8_t modey_is_buffer_on()
 {
     return bufferTurnedOnY;
 }
 
-int8_t swapBuffersY()
+int8_t modey_swap_buffers()
 {
     if(!bufferTurnedOnY) return -1;
     for(uint8_t p = 3; p < 4; p--)
@@ -156,7 +156,7 @@ int8_t swapBuffersY()
     return 0;
 }
 
-int8_t drawPixelY(uint8_t color, uint16_t x, uint16_t y)
+int8_t modey_draw_pixel(uint8_t color, uint16_t x, uint16_t y)
 {
     if((x>=MODEY_WIDTH) || (y >=MODEY_HEIGHT))
         return -1;
@@ -168,7 +168,7 @@ int8_t drawPixelY(uint8_t color, uint16_t x, uint16_t y)
     return 0;
 }
 
-int8_t drawLineY(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
+int8_t modey_draw_line(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
 {
     if(ax == bx) return -1;
     int32_t dx = (int32_t)bx - ax;
@@ -179,10 +179,10 @@ int8_t drawLineY(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t 
         float b = ay - a * ax;
         if(ax > bx)
             for(int x = bx; x <= ax; ++x)
-                drawPixelY(color, x, a * x + b);
+                modey_draw_pixel(color, x, a * x + b);
         else
             for(int x = ax; x <= bx; ++x)
-                drawPixelY(color, x, a * x + b);
+                modey_draw_pixel(color, x, a * x + b);
     }
     else
     {
@@ -190,24 +190,24 @@ int8_t drawLineY(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t 
         float b = ax - a * ay;
         if(ay > by)
             for(int y = by; y <= ay; ++ y)
-                drawPixelY(color, a * y + b, y);
+                modey_draw_pixel(color, a * y + b, y);
         else
             for(int y = ay; y <= by; ++ y)
-                drawPixelY(color, a * y + b, y);
+                modey_draw_pixel(color, a * y + b, y);
     }
     return 0;
 }
 
-int8_t drawCircleY(uint8_t color, uint16_t x, uint16_t y, uint16_t radius) 
+int8_t modey_draw_circle(uint8_t color, uint16_t x, uint16_t y, uint16_t radius) 
 {
     return 0;
 }
 
-int8_t drawRectangleY(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
+int8_t modey_draw_rectangle(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
 {
     return 0;
 }
-int8_t clearScreenY()
+int8_t modey_clear_screen()
 {
     for(uint8_t p = 3; p < 4; p--)
     {
@@ -217,7 +217,7 @@ int8_t clearScreenY()
     return 0;
 }
 
-int8_t drawPixelYBuffered(uint8_t color, uint16_t x, uint16_t y)
+int8_t modey_draw_pixel_buffered(uint8_t color, uint16_t x, uint16_t y)
 {
     if((!bufferTurnedOnY) || (x>=MODEY_WIDTH) || (y >=MODEY_HEIGHT))
         return -1;
@@ -226,7 +226,7 @@ int8_t drawPixelYBuffered(uint8_t color, uint16_t x, uint16_t y)
     return 0;
 }
 
-int8_t drawLineYBuffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
+int8_t modey_draw_line_buffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
 {
     if(!bufferTurnedOnY) return -1;
     if(ax == bx) return -1;
@@ -238,10 +238,10 @@ int8_t drawLineYBuffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, u
         float b = ay - a * ax;
         if(ax > bx)
             for(int x = bx; x <= ax; ++x)
-                drawPixelYBuffered(color, x, a * x + b);
+                modey_draw_pixel_buffered(color, x, a * x + b);
         else
             for(int x = ax; x <= bx; ++x)
-                drawPixelYBuffered(color, x, a * x + b);
+                modey_draw_pixel_buffered(color, x, a * x + b);
     }
     else
     {
@@ -249,22 +249,22 @@ int8_t drawLineYBuffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, u
         float b = ax - a * ay;
         if(ay > by)
             for(int y = by; y <= ay; ++ y)
-                drawPixelYBuffered(color, a * y + b, y);
+                modey_draw_pixel_buffered(color, a * y + b, y);
         else
             for(int y = ay; y <= by; ++ y)
-                drawPixelYBuffered(color, a * y + b, y);
+                modey_draw_pixel_buffered(color, a * y + b, y);
     }
     return 0;
 }
-int8_t drawCircleYBuffered(uint8_t color, uint16_t x, uint16_t y, uint16_t radius)
+int8_t modey_draw_circle_buffered(uint8_t color, uint16_t x, uint16_t y, uint16_t radius)
 {
     return 0;
 }
-int8_t drawRectangleYBuffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
+int8_t modey_draw_rectangle_buffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
 {
     return 0;
 }
-int8_t clearScreenYBuffered()
+int8_t modey_clear_screen_buffered()
 {
     if(!bufferTurnedOnY) return -1;
     for(uint8_t p = 3; p < 4; p--)
