@@ -19,7 +19,7 @@ typedef struct _driver_init_struct
     video_mode* (*get_available_text_video_modes)(uint32_t*);
     int16_t (*set_video_mode)(uint16_t);
     uint8_t (*is_text_mode)();
-    video_mode (*get_current_video_mode)();
+    video_mode* (*get_current_video_mode)();
     int8_t (*turn_on_buffer)();
     int8_t (*turn_off_buffer)();
     uint8_t (*is_buffer_on)();
@@ -37,7 +37,7 @@ void video_card_set_get_available_graphic_video_modes_func(video_mode* (*get_ava
 void video_card_set_get_available_text_video_modes_func(video_mode* (*get_available_text_video_modes)(uint32_t*));
 void video_card_set_set_video_mode_func(int16_t (*set_video_mode)(uint16_t));
 void video_card_set_is_text_mode_func(uint8_t (*is_text_mode)());
-void video_card_set_get_current_video_mode_func(video_mode (*get_current_video_mode)());
+void video_card_set_get_current_video_mode_func(video_mode* (*get_current_video_mode)());
 void video_card_set_turn_on_buffer_func(int8_t (*turn_on_buffer)());
 void video_card_set_turn_off_buffer_func(int8_t (*turn_off_buffer)());
 void video_card_set_is_buffer_on_func(uint8_t (*is_buffer_on)());

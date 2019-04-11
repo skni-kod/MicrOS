@@ -57,7 +57,7 @@ void video_card_set_is_text_mode_func(uint8_t (*is_text_mode)())
     _is_text_mode = is_text_mode;
 }
 
-void video_card_set_get_current_video_mode_func(video_mode (*get_current_video_mode)())
+void video_card_set_get_current_video_mode_func(video_mode* (*get_current_video_mode)())
 {
     _get_current_video_mode = get_current_video_mode;
 }
@@ -109,12 +109,12 @@ void video_card_set_clear_screen_func(int8_t (*clear_screen)())
 
 video_mode* video_card_get_available_graphic_modes(uint32_t *noOfModes)
 {
-    return (*_get_available_graphic_video_modes);
+    return (*_get_available_graphic_video_modes)(noOfModes);
 }
 
 video_mode* video_card_get_available_text_modes(uint32_t *noOfModes)
 {
-    return (*_get_available_text_video_modes);
+    return (*_get_available_text_video_modes)(noOfModes);
 }
 
 int16_t video_card_set_video_mode(uint16_t mode)

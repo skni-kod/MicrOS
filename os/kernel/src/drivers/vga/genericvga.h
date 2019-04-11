@@ -7,6 +7,6 @@
 void generic_vga_driver_init();
 int16_t generic_vga_set_video_mode(uint16_t mode);
 uint8_t generic_vga_is_text_mode();
-const video_mode *generic_vga_get_current_video_mode();
+video_mode *generic_vga_get_current_video_mode();
 
 #endif

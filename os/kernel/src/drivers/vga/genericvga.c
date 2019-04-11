@@ -187,7 +187,7 @@ uint8_t generic_vga_is_text_mode()
     return textMode;
 }
 
-const video_mode *generic_vga_get_current_video_mode()
+video_mode *generic_vga_get_current_video_mode()
 {
     return &currentvideo_mode;
 }
