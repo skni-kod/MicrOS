@@ -31,7 +31,7 @@ void generic_vga_driver_init()
     s.drawCircle = drawCircle03H;
     s.drawRectangle = drawRectangle03H;
     s.clearScreen = clearScreen03H;
-    initWithDriver(&s);
+    video_card_init_with_driver(&s);
 
     currentVideoMode.colors = 16;
     currentVideoMode.height = 25;
@@ -47,7 +47,7 @@ int16_t generic_vga_set_video_mode(uint16_t mode){
     switch(mode)
     {
         case 0x03:
-            turnOffBuffer();
+            video_card_turn_off_buffer();
             if(setMode03H() != 0x03) return -1;
             currentVideoMode.colors = 16;
             currentVideoMode.height = 25;
@@ -58,7 +58,7 @@ int16_t generic_vga_set_video_mode(uint16_t mode){
             textMode = 1;
             return 0x03;
         case 0x04:
-            turnOffBuffer();
+            video_card_turn_off_buffer();
             if(setMode04H() != 0x04) return -1;
             currentVideoMode.colors = 4;
             currentVideoMode.height = 200;
@@ -69,7 +69,7 @@ int16_t generic_vga_set_video_mode(uint16_t mode){
             textMode = 0;
             return 0x04;
         case 0x05:
-            turnOffBuffer();
+            video_card_turn_off_buffer();
             if(setMode05H() != 0x05) return -1;
             currentVideoMode.colors = 4;
             currentVideoMode.height = 200;
@@ -80,7 +80,7 @@ int16_t generic_vga_set_video_mode(uint16_t mode){
             textMode = 0;
             return 0x05;
         case 0x06:
-            turnOffBuffer();
+            video_card_turn_off_buffer();
             if(setMode06H() != 0x06) return -1;
             currentVideoMode.colors = 2;
             currentVideoMode.height = 200;
@@ -91,7 +91,7 @@ int16_t generic_vga_set_video_mode(uint16_t mode){
             textMode = 0;
             return 0x06;
         case 0x0D:
-            turnOffBuffer();
+            video_card_turn_off_buffer();
             if(setMode0DH() != 0x0D) return -1;
             currentVideoMode.colors = 16;
             currentVideoMode.height = 200;
@@ -102,7 +102,7 @@ int16_t generic_vga_set_video_mode(uint16_t mode){
             textMode = 0;
             return 0x0D;
         case 0x0E:
-            turnOffBuffer();
+            video_card_turn_off_buffer();
             if(setMode0EH() != 0x0E) return -1;
             currentVideoMode.colors = 16;
             currentVideoMode.height = 200;
@@ -113,7 +113,7 @@ int16_t generic_vga_set_video_mode(uint16_t mode){
             textMode = 0;
             return 0x0E;
         case 0x0F:
-            turnOffBuffer();
+            video_card_turn_off_buffer();
             if(setMode0FH() != 0x0F) return -1;
             currentVideoMode.colors = 4;
             currentVideoMode.height = 350;
@@ -124,7 +124,7 @@ int16_t generic_vga_set_video_mode(uint16_t mode){
             textMode = 0;
             return 0x0F;
         case 0x10:
-            turnOffBuffer();
+            video_card_turn_off_buffer();
             if(setMode10H() != 0x10) return -1;
             currentVideoMode.colors = 16;
             currentVideoMode.height = 350;
@@ -135,7 +135,7 @@ int16_t generic_vga_set_video_mode(uint16_t mode){
             textMode = 0;
             return 0x10;
         case 0x11:
-            turnOffBuffer();
+            video_card_turn_off_buffer();
             if(setMode11H() != 0x11) return -1;
             currentVideoMode.colors = 2;
             currentVideoMode.height = 480;
@@ -146,7 +146,7 @@ int16_t generic_vga_set_video_mode(uint16_t mode){
             textMode = 0;
             return 0x11;
         case 0x12:
-            turnOffBuffer();
+            video_card_turn_off_buffer();
             if(setMode12H() != 0x12) return -1;
             currentVideoMode.colors = 16;
             currentVideoMode.height = 480;
@@ -157,7 +157,7 @@ int16_t generic_vga_set_video_mode(uint16_t mode){
             textMode = 0;
             return 0x12;
         case 0x13:
-            turnOffBuffer();
+            video_card_turn_off_buffer();
             if(setMode13H() != 0x13) return -1;
             currentVideoMode.colors = 256;
             currentVideoMode.height = 200;
@@ -168,7 +168,7 @@ int16_t generic_vga_set_video_mode(uint16_t mode){
             textMode = 0;
             return 0x13;
         case 0x69:
-            turnOffBuffer();
+            video_card_turn_off_buffer();
             if(setModeY() != 0x69) return -1;
             currentVideoMode.colors = 256;
             currentVideoMode.height = 200;
@@ -187,7 +187,7 @@ uint8_t generic_vga_is_text_mode()
     return textMode;
 }
 
-VideoMode *generic_vga_get_current_video_mode()
+const VideoMode *generic_vga_get_current_video_mode()
 {
     return &currentVideoMode;
 }

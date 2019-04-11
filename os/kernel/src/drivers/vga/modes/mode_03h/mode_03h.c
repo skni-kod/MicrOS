@@ -369,15 +369,15 @@ int8_t setMode03H()
 			vga_set_color(i, j, col);
 	vga_clear_screen();
     set_vga_palette(palette03H);
-	setTurnOnBufferFunc(turnOnBuffer03H);
-    setTurnOffBufferFunc(turnOffBuffer03H);
-    setIsBufferOnFunc(isBufferOn03H);
-    setSwapBuffersFunc(swapBuffers03H);
-    setDrawPixelFunc(drawPixel03H);
-    setDrawLineFunc(drawLine03H);
-    setDrawCircleFunc(drawCircle03H);
-    setDrawRectangleFunc(drawRectangle03H);
-    setClearScreenFunc(clearScreen03H);
+	video_card_set_turn_on_buffer_func(turnOnBuffer03H);
+    video_card_set_turn_off_buffer_func(turnOffBuffer03H);
+    video_card_set_is_buffer_on_func(isBufferOn03H);
+    video_card_set_swap_buffers_func(swapBuffers03H);
+    video_card_set_draw_pixel_func(drawPixel03H);
+    video_card_set_draw_line_func(drawLine03H);
+    video_card_set_draw_circle_func(drawCircle03H);
+    video_card_set_draw_rectangle_func(drawRectangle03H);
+    video_card_set_clear_screen_func(clearScreen03H);
     return 0x03;
 }
 
@@ -387,11 +387,11 @@ int8_t turnOnBuffer03H()
     MODE03H_BUFFER = heap_kernel_alloc(MODE03H_HEIGHT * MODE03H_WIDTH * sizeof(screen), 0);
     if(MODE03H_BUFFER == NULL)
         return -1;
-    setDrawPixelFunc(drawPixel03HBuffered);
-    setDrawLineFunc(drawLine03HBuffered);
-    setDrawCircleFunc(drawCircle03HBuffered);
-    setDrawRectangleFunc(drawRectangle03HBuffered);
-    setClearScreenFunc(clearScreen03HBuffered);
+    video_card_set_draw_pixel_func(drawPixel03HBuffered);
+    video_card_set_draw_line_func(drawLine03HBuffered);
+    video_card_set_draw_circle_func(drawCircle03HBuffered);
+    video_card_set_draw_rectangle_func(drawRectangle03HBuffered);
+    video_card_set_clear_screen_func(clearScreen03HBuffered);
     return 0;
 }
 
@@ -400,11 +400,11 @@ int8_t turnOffBuffer03H()
     if(MODE03H_BUFFER == NULL) return -1;
     heap_kernel_dealloc(MODE03H_BUFFER);
     MODE03H_BUFFER = NULL;
-    setDrawPixelFunc(drawPixel03H);
-    setDrawLineFunc(drawLine03H);
-    setDrawCircleFunc(drawCircle03H);
-    setDrawRectangleFunc(drawRectangle03H);
-    setClearScreenFunc(clearScreen03H);
+    video_card_set_draw_pixel_func(drawPixel03H);
+    video_card_set_draw_line_func(drawLine03H);
+    video_card_set_draw_circle_func(drawCircle03H);
+    video_card_set_draw_rectangle_func(drawRectangle03H);
+    video_card_set_clear_screen_func(clearScreen03H);
     return 0;
 }
 

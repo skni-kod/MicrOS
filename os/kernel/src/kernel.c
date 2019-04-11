@@ -195,9 +195,9 @@ int kmain()
             keyboard_get_key_from_buffer(&c);
             if(c.scancode == 59) //F1
             {
-                    setVideoMode(0x3);
+                    video_card_set_video_mode(0x3);
                     logger_log_ok("UDALO SIE WSKOCZYC na 0x03\n");
-                    currentMode = getCurrentVideoMode();
+                    currentMode = video_card_get_current_video_mode();
                     vga_printstring("Szerokosc Trybu: ");
                     itoa(currentMode->width, buff, 10);
                     vga_printstring(buff);
@@ -220,232 +220,232 @@ int kmain()
                     vga_newline();
                     vga_printstring("-------TESTY INNYCH FUNKCJI-------:\n");
                     vga_printstring("Czy tekstowy: ");
-                    itoa(isTextMode(), buff, 10);
+                    itoa(video_card_is_text_mode(), buff, 10);
                     vga_printstring(buff);
                     vga_newline();
                     
             }
             else if(c.scancode == 60) //F2
             {
-                setVideoMode(0x03);
-                currentMode = getCurrentVideoMode();
+                video_card_set_video_mode(0x03);
+                currentMode = video_card_get_current_video_mode();
                 for(uint32_t x = 0; x < currentMode->width; x++)
                     for(uint32_t y = 0; y < currentMode->height; y++)
-                        drawPixel(0x01, x, y);
+                        video_card_draw_pixel(0x01, x, y);
             }
             else if(c.scancode == 2) //1
             {
-                setVideoMode(0x04);
-                currentMode = getCurrentVideoMode();
-                turnOnBuffer();
+                video_card_set_video_mode(0x04);
+                currentMode = video_card_get_current_video_mode();
+                video_card_turn_on_buffer();
                 for(uint32_t x = 0; x < currentMode->width; x++)
                     for(uint32_t y = 0; y < currentMode->height; y++)
-                        drawPixel(0x02, x, y);
-                swapBuffers();
+                        video_card_draw_pixel(0x02, x, y);
+                video_card_swap_buffers();
             }
             else if(c.scancode == 61) //F3
             {
-                setVideoMode(0x05);
-                currentMode = getCurrentVideoMode();
+                video_card_set_video_mode(0x05);
+                currentMode = video_card_get_current_video_mode();
                 for(uint32_t x = 0; x < currentMode->width; x++)
                     for(uint32_t y = 0; y < currentMode->height; y++)
-                        drawPixel(0x03, x, y);
+                        video_card_draw_pixel(0x03, x, y);
             }
             else if(c.scancode == 3) //2
             {
-                setVideoMode(0x05);
-                currentMode = getCurrentVideoMode();
-                turnOnBuffer();
+                video_card_set_video_mode(0x05);
+                currentMode = video_card_get_current_video_mode();
+                video_card_turn_on_buffer();
                 for(uint32_t x = 0; x < currentMode->width; x++)
                     for(uint32_t y = 0; y < currentMode->height; y++)
-                        drawPixel(0x01, x, y);
-                swapBuffers();
+                        video_card_draw_pixel(0x01, x, y);
+                video_card_swap_buffers();
             }
             else if(c.scancode == 62) //F4
             {
-                setVideoMode(0x06);
-                currentMode = getCurrentVideoMode();
+                video_card_set_video_mode(0x06);
+                currentMode = video_card_get_current_video_mode();
                 for(uint32_t x = 0; x < currentMode->width; x++)
                     for(uint32_t y = 0; y < currentMode->height; y++)
-                        drawPixel(0x01, x, y);
+                        video_card_draw_pixel(0x01, x, y);
             }
             else if(c.scancode == 4) //3
             {
-                setVideoMode(0x06);
-                currentMode = getCurrentVideoMode();
-                turnOnBuffer();
+                video_card_set_video_mode(0x06);
+                currentMode = video_card_get_current_video_mode();
+                video_card_turn_on_buffer();
                 for(uint32_t x = 0; x < currentMode->width; x++)
                     for(uint32_t y = 0; y < currentMode->height; y++)
-                        drawPixel(0x01, x, y);
-                swapBuffers();
+                        video_card_draw_pixel(0x01, x, y);
+                video_card_swap_buffers();
             }
             else if(c.scancode == 63) //F5
             {
-                setVideoMode(0x0d);
-                currentMode = getCurrentVideoMode();
+                video_card_set_video_mode(0x0d);
+                currentMode = video_card_get_current_video_mode();
                 for(uint32_t x = 0; x < currentMode->width; x++)
                     for(uint32_t y = 0; y < currentMode->height; y++)
-                        drawPixel(0x04, x, y);
+                        video_card_draw_pixel(0x04, x, y);
             }
             else if(c.scancode == 5) //4
             {
-                setVideoMode(0x0d);
-                currentMode = getCurrentVideoMode();
-                turnOnBuffer();
+                video_card_set_video_mode(0x0d);
+                currentMode = video_card_get_current_video_mode();
+                video_card_turn_on_buffer();
                 for(uint32_t x = 0; x < currentMode->width; x++)
                     for(uint32_t y = 0; y < currentMode->height; y++)
-                        drawPixel(0x05, x, y);
-                swapBuffers();
+                        video_card_draw_pixel(0x05, x, y);
+                video_card_swap_buffers();
             }
             else if(c.scancode == 64) //F6
             {
-                setVideoMode(0x0e);
-                currentMode = getCurrentVideoMode();
+                video_card_set_video_mode(0x0e);
+                currentMode = video_card_get_current_video_mode();
                 for(uint32_t x = 0; x < currentMode->width; x++)
                     for(uint32_t y = 0; y < currentMode->height; y++)
-                        drawPixel(0x06, x, y);
+                        video_card_draw_pixel(0x06, x, y);
             }
             else if(c.scancode == 6) //5
             {
-                setVideoMode(0x0e);
-                currentMode = getCurrentVideoMode();
-                turnOnBuffer();
+                video_card_set_video_mode(0x0e);
+                currentMode = video_card_get_current_video_mode();
+                video_card_turn_on_buffer();
                 for(uint32_t x = 0; x < currentMode->width; x++)
                     for(uint32_t y = 0; y < currentMode->height; y++)
-                        drawPixel(0x07, x, y);
-                swapBuffers();
+                        video_card_draw_pixel(0x07, x, y);
+                video_card_swap_buffers();
             }
             else if(c.scancode == 65) //F7
             {
-                setVideoMode(0x0f);
-                currentMode = getCurrentVideoMode();
+                video_card_set_video_mode(0x0f);
+                currentMode = video_card_get_current_video_mode();
                 for(uint32_t x = 0; x < currentMode->width; x++)
                     for(uint32_t y = 0; y < currentMode->height; y++)
-                        drawPixel(0x01, x, y);
+                        video_card_draw_pixel(0x01, x, y);
             }
             else if(c.scancode == 7) //6
             {
-                setVideoMode(0x0f);
-                currentMode = getCurrentVideoMode();
-                turnOnBuffer();
+                video_card_set_video_mode(0x0f);
+                currentMode = video_card_get_current_video_mode();
+                video_card_turn_on_buffer();
                 for(uint32_t x = 0; x < currentMode->width; x++)
                     for(uint32_t y = 0; y < currentMode->height; y++)
-                        drawPixel(0x02, x, y);
-                swapBuffers();
+                        video_card_draw_pixel(0x02, x, y);
+                video_card_swap_buffers();
             }
             else if(c.scancode == 66) //F8
             {
-                setVideoMode(0x10);
-                currentMode = getCurrentVideoMode();
+                video_card_set_video_mode(0x10);
+                currentMode = video_card_get_current_video_mode();
                 for(uint32_t x = 0; x < currentMode->width; x++)
                     for(uint32_t y = 0; y < currentMode->height; y++)
-                        drawPixel(0x08, x, y);
+                        video_card_draw_pixel(0x08, x, y);
             }
             else if(c.scancode == 8) //7
             {
-                setVideoMode(0x10);
-                currentMode = getCurrentVideoMode();
-                turnOnBuffer();
+                video_card_set_video_mode(0x10);
+                currentMode = video_card_get_current_video_mode();
+                video_card_turn_on_buffer();
                 for(uint32_t x = 0; x < currentMode->width; x++)
                     for(uint32_t y = 0; y < currentMode->height; y++)
-                        drawPixel(0x09, x, y);
-                swapBuffers();
+                        video_card_draw_pixel(0x09, x, y);
+                video_card_swap_buffers();
             }
             else if(c.scancode == 67) //F9
             {
-                setVideoMode(0x11);
-                currentMode = getCurrentVideoMode();
+                video_card_set_video_mode(0x11);
+                currentMode = video_card_get_current_video_mode();
                 for(uint32_t x = 0; x < currentMode->width; x++)
                     for(uint32_t y = 0; y < currentMode->height; y++)
-                        drawPixel(0x01, x, y);
+                        video_card_draw_pixel(0x01, x, y);
             }
             else if(c.scancode == 9) //8
             {
-                setVideoMode(0x11);
-                currentMode = getCurrentVideoMode();
-                turnOnBuffer();
+                video_card_set_video_mode(0x11);
+                currentMode = video_card_get_current_video_mode();
+                video_card_turn_on_buffer();
                 for(uint32_t x = 0; x < currentMode->width; x++)
                     for(uint32_t y = 0; y < currentMode->height; y++)
-                        drawPixel(0x01, x, y);
-                swapBuffers();
+                        video_card_draw_pixel(0x01, x, y);
+                video_card_swap_buffers();
             }
             else if(c.scancode == 68) //F10
             {
-                setVideoMode(0x12);
-                currentMode = getCurrentVideoMode();
+                video_card_set_video_mode(0x12);
+                currentMode = video_card_get_current_video_mode();
                 for(uint32_t x = 0; x < currentMode->width; x++)
                     for(uint32_t y = 0; y < currentMode->height; y++)
-                        drawPixel(0x0A, x, y);
+                        video_card_draw_pixel(0x0A, x, y);
             }
             else if(c.scancode == 10) //9
             {
-                setVideoMode(0x12);
-                currentMode = getCurrentVideoMode();
-                turnOnBuffer();
+                video_card_set_video_mode(0x12);
+                currentMode = video_card_get_current_video_mode();
+                video_card_turn_on_buffer();
                 for(uint32_t x = 0; x < currentMode->width; x++)
                     for(uint32_t y = 0; y < currentMode->height; y++)
-                        drawPixel(0x0B, x, y);
-                swapBuffers();
+                        video_card_draw_pixel(0x0B, x, y);
+                video_card_swap_buffers();
             }
             else if(c.scancode == 87) //F11
             {
-                setVideoMode(0x13);
-                currentMode = getCurrentVideoMode();
+                video_card_set_video_mode(0x13);
+                currentMode = video_card_get_current_video_mode();
                 for(uint32_t x = 0; x < currentMode->width; x++)
                     for(uint32_t y = 0; y < currentMode->height; y++)
-                        drawPixel(0x10, x, y);
+                        video_card_draw_pixel(0x10, x, y);
             }
             else if(c.scancode == 11) //0
             {
-                setVideoMode(0x13);
-                currentMode = getCurrentVideoMode();
-                turnOnBuffer();
+                video_card_set_video_mode(0x13);
+                currentMode = video_card_get_current_video_mode();
+                video_card_turn_on_buffer();
                 for(uint32_t x = 0; x < currentMode->width; x++)
                     for(uint32_t y = 0; y < currentMode->height; y++)
-                        drawPixel(0x25, x, y);
-                swapBuffers();
+                        video_card_draw_pixel(0x25, x, y);
+                video_card_swap_buffers();
             }
             else if(c.scancode == 88) //F12
             {
-                setVideoMode(0x69);
-                currentMode = getCurrentVideoMode();
+                video_card_set_video_mode(0x69);
+                currentMode = video_card_get_current_video_mode();
                 for(uint32_t x = 0; x < currentMode->width; x++)
                     for(uint32_t y = 0; y < currentMode->height; y++)
-                        drawPixel(0x45, x, y);
+                        video_card_draw_pixel(0x45, x, y);
             }
             else if(c.scancode == 12) //-
             {
-                setVideoMode(0x69);
-                currentMode = getCurrentVideoMode();
-                turnOnBuffer();
+                video_card_set_video_mode(0x69);
+                currentMode = video_card_get_current_video_mode();
+                video_card_turn_on_buffer();
                 for(uint32_t x = 0; x < currentMode->width; x++)
                     for(uint32_t y = 0; y < currentMode->height; y++)
-                        drawPixel(0x8, x, y);
-                swapBuffers();
+                        video_card_draw_pixel(0x8, x, y);
+                video_card_swap_buffers();
             }
             else if(c.scancode == 01) //ESC
             {
-                clearScreen();
-                if(isBufferOn())
-                    swapBuffers();
+                video_card_clear_screen();
+                if(video_card_is_buffer_on())
+                    video_card_swap_buffers();
             }
             else if(c.scancode == 15) // TAB
             {
-                currentMode = getCurrentVideoMode();
+                currentMode = video_card_get_current_video_mode();
                 uint8_t color = (rand() % (currentMode->colors - 1) + 1);
                 for(uint32_t x = 0; x < currentMode->width; x++)
                     for(uint32_t y = 0; y < currentMode->height; y++)
-                        drawPixel(color, x, y);
-                if(isBufferOn())
-                    swapBuffers();
+                        video_card_draw_pixel(color, x, y);
+                if(video_card_is_buffer_on())
+                    video_card_swap_buffers();
             }
             else if(c.scancode == 26) //[
             {
-                turnOnBuffer();
+                video_card_turn_on_buffer();
             }
             else if(c.scancode == 27) //]
             {
-                turnOffBuffer();
+                video_card_turn_off_buffer();
             }
             else if(c.scancode == 41) //`
             {
@@ -458,28 +458,28 @@ int kmain()
                 screenSaver = !screenSaver;
             }
             else{
-                if(isTextMode())
+                if(video_card_is_text_mode())
                     vga_printchar(c.ascii);
             }
         }
         if(shouldDrawLines)
         {
-            currentMode = getCurrentVideoMode();
+            currentMode = video_card_get_current_video_mode();
             uint8_t color = (rand() % (currentMode->colors - 1) + 1);
             uint16_t ax = (rand() % (currentMode->width));
             uint16_t ay = (rand() % (currentMode->height));
             uint16_t bx = (rand() % (currentMode->width));
             uint16_t by = (rand() % (currentMode->height));
-            drawLine(color, ax, ay, bx, by);
-            if(isBufferOn())
-                swapBuffers();
+            video_card_draw_line(color, ax, ay, bx, by);
+            if(video_card_is_buffer_on())
+                video_card_swap_buffers();
         }
         if(screenSaver)
         {
-            if(isBufferOn())
+            if(video_card_is_buffer_on())
             {
                 linesStruct s;
-                currentMode = getCurrentVideoMode();
+                currentMode = video_card_get_current_video_mode();
                 s.color = (rand() % (currentMode->colors - 1) + 1);
                 //s.ax = (rand() % (currentMode->width));
                 //s.ay = (rand() % (currentMode->height));
@@ -487,16 +487,16 @@ int kmain()
                 s.ay = ssBuffer[63].by;
                 s.bx = (rand() % (currentMode->width));
                 s.by = (rand() % (currentMode->height));
-                clearScreen();
+                video_card_clear_screen();
                 for(int i = 0; i < 64; i++)
                 {
-                    drawLine(ssBuffer[i].color, ssBuffer[i].ax, ssBuffer[i].ay, ssBuffer[i].bx, ssBuffer[i].by);
+                    video_card_draw_line(ssBuffer[i].color, ssBuffer[i].ax, ssBuffer[i].ay, ssBuffer[i].bx, ssBuffer[i].by);
                     if(i)
                         ssBuffer[i-1] = ssBuffer[i];
                 }
                 ssBuffer[63] = s;
-                //drawLine(color, ax, ay, bx, by);
-                swapBuffers();
+                //video_card_draw_line(color, ax, ay, bx, by);
+                video_card_swap_buffers();
             }
         }
     }
