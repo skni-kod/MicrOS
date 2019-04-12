@@ -78,8 +78,8 @@ unsigned char palette05H[] = {
 
 //DOUBLE BUFFER POINTER;
 
-unsigned char *mode05h_BUFFER[] = {NULL, NULL};
-unsigned char bufferTurnedOn05H = 0;
+unsigned char *mode05h_buffer[] = {NULL, NULL};
+unsigned char buffer_turned_on_05h = 0;
 
 int8_t mode05h_set_mode()
 {
@@ -100,16 +100,16 @@ int8_t mode05h_set_mode()
 
 int8_t mode05h_turn_on_buffer()
 {
-    if(bufferTurnedOn05H) return -1;
+    if(buffer_turned_on_05h) return -1;
     for(int i = 1; i >= 0; i--)
     {
-        mode05h_BUFFER[i] = heap_kernel_alloc(mode05h_HEIGHT * mode05h_WIDTH / 8, 0);
-        if(mode05h_BUFFER[i] == NULL)
+        mode05h_buffer[i] = heap_kernel_alloc(mode05h_HEIGHT * mode05h_WIDTH / 8, 0);
+        if(mode05h_buffer[i] == NULL)
         {
             for(int j = 1; j >= i; j--)
             {
-                heap_kernel_dealloc(mode05h_BUFFER[j]);
-                mode05h_BUFFER[j] = NULL;
+                heap_kernel_dealloc(mode05h_buffer[j]);
+                mode05h_buffer[j] = NULL;
             }
             return -1;
         }
@@ -119,38 +119,38 @@ int8_t mode05h_turn_on_buffer()
     video_card_set_draw_circle_func(&mode05h_draw_circle_buffered);
     video_card_set_draw_rectangle_func(&mode05h_draw_rectangle_buffered);
     video_card_set_clear_screen_func(&mode05h_clear_screen_buffered);
-    bufferTurnedOn05H = 1;
+    buffer_turned_on_05h = 1;
     return 0;
 }
 
 int8_t mode05h_turn_off_buffer()
 {
-    if(!bufferTurnedOn05H) return -1;
+    if(!buffer_turned_on_05h) return -1;
     for(int i = 1; i >= 0; i--)
     {
-        heap_kernel_dealloc(mode05h_BUFFER[i]);
-        mode05h_BUFFER[i] = NULL;
+        heap_kernel_dealloc(mode05h_buffer[i]);
+        mode05h_buffer[i] = NULL;
     }
     video_card_set_draw_pixel_func(&mode05h_draw_pixel);
     video_card_set_draw_line_func(&mode05h_draw_line);
     video_card_set_draw_circle_func(&mode05h_draw_circle);
     video_card_set_draw_rectangle_func(&mode05h_draw_rectangle);
     video_card_set_clear_screen_func(&mode05h_clear_screen);
-    bufferTurnedOn05H = 0;
+    buffer_turned_on_05h = 0;
     return 0;
 }
 
 uint8_t mode05h_is_buffer_on()
 {
-    return bufferTurnedOn05H;
+    return buffer_turned_on_05h;
 }
 
 int8_t mode05h_swap_buffers()
 {
-    if(!bufferTurnedOn05H) return -1;
-    memcpy(VGA_VRAM_2, mode05h_BUFFER[0], mode05h_WIDTH * mode05h_HEIGHT / 8);
-    memcpy(VGA_VRAM_2 + 0x2000, mode05h_BUFFER[1], mode05h_WIDTH * mode05h_HEIGHT / 8);
-    //memcpy(VGA_VRAM, mode13h_BUFFER, mode13h_HEIGHT * mode13h_WIDTH);
+    if(!buffer_turned_on_05h) return -1;
+    memcpy(VGA_VRAM_2, mode05h_buffer[0], mode05h_WIDTH * mode05h_HEIGHT / 8);
+    memcpy(VGA_VRAM_2 + 0x2000, mode05h_buffer[1], mode05h_WIDTH * mode05h_HEIGHT / 8);
+    //memcpy(VGA_VRAM, mode13h_buffer, mode13h_HEIGHT * mode13h_WIDTH);
     return 0;
 }
 
@@ -214,18 +214,18 @@ int8_t mode05h_clear_screen()
 
 int8_t mode05h_draw_pixel_buffered(uint8_t color, uint16_t x, uint16_t y)
 {
-    if((!bufferTurnedOn05H) || (x>=mode05h_WIDTH) || (y >=mode05h_HEIGHT))
+    if((!buffer_turned_on_05h) || (x>=mode05h_WIDTH) || (y >=mode05h_HEIGHT))
         return -1;
     unsigned int offset = (y/2 * mode05h_WIDTH + x)/4;
 	unsigned bit_no = x % 4;
-    bit_write(mode05h_BUFFER[y%2][offset], (1<<(7 - (2 * bit_no))), (color & 0x2));
-    bit_write(mode05h_BUFFER[y%2][offset], (1<<(7 - (2 * bit_no+1))), (color & 0x1));
+    bit_write(mode05h_buffer[y%2][offset], (1<<(7 - (2 * bit_no))), (color & 0x2));
+    bit_write(mode05h_buffer[y%2][offset], (1<<(7 - (2 * bit_no+1))), (color & 0x1));
     return 0;
 }
 
 int8_t mode05h_draw_line_buffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
 {
-    if(!bufferTurnedOn05H) return -1;
+    if(!buffer_turned_on_05h) return -1;
     if(ax == bx) return -1;
     int32_t dx = (int32_t)bx - ax;
     int32_t dy = (int32_t)by - ay;
@@ -263,8 +263,8 @@ int8_t mode05h_draw_rectangle_buffered(uint8_t color, uint16_t ax, uint16_t ay, 
 }
 int8_t mode05h_clear_screen_buffered()
 {
-    if(!bufferTurnedOn05H) return -1;
-    memset(mode05h_BUFFER[0], 0, 8000);
-    memset(mode05h_BUFFER[1], 0, 8000);
+    if(!buffer_turned_on_05h) return -1;
+    memset(mode05h_buffer[0], 0, 8000);
+    memset(mode05h_buffer[1], 0, 8000);
     return 0;
 }

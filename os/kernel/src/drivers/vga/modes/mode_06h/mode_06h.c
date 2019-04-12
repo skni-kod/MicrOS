@@ -78,8 +78,8 @@ unsigned char palette06H[] = {
 
 //DOUBLE BUFFER POINTER;
 
-unsigned char *mode06h_BUFFER[] = {NULL, NULL};
-unsigned char bufferTurnedOn06H = 0;
+unsigned char *mode06h_buffer[] = {NULL, NULL};
+unsigned char buffer_turned_on_06h = 0;
 
 int8_t mode06h_set_mode()
 {
@@ -100,16 +100,16 @@ int8_t mode06h_set_mode()
 
 int8_t mode06h_turn_on_buffer()
 {
-    if(bufferTurnedOn06H) return -1;
+    if(buffer_turned_on_06h) return -1;
     for(int i = 1; i >= 0; i--)
     {
-        mode06h_BUFFER[i] = heap_kernel_alloc(mode06h_HEIGHT * mode06h_WIDTH / 16, 0);
-        if(mode06h_BUFFER[i] == NULL)
+        mode06h_buffer[i] = heap_kernel_alloc(mode06h_HEIGHT * mode06h_WIDTH / 16, 0);
+        if(mode06h_buffer[i] == NULL)
         {
             for(int j = 1; j >= i; j--)
             {
-                heap_kernel_dealloc(mode06h_BUFFER[j]);
-                mode06h_BUFFER[j] = NULL;
+                heap_kernel_dealloc(mode06h_buffer[j]);
+                mode06h_buffer[j] = NULL;
             }
             return -1;
         }
@@ -119,38 +119,38 @@ int8_t mode06h_turn_on_buffer()
     video_card_set_draw_circle_func(&mode06h_draw_circle_buffered);
     video_card_set_draw_rectangle_func(&mode06h_draw_rectangle_buffered);
     video_card_set_clear_screen_func(&mode06h_clear_screen_buffered);
-    bufferTurnedOn06H = 1;
+    buffer_turned_on_06h = 1;
     return 0;
 }
 
 int8_t mode06h_turn_off_buffer()
 {
-    if(!bufferTurnedOn06H) return -1;
+    if(!buffer_turned_on_06h) return -1;
     for(int i = 1; i >= 0; i--)
     {
-        heap_kernel_dealloc(mode06h_BUFFER[i]);
-        mode06h_BUFFER[i] = NULL;
+        heap_kernel_dealloc(mode06h_buffer[i]);
+        mode06h_buffer[i] = NULL;
     }
     video_card_set_draw_pixel_func(&mode06h_draw_pixel);
     video_card_set_draw_line_func(&mode06h_draw_line);
     video_card_set_draw_circle_func(&mode06h_draw_circle);
     video_card_set_draw_rectangle_func(&mode06h_draw_rectangle);
     video_card_set_clear_screen_func(&mode06h_clear_screen);
-    bufferTurnedOn06H = 0;
+    buffer_turned_on_06h = 0;
     return 0;
 }
 
 uint8_t mode06h_is_buffer_on()
 {
-    return bufferTurnedOn06H;
+    return buffer_turned_on_06h;
 }
 
 int8_t mode06h_swap_buffers()
 {
-    if(!bufferTurnedOn06H) return -1;
-    memcpy(VGA_VRAM_2, mode06h_BUFFER[0], mode06h_WIDTH * mode06h_HEIGHT / 16);
-    memcpy(VGA_VRAM_2 + 0x2000, mode06h_BUFFER[1], mode06h_WIDTH * mode06h_HEIGHT / 16);
-    //memcpy(VGA_VRAM, mode13h_BUFFER, mode13h_HEIGHT * mode13h_WIDTH);
+    if(!buffer_turned_on_06h) return -1;
+    memcpy(VGA_VRAM_2, mode06h_buffer[0], mode06h_WIDTH * mode06h_HEIGHT / 16);
+    memcpy(VGA_VRAM_2 + 0x2000, mode06h_buffer[1], mode06h_WIDTH * mode06h_HEIGHT / 16);
+    //memcpy(VGA_VRAM, mode13h_buffer, mode13h_HEIGHT * mode13h_WIDTH);
     return 0;
 }
 
@@ -213,17 +213,17 @@ int8_t mode06h_clear_screen()
 
 int8_t mode06h_draw_pixel_buffered(uint8_t color, uint16_t x, uint16_t y)
 {
-    if((!bufferTurnedOn06H) || (x>=mode06h_WIDTH) || (y >=mode06h_HEIGHT))
+    if((!buffer_turned_on_06h) || (x>=mode06h_WIDTH) || (y >=mode06h_HEIGHT))
         return -1;
     unsigned int offset = (y/2 * mode06h_WIDTH + x)/8;
 	unsigned bit_no = x % 8;
-    bit_write(mode06h_BUFFER[y%2][offset], (1<<(7 - bit_no)), (color & 0x1));
+    bit_write(mode06h_buffer[y%2][offset], (1<<(7 - bit_no)), (color & 0x1));
     return 0;
 }
 
 int8_t mode06h_draw_line_buffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
 {
-    if(!bufferTurnedOn06H) return -1;
+    if(!buffer_turned_on_06h) return -1;
     if(ax == bx) return -1;
     int32_t dx = (int32_t)bx - ax;
     int32_t dy = (int32_t)by - ay;
@@ -261,8 +261,8 @@ int8_t mode06h_draw_rectangle_buffered(uint8_t color, uint16_t ax, uint16_t ay, 
 }
 int8_t mode06h_clear_screen_buffered()
 {
-    if(!bufferTurnedOn06H) return -1;
-    memset(mode06h_BUFFER[0], 0, 8000);
-    memset(mode06h_BUFFER[1], 0, 8000);
+    if(!buffer_turned_on_06h) return -1;
+    memset(mode06h_buffer[0], 0, 8000);
+    memset(mode06h_buffer[1], 0, 8000);
     return 0;
 }

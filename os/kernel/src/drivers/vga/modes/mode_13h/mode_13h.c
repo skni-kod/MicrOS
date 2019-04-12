@@ -80,7 +80,7 @@ unsigned char palette13H[] = {
 
 //DOUBLE BUFFER POINTER;
 
-unsigned char *mode13h_BUFFER = NULL;
+unsigned char *mode13h_buffer = NULL;
 
 int8_t mode13h_set_mode()
 {
@@ -101,9 +101,9 @@ int8_t mode13h_set_mode()
 
 int8_t mode13h_turn_on_buffer()
 {
-    if(mode13h_BUFFER != NULL) return -1;
-    mode13h_BUFFER = heap_kernel_alloc(mode13h_HEIGHT * mode13h_WIDTH, 0);
-    if(mode13h_BUFFER == NULL)
+    if(mode13h_buffer != NULL) return -1;
+    mode13h_buffer = heap_kernel_alloc(mode13h_HEIGHT * mode13h_WIDTH, 0);
+    if(mode13h_buffer == NULL)
         return -1;
     video_card_set_draw_pixel_func(&mode13h_draw_pixel_buffered);
     video_card_set_draw_line_func(&mode13h_draw_line_buffered);
@@ -115,9 +115,9 @@ int8_t mode13h_turn_on_buffer()
 
 int8_t mode13h_turn_off_buffer()
 {
-    if(mode13h_BUFFER == NULL) return -1;
-    heap_kernel_dealloc(mode13h_BUFFER);
-    mode13h_BUFFER = NULL;
+    if(mode13h_buffer == NULL) return -1;
+    heap_kernel_dealloc(mode13h_buffer);
+    mode13h_buffer = NULL;
     video_card_set_draw_pixel_func(&mode13h_draw_pixel);
     video_card_set_draw_line_func(&mode13h_draw_line);
     video_card_set_draw_circle_func(&mode13h_draw_circle);
@@ -128,13 +128,13 @@ int8_t mode13h_turn_off_buffer()
 
 uint8_t mode13h_is_buffer_on()
 {
-    return mode13h_BUFFER != NULL;
+    return mode13h_buffer != NULL;
 }
 
 int8_t mode13h_swap_buffers()
 {
-    if(mode13h_BUFFER == NULL) return -1;
-    memcpy(VGA_VRAM, mode13h_BUFFER, mode13h_HEIGHT * mode13h_WIDTH);
+    if(mode13h_buffer == NULL) return -1;
+    memcpy(VGA_VRAM, mode13h_buffer, mode13h_HEIGHT * mode13h_WIDTH);
     return 0;
 }
 
@@ -194,15 +194,15 @@ int8_t mode13h_clear_screen()
 
 int8_t mode13h_draw_pixel_buffered(uint8_t color, uint16_t x, uint16_t y)
 {
-    if((mode13h_BUFFER == NULL) || (x>=mode13h_WIDTH) || (y >=mode13h_HEIGHT))
+    if((mode13h_buffer == NULL) || (x>=mode13h_WIDTH) || (y >=mode13h_HEIGHT))
         return -1;
-    mode13h_BUFFER[y * mode13h_WIDTH + x] = color;
+    mode13h_buffer[y * mode13h_WIDTH + x] = color;
     return 0;
 }
 
 int8_t mode13h_draw_line_buffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
 {
-    if(mode13h_BUFFER == NULL) return -1;
+    if(mode13h_buffer == NULL) return -1;
     if(ax == bx) return -1;
     int32_t dx = (int32_t)bx - ax;
     int32_t dy = (int32_t)by - ay;
@@ -240,7 +240,7 @@ int8_t mode13h_draw_rectangle_buffered(uint8_t color, uint16_t ax, uint16_t ay, 
 }
 int8_t mode13h_clear_screen_buffered()
 {
-    if(mode13h_BUFFER == NULL) return -1;
-    memset(mode13h_BUFFER, 0, 256 * 1024);
+    if(mode13h_buffer == NULL) return -1;
+    memset(mode13h_buffer, 0, 256 * 1024);
     return 0;
 }
