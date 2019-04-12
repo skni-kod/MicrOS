@@ -103,7 +103,7 @@ int8_t mode04h_turn_on_buffer()
     if(buffer_turned_on_04h) return -1;
     for(int i = 1; i >= 0; i--)
     {
-        mode04h_buffer[i] = heap_kernel_alloc(mode04h_HEIGHT * mode04h_WIDTH / 8, 0);
+        mode04h_buffer[i] = heap_kernel_alloc(MODE04H_HEIGHT * MODE04H_WIDTH / 8, 0);
         if(mode04h_buffer[i] == NULL)
         {
             for(int j = 1; j >= i; j--)
@@ -148,18 +148,18 @@ uint8_t mode04h_is_buffer_on()
 int8_t mode04h_swap_buffers()
 {
     if(!buffer_turned_on_04h) return -1;
-    memcpy(VGA_VRAM_2, mode04h_buffer[0], mode04h_WIDTH * mode04h_HEIGHT / 8);
-    memcpy(VGA_VRAM_2 + 0x2000, mode04h_buffer[1], mode04h_WIDTH * mode04h_HEIGHT / 8);
-    //memcpy(VGA_VRAM, mode13h_buffer, mode13h_HEIGHT * mode13h_WIDTH);
+    memcpy(VGA_VRAM_2, mode04h_buffer[0], MODE04H_WIDTH * MODE04H_HEIGHT / 8);
+    memcpy(VGA_VRAM_2 + 0x2000, mode04h_buffer[1], MODE04H_WIDTH * MODE04H_HEIGHT / 8);
+    //memcpy(VGA_VRAM, mode13h_buffer, MODE13H_HEIGHT * MODE13H_WIDTH);
     return 0;
 }
 
 int8_t mode04h_draw_pixel(uint8_t color, uint16_t x, uint16_t y)
 {
-    if((x>=mode04h_WIDTH) || (y >=mode04h_HEIGHT))
+    if((x>=MODE04H_WIDTH) || (y >=MODE04H_HEIGHT))
         return -1;
     unsigned char *fb = (unsigned char *) VGA_VRAM_2;
-    unsigned int offset = (y/2 * mode04h_WIDTH + x)/4;
+    unsigned int offset = (y/2 * MODE04H_WIDTH + x)/4;
 	unsigned bit_no = x % 4;
 	bit_write(fb[offset + (y%2 ? 0x2000 : 0)], 1<<(7 - (2 * bit_no)), (color & 0x2));
 	bit_write(fb[offset + (y%2 ? 0x2000 : 0)], 1<<(7 - (2 * bit_no+1)), (color & 0x1));
@@ -214,9 +214,9 @@ int8_t mode04h_clear_screen()
 
 int8_t mode04h_draw_pixel_buffered(uint8_t color, uint16_t x, uint16_t y)
 {
-    if((!buffer_turned_on_04h) || (x>=mode04h_WIDTH) || (y >=mode04h_HEIGHT))
+    if((!buffer_turned_on_04h) || (x>=MODE04H_WIDTH) || (y >=MODE04H_HEIGHT))
         return -1;
-    unsigned int offset = (y/2 * mode04h_WIDTH + x)/4;
+    unsigned int offset = (y/2 * MODE04H_WIDTH + x)/4;
 	unsigned bit_no = x % 4;
     bit_write(mode04h_buffer[y%2][offset], (1<<(7 - (2 * bit_no))), (color & 0x2));
     bit_write(mode04h_buffer[y%2][offset], (1<<(7 - (2 * bit_no+1))), (color & 0x1));

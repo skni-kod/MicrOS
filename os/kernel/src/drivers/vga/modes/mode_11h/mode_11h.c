@@ -101,7 +101,7 @@ int8_t mode11h_set_mode()
 int8_t mode11h_turn_on_buffer()
 {
     if(buffer_turned_on_11h) return -1;
-    mode11h_buffer = heap_kernel_alloc(mode11h_HEIGHT * mode11h_WIDTH / 8, 0);
+    mode11h_buffer = heap_kernel_alloc(MODE11H_HEIGHT * MODE11H_WIDTH / 8, 0);
     if(mode11h_buffer == NULL) return -1;
     video_card_set_draw_pixel_func(&mode11h_draw_pixel_buffered);
     video_card_set_draw_line_func(&mode11h_draw_line_buffered);
@@ -134,17 +134,17 @@ uint8_t mode11h_is_buffer_on()
 int8_t mode11h_swap_buffers()
 {
     if(!buffer_turned_on_11h) return -1;
-    memcpy(VGA_VRAM, mode11h_buffer, mode11h_WIDTH * mode11h_HEIGHT / 8);
-    //memcpy(VGA_VRAM, mode13h_buffer, mode13h_HEIGHT * mode13h_WIDTH);
+    memcpy(VGA_VRAM, mode11h_buffer, MODE11H_WIDTH * MODE11H_HEIGHT / 8);
+    //memcpy(VGA_VRAM, mode13h_buffer, MODE13H_HEIGHT * MODE13H_WIDTH);
     return 0;
 }
 
 int8_t mode11h_draw_pixel(uint8_t color, uint16_t x, uint16_t y)
 {
-    if((x>=mode11h_WIDTH) || (y >=mode11h_HEIGHT))
+    if((x>=MODE11H_WIDTH) || (y >=MODE11H_HEIGHT))
         return -1;
     unsigned char *fb = (unsigned char *) VGA_VRAM;
-    unsigned int offset = (y * mode11h_WIDTH + x)/8;
+    unsigned int offset = (y * MODE11H_WIDTH + x)/8;
 	unsigned bit_no = x % 8;
 	bit_write(fb[offset], 1<<(7-bit_no), (color % 2));
     return 0;
@@ -197,9 +197,9 @@ int8_t mode11h_clear_screen()
 
 int8_t mode11h_draw_pixel_buffered(uint8_t color, uint16_t x, uint16_t y)
 {
-    if((!buffer_turned_on_11h) || (x>=mode11h_WIDTH) || (y >=mode11h_HEIGHT))
+    if((!buffer_turned_on_11h) || (x>=MODE11H_WIDTH) || (y >=MODE11H_HEIGHT))
         return -1;
-    unsigned int offset = (y * mode11h_WIDTH + x)/8;
+    unsigned int offset = (y * MODE11H_WIDTH + x)/8;
 	unsigned bit_no = x % 8;
 	bit_write(mode11h_buffer[offset], 1<<(7-bit_no), (color % 2));
     return 0;

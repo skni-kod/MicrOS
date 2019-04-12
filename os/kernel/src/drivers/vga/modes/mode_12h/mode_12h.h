@@ -3,8 +3,8 @@
 
 #include "stdint.h"
 
-#define mode12h_WIDTH 640
-#define mode12h_HEIGHT 480
+#define MODE12H_WIDTH 640
+#define MODE12H_HEIGHT 480
 
 int8_t mode12h_set_mode();
 

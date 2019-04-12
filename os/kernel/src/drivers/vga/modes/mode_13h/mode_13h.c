@@ -102,7 +102,7 @@ int8_t mode13h_set_mode()
 int8_t mode13h_turn_on_buffer()
 {
     if(mode13h_buffer != NULL) return -1;
-    mode13h_buffer = heap_kernel_alloc(mode13h_HEIGHT * mode13h_WIDTH, 0);
+    mode13h_buffer = heap_kernel_alloc(MODE13H_HEIGHT * MODE13H_WIDTH, 0);
     if(mode13h_buffer == NULL)
         return -1;
     video_card_set_draw_pixel_func(&mode13h_draw_pixel_buffered);
@@ -134,16 +134,16 @@ uint8_t mode13h_is_buffer_on()
 int8_t mode13h_swap_buffers()
 {
     if(mode13h_buffer == NULL) return -1;
-    memcpy(VGA_VRAM, mode13h_buffer, mode13h_HEIGHT * mode13h_WIDTH);
+    memcpy(VGA_VRAM, mode13h_buffer, MODE13H_HEIGHT * MODE13H_WIDTH);
     return 0;
 }
 
 int8_t mode13h_draw_pixel(uint8_t color, uint16_t x, uint16_t y)
 {
-    if((x>=mode13h_WIDTH) || (y >=mode13h_HEIGHT))
+    if((x>=MODE13H_WIDTH) || (y >=MODE13H_HEIGHT))
         return -1;
     unsigned char *fb = (unsigned char *) VGA_VRAM;
-    fb[y * mode13h_WIDTH + x] = color;
+    fb[y * MODE13H_WIDTH + x] = color;
     return 0;
 }
 
@@ -194,9 +194,9 @@ int8_t mode13h_clear_screen()
 
 int8_t mode13h_draw_pixel_buffered(uint8_t color, uint16_t x, uint16_t y)
 {
-    if((mode13h_buffer == NULL) || (x>=mode13h_WIDTH) || (y >=mode13h_HEIGHT))
+    if((mode13h_buffer == NULL) || (x>=MODE13H_WIDTH) || (y >=MODE13H_HEIGHT))
         return -1;
-    mode13h_buffer[y * mode13h_WIDTH + x] = color;
+    mode13h_buffer[y * MODE13H_WIDTH + x] = color;
     return 0;
 }
 

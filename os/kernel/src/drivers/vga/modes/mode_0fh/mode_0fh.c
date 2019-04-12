@@ -103,7 +103,7 @@ int8_t mode0fh_turn_on_buffer()
     if(buffer_turned_on_0Fh) return -1;
     for(int i = 1; i >= 0; i--)
     {
-        mode0fh_buffer[i] = heap_kernel_alloc(mode0fh_HEIGHT * mode0fh_WIDTH / 8, 0);
+        mode0fh_buffer[i] = heap_kernel_alloc(MODE0FH_HEIGHT * MODE0FH_WIDTH / 8, 0);
         if(mode0fh_buffer[i] == NULL)
         {
             for(int j = 1; j >= i; j--)
@@ -151,18 +151,18 @@ int8_t mode0fh_swap_buffers()
     for(uint8_t p = 1; p < 2; p--)
     {
         set_plane(p*2);
-        memcpy(VGA_VRAM, mode0fh_buffer[p], mode0fh_WIDTH * mode0fh_HEIGHT / 8);
+        memcpy(VGA_VRAM, mode0fh_buffer[p], MODE0FH_WIDTH * MODE0FH_HEIGHT / 8);
     }
-    //memcpy(VGA_VRAM, mode13h_buffer, mode13h_HEIGHT * mode13h_WIDTH);
+    //memcpy(VGA_VRAM, mode13h_buffer, MODE13H_HEIGHT * MODE13H_WIDTH);
     return 0;
 }
 
 int8_t mode0fh_draw_pixel(uint8_t color, uint16_t x, uint16_t y)
 {
-    if((x>=mode0fh_WIDTH) || (y >=mode0fh_HEIGHT))
+    if((x>=MODE0FH_WIDTH) || (y >=MODE0FH_HEIGHT))
         return -1;
     unsigned char *fb = (unsigned char *) VGA_VRAM;
-    unsigned int offset = (y * mode0fh_WIDTH + x)/8;
+    unsigned int offset = (y * MODE0FH_WIDTH + x)/8;
 	unsigned bit_no = x % 8;
 	for(char p = 1; p >= 0; p--)
 	{
@@ -223,9 +223,9 @@ int8_t mode0fh_clear_screen()
 
 int8_t mode0fh_draw_pixel_buffered(uint8_t color, uint16_t x, uint16_t y)
 {
-    if((!buffer_turned_on_0Fh) || (x>=mode0fh_WIDTH) || (y >=mode0fh_HEIGHT))
+    if((!buffer_turned_on_0Fh) || (x>=MODE0FH_WIDTH) || (y >=MODE0FH_HEIGHT))
         return -1;
-    unsigned int offset = (y * mode0fh_WIDTH + x)/8;
+    unsigned int offset = (y * MODE0FH_WIDTH + x)/8;
 	unsigned bit_no = x % 8;
 	for(uint8_t p = 1; p < 2; p--)
 		bit_write(mode0fh_buffer[p][offset], 1<<(7-bit_no), (bit_get(color, 1 << p)));

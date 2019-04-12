@@ -384,7 +384,7 @@ int8_t mode03h_set_mode()
 int8_t mode03h_turn_on_buffer()
 {
     if(mode03h_buffer != NULL) return -1;
-    mode03h_buffer = heap_kernel_alloc(mode03h_HEIGHT * mode03h_WIDTH * sizeof(screen), 0);
+    mode03h_buffer = heap_kernel_alloc(MODE03H_HEIGHT * MODE03H_WIDTH * sizeof(screen), 0);
     if(mode03h_buffer == NULL)
         return -1;
     video_card_set_draw_pixel_func(mode03h_draw_pixel_buffered);
@@ -416,13 +416,13 @@ uint8_t mode03h_is_buffer_on()
 int8_t mode03h_swap_buffers()
 {
     if(mode03h_buffer == NULL) return -1;
-    memcpy((screen*)VGA_BASE_ADDR, mode03h_buffer, mode03h_HEIGHT * mode03h_WIDTH * sizeof(screen));
+    memcpy((screen*)VGA_BASE_ADDR, mode03h_buffer, MODE03H_HEIGHT * MODE03H_WIDTH * sizeof(screen));
     return 0;
 }
 
 int8_t mode03h_draw_pixel(uint8_t color, uint16_t x, uint16_t y)
 {
-    if((x>=mode03h_WIDTH) || (y >=mode03h_HEIGHT)) return -1;
+    if((x>=MODE03H_WIDTH) || (y >=MODE03H_HEIGHT)) return -1;
 	vga_color c;
 	c.color_without_blink.letter = color & 0x0F;
 	c.color_without_blink.background = color & 0x0F;
@@ -483,7 +483,7 @@ int8_t mode03h_clear_screen()
 
 int8_t mode03h_draw_pixel_buffered(uint8_t color, uint16_t x, uint16_t y)
 {
-    if((mode03h_buffer == NULL)|| (x>=mode03h_WIDTH) || (y >=mode03h_HEIGHT)) return -1;
+    if((mode03h_buffer == NULL)|| (x>=MODE03H_WIDTH) || (y >=MODE03H_HEIGHT)) return -1;
 	screen s;
 	s.c.code = ' ';
 	s.c.color.color_without_blink.background = color & 0x0F;
