@@ -53,9 +53,9 @@ Mkfile.old
 dkms.conf
 
 # Custom
-Tools
-Build
-Scripts
+tools
+build
+scripts
 .vscode
 
 cloc.exe
