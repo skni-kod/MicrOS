@@ -17,18 +17,17 @@ void fat_load_root();
 void fat_normalise_filename(char *filename);
 void fat_denormalise_filename(char *filename);
 
-uint8_t *fat_load_file_from_sector(uint16_t initial_sector, uint16_t sector_offset, uint16_t sectors_count);
+uint8_t *fat_load_file_from_sector(uint16_t initial_sector, uint16_t sector_offset, uint16_t sectors_count, uint32_t *read_sectors);
 bool fat_read_file(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length);
 
-fat_directory_entry *fat_get_directory_from_path(char *path);
-fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks);
+fat_directory_entry *fat_get_directory_from_path(char *path, uint32_t *read_sectors);
+fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks, uint32_t *read_sectors);
 fat_directory_entry *fat_get_info(char *path, bool is_directory);
 
 uint32_t fat_get_entries_count_in_directory(char *path);
 uint32_t fat_get_entries_in_directory(char *path, char **entries);
 
 kvector *fat_parse_path(char *path);
-kvector *fat_list(char *path);
 bool fat_is_entry_valid(fat_directory_entry *entry);
 void fat_merge_filename_and_extension(fat_directory_entry *entry, char *buffer);
 

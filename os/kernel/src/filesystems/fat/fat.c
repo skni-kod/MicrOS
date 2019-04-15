@@ -159,7 +159,7 @@ void fat_denormalise_filename(char *filename)
     }
 }
 
-uint8_t *fat_load_file_from_sector(uint16_t initial_sector, uint16_t sector_offset, uint16_t sectors_count)
+uint8_t *fat_load_file_from_sector(uint16_t initial_sector, uint16_t sector_offset, uint16_t sectors_count, uint32_t *read_sectors)
 {
     uint16_t sector = initial_sector;
     for (int i = 0; i < sector_offset; i++)
@@ -172,17 +172,17 @@ uint8_t *fat_load_file_from_sector(uint16_t initial_sector, uint16_t sector_offs
     }
 
     uint8_t *buffer = heap_kernel_alloc(512, 0);
-    uint32_t read_sectors = 0;
+    *read_sectors = 0;
 
-    while (read_sectors < sectors_count && sector < 0xFF0)
+    while (*read_sectors < sectors_count && sector < 0xFF0)
     {
-        buffer = heap_kernel_realloc(buffer, 512 * (read_sectors + 1), 0);
+        buffer = heap_kernel_realloc(buffer, 512 * (*read_sectors + 1), 0);
 
         uint8_t *read_data = floppy_read_sector(sector + 31);
         sector = fat_read_sector_value(sector);
 
-        memcpy(buffer + (read_sectors * 512), read_data, 512);
-        read_sectors++;
+        memcpy(buffer + (*read_sectors * 512), read_data, 512);
+        (*read_sectors)++;
     }
 
     return buffer;
@@ -200,8 +200,9 @@ bool fat_read_file(char *path, uint8_t *buffer, uint32_t start_index, uint32_t l
     uint16_t initial_sector = start_index / 512;
     uint16_t last_sector = (start_index + length) / 512;
     uint16_t sectors_count = length == 0 ? file_info->size / 512 + 1 : (uint16_t)(last_sector - initial_sector + 1);
+    uint32_t read_sectors = 0;
 
-    uint8_t *result = fat_load_file_from_sector(file_info->first_sector, initial_sector, sectors_count);
+    uint8_t *result = fat_load_file_from_sector(file_info->first_sector, initial_sector, sectors_count, &read_sectors);
     memcpy(buffer, result + (start_index % 512), length);
 
     heap_kernel_dealloc(result);
@@ -210,10 +211,10 @@ bool fat_read_file(char *path, uint8_t *buffer, uint32_t start_index, uint32_t l
     return true;
 }
 
-fat_directory_entry *fat_get_directory_from_path(char *path)
+fat_directory_entry *fat_get_directory_from_path(char *path, uint32_t *read_sectors)
 {
     kvector *chunks = fat_parse_path(path);
-    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks);
+    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks, read_sectors);
 
     kvector_clear(chunks);
     heap_kernel_dealloc(chunks);
@@ -221,7 +222,7 @@ fat_directory_entry *fat_get_directory_from_path(char *path)
     return directory;
 }
 
-fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks)
+fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks, uint32_t *read_sectors)
 {
     fat_directory_entry *current_directory = heap_kernel_alloc(directory_length, 0);
     memcpy(current_directory, (void *)root, directory_length);
@@ -235,8 +236,9 @@ fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks)
 
     fat_directory_entry *current_file_ptr = current_directory;
     uint32_t current_chunk_index = 0;
+    uint32_t items_count = fat_header_data->directory_entries;
 
-    for (int i = 0; i < fat_header_data->directory_entries; i++)
+    for (uint32_t i = 0; i < items_count; i++)
     {
         char full_filename[12];
         fat_merge_filename_and_extension(current_file_ptr, full_filename);
@@ -245,8 +247,7 @@ fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks)
         {
             if (memcmp(full_filename, chunks->data[current_chunk_index], 12) == 0)
             {
-                uint32_t sectors_to_load = fat_header_data->directory_entries * 32 / 512;
-                uint8_t *directory = fat_load_file_from_sector(current_file_ptr->first_sector, 0, sectors_to_load);
+                uint8_t *directory = fat_load_file_from_sector(current_file_ptr->first_sector, 0, INT16_MAX, read_sectors);
 
                 heap_kernel_dealloc(current_directory);
 
@@ -261,12 +262,13 @@ fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks)
                 else
                 {
                     i = 0;
+                    items_count = *read_sectors * 16;
                     current_chunk_index++;
                 }
             }
         }
 
-        if (i + 1 == fat_header_data->directory_entries)
+        if (i + 1 == items_count)
         {
             result = NULL;
         }
@@ -281,14 +283,15 @@ fat_directory_entry *fat_get_info(char *path, bool is_directory)
 {
     kvector *chunks = fat_parse_path(path);
     char *target_filename = chunks->data[chunks->count - 1];
+    uint32_t read_sectors = 0;
 
     kvector_remove(chunks, chunks->count - 1);
 
-    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks);
+    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks, &read_sectors);
     fat_directory_entry *current_file_ptr = directory;
     fat_directory_entry *result = NULL;
 
-    for (int i = 0; i < fat_header_data->directory_entries; i++)
+    for (uint32_t i = 0; i < read_sectors * 16; i++)
     {
         char full_filename[12];
         fat_merge_filename_and_extension(current_file_ptr, full_filename);
@@ -302,7 +305,7 @@ fat_directory_entry *fat_get_info(char *path, bool is_directory)
             }
         }
 
-        if (i + 1 == fat_header_data->directory_entries)
+        if (i + 1 == read_sectors * 16)
         {
             result = NULL;
             break;
@@ -329,8 +332,9 @@ fat_directory_entry *fat_get_info(char *path, bool is_directory)
 uint32_t fat_get_entries_count_in_directory(char *path)
 {
     kvector *chunks = fat_parse_path(path);
+    uint32_t read_sectors = 0;
 
-    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks);
+    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks, &read_sectors);
     fat_directory_entry *current_file_ptr = directory;
     uint32_t entries_count = 0;
 
@@ -339,14 +343,14 @@ uint32_t fat_get_entries_count_in_directory(char *path)
         return 0;
     }
 
-    for (int i = 0; i < fat_header_data->directory_entries; i++)
+    for (uint32_t i = 0; i < read_sectors * 16; i++)
     {
         if (fat_is_entry_valid(current_file_ptr))
         {
             entries_count++;
         }
 
-        if (i + 1 == fat_header_data->directory_entries)
+        if (i + 1 == read_sectors * 16)
         {
             break;
         }
@@ -365,8 +369,9 @@ uint32_t fat_get_entries_in_directory(char *path, char **entries)
 {
     kvector *chunks = fat_parse_path(path);
     uint32_t path_length = strlen(path);
+    uint32_t read_sectors = 0;
 
-    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks);
+    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks, &read_sectors);
     fat_directory_entry *current_file_ptr = directory;
     uint32_t current_entry_index = 0;
 
@@ -375,7 +380,7 @@ uint32_t fat_get_entries_in_directory(char *path, char **entries)
         return false;
     }
 
-    for (int i = 0; i < fat_header_data->directory_entries; i++)
+    for (uint32_t i = 0; i < read_sectors * 16; i++)
     {
         if (fat_is_entry_valid(current_file_ptr))
         {
@@ -397,7 +402,7 @@ uint32_t fat_get_entries_in_directory(char *path, char **entries)
             current_entry_index++;
         }
 
-        if (i + 1 == fat_header_data->directory_entries)
+        if (i + 1 == read_sectors * 16)
         {
             break;
         }
