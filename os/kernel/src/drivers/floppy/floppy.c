@@ -253,7 +253,7 @@ uint8_t *floppy_read_sector(uint16_t sector)
         sleep(100);
     }
 
-    return ptr + 0xc0000000;
+    return ptr;
 }
 
 void floppy_write_sector(uint16_t sector, uint8_t *content)
@@ -454,8 +454,8 @@ void floppy_dma_init(bool read)
     io_out_byte(DMA_FLIP_FLOP_RESET_REGISTER, 0xff);
 
     // Set buffer to the specified address
-    io_out_byte(DMA_START_ADDRESS_REGISTER, (uint8_t)((uint32_t)dma_buffer & 0xff));
-    io_out_byte(DMA_START_ADDRESS_REGISTER, (uint8_t)((uint32_t)dma_buffer >> 8));
+    io_out_byte(DMA_START_ADDRESS_REGISTER, (uint8_t)((uint32_t)(dma_buffer - 0xc0000000) & 0xff));
+    io_out_byte(DMA_START_ADDRESS_REGISTER, (uint8_t)((uint32_t)(dma_buffer - 0xc0000000) >> 8));
 
     // Reset Flip-Flop register
     io_out_byte(DMA_FLIP_FLOP_RESET_REGISTER, 0xff);

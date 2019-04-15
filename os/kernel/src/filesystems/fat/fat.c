@@ -29,6 +29,14 @@ void fat_load_fat()
     }
 }
 
+void fat_save_fat()
+{
+    for (int i = 1; i < fat_header_data->sectors_per_fat; i++)
+    {
+        floppy_write_sector(i, (uint32_t)fat + ((i - 1) * 512));
+    }
+}
+
 void fat_load_root()
 {
     uint8_t root_first_sector = 1 + (fat_header_data->sectors_per_fat * 2);

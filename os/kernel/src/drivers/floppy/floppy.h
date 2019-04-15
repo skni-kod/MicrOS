@@ -1,7 +1,7 @@
 #ifndef FLOPPY_H
 #define FLOPPY_H
 
-#define DMA_ADDRESS 0x0500
+#define DMA_ADDRESS 0xc0000500
 #define FLOPPY_HEADER_DATA 0xc0007c00
 
 #define DEVICE_NUMBER 0
