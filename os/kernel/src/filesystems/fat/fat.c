@@ -516,6 +516,26 @@ bool fat_generic_is_directory(char *path)
     return false;
 }
 
+uint32_t fat_generic_get_free_space()
+{
+    uint32_t free_sectors = 0;
+    for(int i = 0; i < fat_header_data->total_sectors; i++)
+    {
+        uint32_t sector = fat_read_sector_value(i);
+        if(sector == 0)
+        {
+            free_sectors++;
+        }
+    }
+    
+    return free_sectors * fat_header_data->bytes_per_sector;
+}
+
+uint32_t fat_generic_get_total_space()
+{
+    return fat_header_data->total_sectors * fat_header_data->bytes_per_sector;
+}
+
 uint8_t fat_generic_copy_filename_to_generic(char *fat_filename, char *generic_filename)
 {
     uint8_t filename_length = 0;

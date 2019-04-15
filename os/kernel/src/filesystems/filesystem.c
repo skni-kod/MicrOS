@@ -34,3 +34,13 @@ bool filesystem_is_directory(char *path)
 {
     return fat_generic_is_directory(path);
 }
+
+uint32_t filesystem_get_free_space()
+{
+    return fat_generic_get_free_space();
+}
+
+uint32_t filesystem_get_total_space()
+{
+    return fat_generic_get_total_space();
+}
