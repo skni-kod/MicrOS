@@ -203,7 +203,7 @@ void fat_denormalise_filename(char *filename)
     }
 }
 
-uint8_t *fat_load_file_from_sector(uint16_t initial_sector, uint16_t sector_offset, uint16_t sectors_count, uint32_t *read_sectors)
+uint8_t *fat_read_file_from_sector(uint16_t initial_sector, uint16_t sector_offset, uint16_t sectors_count, uint32_t *read_sectors)
 {
     uint16_t sector = initial_sector;
     for (int i = 0; i < sector_offset; i++)
@@ -232,7 +232,7 @@ uint8_t *fat_load_file_from_sector(uint16_t initial_sector, uint16_t sector_offs
     return buffer;
 }
 
-bool fat_read_file(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length)
+bool fat_read_file_from_path(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length)
 {
     fat_directory_entry *file_info = fat_get_info(path, false);
 
@@ -246,7 +246,7 @@ bool fat_read_file(char *path, uint8_t *buffer, uint32_t start_index, uint32_t l
     uint16_t sectors_count = length == 0 ? file_info->size / 512 + 1 : (uint16_t)(last_sector - initial_sector + 1);
     uint32_t read_sectors = 0;
 
-    uint8_t *result = fat_load_file_from_sector(file_info->first_sector, initial_sector, sectors_count, &read_sectors);
+    uint8_t *result = fat_read_file_from_sector(file_info->first_sector, initial_sector, sectors_count, &read_sectors);
     memcpy(buffer, result + (start_index % 512), length);
 
     heap_kernel_dealloc(result);
@@ -291,7 +291,7 @@ fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks, uint32_t *re
         {
             if (memcmp(full_filename, chunks->data[current_chunk_index], 12) == 0)
             {
-                uint8_t *directory = fat_load_file_from_sector(current_file_ptr->first_sector, 0, INT16_MAX, read_sectors);
+                uint8_t *directory = fat_read_file_from_sector(current_file_ptr->first_sector, 0, INT16_MAX, read_sectors);
 
                 heap_kernel_dealloc(current_directory);
 
@@ -538,7 +538,7 @@ bool fat_generic_get_directory_info(char *path, filesystem_directory_info *gener
 
 bool fat_generic_read_file(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length)
 {
-    return fat_read_file(path, buffer, start_index, length);
+    return fat_read_file_from_path(path, buffer, start_index, length);
 }
 
 uint32_t fat_generic_get_entries_count_in_directory(char *path)
