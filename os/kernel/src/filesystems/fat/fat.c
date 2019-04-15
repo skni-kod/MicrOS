@@ -203,6 +203,29 @@ void fat_denormalise_filename(char *filename)
     }
 }
 
+bool fat_read_file_from_path(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length)
+{
+    fat_directory_entry *file_info = fat_get_info(path, false);
+
+    if (file_info == NULL)
+    {
+        return false;
+    }
+
+    uint16_t initial_sector = start_index / 512;
+    uint16_t last_sector = (start_index + length) / 512;
+    uint16_t sectors_count = length == 0 ? file_info->size / 512 + 1 : (uint16_t)(last_sector - initial_sector + 1);
+    uint32_t read_sectors = 0;
+
+    uint8_t *result = fat_read_file_from_sector(file_info->first_sector, initial_sector, sectors_count, &read_sectors);
+    memcpy(buffer, result + (start_index % 512), length);
+
+    heap_kernel_dealloc(result);
+    heap_kernel_dealloc(file_info);
+
+    return true;
+}
+
 uint8_t *fat_read_file_from_sector(uint16_t initial_sector, uint16_t sector_offset, uint16_t sectors_count, uint32_t *read_sectors)
 {
     uint16_t sector = initial_sector;
@@ -230,29 +253,6 @@ uint8_t *fat_read_file_from_sector(uint16_t initial_sector, uint16_t sector_offs
     }
 
     return buffer;
-}
-
-bool fat_read_file_from_path(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length)
-{
-    fat_directory_entry *file_info = fat_get_info(path, false);
-
-    if (file_info == NULL)
-    {
-        return false;
-    }
-
-    uint16_t initial_sector = start_index / 512;
-    uint16_t last_sector = (start_index + length) / 512;
-    uint16_t sectors_count = length == 0 ? file_info->size / 512 + 1 : (uint16_t)(last_sector - initial_sector + 1);
-    uint32_t read_sectors = 0;
-
-    uint8_t *result = fat_read_file_from_sector(file_info->first_sector, initial_sector, sectors_count, &read_sectors);
-    memcpy(buffer, result + (start_index % 512), length);
-
-    heap_kernel_dealloc(result);
-    heap_kernel_dealloc(file_info);
-
-    return true;
 }
 
 fat_directory_entry *fat_get_directory_from_path(char *path, uint32_t *read_sectors)
