@@ -375,7 +375,19 @@ fat_directory_entry *fat_get_info(char *path, bool is_directory)
 
 uint32_t fat_clear_file_sectors(uint32_t initial_sector)
 {
-    
+    uint16_t current_sector_index = initial_sector;
+    while(1)
+    {
+        uint16_t value = fat_read_sector_value(current_sector_index);
+        fat_save_sector_value(current_sector_index, 0);
+        
+        if(value >= 0xFF0)
+        {
+            break;
+        }
+        
+        current_sector_index = value;
+    }
 }
 
 uint32_t fat_get_entries_count_in_directory(char *path)
