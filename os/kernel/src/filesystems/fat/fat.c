@@ -81,6 +81,31 @@ uint16_t fat_read_sector_value(uint32_t sector_number)
     }
 }
 
+void fat_save_sector_value(uint32_t sector_number, uint16_t value)
+{
+    uint8_t high_byte;
+    uint8_t low_byte;
+
+    if (sector_number % 2 == 0)
+    {
+        high_byte = *(fat + (uint32_t)(sector_number * 1.5f + 1)) & 0xF0;
+        high_byte |= (value >> 8) & 0x0F;
+        low_byte = value & 0xFF;
+        
+        *(fat + (uint32_t)(sector_number * 1.5f + 1)) = high_byte;
+        *(fat + (uint32_t)(sector_number * 1.5f)) = low_byte;
+    }
+    else
+    {
+        high_byte = (value >> 4) & 0xFF;
+        low_byte = *(fat + (uint32_t)((sector_number - 1) * 1.5f) + 1) & 0x0F;
+        low_byte |= (value << 4) & 0xF0;
+        
+        *(fat + (uint32_t)(((sector_number - 1) * 1.5f) + 2)) = high_byte;
+        *(fat + (uint32_t)((sector_number - 1) * 1.5f) + 1) = low_byte;
+    }
+}
+
 kvector *fat_parse_path(char *path)
 {
     kvector *chunks = heap_kernel_alloc(sizeof(kvector), 0);
@@ -346,6 +371,11 @@ fat_directory_entry *fat_get_info(char *path, bool is_directory)
     heap_kernel_dealloc(target_filename);
 
     return result_without_junk;
+}
+
+uint32_t fat_clear_file_sectors(uint32_t initial_sector)
+{
+    
 }
 
 uint32_t fat_get_entries_count_in_directory(char *path)
