@@ -49,6 +49,17 @@ void fat_load_root()
     }
 }
 
+void fat_save_root()
+{
+    uint8_t root_first_sector = 1 + (fat_header_data->sectors_per_fat * 2);
+    uint8_t root_sectors_count = (fat_header_data->directory_entries * 32) / fat_header_data->bytes_per_sector;
+
+    for (int i = root_first_sector; i < root_first_sector + root_sectors_count; i++)
+    {
+        floppy_write_sector(i, (uint32_t)root + ((i - root_first_sector) * 512));
+    }
+}
+
 uint16_t fat_read_sector_value(uint32_t sector_number)
 {
     uint8_t high_byte;

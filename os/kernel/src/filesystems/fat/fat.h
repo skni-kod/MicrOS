@@ -15,6 +15,7 @@ void fat_init();
 void fat_load_fat();
 void fat_save_fat();
 void fat_load_root();
+void fat_save_root();
 void fat_normalise_filename(char *filename);
 void fat_denormalise_filename(char *filename);
 
