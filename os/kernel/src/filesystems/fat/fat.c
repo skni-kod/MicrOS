@@ -566,6 +566,19 @@ bool fat_generic_get_file_info(char *path, filesystem_file_info *generic_file_in
     return true;
 }
 
+uint32_t fat_get_free_sector_index()
+{
+    for(int i=32; i<fat_header_data->total_sectors; i++)
+    {
+        if(fat_read_sector_value(i) == 0)
+        {
+            return i;
+        }
+    }
+    
+    return 0;
+}
+
 bool fat_generic_get_directory_info(char *path, filesystem_directory_info *generic_directory_info)
 {
     fat_directory_entry *fat_directory_info = fat_get_info_from_path(path, true);

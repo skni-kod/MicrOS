@@ -38,6 +38,7 @@ uint32_t fat_get_entries_in_directory(char *path, char **entries);
 kvector *fat_parse_path(char *path);
 bool fat_is_entry_valid(fat_directory_entry *entry);
 void fat_merge_filename_and_extension(fat_directory_entry *entry, char *buffer);
+uint32_t fat_get_free_sector_index();
 
 // Generic filesystem functions
 bool fat_generic_get_file_info(char *path, filesystem_file_info *generic_file_info);
