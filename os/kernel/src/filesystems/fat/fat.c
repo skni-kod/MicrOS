@@ -203,6 +203,43 @@ void fat_denormalise_filename(char *filename)
     }
 }
 
+uint16_t fat_save_file_to_sector(uint16_t initial_sector, uint16_t sectors_count, char* buffer)
+{
+    uint16_t sector = initial_sector == 0 ? fat_get_free_sector_index() : initial_sector;
+    uint16_t sector_to_return = sector;
+    
+    for(int i=0; i<sectors_count; i++)
+    {
+        floppy_write_sector(sector + 31, buffer + (i * 512));
+        
+        uint16_t next_sector = fat_read_sector_value(sector);
+        if(next_sector == 0)
+        {
+            if(i == sectors_count - 1)
+            {
+                fat_save_sector_value(sector, 0xFFF);
+            }
+            else
+            {
+                next_sector = fat_get_free_sector_index();
+            }
+        }
+        else
+        {
+            if(i == sectors_count - 1)
+            {
+                fat_save_sector_value(sector, 0xFFF);
+                fat_clear_file_sectors(next_sector);
+            }
+        }
+        
+        fat_save_sector_value(sector, next_sector);
+        sector = next_sector;
+    }
+    
+    return sector_to_return;
+}
+
 bool fat_read_file_from_path(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length)
 {
     fat_directory_entry *file_info = fat_get_info_from_path(path, false);
@@ -277,12 +314,16 @@ bool fat_delete_file_from_path(char* path)
 
         if (fat_is_entry_valid(current_file_ptr) && memcmp(full_filename, chunks->data[chunks->count - 1], 12) == 0)
         {
-            current_file_ptr->filename[0] = 0;
+            current_file_ptr->filename[0] = 0xE5;
+            fat_clear_file_sectors(current_file_ptr->first_sector);
             break;
         }
         
         current_file_ptr++;
     }
+    
+    fat_save_file_to_sector(dir_info->first_sector, read_sectors, directory);
+    fat_save_fat();
     
     kvector_clear(chunks);
     heap_kernel_dealloc(chunks);
