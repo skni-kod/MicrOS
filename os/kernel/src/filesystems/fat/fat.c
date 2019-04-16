@@ -205,7 +205,7 @@ void fat_denormalise_filename(char *filename)
 
 bool fat_read_file_from_path(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length)
 {
-    fat_directory_entry *file_info = fat_get_info(path, false);
+    fat_directory_entry *file_info = fat_get_info_from_path(path, false);
 
     if (file_info == NULL)
     {
@@ -255,6 +255,42 @@ uint8_t *fat_read_file_from_sector(uint16_t initial_sector, uint16_t sector_offs
     return buffer;
 }
 
+bool fat_delete_file_from_path(char* path)
+{
+    uint32_t read_sectors = 0;
+    
+    kvector *chunks = fat_parse_path(path);
+    fat_directory_entry *file_info = fat_get_info_from_chunks(chunks, false);
+    
+    chunks->count--;
+    fat_directory_entry *dir_info = fat_get_info_from_chunks(chunks, true);
+    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks, &read_sectors);
+    chunks->count++;
+    
+    fat_directory_entry *current_file_ptr = directory;
+    uint32_t items_count = read_sectors * 16;
+    
+    for (uint32_t i = 0; i < items_count; i++)
+    {
+        char full_filename[12];
+        fat_merge_filename_and_extension(current_file_ptr, full_filename);
+
+        if (fat_is_entry_valid(current_file_ptr) && memcmp(full_filename, chunks->data[chunks->count - 1], 12) == 0)
+        {
+            current_file_ptr->filename[0] = 0;
+            break;
+        }
+        
+        current_file_ptr++;
+    }
+    
+    kvector_clear(chunks);
+    heap_kernel_dealloc(chunks);
+    heap_kernel_dealloc(file_info);
+    heap_kernel_dealloc(dir_info);
+    heap_kernel_dealloc(directory);
+}
+
 fat_directory_entry *fat_get_directory_from_path(char *path, uint32_t *read_sectors)
 {
     kvector *chunks = fat_parse_path(path);
@@ -275,6 +311,7 @@ fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks, uint32_t *re
 
     if (chunks->count == 0)
     {
+        *read_sectors = (fat_header_data->directory_entries * 32) / fat_header_data->bytes_per_sector;
         return current_directory;
     }
 
@@ -323,17 +360,29 @@ fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks, uint32_t *re
     return result;
 }
 
-fat_directory_entry *fat_get_info(char *path, bool is_directory)
+fat_directory_entry *fat_get_info_from_path(char *path, bool is_directory)
 {
     kvector *chunks = fat_parse_path(path);
+    fat_directory_entry *info = fat_get_info_from_chunks(chunks, is_directory);
+
+    kvector_clear(chunks);
+    heap_kernel_dealloc(chunks);
+
+    return info;
+}
+
+fat_directory_entry *fat_get_info_from_chunks(kvector *chunks, bool is_directory)
+{
     char *target_filename = chunks->data[chunks->count - 1];
     uint32_t read_sectors = 0;
 
-    kvector_remove(chunks, chunks->count - 1);
+    chunks->count--;
 
     fat_directory_entry *directory = fat_get_directory_from_chunks(chunks, &read_sectors);
     fat_directory_entry *current_file_ptr = directory;
     fat_directory_entry *result = NULL;
+    
+    chunks->count++;
 
     for (uint32_t i = 0; i < read_sectors * 16; i++)
     {
@@ -365,8 +414,6 @@ fat_directory_entry *fat_get_info(char *path, bool is_directory)
         memcpy(result_without_junk, result, sizeof(fat_directory_entry));
     }
 
-    kvector_clear(chunks);
-    heap_kernel_dealloc(chunks);
     heap_kernel_dealloc(directory);
     heap_kernel_dealloc(target_filename);
 
@@ -498,7 +545,7 @@ void fat_merge_filename_and_extension(fat_directory_entry *entry, char *buffer)
 // Generic filesystem functions
 bool fat_generic_get_file_info(char *path, filesystem_file_info *generic_file_info)
 {
-    fat_directory_entry *fat_file_info = fat_get_info(path, false);
+    fat_directory_entry *fat_file_info = fat_get_info_from_path(path, false);
     if (fat_file_info == NULL)
     {
         return false;
@@ -521,7 +568,7 @@ bool fat_generic_get_file_info(char *path, filesystem_file_info *generic_file_in
 
 bool fat_generic_get_directory_info(char *path, filesystem_directory_info *generic_directory_info)
 {
-    fat_directory_entry *fat_directory_info = fat_get_info(path, true);
+    fat_directory_entry *fat_directory_info = fat_get_info_from_path(path, true);
     if (fat_directory_info == NULL)
     {
         return false;
@@ -553,7 +600,7 @@ bool fat_generic_get_entries_in_directory(char *path, char **entries)
 
 bool fat_generic_is_file(char *path)
 {
-    fat_directory_entry *entry = fat_get_info(path, false);
+    fat_directory_entry *entry = fat_get_info_from_path(path, false);
 
     if (entry != NULL)
     {
@@ -566,7 +613,7 @@ bool fat_generic_is_file(char *path)
 
 bool fat_generic_is_directory(char *path)
 {
-    fat_directory_entry *entry = fat_get_info(path, true);
+    fat_directory_entry *entry = fat_get_info_from_path(path, true);
 
     if (entry != NULL)
     {

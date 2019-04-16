@@ -24,9 +24,12 @@ void fat_denormalise_filename(char *filename);
 bool fat_read_file_from_path(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length);
 uint8_t *fat_read_file_from_sector(uint16_t initial_sector, uint16_t sector_offset, uint16_t sectors_count, uint32_t *read_sectors);
 
+bool fat_delete_file_from_path(char* path);
+
 fat_directory_entry *fat_get_directory_from_path(char *path, uint32_t *read_sectors);
 fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks, uint32_t *read_sectors);
-fat_directory_entry *fat_get_info(char *path, bool is_directory);
+fat_directory_entry *fat_get_info_from_path(char *path, bool is_directory);
+fat_directory_entry *fat_get_info_from_chunks(kvector *chunks, bool is_directory);
 uint32_t fat_clear_file_sectors(uint32_t initial_sector);
 
 uint32_t fat_get_entries_count_in_directory(char *path);
