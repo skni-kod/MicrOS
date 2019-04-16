@@ -295,13 +295,14 @@ uint8_t *fat_read_file_from_sector(uint16_t initial_sector, uint16_t sector_offs
 bool fat_delete_file_from_path(char* path)
 {
     uint32_t read_sectors = 0;
+    bool root_dir = false;
     
     kvector *chunks = fat_parse_path(path);
     fat_directory_entry *file_info = fat_get_info_from_chunks(chunks, false);
     
     chunks->count--;
     fat_directory_entry *dir_info = fat_get_info_from_chunks(chunks, true);
-    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks, &read_sectors);
+    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks, &read_sectors, &root_dir);
     chunks->count++;
     
     fat_directory_entry *current_file_ptr = directory;
@@ -322,7 +323,16 @@ bool fat_delete_file_from_path(char* path)
         current_file_ptr++;
     }
     
-    fat_save_file_to_sector(dir_info->first_sector, read_sectors, directory);
+    if(!root_dir)
+    {
+        fat_save_file_to_sector(dir_info->first_sector, read_sectors, directory);
+    }
+    else
+    {
+        memcpy(root, directory, directory_length);
+        fat_save_root();
+    }
+    
     fat_save_fat();
     
     kvector_clear(chunks);
@@ -335,7 +345,9 @@ bool fat_delete_file_from_path(char* path)
 fat_directory_entry *fat_get_directory_from_path(char *path, uint32_t *read_sectors)
 {
     kvector *chunks = fat_parse_path(path);
-    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks, read_sectors);
+    bool root_dir = false;
+    
+    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks, read_sectors, &root_dir);
 
     kvector_clear(chunks);
     heap_kernel_dealloc(chunks);
@@ -343,7 +355,7 @@ fat_directory_entry *fat_get_directory_from_path(char *path, uint32_t *read_sect
     return directory;
 }
 
-fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks, uint32_t *read_sectors)
+fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks, uint32_t *read_sectors, bool *root_dir)
 {
     fat_directory_entry *current_directory = heap_kernel_alloc(directory_length, 0);
     memcpy(current_directory, (void *)root, directory_length);
@@ -353,8 +365,11 @@ fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks, uint32_t *re
     if (chunks->count == 0)
     {
         *read_sectors = (fat_header_data->directory_entries * 32) / fat_header_data->bytes_per_sector;
+        *root_dir = true;
+        
         return current_directory;
     }
+    *root_dir = false;
 
     fat_directory_entry *current_file_ptr = current_directory;
     uint32_t current_chunk_index = 0;
@@ -414,12 +429,18 @@ fat_directory_entry *fat_get_info_from_path(char *path, bool is_directory)
 
 fat_directory_entry *fat_get_info_from_chunks(kvector *chunks, bool is_directory)
 {
+    if(chunks->count == 0)
+    {
+        return NULL;
+    }
+    
     char *target_filename = chunks->data[chunks->count - 1];
     uint32_t read_sectors = 0;
+    bool root_dir = false;
 
     chunks->count--;
 
-    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks, &read_sectors);
+    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks, &read_sectors, &root_dir);
     fat_directory_entry *current_file_ptr = directory;
     fat_directory_entry *result = NULL;
     
@@ -482,8 +503,9 @@ uint32_t fat_get_entries_count_in_directory(char *path)
 {
     kvector *chunks = fat_parse_path(path);
     uint32_t read_sectors = 0;
+    bool root_dir = false;
 
-    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks, &read_sectors);
+    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks, &read_sectors, &root_dir);
     fat_directory_entry *current_file_ptr = directory;
     uint32_t entries_count = 0;
 
@@ -519,8 +541,9 @@ uint32_t fat_get_entries_in_directory(char *path, char **entries)
     kvector *chunks = fat_parse_path(path);
     uint32_t path_length = strlen(path);
     uint32_t read_sectors = 0;
+    bool root_dir = false;
 
-    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks, &read_sectors);
+    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks, &read_sectors, &root_dir);
     fat_directory_entry *current_file_ptr = directory;
     uint32_t current_entry_index = 0;
 

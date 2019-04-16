@@ -29,7 +29,7 @@ uint8_t *fat_read_file_from_sector(uint16_t initial_sector, uint16_t sector_offs
 bool fat_delete_file_from_path(char* path);
 
 fat_directory_entry *fat_get_directory_from_path(char *path, uint32_t *read_sectors);
-fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks, uint32_t *read_sectors);
+fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks, uint32_t *read_sectors, bool *root_dir);
 fat_directory_entry *fat_get_info_from_path(char *path, bool is_directory);
 fat_directory_entry *fat_get_info_from_chunks(kvector *chunks, bool is_directory);
 uint32_t fat_clear_file_sectors(uint32_t initial_sector);
