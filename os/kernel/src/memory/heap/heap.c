@@ -278,9 +278,6 @@ bool heap_verify_integrity(bool supervisor)
     while (true)
     {
         total_size += current_entry->size + ENTRY_HEADER_SIZE;
-
-        uint32_t a = (uint32_t)current_entry->next - (uint32_t)current_entry;
-        uint32_t b = current_entry->size + ENTRY_HEADER_SIZE;
         
         if(current_entry->prev != 0 && current_entry->prev->next != current_entry)
         {
