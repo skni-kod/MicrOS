@@ -218,6 +218,7 @@ uint16_t fat_save_file_to_sector(uint16_t initial_sector, uint16_t sectors_count
             if(i == sectors_count - 1)
             {
                 fat_save_sector_value(sector, 0xFFF);
+                break;
             }
             else
             {
@@ -230,6 +231,7 @@ uint16_t fat_save_file_to_sector(uint16_t initial_sector, uint16_t sectors_count
             {
                 fat_save_sector_value(sector, 0xFFF);
                 fat_clear_file_sectors(next_sector);
+                break;
             }
         }
         
@@ -385,6 +387,70 @@ bool fat_rename_file_from_path(char* path, char* new_name)
             fat_normalise_filename(current_file_ptr->filename, false);
             
             changed = true;
+            break;
+        }
+        
+        current_file_ptr++;
+    }
+    
+    if(changed)
+    {
+        if(!root_dir)
+        {
+            fat_save_file_to_sector(dir_info->first_sector, read_sectors, directory);
+        }
+        else
+        {
+            memcpy(root, directory, directory_length);
+            fat_save_root();
+        }  
+    }
+    
+    fat_save_fat();
+    
+    kvector_clear(chunks);
+    heap_kernel_dealloc(chunks);
+    
+    if(file_info != 0) { heap_kernel_dealloc(file_info); }
+    if(dir_info != 0) { heap_kernel_dealloc(dir_info); }
+    
+    heap_kernel_dealloc(directory);
+    
+    return changed;
+}
+
+bool fat_save_file_from_path(char* path, char* buffer, uint32_t size)
+{
+    uint32_t read_sectors = 0;
+    bool root_dir = false;
+    
+    kvector *chunks = fat_parse_path(path);
+    fat_directory_entry *file_info = fat_get_info_from_chunks(chunks, false);
+    
+    chunks->count--;
+    fat_directory_entry *dir_info = fat_get_info_from_chunks(chunks, true);
+    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks, &read_sectors, &root_dir);
+    chunks->count++;
+    
+    fat_directory_entry *current_file_ptr = directory;
+    uint32_t items_count = read_sectors * 16;
+    bool changed = false;
+    
+    for (uint32_t i = 0; i < items_count; i++)
+    {
+        char full_filename[12];
+        fat_merge_filename_and_extension(current_file_ptr, full_filename);
+
+        if (fat_is_entry_valid(current_file_ptr) && memcmp(full_filename, chunks->data[chunks->count - 1], 12) == 0)
+        {
+            char* erased_buffer = heap_kernel_alloc(size, 0);
+            memcpy(erased_buffer, buffer, size);
+            
+            fat_save_file_to_sector(file_info->first_sector, (size / 512) + 1, erased_buffer);
+            current_file_ptr->size = size;
+            changed = true;
+            
+            heap_kernel_dealloc(erased_buffer);
             break;
         }
         
