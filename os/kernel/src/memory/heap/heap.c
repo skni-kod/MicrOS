@@ -60,13 +60,19 @@ void *heap_alloc(uint32_t size, uint32_t align, bool supervisor)
                 {
                     current_entry->next->next = next_entry;
                     current_entry->next->prev = current_entry;
+                    
+                    if(current_entry->next->next != 0)
+                    {
+                        current_entry->next->next->prev = current_entry->next;
+                    }
+                    
                     current_entry->next->size = updated_free_size;
                     current_entry->next->free = 1;
                 }
 
                 current_entry->size = size;
                 current_entry->free = 0;
-
+                
                 return (void *)((uint32_t)current_entry + ENTRY_HEADER_SIZE);
             }
             else
@@ -136,7 +142,7 @@ heap_entry *heap_dealloc(void *ptr, bool supervisor)
             entry->size -= 4 * 1024 * 1024;
         }
     }
-
+    
     return entry;
 }
 
@@ -273,6 +279,19 @@ bool heap_verify_integrity(bool supervisor)
     {
         total_size += current_entry->size + ENTRY_HEADER_SIZE;
 
+        uint32_t a = (uint32_t)current_entry->next - (uint32_t)current_entry;
+        uint32_t b = current_entry->size + ENTRY_HEADER_SIZE;
+        
+        if(current_entry->prev != 0 && current_entry->prev->next != current_entry)
+        {
+            return false;
+        }
+        
+        if(current_entry->next != 0 && current_entry->next->prev != current_entry)
+        {
+            return false;
+        }
+        
         if (current_entry->next != 0 && (uint32_t)current_entry->next - (uint32_t)current_entry != current_entry->size + ENTRY_HEADER_SIZE)
         {
             return false;

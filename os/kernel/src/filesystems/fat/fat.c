@@ -477,7 +477,6 @@ fat_directory_entry *fat_get_info_from_chunks(kvector *chunks, bool is_directory
     }
 
     heap_kernel_dealloc(directory);
-    heap_kernel_dealloc(target_filename);
 
     return result_without_junk;
 }
