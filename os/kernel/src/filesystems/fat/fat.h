@@ -18,7 +18,7 @@ void fat_load_root();
 void fat_save_root();
 uint16_t fat_read_sector_value(uint32_t sector_number);
 void fat_save_sector_value(uint32_t sector_number, uint16_t value);
-void fat_normalise_filename(char *filename);
+void fat_normalise_filename(char *filename, bool with_dot);
 void fat_denormalise_filename(char *filename);
 
 uint16_t fat_save_file_to_sector(uint16_t initial_sector, uint16_t sectors_count, char* buffer);
@@ -27,6 +27,7 @@ bool fat_read_file_from_path(char *path, uint8_t *buffer, uint32_t start_index, 
 uint8_t *fat_read_file_from_sector(uint16_t initial_sector, uint16_t sector_offset, uint16_t sectors_count, uint32_t *read_sectors);
 
 bool fat_delete_file_from_path(char* path);
+bool fat_rename_file_from_path(char* path, char* new_name);
 
 fat_directory_entry *fat_get_directory_from_path(char *path, uint32_t *read_sectors);
 fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks, uint32_t *read_sectors, bool *root_dir);
