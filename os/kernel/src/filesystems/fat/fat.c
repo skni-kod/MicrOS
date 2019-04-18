@@ -483,6 +483,76 @@ bool fat_save_file_from_path(char* path, char* buffer, uint32_t size)
     return changed;
 }
 
+bool fat_create_file_from_path(char* path)
+{
+    uint32_t read_sectors = 0;
+    bool root_dir = false;
+    
+    kvector *chunks = fat_parse_path(path);
+    
+    chunks->count--;
+    fat_directory_entry *dir_info = fat_get_info_from_chunks(chunks, true);
+    fat_directory_entry *directory = fat_get_directory_from_chunks(chunks, &read_sectors, &root_dir);
+    chunks->count++;
+    
+    fat_directory_entry *current_file_ptr = directory;
+    uint32_t items_count = read_sectors * 16;
+    bool found = false;
+    
+    for (uint32_t i = 0; i < items_count; i++)
+    {
+        char full_filename[12];
+        fat_merge_filename_and_extension(current_file_ptr, full_filename);
+
+        if (current_file_ptr->first_character > 122)
+        {
+            found = true;
+            break;
+        }
+        
+        current_file_ptr++;
+    }
+    
+    if(!found && !root_dir)
+    {
+        directory = heap_kernel_realloc(directory, (read_sectors + 1) * 512, 0);
+        current_file_ptr = directory + items_count;
+        found = true;
+    }
+    
+    if(found)
+    {
+        memset(current_file_ptr, 0, sizeof(fat_directory_entry));
+        memcpy(current_file_ptr->filename, chunks->data[chunks->count - 1], 11);
+        fat_normalise_filename(current_file_ptr->filename, false);
+        current_file_ptr->first_character = current_file_ptr->filename[0];
+        current_file_ptr->file_attributes.archive = 1;
+        
+        current_file_ptr->first_sector = fat_get_free_sector_index() - 31;
+        
+        if(!root_dir)
+        {
+            fat_save_file_to_sector(dir_info->first_sector, read_sectors, directory);
+        }
+        else
+        {
+            memcpy(root, directory, directory_length);
+            fat_save_root();
+        }
+        
+        fat_save_fat();
+    }
+    
+    kvector_clear(chunks);
+    heap_kernel_dealloc(chunks);
+    
+    if(dir_info != 0) { heap_kernel_dealloc(dir_info); }
+    
+    heap_kernel_dealloc(directory);
+    
+    return found;
+}
+
 fat_directory_entry *fat_get_directory_from_path(char *path, uint32_t *read_sectors)
 {
     kvector *chunks = fat_parse_path(path);
