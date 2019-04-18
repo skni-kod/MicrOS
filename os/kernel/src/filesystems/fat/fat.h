@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <kvector.h>
 #include "fat_directory_entry.h"
+#include "drivers/rtc/rtc.h"
 #include "Drivers/Floppy/floppy_header.h"
 #include "Drivers/Floppy/floppy.h"
 #include "FileSystems/generic/filesystem_file_info.h"

@@ -533,12 +533,15 @@ bool fat_create_file_from_path(char* path)
         current_file_ptr->first_character = current_file_ptr->filename[0];
         current_file_ptr->file_attributes.archive = 1;
         
-        fat_update_date(&current_file_ptr->create_date, 2000, 1, 1);
-        fat_update_date(&current_file_ptr->last_access_date, 2000, 1, 1);
-        fat_update_date(&current_file_ptr->modify_date, 2000, 1, 1);
+        rtc_time now;
+        rtc_read(&now);
         
-        fat_update_time(&current_file_ptr->create_time, 15, 0, 0);
-        fat_update_time(&current_file_ptr->modify_time, 15, 0, 0);
+        fat_update_date(&current_file_ptr->create_date, now.year, now.month, now.day);
+        fat_update_date(&current_file_ptr->last_access_date, now.year, now.month, now.day);
+        fat_update_date(&current_file_ptr->modify_date, now.year, now.month, now.day);
+        
+        fat_update_time(&current_file_ptr->create_time, now.hour, now.minute, now.second);
+        fat_update_time(&current_file_ptr->modify_time, now.hour, now.minute, now.second);
         
         current_file_ptr->first_sector = fat_get_free_sector_index() - 31;
         
