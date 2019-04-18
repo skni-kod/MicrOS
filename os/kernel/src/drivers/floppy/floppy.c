@@ -285,10 +285,9 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
 
         // Send command to read sector
         //  0x06 or 0x05 - read or write sector command
-        //  0x20 - skip deleted data address marks
         //  0x40 - double density mode
         //  0x80 - operate on both tracks of the cylinder
-        floppy_send_command((read ? 0x06 : 0x05) | 0x20 | 0x40 | 0x80);
+        floppy_send_command((read ? 0x06 : 0x05) | 0x40 | 0x80);
 
         // _ _ _ _ _ HEAD DEV1 DEV2
         floppy_send_command(head << 2 | DEVICE_NUMBER);
