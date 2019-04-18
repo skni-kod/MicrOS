@@ -382,11 +382,13 @@ bool fat_rename_file_from_path(char* path, char* new_name)
 
         if (fat_is_entry_valid(current_file_ptr) && memcmp(full_filename, chunks->data[chunks->count - 1], 12) == 0)
         {
-            memset(current_file_ptr->filename, ' ', 12);
-            memcpy(current_file_ptr->filename, new_name, strlen(new_name));
-            fat_normalise_filename(current_file_ptr->filename, false);
-            
+            char name_without_dot[12];
+            memcpy(name_without_dot, new_name, 12);
+            fat_normalise_filename(name_without_dot, false);
+        
+            memcpy(current_file_ptr->filename, name_without_dot, strlen(new_name));
             changed = true;
+            
             break;
         }
         
