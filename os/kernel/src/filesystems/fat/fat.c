@@ -461,6 +461,12 @@ bool fat_save_file_from_path(char* path, char* buffer, uint32_t size)
     
     if(changed)
     {
+        rtc_time now;
+        rtc_read(&now);
+        
+        fat_update_date(&current_file_ptr->modify_date, now.year, now.month, now.day);
+        fat_update_time(&current_file_ptr->modify_time, now.hour, now.minute, now.second);
+        
         if(!root_dir)
         {
             fat_save_file_to_sector(dir_info->first_sector, read_sectors, directory);
