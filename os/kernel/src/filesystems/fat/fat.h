@@ -40,6 +40,10 @@ uint32_t fat_clear_file_sectors(uint32_t initial_sector);
 uint32_t fat_get_entries_count_in_directory(char *path);
 uint32_t fat_get_entries_in_directory(char *path, char **entries);
 
+
+void fat_update_date(fat_directory_entry_date *fat_date, int year, int month, int day);
+void fat_update_time(fat_directory_entry_time *fat_time, int hours, int minutes, int seconds);
+
 kvector *fat_parse_path(char *path);
 bool fat_is_entry_valid(fat_directory_entry *entry);
 void fat_merge_filename_and_extension(fat_directory_entry *entry, char *buffer);

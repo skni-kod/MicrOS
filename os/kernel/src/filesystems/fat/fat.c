@@ -522,11 +522,21 @@ bool fat_create_file_from_path(char* path)
     
     if(found)
     {
+        char name_without_dot[12];
+        memcpy(name_without_dot, chunks->data[chunks->count - 1], 12);
+        fat_normalise_filename(name_without_dot, false);
+        
         memset(current_file_ptr, 0, sizeof(fat_directory_entry));
-        memcpy(current_file_ptr->filename, chunks->data[chunks->count - 1], 11);
-        fat_normalise_filename(current_file_ptr->filename, false);
+        memcpy(current_file_ptr->filename, name_without_dot, 11);
         current_file_ptr->first_character = current_file_ptr->filename[0];
         current_file_ptr->file_attributes.archive = 1;
+        
+        fat_update_date(&current_file_ptr->create_date, 2000, 1, 1);
+        fat_update_date(&current_file_ptr->last_access_date, 2000, 1, 1);
+        fat_update_date(&current_file_ptr->modify_date, 2000, 1, 1);
+        
+        fat_update_time(&current_file_ptr->create_time, 15, 0, 0);
+        fat_update_time(&current_file_ptr->modify_time, 15, 0, 0);
         
         current_file_ptr->first_sector = fat_get_free_sector_index() - 31;
         
@@ -797,6 +807,20 @@ uint32_t fat_get_entries_in_directory(char *path, char **entries)
     heap_kernel_dealloc(directory);
 
     return true;
+}
+
+void fat_update_date(fat_directory_entry_date *fat_date, int year, int month, int day)
+{
+    fat_date->year = year - 1980;
+    fat_date->month = month;
+    fat_date->day = day;
+}
+
+void fat_update_time(fat_directory_entry_time *fat_time, int hours, int minutes, int seconds)
+{
+    fat_time->hours = hours;
+    fat_time->minutes = minutes;
+    fat_time->seconds = seconds / 2;
 }
 
 bool fat_is_entry_valid(fat_directory_entry *entry)
