@@ -215,6 +215,7 @@ uint16_t fat_save_file_to_sector(uint16_t initial_sector, uint16_t sectors_count
         {
             if(i == sectors_count - 1)
             {
+                fat_save_sector_value(sector, 0xFFF);
                 break;
             }
             else
@@ -534,7 +535,7 @@ bool fat_create_file_from_path(char* path, bool is_directory)
         memcpy(current_file_ptr->filename, name_without_dot, 11);
         current_file_ptr->first_character = ' ';
         current_file_ptr->file_attributes.subdirectory = is_directory;
-        current_file_ptr->file_attributes.archive = true;
+        current_file_ptr->file_attributes.archive = !is_directory;
         
         rtc_time now;
         rtc_read(&now);
