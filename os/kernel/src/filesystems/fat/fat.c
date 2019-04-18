@@ -1,7 +1,5 @@
 #include "fat.h"
 
-// TODO: Add functions related with saving/renaming/other important stuff.
-
 volatile floppy_header *fat_header_data = (floppy_header *)FLOPPY_HEADER_DATA;
 volatile uint8_t *fat;
 volatile fat_directory_entry *root;
@@ -512,7 +510,7 @@ bool fat_create_file_from_path(char* path)
         char full_filename[12];
         fat_merge_filename_and_extension(current_file_ptr, full_filename);
 
-        if (current_file_ptr->first_character > 122)
+        if (!fat_is_entry_valid(current_file_ptr))
         {
             found = true;
             break;
