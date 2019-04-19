@@ -46,6 +46,18 @@ bool micros_filesystem_get_entries_in_directory(char *path, char *entries);
 bool micros_filesystem_is_file(char *path);
 bool micros_filesystem_is_directory(char *path);
 
+bool micros_filesystem_create_file(char *path);
+bool micros_filesystem_create_directory(char *path);
+bool micros_filesystem_delete_file(char *path);
+bool micros_filesystem_delete_directory(char *path);
+bool micros_filesystem_rename_file(char *path, char *new_name);
+bool micros_filesystem_rename_directory(char *path, char *new_name);
+bool micros_filesystem_save_to_file(char *path, char *buffer, int size);
+bool micros_filesystem_append_to_file(char *path, char *buffer, int size);
+
+bool micros_filesystem_file_exists(char *path);
+bool micros_filesystem_directory_exists(char *path);
+
 #ifdef __cplusplus
 }
 #endif

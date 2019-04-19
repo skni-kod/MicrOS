@@ -46,7 +46,7 @@ void syscall_filesystem_create_file(interrupt_state *state)
 
 void syscall_filesystem_create_directory(interrupt_state *state)
 {
-    state->registers.eax = filesystem_create_file((char *)state->registers.ebx);
+    state->registers.eax = filesystem_create_directory((char *)state->registers.ebx);
 }
 
 void syscall_filesystem_delete_file(interrupt_state *state)

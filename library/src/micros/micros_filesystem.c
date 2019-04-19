@@ -34,3 +34,55 @@ bool micros_filesystem_is_directory(char *path)
 {
     return micros_interrupt_1a(0x56, (uint32_t)path);
 }
+
+bool micros_filesystem_create_file(char *path)
+{
+    return micros_interrupt_1a(0x57, (uint32_t)path);
+}
+
+bool micros_filesystem_create_directory(char *path)
+{
+    return micros_interrupt_1a(0x58, (uint32_t)path);
+}
+
+bool micros_filesystem_delete_file(char *path)
+{
+    return micros_interrupt_1a(0x59, (uint32_t)path);
+}
+
+bool micros_filesystem_delete_directory(char *path)
+{
+    return micros_interrupt_1a(0x5A, (uint32_t)path);
+}
+
+bool micros_filesystem_rename_file(char *path, char *new_name)
+{
+    return micros_interrupt_2a(0x5B, (uint32_t)path, (uint32_t)new_name);
+}
+
+bool micros_filesystem_rename_directory(char *path, char *new_name)
+{
+    return micros_interrupt_2a(0x5C, (uint32_t)path, (uint32_t)new_name);
+}
+
+bool micros_filesystem_save_to_file(char *path, char *buffer, int size)
+{
+    return micros_interrupt_3a(0x5D, (uint32_t)path, (uint32_t)buffer, size);
+}
+
+bool micros_filesystem_append_to_file(char *path, char *buffer, int size)
+{
+    return micros_interrupt_3a(0x5E, (uint32_t)path, (uint32_t)buffer, size);
+}
+
+bool micros_filesystem_file_exists(char *path)
+{
+    micros_filesystem_file_info info;
+    return micros_filesystem_get_file_info(path, &info);
+}
+
+bool micros_filesystem_directory_exists(char *path)
+{
+    micros_filesystem_directory_info info;
+    return micros_filesystem_get_directory_info(path, &info);
+}
