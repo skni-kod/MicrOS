@@ -259,7 +259,7 @@ bool fat_read_file_from_path(char *path, uint8_t *buffer, uint32_t start_index, 
     memcpy(buffer, result + (start_index % 512), length);
 
     heap_kernel_dealloc(result);
-    heap_kernel_dealloc(file_info);
+    if(file_info != 0) heap_kernel_dealloc(file_info);
 
     return true;
 }
@@ -712,7 +712,7 @@ fat_directory_entry *fat_get_info_from_chunks(kvector *chunks, bool is_directory
         memcpy(result_without_junk, result, sizeof(fat_directory_entry));
     }
 
-    heap_kernel_dealloc(directory);
+    if(directory != 0) heap_kernel_dealloc(directory);
 
     return result_without_junk;
 }
@@ -761,7 +761,7 @@ uint32_t fat_get_entries_count_in_directory(char *path)
 
     kvector_clear(chunks);
     heap_kernel_dealloc(chunks);
-    heap_kernel_dealloc(directory);
+    if(directory != 0) heap_kernel_dealloc(directory);
 
     return entries_count;
 }
@@ -814,7 +814,7 @@ uint32_t fat_get_entries_in_directory(char *path, char **entries)
 
     kvector_clear(chunks);
     heap_kernel_dealloc(chunks);
-    heap_kernel_dealloc(directory);
+    if(directory != 0) heap_kernel_dealloc(directory);
 
     return true;
 }
