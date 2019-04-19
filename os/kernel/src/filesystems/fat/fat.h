@@ -28,7 +28,7 @@ bool fat_read_file_from_path(char *path, uint8_t *buffer, uint32_t start_index, 
 uint8_t *fat_read_file_from_sector(uint16_t initial_sector, uint16_t sector_offset, uint16_t sectors_count, uint32_t *read_sectors);
 
 bool fat_delete_file_from_path(char* path);
-bool fat_rename_file_from_path(char* path, char* new_name);
+bool fat_rename_file_from_path(char* path, char* new_name, bool is_directory);
 bool fat_save_file_from_path(char* path, char* buffer, uint32_t size);
 bool fat_create_file_from_path(char* path, bool directory);
 

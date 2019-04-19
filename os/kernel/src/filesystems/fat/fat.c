@@ -351,7 +351,7 @@ bool fat_delete_file_from_path(char* path)
     return deleted;
 }
 
-bool fat_rename_file_from_path(char* path, char* new_name)
+bool fat_rename_file_from_path(char* path, char* new_name, bool is_directory)
 {
     uint32_t read_sectors = 0;
     bool root_dir = false;
@@ -362,7 +362,7 @@ bool fat_rename_file_from_path(char* path, char* new_name)
     }
     
     kvector *chunks = fat_parse_path(path);
-    fat_directory_entry *file_info = fat_get_info_from_chunks(chunks, false);
+    fat_directory_entry *file_info = fat_get_info_from_chunks(chunks, is_directory);
     
     chunks->count--;
     fat_directory_entry *dir_info = fat_get_info_from_chunks(chunks, true);
@@ -380,11 +380,12 @@ bool fat_rename_file_from_path(char* path, char* new_name)
 
         if (fat_is_entry_valid(current_file_ptr) && memcmp(full_filename, chunks->data[chunks->count - 1], 12) == 0)
         {
-            char name_without_dot[12];
-            memcpy(name_without_dot, new_name, 12);
+            char name_without_dot[11];
+            memset(name_without_dot, ' ', 11);
+            memcpy(name_without_dot, new_name, strlen(new_name));
             fat_normalise_filename(name_without_dot, false);
         
-            memcpy(current_file_ptr->filename, name_without_dot, strlen(new_name));
+            memcpy(current_file_ptr->filename, name_without_dot, 11);
             changed = true;
             
             break;
