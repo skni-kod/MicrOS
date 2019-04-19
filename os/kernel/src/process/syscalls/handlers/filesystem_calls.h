@@ -14,4 +14,13 @@ void syscall_filesystem_get_entries_in_directory(interrupt_state *state);
 void syscall_filesystem_is_file(interrupt_state *state);
 void syscall_filesystem_is_directory(interrupt_state *state);
 
+void syscall_filesystem_create_file(interrupt_state *state);
+void syscall_filesystem_create_directory(interrupt_state *state);
+void syscall_filesystem_delete_file(interrupt_state *state);
+void syscall_filesystem_delete_directory(interrupt_state *state);
+void syscall_filesystem_rename_file(interrupt_state *state);
+void syscall_filesystem_rename_directory(interrupt_state *state);
+void syscall_filesystem_save_to_file(interrupt_state *state);
+void syscall_filesystem_append_to_file(interrupt_state *state);
+
 #endif

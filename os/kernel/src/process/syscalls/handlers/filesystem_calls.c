@@ -38,3 +38,43 @@ void syscall_filesystem_is_directory(interrupt_state *state)
 {
     state->registers.eax = filesystem_is_directory((char *)state->registers.ebx);
 }
+
+void syscall_filesystem_create_file(interrupt_state *state)
+{
+    state->registers.eax = filesystem_create_file((char *)state->registers.ebx);
+}
+
+void syscall_filesystem_create_directory(interrupt_state *state)
+{
+    state->registers.eax = filesystem_create_file((char *)state->registers.ebx);
+}
+
+void syscall_filesystem_delete_file(interrupt_state *state)
+{
+    state->registers.eax = filesystem_delete_file((char *)state->registers.ebx);
+}
+
+void syscall_filesystem_delete_directory(interrupt_state *state)
+{
+    state->registers.eax = filesystem_delete_directory((char *)state->registers.ebx);
+}
+
+void syscall_filesystem_rename_file(interrupt_state *state)
+{
+    state->registers.eax = filesystem_rename_file((char *)state->registers.ebx, (char *)state->registers.ecx);
+}
+
+void syscall_filesystem_rename_directory(interrupt_state *state)
+{
+    state->registers.eax = filesystem_rename_directory((char *)state->registers.ebx, (char *)state->registers.ecx);
+}
+
+void syscall_filesystem_save_to_file(interrupt_state *state)
+{
+    state->registers.eax = filesystem_save_to_file((char *)state->registers.ebx, (char *)state->registers.ecx, (int)state->registers.edx);
+}
+
+void syscall_filesystem_append_to_file(interrupt_state *state)
+{
+    state->registers.eax = filesystem_append_to_file((char *)state->registers.ebx, (char *)state->registers.ecx, (int)state->registers.edx);
+}
