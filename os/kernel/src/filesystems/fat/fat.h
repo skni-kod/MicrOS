@@ -27,7 +27,7 @@ uint16_t fat_save_file_to_sector(uint16_t initial_sector, uint16_t sectors_count
 bool fat_read_file_from_path(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length);
 uint8_t *fat_read_file_from_sector(uint16_t initial_sector, uint16_t sector_offset, uint16_t sectors_count, uint32_t *read_sectors);
 
-bool fat_delete_file_from_path(char* path);
+bool fat_delete_file_from_path(char* path, bool is_directory);
 bool fat_rename_file_from_path(char* path, char* new_name, bool is_directory);
 bool fat_save_file_from_path(char* path, char* buffer, uint32_t size);
 bool fat_append_file_from_path(char* path, char* buffer, uint32_t size);
@@ -37,7 +37,7 @@ fat_directory_entry *fat_get_directory_from_path(char *path, uint32_t *read_sect
 fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks, uint32_t *read_sectors, bool *root_dir);
 fat_directory_entry *fat_get_info_from_path(char *path, bool is_directory);
 fat_directory_entry *fat_get_info_from_chunks(kvector *chunks, bool is_directory);
-uint32_t fat_clear_file_sectors(uint32_t initial_sector);
+void fat_clear_file_sectors(uint32_t initial_sector);
 uint32_t fat_get_last_file_sector(uint32_t initial_sector);
 
 uint32_t fat_get_entries_count_in_directory(char *path);
@@ -62,6 +62,15 @@ bool fat_generic_is_file(char *path);
 bool fat_generic_is_directory(char *path);
 uint32_t fat_generic_get_free_space();
 uint32_t fat_generic_get_total_space();
+
+bool fat_generic_create_file(char *path);
+bool fat_generic_create_directory(char *path);
+bool fat_generic_delete_file(char *path);
+bool fat_generic_delete_directory(char *path);
+bool fat_generic_rename_file(char *path, char *new_name);
+bool fat_generic_rename_directory(char *path, char *new_name);
+bool fat_generic_save_to_file(char *path, char *buffer, int size);
+bool fat_generic_append_to_file(char *path, char *buffer, int size);
 
 uint8_t fat_generic_copy_filename_to_generic(char *fat_filename, char *generic_filename);
 void fat_generic_convert_date_fat_to_generic(fat_directory_entry_date *fat_date, fat_directory_entry_time *fat_time, filesystem_time *generic_time);

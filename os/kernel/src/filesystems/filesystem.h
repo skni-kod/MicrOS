@@ -20,4 +20,13 @@ bool filesystem_is_directory(char *path);
 uint32_t filesystem_get_free_space();
 uint32_t filesystem_get_total_space();
 
+bool filesystem_create_file(char *path);
+bool filesystem_create_directory(char *path);
+bool filesystem_delete_file(char *path);
+bool filesystem_delete_directory(char *path);
+bool filesystem_rename_file(char *path, char *new_name);
+bool filesystem_rename_directory(char *path, char *new_name);
+bool filesystem_save_to_file(char *path, char *buffer, int size);
+bool filesystem_append_to_file(char *path, char *buffer, int size);
+
 #endif

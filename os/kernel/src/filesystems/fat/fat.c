@@ -31,7 +31,7 @@ void fat_save_fat()
 {
     for (int i = 1; i < fat_header_data->sectors_per_fat; i++)
     {
-        floppy_write_sector(i, (uint32_t)fat + ((i - 1) * 512));
+        floppy_write_sector(i, (uint8_t *)((uint32_t)fat + ((i - 1) * 512)));
     }
 }
 
@@ -54,7 +54,7 @@ void fat_save_root()
 
     for (int i = root_first_sector; i < root_first_sector + root_sectors_count; i++)
     {
-        floppy_write_sector(i, (uint32_t)root + ((i - root_first_sector) * 512));
+        floppy_write_sector(i, (uint8_t *)((uint32_t)root + ((i - root_first_sector) * 512)));
     }
 }
 
@@ -208,7 +208,7 @@ uint16_t fat_save_file_to_sector(uint16_t initial_sector, uint16_t sectors_count
     
     for(int i=0; i<sectors_count; i++)
     {
-        floppy_write_sector(sector + 31, buffer + (i * 512));
+        floppy_write_sector(sector + 31, (uint8_t *)(buffer + (i * 512)));
         
         uint16_t next_sector = fat_read_sector_value(sector);
         if(next_sector == 0 || next_sector >= 0xFF0)
@@ -293,7 +293,7 @@ uint8_t *fat_read_file_from_sector(uint16_t initial_sector, uint16_t sector_offs
     return buffer;
 }
 
-bool fat_delete_file_from_path(char* path)
+bool fat_delete_file_from_path(char* path, bool is_directory)
 {
     uint32_t read_sectors = 0;
     bool root_dir = false;
@@ -315,7 +315,8 @@ bool fat_delete_file_from_path(char* path)
         char full_filename[12];
         fat_merge_filename_and_extension(current_file_ptr, full_filename);
 
-        if (fat_is_entry_valid(current_file_ptr) && memcmp(full_filename, chunks->data[chunks->count - 1], 12) == 0)
+        if (fat_is_entry_valid(current_file_ptr) && memcmp(full_filename, chunks->data[chunks->count - 1], 12) == 0 &&
+            current_file_ptr->file_attributes.subdirectory == is_directory)
         {
             current_file_ptr->filename[0] = 0xE5;
             fat_clear_file_sectors(current_file_ptr->first_sector);
@@ -330,11 +331,11 @@ bool fat_delete_file_from_path(char* path)
     { 
         if(!root_dir)
         {
-            fat_save_file_to_sector(dir_info->first_sector, read_sectors, directory);
+            fat_save_file_to_sector(dir_info->first_sector, read_sectors, (char *)directory);
         }
         else
         {
-            memcpy(root, directory, directory_length);
+            memcpy((void *)root, directory, directory_length);
             fat_save_root();
         }
         
@@ -398,11 +399,11 @@ bool fat_rename_file_from_path(char* path, char* new_name, bool is_directory)
     {
         if(!root_dir)
         {
-            fat_save_file_to_sector(dir_info->first_sector, read_sectors, directory);
+            fat_save_file_to_sector(dir_info->first_sector, read_sectors, (char *)directory);
         }
         else
         {
-            memcpy(root, directory, directory_length);
+            memcpy((void *)root, directory, directory_length);
             fat_save_root();
         }  
     }
@@ -467,11 +468,11 @@ bool fat_save_file_from_path(char* path, char* buffer, uint32_t size)
         
         if(!root_dir)
         {
-            fat_save_file_to_sector(dir_info->first_sector, read_sectors, directory);
+            fat_save_file_to_sector(dir_info->first_sector, read_sectors, (char *)directory);
         }
         else
         {
-            memcpy(root, directory, directory_length);
+            memcpy((void *)root, directory, directory_length);
             fat_save_root();
         }  
     }
@@ -512,7 +513,7 @@ bool fat_append_file_from_path(char* path, char* buffer, uint32_t size)
 
         if (fat_is_entry_valid(current_file_ptr) && memcmp(full_filename, chunks->data[chunks->count - 1], 12) == 0)
         {
-            uint16_t last_sector_ack;
+            uint32_t last_sector_ack;
             
             uint16_t last_file_sector = fat_get_last_file_sector(current_file_ptr->first_sector);
             uint8_t* last_sector_buffer = fat_read_file_from_sector(last_file_sector, 0, 1, &last_sector_ack);
@@ -522,7 +523,7 @@ bool fat_append_file_from_path(char* path, char* buffer, uint32_t size)
             last_sector_buffer = heap_kernel_realloc(last_sector_buffer, (new_sectors_count + 1) * 512, 0);
             memcpy(last_sector_buffer + last_sector_true_size, buffer, size);
             
-            fat_save_file_to_sector(last_file_sector, new_sectors_count + 1, last_sector_buffer);
+            fat_save_file_to_sector(last_file_sector, new_sectors_count + 1, (char *)last_sector_buffer);
             current_file_ptr->size += size;
             changed = true;
             
@@ -542,11 +543,11 @@ bool fat_append_file_from_path(char* path, char* buffer, uint32_t size)
         
         if(!root_dir)
         {
-            fat_save_file_to_sector(dir_info->first_sector, read_sectors, directory);
+            fat_save_file_to_sector(dir_info->first_sector, read_sectors, (char *)directory);
         }
         else
         {
-            memcpy(root, directory, directory_length);
+            memcpy((void *)root, directory, directory_length);
             fat_save_root();
         }  
     }
@@ -632,11 +633,11 @@ bool fat_create_file_from_path(char* path, bool is_directory)
         
         if(!root_dir)
         {
-            fat_save_file_to_sector(dir_info->first_sector, read_sectors, directory);
+            fat_save_file_to_sector(dir_info->first_sector, read_sectors, (char *)directory);
         }
         else
         {
-            memcpy(root, directory, directory_length);
+            memcpy((void *)root, directory, directory_length);
             fat_save_root();
         }
         
@@ -792,7 +793,7 @@ fat_directory_entry *fat_get_info_from_chunks(kvector *chunks, bool is_directory
     return result_without_junk;
 }
 
-uint32_t fat_clear_file_sectors(uint32_t initial_sector)
+void fat_clear_file_sectors(uint32_t initial_sector)
 {
     uint16_t current_sector_index = initial_sector;
     while(current_sector_index< 0xFF0)
@@ -1053,6 +1054,47 @@ uint32_t fat_generic_get_free_space()
 uint32_t fat_generic_get_total_space()
 {
     return fat_header_data->total_sectors * fat_header_data->bytes_per_sector;
+}
+
+
+bool fat_generic_create_file(char *path)
+{
+    fat_create_file_from_path(path, false);
+}
+
+bool fat_generic_create_directory(char *path)
+{
+    fat_create_file_from_path(path, true);
+}
+
+bool fat_generic_delete_file(char *path)
+{
+    fat_delete_file_from_path(path, false);
+}
+
+bool fat_generic_delete_directory(char *path)
+{
+    fat_delete_file_from_path(path, true);
+}
+
+bool fat_generic_rename_file(char *path, char *new_name)
+{
+    fat_rename_file_from_path(path, new_name, false);
+}
+
+bool fat_generic_rename_directory(char *path, char *new_name)
+{
+    fat_rename_file_from_path(path, new_name, true);
+}
+
+bool fat_generic_save_to_file(char *path, char *buffer, int size)
+{
+    fat_save_file_from_path(path, buffer, size);
+}
+
+bool fat_generic_append_to_file(char *path, char *buffer, int size)
+{
+    fat_append_file_from_path(path, buffer, size);
 }
 
 uint8_t fat_generic_copy_filename_to_generic(char *fat_filename, char *generic_filename)

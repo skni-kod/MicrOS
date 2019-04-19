@@ -44,3 +44,43 @@ uint32_t filesystem_get_total_space()
 {
     return fat_generic_get_total_space();
 }
+
+bool filesystem_create_file(char *path)
+{
+    return fat_generic_create_file(path);
+}
+
+bool filesystem_create_directory(char *path)
+{
+    return fat_generic_create_directory(path);
+}
+
+bool filesystem_delete_file(char *path)
+{
+    return fat_generic_delete_file(path);
+}
+
+bool filesystem_delete_directory(char *path)
+{
+    return fat_generic_delete_directory(path);
+}
+
+bool filesystem_rename_file(char *path, char *new_name)
+{
+    return fat_generic_rename_file(path, new_name);
+}
+
+bool filesystem_rename_directory(char *path, char *new_name)
+{
+    return fat_generic_rename_directory(path, new_name);
+}
+
+bool filesystem_save_to_file(char *path, char *buffer, int size)
+{
+    return fat_generic_save_to_file(path, buffer, size);
+}
+
+bool filesystem_append_to_file(char *path, char *buffer, int size)
+{
+    return fat_generic_append_to_file(path, buffer, size);
+}
