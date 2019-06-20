@@ -1,4 +1,4 @@
-#include "ctype.h"
+#include "../ctype.h"
 
 int ispunct(int c)
 {

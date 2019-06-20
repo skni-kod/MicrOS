@@ -1,4 +1,4 @@
-#include "ctype.h"
+#include "../ctype.h"
 
 int isspace(int c)
 {
