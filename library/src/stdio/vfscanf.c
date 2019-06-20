@@ -1,14 +1,64 @@
 #include <stdarg.h>
 #include "../stdio.h"
+#include "../ctype.h"
 
-#define FLAGS_MINUS (1u << 1u)
-#define FLAGS_PLUS (1u << 2u)
-#define FLAGS_ASTERISK (1u << 3u)
+
+int _get_number_from_file(FILE *stream)
+{
+    int ret = 0;
+    short base = 10;
+    bool minus = false;
+
+    char c = getc(stream);
+
+    if (c == '-')
+    {
+        minus = true;
+        c = getc(stream);
+    }
+
+    if (c == '0')
+    {
+        // number is octal
+        base = 8;
+
+        c = getc(stream);
+        if (c == 'x' || c == 'X')
+        {
+            // number is hexadecimal
+            base = 16;
+            c = getc(stream);
+        }
+    }
+
+    while (!isspace(c))
+    {
+        int digit;
+        if (c >= '0' && c <= '9')
+            digit = c - '0';
+        else if (c >= 'A' && c <= 'F')
+            digit = c - 'A' + 10;
+        else if (c >= 'a' && c <= 'f')
+            digit = c - 'a' + 10;
+
+        ret = ret * base + digit;
+        c = getc(stream);
+    }
+
+    if (minus)
+        ret *= -1;
+
+    return ret;
+}
 
 int vfscanf(FILE *stream, const char *format, va_list arg)
 {
 
     printf("SCAN FUNCTION INCOMPLETE, MAY CAUSE UNDEFINED BEHAVIOR!\n");
+
+    unsigned short flags = 0;
+    int width_field = 0;
+    bool have_asterisk = false;
 
     // A format specifier for scanf follows this prototype:
     // %[*][width][length]specifier
@@ -39,6 +89,23 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
                 break;
             }
 
+            // Check for asterisk field
+            if (*traverse == '*')
+            {
+                have_asterisk = true;
+                ++traverse;
+            }
+
+            // Evaluate width field
+            // @TODO find way to reset width field
+            while (*traverse >= '0' && *traverse <= '9')
+            {
+                int digit = (int)(*traverse);
+                width_field = width_field * 10 + digit;
+            }
+
+            // @TODO evaluate length field
+
             switch (*traverse)
             {
             case 'i':
@@ -47,6 +114,12 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
                 // Any number of digits, optionally preceded by a sign (+ or -).
                 // Decimal digits assumed by default (0-9), but a 0 prefix introduces octal digits (0-7), and 0x hexadecimal digits (0-f).
                 // Signed argument.
+                int *int_ptr = va_arg(arg, int *);
+                int n = _get_number_from_file(stream);
+                if (have_asterisk)
+                    n *= -1;
+
+                *int_ptr = n;
             }
             break;
 
