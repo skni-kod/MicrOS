@@ -60,29 +60,29 @@ void draw_process_tree(micros_process_user_info *processes, uint32_t root_id, ui
     for (uint32_t i = 0; i < count; i++)
     {
         micros_process_user_info *process = &processes[i];
-        if(process->id == root_id)
+        if (process->id == root_id)
         {
             root_process = &processes[i];
         }
     }
-    
-    if(level != 0)
+
+    if (level != 0)
     {
-        for(uint32_t i = 0; i < level; i++)
+        for (uint32_t i = 0; i < level; i++)
         {
             micros_console_print_char(' ');
         }
-                
+
         micros_console_print_string("> ");
     }
-    
+
     print_process_info(root_process);
     micros_console_print_string("\n");
-    
+
     for (uint32_t i = 0; i < count; i++)
     {
         micros_process_user_info *process = &processes[i];
-        if(process->id != 0 && process->parent_id == root_id)
+        if (process->id != 0 && process->parent_id == root_id)
         {
             draw_process_tree(processes, process->id, level + 2, count);
         }
@@ -151,8 +151,8 @@ void print_process_info(micros_process_user_info *process_info)
     micros_console_print_string("ID: ");
     itoa(process_info->id, buffer, 10);
     micros_console_print_string(buffer);
-    
-    if(process_info->id != process_info->parent_id)
+
+    if (process_info->id != process_info->parent_id)
     {
         micros_console_print_string(", Parent: ");
         itoa(process_info->parent_id, buffer, 10);
