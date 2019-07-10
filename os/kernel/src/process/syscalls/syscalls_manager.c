@@ -41,6 +41,14 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0x54, syscall_filesystem_get_entries_in_directory);
     syscalls_manager_attach_handler(0x55, syscall_filesystem_is_file);
     syscalls_manager_attach_handler(0x56, syscall_filesystem_is_directory);
+    syscalls_manager_attach_handler(0x57, syscall_filesystem_create_file);
+    syscalls_manager_attach_handler(0x58, syscall_filesystem_create_directory);
+    syscalls_manager_attach_handler(0x59, syscall_filesystem_delete_file);
+    syscalls_manager_attach_handler(0x5A, syscall_filesystem_delete_directory);
+    syscalls_manager_attach_handler(0x5B, syscall_filesystem_rename_file);
+    syscalls_manager_attach_handler(0x5C, syscall_filesystem_rename_directory);
+    syscalls_manager_attach_handler(0x5D, syscall_filesystem_save_to_file);
+    syscalls_manager_attach_handler(0x5E, syscall_filesystem_append_to_file);
 
     // 0x6X - Timer
     syscalls_manager_attach_handler(0x60, syscall_timer_get_system_clock);

@@ -253,7 +253,7 @@ uint8_t *floppy_read_sector(uint16_t sector)
         sleep(100);
     }
 
-    return ptr + 0xc0000000;
+    return ptr;
 }
 
 void floppy_write_sector(uint16_t sector, uint8_t *content)
@@ -285,10 +285,9 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
 
         // Send command to read sector
         //  0x06 or 0x05 - read or write sector command
-        //  0x20 - skip deleted data address marks
         //  0x40 - double density mode
         //  0x80 - operate on both tracks of the cylinder
-        floppy_send_command((read ? 0x06 : 0x05) | 0x20 | 0x40 | 0x80);
+        floppy_send_command((read ? 0x06 : 0x05) | 0x40 | 0x80);
 
         // _ _ _ _ _ HEAD DEV1 DEV2
         floppy_send_command(head << 2 | DEVICE_NUMBER);
@@ -454,8 +453,8 @@ void floppy_dma_init(bool read)
     io_out_byte(DMA_FLIP_FLOP_RESET_REGISTER, 0xff);
 
     // Set buffer to the specified address
-    io_out_byte(DMA_START_ADDRESS_REGISTER, (uint8_t)((uint32_t)dma_buffer & 0xff));
-    io_out_byte(DMA_START_ADDRESS_REGISTER, (uint8_t)((uint32_t)dma_buffer >> 8));
+    io_out_byte(DMA_START_ADDRESS_REGISTER, (uint8_t)((uint32_t)(dma_buffer - 0xc0000000) & 0xff));
+    io_out_byte(DMA_START_ADDRESS_REGISTER, (uint8_t)((uint32_t)(dma_buffer - 0xc0000000) >> 8));
 
     // Reset Flip-Flop register
     io_out_byte(DMA_FLIP_FLOP_RESET_REGISTER, 0xff);

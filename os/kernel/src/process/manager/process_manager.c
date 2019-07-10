@@ -50,7 +50,7 @@ uint32_t process_manager_create_process(char *path, char *parameters, uint32_t p
     fat_generic_get_file_info(path_in_kernel_heap, &process_file_info);
 
     uint8_t *process_content = heap_kernel_alloc(process_file_info.size, 0);
-    fat_read_file(path_in_kernel_heap, process_content, 0, process_file_info.size);
+    fat_read_file_from_path(path_in_kernel_heap, process_content, 0, process_file_info.size);
 
     elf_header *app_header = elf_get_header(process_content);
     uint32_t initial_page = elf_loader_load(process_content);
