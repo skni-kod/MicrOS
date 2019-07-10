@@ -60,12 +60,25 @@ typedef enum file_buffering_mode
     file_buffering_mode_full = 2
 } file_buffering_mode;
 
+typedef enum file_mode
+{
+    file_mode_none,
+    file_mode_read,
+    file_mode_write,
+    file_mode_append,
+    file_mode_read_and_update,
+    file_mode_write_and_update,
+    file_mode_append_and_update
+} file_mode;
+
 //! Object containing information to control a stream.
 /*! Object type that identifies a stream and contains the information needed to control it, including a pointer to its buffer, its position indicator and all its state indicators. !*/
 typedef struct file
 {
     //! Full path of the file (can be empty if stream is assigned to some hardware device).
     char filename[FILENAME_MAX];
+    
+    file_mode mode;
 
     //! Stream buffer.
     char *buffer;
@@ -411,6 +424,8 @@ int scanf(const char *format, ...);
     \return A newly created stream.
 */
 FILE *__stdio_create_stream();
+
+file_mode __stdio_get_file_mode(const char *str_mode);
 
 #ifdef __cplusplus
 }
