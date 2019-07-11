@@ -12,7 +12,10 @@ bool micros_keyboard_get_pressed_key(micros_keyboard_scan_ascii_pair *scan_ascii
 
 void micros_keyboard_wait_for_key_press(micros_keyboard_scan_ascii_pair *scan_ascii_pair)
 {
-    // TODO: This is temporary code due to partially implemented keyboard, will be changed later
+    // Implementation of the keyboard interrupt system causes it's sensitive for both pressing
+    // and releasing keys. That's why we need to do a little hack and skip releasing keys
+    // by waiting for an empty buffer.
+    
     micros_interrupt_0a(0x22);
     while (!micros_keyboard_get_pressed_key(scan_ascii_pair))
     {
