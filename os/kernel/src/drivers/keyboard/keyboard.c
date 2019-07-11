@@ -247,9 +247,8 @@ void keyboard_handler()
                         keyboard_put_key_to_buffor(scancode, kbdusB[scancode]);
                     else
                         keyboard_put_key_to_buffor(scancode, kbdus[scancode]);
-                    break;
                 }
-                if (kb_state->caps_lock_active)
+                else if (kb_state->caps_lock_active)
                 {
                     if ((kb_state->left_shift_pressed) || (kb_state->right_shift_pressed))
                         keyboard_put_key_to_buffor(scancode, kbdus[scancode]);
