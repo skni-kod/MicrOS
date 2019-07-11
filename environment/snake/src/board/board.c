@@ -20,78 +20,15 @@ void board_init(int width, int height)
     board_width = width;
     board_height = height;
     
-    board = malloc(sizeof(char *) * width);
-    for(int i = 0; i < width; i++)
-    {
-        board[i] = malloc(sizeof(char) * height);
-    }
-
-    board_initial_x = (console_width / 2) - (board_width / 2);
-    board_initial_y = (console_height / 2) - (board_height / 2);
-
-    for (int x = 0; x < board_width; x++)
-    {
-        for (int y = 0; y < board_height; y++)
-        {
-            if (x == 0 || x == board_width - 1 || y == 0 || y == board_height - 1)
-            {
-                board[x][y] = '#';
-            }
-            else
-            {
-                board[x][y] = ' ';
-            }
-        }
-    }
-    
-    vector_init(&snake);
-
-    point *head = malloc(sizeof(point));
-    head->x = console_width / 2;
-    head->y = console_height / 2;
-    
-    vector_add(&snake, head);
-    board[head->x][head->y] = 'S';
-    
+    board_generate();
+    board_generate_snake();
+        
     last_update = micros_timer_get_system_clock();
 }
 
 bool board_logic()
 {
-    if(micros_keyboard_is_key_pressed())
-    {
-        micros_keyboard_scan_ascii_pair pressed_key;
-        micros_keyboard_get_pressed_key(&pressed_key);
-        
-        switch(pressed_key.scancode)
-        {
-            case key_w:
-            {
-                dir = dir_up;
-                break;
-            }
-            
-            case key_s:
-            {
-                dir = dir_down;
-                break;
-            }
-            
-            case key_a:
-            {
-                dir = dir_left;
-                break;
-            }
-            
-            case key_d:
-            {
-                dir = dir_right;
-                break;
-            }
-        }
-    }
-    
-    if(micros_timer_get_system_clock() - last_update > 100)
+    if(micros_timer_get_system_clock() - last_update >= 200)
     {
         last_update = micros_timer_get_system_clock();
         
@@ -102,29 +39,10 @@ bool board_logic()
 
         switch(dir)
         {
-            case dir_up:
-            {
-                new_head->y--;
-                break;
-            }
-            
-            case dir_down:
-            {
-                new_head->y++;
-                break;
-            }
-            
-            case dir_right:
-            {
-                new_head->x++;
-                break;
-            }
-            
-            case dir_left:
-            {
-                new_head->x--;
-                break;
-            }
+            case dir_up: new_head->y--; break;
+            case dir_down: new_head->y++; break;
+            case dir_right: new_head->x++; break;
+            case dir_left: new_head->x--; break;
         }
 
         if (board[new_head->x][new_head->y] != '*')
@@ -134,17 +52,31 @@ bool board_logic()
             vector_remove(&snake, snake.count - 1);
             board[tail->x][tail->y] = ' ';
         }
-        else
-        {
-            __asm__("nop");
-        }
-        
         
         vector_insert(&snake, new_head, 0);
         board[new_head->x][new_head->y] = 'S';
+        
+        return true;
     }
     
-    return true;
+    return false;
+}
+
+void board_input()
+{
+    while (micros_keyboard_is_key_pressed())
+    {
+        micros_keyboard_scan_ascii_pair pressed_key;
+        micros_keyboard_get_pressed_key(&pressed_key);
+
+        switch (pressed_key.scancode)
+        {
+            case key_w: dir = dir != dir_down ? dir_up : dir; break; 
+            case key_s: dir = dir != dir_up ? dir_down : dir; break; 
+            case key_a: dir = dir != dir_right ? dir_left : dir; break; 
+            case key_d: dir = dir != dir_left ? dir_right : dir; break; 
+        }
+    }
 }
 
 void board_draw()
@@ -194,6 +126,45 @@ void board_draw()
     }
 }
 
+void board_generate()
+{
+    board = malloc(sizeof(char *) * board_width);
+    for (int i = 0; i < board_width; i++)
+    {
+        board[i] = malloc(sizeof(char) * board_height);
+    }
+
+    board_initial_x = (console_width / 2) - (board_width / 2);
+    board_initial_y = (console_height / 2) - (board_height / 2);
+
+    for (int x = 0; x < board_width; x++)
+    {
+        for (int y = 0; y < board_height; y++)
+        {
+            if (x == 0 || x == board_width - 1 || y == 0 || y == board_height - 1)
+            {
+                board[x][y] = '#';
+            }
+            else
+            {
+                board[x][y] = ' ';
+            }
+        }
+    }
+}
+
+void board_generate_snake()
+{
+    vector_init(&snake);
+
+    point *head = malloc(sizeof(point));
+    head->x = console_width / 2;
+    head->y = console_height / 2;
+
+    vector_add(&snake, head);
+    board[head->x][head->y] = 'S';
+}
+
 void board_generate_food(int count)
 {
     for(int i = 0; i < count; i++)
@@ -201,6 +172,9 @@ void board_generate_food(int count)
         int x = rand() % (board_width - 2) + 1;
         int y = rand() % (board_height - 2) + 1;
         
-        board[x][y] = '*';
+        if(board[x][y] == ' ')
+        {
+            board[x][y] = '*';
+        }
     }
 }

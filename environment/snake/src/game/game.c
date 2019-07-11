@@ -11,11 +11,12 @@ void game_run()
     
     while(1)
     {
+        board_input();
         if(board_logic())
         {
             board_draw();
         }
         
-        //micros_process_current_process_sleep(1000);
+        micros_process_current_process_sleep(10);
     }
 }
