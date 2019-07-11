@@ -10,6 +10,7 @@
 void keyboard_init();
 unsigned char keyboard_able_to_write();
 unsigned char keyboard_is_buffer_empty();
+bool keyboard_get_key_state(char scancode);
 void keyboard_increment_buffer_pointer(volatile uint16_t *const ptr);
 void keyboard_put_key_to_buffer(unsigned char scancode, unsigned char ascii);
 bool keyboard_get_key_from_buffer(keyboard_scan_ascii_pair *scan_ascii_pair);
