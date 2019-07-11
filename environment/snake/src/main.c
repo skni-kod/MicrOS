@@ -1,11 +1,7 @@
-#include <micros.h>
-#include <stdlib.h>
+#include "game/game.h"
 
 int main(int argc, char *argv[])
 {
-    micros_process_set_current_process_name("SNAKE");
-    micros_console_clear();
-    
-    while(1);
+    game_run();
     return 0;
 }
