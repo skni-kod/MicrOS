@@ -7,8 +7,10 @@ int board_initial_x;
 int board_initial_y;
 
 char **board;
+board_state state;
 vector snake;
-direction dir;
+direction current_dir;
+direction future_dir;
 
 unsigned int last_update;
 
@@ -24,6 +26,7 @@ void board_init(int width, int height)
     board_generate_snake();
         
     last_update = micros_timer_get_system_clock();
+    state = board_state_running;
 }
 
 bool board_logic()
@@ -37,20 +40,31 @@ bool board_logic()
         new_head->x = old_head->x;
         new_head->y = old_head->y;
 
-        switch(dir)
+        switch(future_dir)
         {
             case dir_up: new_head->y--; break;
             case dir_down: new_head->y++; break;
             case dir_right: new_head->x++; break;
             case dir_left: new_head->x--; break;
         }
+        current_dir = future_dir;
 
-        if (board[new_head->x][new_head->y] != '*')
+        switch (board[new_head->x][new_head->y])
         {
-            point *tail = snake.data[snake.count - 1];
+            case ' ':
+            {
+                point *tail = snake.data[snake.count - 1];
+                vector_remove(&snake, snake.count - 1);
+                board[tail->x][tail->y] = ' ';
+                break;
+            }
             
-            vector_remove(&snake, snake.count - 1);
-            board[tail->x][tail->y] = ' ';
+            case '#':
+            case 'S':
+            {
+                state = board_state_loss;
+                break;
+            }
         }
         
         vector_insert(&snake, new_head, 0);
@@ -71,10 +85,10 @@ void board_input()
 
         switch (pressed_key.scancode)
         {
-            case key_w: dir = dir != dir_down ? dir_up : dir; break; 
-            case key_s: dir = dir != dir_up ? dir_down : dir; break; 
-            case key_a: dir = dir != dir_right ? dir_left : dir; break; 
-            case key_d: dir = dir != dir_left ? dir_right : dir; break; 
+            case key_w: future_dir = current_dir != dir_down ? dir_up : current_dir; break; 
+            case key_s: future_dir = current_dir != dir_up ? dir_down : current_dir; break; 
+            case key_a: future_dir = current_dir != dir_right ? dir_left : current_dir; break; 
+            case key_d: future_dir = current_dir != dir_left ? dir_right : current_dir; break; 
         }
     }
 }
@@ -124,6 +138,11 @@ void board_draw()
             micros_console_print_char(board[x][y]);
         }
     }
+}
+
+board_state board_get_state()
+{
+    return state;
 }
 
 void board_generate()

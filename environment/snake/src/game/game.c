@@ -17,6 +17,23 @@ void game_run()
             board_draw();
         }
         
+        if(board_get_state() == board_state_loss)
+        {
+            micros_console_position cursor_position;
+            
+            cursor_position.x = 0;
+            cursor_position.y = 0;
+            micros_console_set_cursor_position(&cursor_position);
+            
+            micros_console_set_background_color(micros_console_color_black);
+            micros_console_set_foreground_color(micros_console_color_light_gray);
+            
+            micros_console_clear();
+            micros_console_print_string(splashscreen_lost);
+            
+            while(1);
+        }
+        
         micros_process_current_process_sleep(10);
     }
 }
