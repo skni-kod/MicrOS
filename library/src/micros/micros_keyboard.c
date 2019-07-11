@@ -20,7 +20,7 @@ void micros_keyboard_wait_for_key_press(micros_keyboard_scan_ascii_pair *scan_as
     }
 }
 
-bool micros_keyboard_get_key_state(int scancode)
+bool micros_keyboard_get_key_state(micros_keyboard_keys scancode)
 {
     return micros_interrupt_1a(0x23, scancode);
 }
