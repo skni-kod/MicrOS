@@ -14,3 +14,8 @@ void syscall_keyboard_wait_for_key_press(interrupt_state *state)
 {
     process_manager_current_process_wait_for_key_press();
 }
+
+void syscall_keyboard_get_key_state(interrupt_state *state)
+{
+    state->registers.eax = keyboard_get_key_state(state->registers.ebx);
+}

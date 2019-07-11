@@ -27,6 +27,7 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0x20, syscall_keyboard_is_key_pressed);
     syscalls_manager_attach_handler(0x21, syscall_keyboard_get_pressed_key);
     syscalls_manager_attach_handler(0x22, syscall_keyboard_wait_for_key_press);
+    syscalls_manager_attach_handler(0x23, syscall_keyboard_get_key_state);
 
     // 0x3X - PCI
 
