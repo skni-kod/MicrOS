@@ -81,6 +81,8 @@ unsigned char kbdusB[128] =
         0, /* All other keys are undefined */
 };
 
+bool keyboard_keys_state[128];
+
 volatile keyboard_state_flags *const kb_state = (keyboard_state_flags *)0xc0000417;
 volatile keyboard_extended_state_flags *const kb_estate = (keyboard_extended_state_flags *)0xc0000496;
 volatile uint16_t *const buffer_start = (uint16_t *)0xc0000480;
@@ -106,6 +108,11 @@ unsigned char keyboard_able_to_write()
 unsigned char keyboard_is_buffer_empty()
 {
     return (*buffer_write) == (*buffer_read);
+}
+
+bool keyboard_get_key_state(char scancode)
+{
+    return keyboard_keys_state[scancode];
 }
 
 void keyboard_increment_buffer_pointer(volatile uint16_t *const ptr)
@@ -256,6 +263,13 @@ void keyboard_handler()
                     else
                         keyboard_put_key_to_buffor(scancode, kbdus[scancode]);
                 }
+
+                keyboard_keys_state[scancode] = true;
+            }
+            else
+            {
+                int released_scan_code = scancode - 128;
+                keyboard_keys_state[released_scan_code] = false;
             }
         }
         kb_estate->last_E0h = 0;
