@@ -16,6 +16,6 @@ void game_run()
             board_draw();
         }
         
-        micros_process_current_process_sleep(1000);
+        //micros_process_current_process_sleep(1000);
     }
 }

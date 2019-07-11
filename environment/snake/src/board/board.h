@@ -4,7 +4,8 @@
 #include <micros.h>
 #include <stdio.h>
 #include "../vector/vector.h"
-#include "../point/point.h"
+#include "../helpers/point.h"
+#include "../helpers/direction.h"
 
 void board_init(int width, int height);
 bool board_logic();
