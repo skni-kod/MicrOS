@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include "game_state.h"
 #include "messages/loss_message.h"
+#include "interface/interface.h"
+#include "timer/timer.h"
 #include "../../../vector/vector.h"
 #include "../../../helpers/point.h"
 #include "../../../helpers/direction.h"

@@ -23,6 +23,7 @@ direction future_dir;
 float current_acceleration;
 int food_count;
 int eaten_food;
+int health;
 
 bool redraw_board;
 unsigned int last_update;
@@ -35,9 +36,12 @@ void game_init()
     current_acceleration = 0;
     food_count = 0;
     eaten_food = 0;
-        
+    health = 3;    
+    
     last_update = micros_timer_get_system_clock();
     state = game_state_running;
+    
+    timer_reset();
 }
 
 void game_input()
@@ -171,6 +175,9 @@ void game_draw()
             }
         }
     
+        interface_display(0, eaten_food, health);
+        timer_display(37, 23);
+        
         redraw_board = false;
     }
 }
