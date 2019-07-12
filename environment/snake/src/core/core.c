@@ -27,7 +27,12 @@ scene scenes[SCENES_COUNT] =
         .type = scene_type_about
     },
     {
-        .type = scene_type_exit
+        .type = scene_type_exit,
+        .scene_init = exit_init,
+        .scene_input = exit_input,
+        .scene_logic = exit_logic,
+        .scene_draw = exit_draw,
+        .scene_delete = exit_delete
     }
 };
 

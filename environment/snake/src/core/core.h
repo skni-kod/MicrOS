@@ -7,6 +7,7 @@
 #include "scenes/scene.h"
 #include "scenes/menu/menu.h"
 #include "scenes/game/game.h"
+#include "scenes/exit/exit.h"
 
 void core_run();
 
