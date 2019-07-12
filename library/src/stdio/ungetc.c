@@ -7,5 +7,5 @@ int ungetc(int character, FILE *stream)
         return EOF;
     }
 
-    return stream->buffer[stream->pos++ - stream->base - 1];
+    return stream->buffer[stream->pos-- - stream->base - 1];
 }
