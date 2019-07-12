@@ -2,7 +2,6 @@
 #include "../stdio.h"
 #include "../ctype.h"
 
-
 int _get_number_from_file(FILE *stream)
 {
     int ret = 0;
@@ -40,6 +39,112 @@ int _get_number_from_file(FILE *stream)
             digit = c - 'A' + 10;
         else if (c >= 'a' && c <= 'f')
             digit = c - 'a' + 10;
+
+        ret = ret * base + digit;
+        c = getc(stream);
+    }
+
+    if (minus)
+        ret *= -1;
+
+    return ret;
+}
+
+int _get_decimal_number_from_file(FILE *stream)
+{
+    int ret = 0;
+    bool minus = false;
+
+    char c = getc(stream);
+
+    if (c == '-')
+    {
+        minus = true;
+        c = getc(stream);
+    }
+
+    while (!isspace(c))
+    {
+        int digit = c - '0';
+
+        ret = ret * 10 + digit;
+        c = getc(stream);
+    }
+
+    if (minus)
+        ret *= -1;
+
+    return ret;
+}
+
+int _get_hex_number_from_file(FILE *stream)
+{
+    int ret = 0;
+    short base = 16;
+    bool minus = false;
+
+    char c = getc(stream);
+
+    if (c == '-')
+    {
+        minus = true;
+        c = getc(stream);
+    }
+
+    if (c == '0')
+    {
+        c = getc(stream);
+        if (c == 'x' || c == 'X')
+        {
+            // number is hexadecimal
+            base = 16;
+            c = getc(stream);
+        }
+    }
+
+    while (!isspace(c))
+    {
+        int digit;
+        if (c >= '0' && c <= '9')
+            digit = c - '0';
+        else if (c >= 'A' && c <= 'F')
+            digit = c - 'A' + 10;
+        else if (c >= 'a' && c <= 'f')
+            digit = c - 'a' + 10;
+
+        ret = ret * base + digit;
+        c = getc(stream);
+    }
+
+    if (minus)
+        ret *= -1;
+
+    return ret;
+}
+
+int _get_octal_number_from_file(FILE *stream)
+{
+    int ret = 0;
+    short base = 8;
+    bool minus = false;
+
+    char c = getc(stream);
+
+    if (c == '-')
+    {
+        minus = true;
+        c = getc(stream);
+    }
+
+    if (c == '0')
+    {
+        // skip this character
+        c = getc(stream);
+    }
+
+    while (!isspace(c))
+    {
+        int digit = c - '0';
 
         ret = ret * base + digit;
         c = getc(stream);
@@ -116,40 +221,54 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
                 // Signed argument.
                 int *int_ptr = va_arg(arg, int *);
                 int n = _get_number_from_file(stream);
-                if (have_asterisk)
-                    n *= -1;
 
                 *int_ptr = n;
             }
             break;
 
             case 'd':
-                // @INCOMPLETE
-                // Any number of decimal digits (0-9), optionally preceded by a sign. Signed.
-                break;
-
             case 'u':
                 // @INCOMPLETE
                 // Any number of decimal digits (0-9), optionally preceded by a sign. Unsigned.
+                {
+                    int *int_ptr = va_arg(arg, int *);
+                    int n = _get_decimal_number_from_file(stream);
 
+                    *int_ptr = n;
+                }
                 break;
 
             case 'o':
                 // @INCOMPLETE
                 // Any number of octal digits (0-7), optionally preceded by a sign (+ or -).
                 // Unsigned argument.
+                {
+                    int *int_ptr = va_arg(arg, int *);
+                    int n = _get_octal_number_from_file(stream);
+
+                    *int_ptr = n;
+                }
                 break;
 
             case 'x':
                 // @INCOMPLETE
                 // Any number of hexadecimal digits (0-9, a-f, A-F), optionally preceded by 0x or 0X, and all optionally preceded by a sign (+ or -).
                 // Unsigned argument.
+                {
+                    int *int_ptr = va_arg(arg, int *);
+                    int n = _get_hex_number_from_file(stream);
+
+                    *int_ptr = n;
+                }
                 break;
 
             case 'f':
-                // @INCOMPLETE
+                // @INCOMPLETE, see strtod.c for more detail
+
                 // A series of decimal digits, optionally containing a decimal point, optionally preceeded by a sign (+ or -)
                 // and optionally followed by the e or E character and a decimal integer (or some of the other sequences supported by strtod).
+                float *float_ptr = va_arg(arg, float *);
+                
                 break;
 
             case 'e':
