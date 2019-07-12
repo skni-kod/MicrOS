@@ -114,8 +114,26 @@ scene_type game_logic()
     
     if(state == game_state_loss)
     {
-        loss_message_draw_and_wait(eaten_food);
-        return scene_type_main_menu;
+        game_animate_death();
+        
+        if(health > 1)
+        {
+            game_reset_snake();
+            
+            health--;
+            current_acceleration /= 2;
+            future_dir = dir_right;
+            current_dir = dir_right;
+            
+            state = game_state_running;
+            
+            return scene_type_none;
+        }
+        else
+        {
+            loss_message_draw_and_wait(eaten_food);
+            return scene_type_main_menu;
+        }
     }
     
     if(food_count < generate_food_edge)
@@ -191,6 +209,8 @@ void game_delete()
         free(board[i]);
     }
     free(board);
+    
+    board = 0;
 }
 
 int game_get_eaten_food()
@@ -200,10 +220,13 @@ int game_get_eaten_food()
 
 void game_generate()
 {
-    board = malloc(sizeof(char *) * board_width);
-    for (int i = 0; i < board_width; i++)
+    if(board == 0)
     {
-        board[i] = malloc(sizeof(char) * board_height);
+        board = malloc(sizeof(char *) * board_width);
+        for (int i = 0; i < board_width; i++)
+        {
+            board[i] = malloc(sizeof(char) * board_height);
+        }
     }
 
     board_initial_x = (console_width / 2) - (board_width / 2);
@@ -250,4 +273,47 @@ void game_generate_food()
             food_count++;
         }
     }
+}
+
+void game_animate_death()
+{
+    for(int i = 0; i < 10; i++)
+    {
+        game_set_snake_visibility(i % 2);
+        micros_process_current_process_sleep(300);
+    }
+}
+
+void game_set_snake_visibility(bool visible)
+{
+    micros_console_position cursor_position;
+    for(int i = 0; i < snake.count; i++)
+    {
+        point *snake_part = snake.data[i];
+        
+        cursor_position.x = snake_part->x + board_initial_x;
+        cursor_position.y = snake_part->y + board_initial_y;
+        micros_console_set_cursor_position(&cursor_position);
+                
+        if(visible)
+        {
+            micros_console_set_background_color(micros_console_color_cyan);
+            micros_console_set_foreground_color(micros_console_color_red);
+            micros_console_print_char(SNAKE_SYMBOL);
+        }
+        else
+        {
+            micros_console_set_background_color(micros_console_color_dark_gray);
+            micros_console_print_char(EMPTY_FIELD_SYMBOL);
+        }
+    }
+}
+
+void game_reset_snake()
+{
+    vector_clear(&snake);
+    food_count = 0;
+    
+    game_generate();
+    game_generate_snake();
 }

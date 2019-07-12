@@ -28,4 +28,8 @@ void game_generate();
 void game_generate_snake();
 void game_generate_food();
 
+void game_animate_death();
+void game_set_snake_visibility(bool visible);
+void game_reset_snake();
+
 #endif
