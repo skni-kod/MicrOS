@@ -2,18 +2,34 @@
 #include "../stdio.h"
 #include "../ctype.h"
 
+unsigned int _read_characters_count;
+
+static inline int _getc(FILE *stream)
+{
+    _read_characters_count++;
+
+    return getc(stream);
+}
+
+static inline int _ungetc(int c, FILE *stream)
+{
+    _read_characters_count--;
+
+    return ungetc(c, stream);
+}
+
 int _get_number_from_file(FILE *stream)
 {
     int ret = 0;
     short base = 10;
     bool minus = false;
 
-    char c = getc(stream);
+    char c = _getc(stream);
 
     if (c == '-')
     {
         minus = true;
-        c = getc(stream);
+        c = _getc(stream);
     }
 
     if (c == '0')
@@ -21,12 +37,12 @@ int _get_number_from_file(FILE *stream)
         // number is octal
         base = 8;
 
-        c = getc(stream);
+        c = _getc(stream);
         if (c == 'x' || c == 'X')
         {
             // number is hexadecimal
             base = 16;
-            c = getc(stream);
+            c = _getc(stream);
         }
     }
 
@@ -41,7 +57,7 @@ int _get_number_from_file(FILE *stream)
             digit = c - 'a' + 10;
 
         ret = ret * base + digit;
-        c = getc(stream);
+        c = _getc(stream);
     }
 
     if (minus)
@@ -55,12 +71,12 @@ int _get_decimal_number_from_file(FILE *stream)
     int ret = 0;
     bool minus = false;
 
-    char c = getc(stream);
+    char c = _getc(stream);
 
     if (c == '-')
     {
         minus = true;
-        c = getc(stream);
+        c = _getc(stream);
     }
 
     while (!isspace(c))
@@ -68,7 +84,7 @@ int _get_decimal_number_from_file(FILE *stream)
         int digit = c - '0';
 
         ret = ret * 10 + digit;
-        c = getc(stream);
+        c = _getc(stream);
     }
 
     if (minus)
@@ -83,22 +99,22 @@ int _get_hex_number_from_file(FILE *stream)
     short base = 16;
     bool minus = false;
 
-    char c = getc(stream);
+    char c = _getc(stream);
 
     if (c == '-')
     {
         minus = true;
-        c = getc(stream);
+        c = _getc(stream);
     }
 
     if (c == '0')
     {
-        c = getc(stream);
+        c = _getc(stream);
         if (c == 'x' || c == 'X')
         {
             // number is hexadecimal
             base = 16;
-            c = getc(stream);
+            c = _getc(stream);
         }
     }
 
@@ -113,7 +129,7 @@ int _get_hex_number_from_file(FILE *stream)
             digit = c - 'a' + 10;
 
         ret = ret * base + digit;
-        c = getc(stream);
+        c = _getc(stream);
     }
 
     if (minus)
@@ -128,18 +144,18 @@ int _get_octal_number_from_file(FILE *stream)
     short base = 8;
     bool minus = false;
 
-    char c = getc(stream);
+    char c = _getc(stream);
 
     if (c == '-')
     {
         minus = true;
-        c = getc(stream);
+        c = _getc(stream);
     }
 
     if (c == '0')
     {
         // skip this character
-        c = getc(stream);
+        c = _getc(stream);
     }
 
     while (!isspace(c))
@@ -147,7 +163,7 @@ int _get_octal_number_from_file(FILE *stream)
         int digit = c - '0';
 
         ret = ret * base + digit;
-        c = getc(stream);
+        c = _getc(stream);
     }
 
     if (minus)
@@ -195,7 +211,7 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
 
             while (!isspace(*traverse))
             {
-                char c = getc(stream);
+                char c = _getc(stream);
                 if (*traverse == '%')
                 {
                     break;
@@ -217,14 +233,14 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
                 char c;
                 do
                 {
-                    c = getc(stream);
+                    c = _getc(stream);
                 } while (isspace(c));
 
                 if (c == EOF)
                     return filled_arguments;
 
                 // return read non-whitespace cahracter to the stream so rest of the function can handle it
-                ungetc(c, stream);
+                _ungetc(c, stream);
             }
         }
         else
@@ -264,6 +280,7 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
                 int n = _get_number_from_file(stream);
 
                 *int_ptr = n;
+                filled_arguments++;
             }
             break;
 
@@ -275,6 +292,7 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
                     int n = _get_decimal_number_from_file(stream);
 
                     *int_ptr = n;
+                    filled_arguments++;
                 }
                 break;
 
@@ -286,6 +304,7 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
                     int n = _get_octal_number_from_file(stream);
 
                     *int_ptr = n;
+                    filled_arguments++;
                 }
                 break;
 
@@ -297,6 +316,7 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
                     int n = _get_hex_number_from_file(stream);
 
                     *int_ptr = n;
+                    filled_arguments++;
                 }
                 break;
 
@@ -315,11 +335,11 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
                     int current_size = memory_chunk_size;
                     int index = 0;
 
-                    char c = getc(stream);
+                    char c = _getc(stream);
                     while (!isspace(c))
                     {
                         str_buffer[index++] = c;
-                        c = getc(stream);
+                        c = _getc(stream);
 
                         // realloc string memory if number length is greater than chunk size
                         if (index / current_size > 0)
@@ -333,6 +353,7 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
 
                     *float_ptr = strtod(str_buffer, NULL);
                     free(str_buffer);
+                    filled_arguments++;
                 }
                 break;
 
@@ -346,7 +367,8 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
                 // The next character. If a width other than 1 is specified, the function reads exactly width characters and stores them
                 // in the successive locations of the array passed as argument. No null character is appended at the end.
                 char *ch_arg = va_arg(arg, char *);
-                *ch_arg = getc(stream);
+                *ch_arg = _getc(stream);
+                filled_arguments++;
             }
             break;
 
@@ -357,16 +379,17 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
                 // A terminating null character is automatically added at the end of the stored sequence.
                 {
                     char *char_ptr = va_arg(arg, char *);
-                    char c = getc(stream);
+                    char c = _getc(stream);
                     int index = 0;
 
                     while (!isspace(c))
                     {
                         char_ptr[index++] = c;
-                        c = getc(stream);
+                        c = _getc(stream);
                     }
 
                     char_ptr[index] = 0;
+                    filled_arguments++;
                 }
                 break;
 
@@ -375,13 +398,16 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
 
                 //A sequence of characters representing a pointer. The particular format used depends on the system and library implementation,
                 //but it is the same as the one used to format %p in fprintf.
+                filled_arguments++;
                 break;
 
             case 'n':
-                // @INCOMPLETE
-
                 // No input is consumed.
                 // The number of characters read so far from stdin is stored in the pointed location.
+                {
+                    int* int_ptr = va_arg(arg, int*);
+                    *int_ptr = _read_characters_count;
+                }
                 break;
 
             case '%':
