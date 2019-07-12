@@ -11,16 +11,25 @@ board_state state;
 vector snake;
 direction current_dir;
 direction future_dir;
+float current_acceleration;
+int food_count;
+
+int new_food_count;
+int generate_food_edge;
+float acceleration_ratio;
 
 unsigned int last_update;
 
 const int console_width = 80;
 const int console_height = 25;
 
-void board_init(int width, int height)
+void board_init(int _width, int _height, int _new_food_count, int _generate_food_edge, float _acceleration_ratio)
 {
-    board_width = width;
-    board_height = height;
+    board_width = _width;
+    board_height = _height;
+    new_food_count = _new_food_count;
+    generate_food_edge = _generate_food_edge;
+    acceleration_ratio = _acceleration_ratio;
     
     board_generate();
     board_generate_snake();
@@ -31,7 +40,7 @@ void board_init(int width, int height)
 
 bool board_logic()
 {
-    if(micros_timer_get_system_clock() - last_update >= 200)
+    if(micros_timer_get_system_clock() - last_update >= 200 - current_acceleration)
     {
         last_update = micros_timer_get_system_clock();
         
@@ -59,6 +68,12 @@ bool board_logic()
                 break;
             }
             
+            case '*':
+            {
+                food_count--;
+                break;
+            }
+            
             case '#':
             case 'S':
             {
@@ -73,6 +88,12 @@ bool board_logic()
         return true;
     }
     
+    if(food_count < generate_food_edge)
+    {
+        board_generate_food();
+    }
+    
+    current_acceleration += acceleration_ratio;
     return false;
 }
 
@@ -184,9 +205,9 @@ void board_generate_snake()
     board[head->x][head->y] = 'S';
 }
 
-void board_generate_food(int count)
+void board_generate_food()
 {
-    for(int i = 0; i < count; i++)
+    for(int i = 0; i < new_food_count; i++)
     {
         int x = rand() % (board_width - 2) + 1;
         int y = rand() % (board_height - 2) + 1;
@@ -194,6 +215,7 @@ void board_generate_food(int count)
         if(board[x][y] == ' ')
         {
             board[x][y] = '*';
+            food_count++;
         }
     }
 }

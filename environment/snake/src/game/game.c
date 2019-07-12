@@ -6,8 +6,7 @@ void game_run()
     micros_console_set_cursor_visibility(false);
     micros_console_clear();
 
-    board_init(60, 20);
-    board_generate_food(10);
+    board_init(60, 20, 10, 8, 0.1f);
     
     while(1)
     {
