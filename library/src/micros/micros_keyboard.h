@@ -106,7 +106,7 @@ extern "C"
 
 bool micros_keyboard_is_key_pressed();
 bool micros_keyboard_get_pressed_key(micros_keyboard_scan_ascii_pair *scan_ascii_pair);
-void micros_keyboard_wait_for_key_press();
+void micros_keyboard_wait_for_key_press(micros_keyboard_scan_ascii_pair *scan_ascii_pair);
 bool micros_keyboard_get_key_state(micros_keyboard_keys scancode);
 
 #ifdef __cplusplus
