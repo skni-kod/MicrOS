@@ -8,6 +8,7 @@
 #include "scenes/menu/menu.h"
 #include "scenes/game/game.h"
 #include "scenes/exit/exit.h"
+#include "scenes/about/about.h"
 
 void core_run();
 

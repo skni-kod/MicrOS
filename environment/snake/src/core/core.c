@@ -24,7 +24,12 @@ scene scenes[SCENES_COUNT] =
         .type = scene_type_highscores
     },
     {
-        .type = scene_type_about
+        .type = scene_type_about,
+        .scene_init = about_init,
+        .scene_input = about_input,
+        .scene_logic = about_logic,
+        .scene_draw = about_draw,
+        .scene_delete = about_delete
     },
     {
         .type = scene_type_exit,

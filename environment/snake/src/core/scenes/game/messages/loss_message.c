@@ -15,7 +15,7 @@ const char *loss_message_screen =
 "\n"
 "\n"
 "                                  Your score: %d\n"
-"                         Press any key to restart game\n";
+"                              Press ENTER to return\n";
 
 void loss_message_draw_and_wait(int score)
 {
@@ -32,5 +32,9 @@ void loss_message_draw_and_wait(int score)
     printf(loss_message_screen, score);
     
     micros_keyboard_scan_ascii_pair pressed_key;
-    micros_keyboard_wait_for_key_press(&pressed_key);
+    
+    while(pressed_key.scancode != key_enter)
+    {
+        micros_keyboard_wait_for_key_press(&pressed_key);
+    }
 }

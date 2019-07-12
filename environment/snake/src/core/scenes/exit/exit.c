@@ -13,6 +13,7 @@ void exit_input()
 scene_type exit_logic()
 {
     exit(0);
+    return scene_type_none;
 }
 
 void exit_draw()
