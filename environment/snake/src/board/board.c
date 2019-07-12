@@ -39,7 +39,7 @@ void board_init(int _width, int _height, int _new_food_count, int _generate_food
     state = board_state_running;
 }
 
-bool board_logic()
+scene_type board_logic()
 {
     if(micros_timer_get_system_clock() - last_update >= 200 - current_acceleration)
     {
@@ -163,9 +163,9 @@ void board_draw()
     }
 }
 
-board_state board_get_state()
+void board_delete()
 {
-    return state;
+    
 }
 
 int board_get_eaten_food()

@@ -7,12 +7,13 @@
 #include "../vector/vector.h"
 #include "../helpers/point.h"
 #include "../helpers/direction.h"
+#include "../core/scenes/scene_type.h"
 
 void board_init(int _width, int height, int _new_food_count, int _generate_food_edge, float _acceleration_ratio);
-bool board_logic();
+scene_type board_logic();
 void board_input();
 void board_draw();
-board_state board_get_state();
+void board_delete();
 int board_get_eaten_food();
 
 void board_generate();

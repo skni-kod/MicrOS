@@ -1,15 +1,63 @@
-#include "game.h"
+#include "core.h"
 
-game_state state;
+scene_type current_scene_type;
 
-void game_run()
+scene scenes[SCENES_COUNT] =
 {
-    state = game_state_premenu;
-    
+    {
+        .type = scene_type_main_menu,
+        .scene_init = menu_init,
+        .scene_input = menu_input,
+        .scene_logic = menu_logic,
+        .scene_draw = menu_draw,
+        .scene_delete = menu_delete
+    },
+    {
+        .type = scene_type_game,
+        .scene_init = board_init,
+        .scene_input = board_input,
+        .scene_logic = board_logic,
+        .scene_draw = board_draw,
+        .scene_delete = board_delete
+    },
+    {
+        .type = scene_type_highscores
+    },
+    {
+        .type = scene_type_about
+    },
+    {
+        .type = scene_type_exit
+    }
+};
+
+void core_run()
+{
     micros_process_set_current_process_name("SNAKE");
     micros_console_set_cursor_visibility(false);
     
+    current_scene_type = scene_type_main_menu;
+    scenes[current_scene_type].scene_init();
+    
     while(1)
+    {
+        scenes[current_scene_type].scene_input();
+        
+        scene_type requested_scene = scenes[current_scene_type].scene_logic();
+        if(requested_scene != scene_type_none)
+        {
+            scenes[current_scene_type].scene_delete();
+            current_scene_type = requested_scene;
+            
+            scenes[current_scene_type].scene_init();
+            continue;
+        }
+        
+        scenes[current_scene_type].scene_draw();
+        micros_process_current_process_sleep(10);
+    }
+    
+    /*while(1)
     {
         switch(state)
         {
@@ -68,10 +116,10 @@ void game_run()
         }
         
         micros_process_current_process_sleep(10);
-    }
+    }*/
 }
 
-void game_display_lost_splashscreen()
+/*void game_display_lost_splashscreen()
 {
     micros_console_position cursor_position;
             
@@ -84,4 +132,4 @@ void game_display_lost_splashscreen()
     
     micros_console_clear();
     printf(splashscreen_lost, board_get_eaten_food());
-}
+}*/

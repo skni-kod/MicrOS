@@ -1,7 +1,7 @@
-#include "game/game.h"
+#include "core/core.h"
 
 int main(int argc, char *argv[])
 {
-    game_run();
+    core_run();
     return 0;
 }

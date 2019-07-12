@@ -5,15 +5,13 @@
 #include <stdio.h>
 #include "menu_screens.h"
 #include "menu_button.h"
-#include "../helpers/point.h"
-#include "../game/game_state.h"
+#include "../scene_type.h"
+#include "../../../helpers/point.h"
 
 void menu_init();
 void menu_input();
-bool menu_logic();
+scene_type menu_logic();
 void menu_draw();
-
-void menu_set_requested_state();
-game_state menu_get_requested_state();
+void menu_delete();
 
 #endif
