@@ -300,6 +300,19 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
 
                 // Any number of non-whitespace characters, stopping at the first whitespace character found.
                 // A terminating null character is automatically added at the end of the stored sequence.
+                {
+                    char *char_ptr = va_arg(arg, char *);
+                    char c = getc(stream);
+                    int index = 0;
+
+                    while (!isspace(c))
+                    {
+                        char_ptr[index++] = c;
+                        c = getc(stream);
+                    }
+
+                    char_ptr[index] = 0;
+                }
                 break;
 
             case 'p':
