@@ -168,7 +168,7 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
     // A format specifier for scanf follows this prototype:
     // %[*][width][length]specifier
 
-    for (char *traverse = format; traverse != '\0'; ++traverse)
+    for (char *traverse = format; *traverse != '\0'; ++traverse)
     {
         if (*traverse != '%')
         {
