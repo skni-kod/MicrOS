@@ -267,8 +267,33 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
 
                 // A series of decimal digits, optionally containing a decimal point, optionally preceeded by a sign (+ or -)
                 // and optionally followed by the e or E character and a decimal integer (or some of the other sequences supported by strtod).
-                float *float_ptr = va_arg(arg, float *);
-                
+                {
+                    float *float_ptr = va_arg(arg, float *);
+                    const int memory_chunk_size = 16;
+
+                    char *str_buffer = malloc(memory_chunk_size);
+                    int current_size = memory_chunk_size;
+                    int index = 0;
+
+                    char c = getc(stream);
+                    while (!isspace(c))
+                    {
+                        str_buffer[index++] = c;
+                        c = getc(stream);
+
+                        // realloc string memory if number length is greater than chunk size
+                        if (index / current_size > 0)
+                        {
+                            current_size += memory_chunk_size;
+                            str_buffer = realloc(str_buffer, current_size);
+                        }
+                    }
+
+                    str_buffer[index] = 0;
+
+                    *float_ptr = strtod(str_buffer, NULL);
+                    free(str_buffer);
+                }
                 break;
 
             case 'e':
