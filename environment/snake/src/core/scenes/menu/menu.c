@@ -4,6 +4,7 @@ menu_button selected_menu_button;
 point indicator_start_position;
 
 bool redraw_menu;
+bool button_selected;
 
 void menu_init()
 {
@@ -14,6 +15,7 @@ void menu_init()
     indicator_start_position.y = 12;
     
     redraw_menu = true;
+    button_selected = false;
 }
 
 void menu_input()
@@ -41,6 +43,7 @@ void menu_input()
             
             case key_enter:
             {
+                button_selected = true;
                 break;
             }
         } 
@@ -49,6 +52,17 @@ void menu_input()
 
 scene_type menu_logic()
 {
+    if(button_selected)
+    {
+        switch(selected_menu_button)
+        {
+            case menu_button_play: return scene_type_game;
+            case menu_button_highscores: return scene_type_highscores;
+            case menu_button_about: return scene_type_about;
+            case menu_button_exit: return scene_type_exit;
+        }    
+    }
+    
     return scene_type_none;
 }
 

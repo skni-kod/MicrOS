@@ -6,7 +6,7 @@
 #include <micros.h>
 #include "scenes/scene.h"
 #include "scenes/menu/menu.h"
-#include "../board/board.h"
+#include "scenes/game/game.h"
 #include "../interface/interface.h"
 #include "../timer/timer.h"
 
