@@ -14,5 +14,5 @@ const char *splashscreen_lost =
 "                     |_|\\___/ \\__,_|     |______\\___/|___/\\__|\n"
 "\n"
 "\n"
-"                                  Your score: 0\n"
+"                                  Your score: %d\n"
 "                         Press any key to restart game\n";

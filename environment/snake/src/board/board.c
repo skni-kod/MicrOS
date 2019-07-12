@@ -13,6 +13,7 @@ direction current_dir;
 direction future_dir;
 float current_acceleration;
 int food_count;
+int eaten_food;
 
 int new_food_count;
 int generate_food_edge;
@@ -71,6 +72,7 @@ bool board_logic()
             case '*':
             {
                 food_count--;
+                eaten_food++;
                 break;
             }
             
@@ -164,6 +166,11 @@ void board_draw()
 board_state board_get_state()
 {
     return state;
+}
+
+int board_get_eaten_food()
+{
+    return eaten_food;
 }
 
 void board_generate()

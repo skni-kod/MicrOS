@@ -13,6 +13,7 @@ bool board_logic();
 void board_input();
 void board_draw();
 board_state board_get_state();
+int board_get_eaten_food();
 
 void board_generate();
 void board_generate_snake();
