@@ -21,7 +21,12 @@ scene scenes[SCENES_COUNT] =
         .scene_delete = game_delete
     },
     {
-        .type = scene_type_highscores
+        .type = scene_type_highscores,
+        .scene_init = highscores_init,
+        .scene_input = highscores_input,
+        .scene_logic = highscores_logic,
+        .scene_draw = highscores_draw,
+        .scene_delete = highscores_delete
     },
     {
         .type = scene_type_about,
