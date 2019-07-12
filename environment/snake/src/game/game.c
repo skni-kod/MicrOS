@@ -1,28 +1,70 @@
 #include "game.h"
 
+game_state state;
+
 void game_run()
 {
+    state = game_state_premenu;
+    
     micros_process_set_current_process_name("SNAKE");
     micros_console_set_cursor_visibility(false);
-    micros_console_clear();
-
-    board_init(60, 20, 10, 8, 0.1f);
-    timer_reset();
     
     while(1)
     {
-        board_input();
-        if(board_logic())
+        switch(state)
         {
-            board_draw();
-            interface_display(0, board_get_eaten_food(), 3);
-            timer_display(37, 23);
-        }
+            case game_state_premenu:
+            {
+                menu_init();
+                state = game_state_menu;
+            }
+            
+            case game_state_menu:
+            {
+                menu_input();
+                if(menu_logic())
+                {
+                    menu_draw();
+                }
+                
+                game_state requested_game_state = menu_get_requested_state();
+                if(requested_game_state != game_state_none)
+                {
+                    state = requested_game_state;
+                }
+                
+                break;
+            }
+            
+            case game_state_pregame:
+            {
+                micros_console_clear();
+                board_init(60, 20, 10, 8, 0.1f);
+                timer_reset();
+                
+                state = game_state_game;
+                break;
+            }
+            
+            case game_state_game:
+            {
+                board_input();
+                if(board_logic())
+                {
+                    board_draw();
+                    interface_display(0, board_get_eaten_food(), 3);
+                    timer_display(37, 23);
+                }
+                
+                if(board_get_state() == board_state_loss)
+                {
+                    game_display_lost_splashscreen();
+                    micros_keyboard_wait_for_key_press();
+                    state = game_state_premenu;
+                }
         
-        if(board_get_state() == board_state_loss)
-        {
-            game_display_lost_splashscreen();
-            while(1);
+                break;
+            }
         }
         
         micros_process_current_process_sleep(10);
