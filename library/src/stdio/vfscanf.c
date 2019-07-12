@@ -165,10 +165,18 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
     int width_field = 0;
     bool have_asterisk = false;
 
+    int filled_arguments = 0;
+
     // A format specifier for scanf follows this prototype:
     // %[*][width][length]specifier
 
-    for (char *traverse = format; *traverse != '\0'; ++traverse)
+    // @INCOMPLETE:
+    // If a reading error happens or the end-of-file is reached while reading, the proper indicator is set (feof or ferror).
+    // And, if either happens before any data could be successfully read, EOF is returned.
+    //
+    // If an encoding error happens interpreting wide characters, the function sets errno to EILSEQ.
+
+    for (const char *traverse = format; *traverse != '\0'; ++traverse)
     {
         if (*traverse != '%')
         {
@@ -184,6 +192,40 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
             // compare it to this non-whitespace character and if it matches, it is discarded and the function
             // continues with the next character of format. If the character does not match, the function fails,
             // returning and leaving subsequent characters of the stream unread.
+
+            while (!isspace(*traverse))
+            {
+                char c = getc(stream);
+                if (*traverse == '%')
+                {
+                    break;
+                }
+                else if (*traverse == c)
+                {
+                    ++traverse;
+
+                    continue;
+                }
+                else
+                {
+                    return filled_arguments;
+                }
+            }
+
+            if (isspace(*traverse))
+            {
+                char c;
+                do
+                {
+                    c = getc(stream);
+                } while (isspace(c));
+
+                if (c == EOF)
+                    return filled_arguments;
+
+                // return read non-whitespace cahracter to the stream so rest of the function can handle it
+                ungetc(c, stream);
+            }
         }
         else
         {
@@ -215,7 +257,6 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
             {
             case 'i':
             {
-                // @INCOMPLETE
                 // Any number of digits, optionally preceded by a sign (+ or -).
                 // Decimal digits assumed by default (0-9), but a 0 prefix introduces octal digits (0-7), and 0x hexadecimal digits (0-f).
                 // Signed argument.
@@ -228,7 +269,6 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
 
             case 'd':
             case 'u':
-                // @INCOMPLETE
                 // Any number of decimal digits (0-9), optionally preceded by a sign. Unsigned.
                 {
                     int *int_ptr = va_arg(arg, int *);
@@ -239,7 +279,6 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
                 break;
 
             case 'o':
-                // @INCOMPLETE
                 // Any number of octal digits (0-7), optionally preceded by a sign (+ or -).
                 // Unsigned argument.
                 {
@@ -251,7 +290,6 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
                 break;
 
             case 'x':
-                // @INCOMPLETE
                 // Any number of hexadecimal digits (0-9, a-f, A-F), optionally preceded by 0x or 0X, and all optionally preceded by a sign (+ or -).
                 // Unsigned argument.
                 {
@@ -262,6 +300,8 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
                 }
                 break;
 
+            case 'e':
+            case 'g':
             case 'f':
                 // @INCOMPLETE, see strtod.c for more detail
 
@@ -294,16 +334,6 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
                     *float_ptr = strtod(str_buffer, NULL);
                     free(str_buffer);
                 }
-                break;
-
-            case 'e':
-                // @INCOMPLETE
-                // The same as 'f'
-                break;
-
-            case 'g':
-                // @INCOMPLETE
-                // The same as 'f'
                 break;
 
             case 'a':
@@ -365,4 +395,6 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
             }
         }
     }
+
+    return filled_arguments;
 }
