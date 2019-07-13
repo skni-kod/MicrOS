@@ -28,9 +28,12 @@ void menu_init()
 {
     micros_console_clear();
     
-    selected_menu_button = menu_button_play;
-    indicator_start_position.x = 33;
-    indicator_start_position.y = 12;
+    if(indicator_start_position.x == 0 && indicator_start_position.y == 0)
+    {
+        selected_menu_button = menu_button_play;
+        indicator_start_position.x = 33;
+        indicator_start_position.y = 12;
+    }
     
     redraw_menu = true;
     button_selected = false;

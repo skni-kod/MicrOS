@@ -1,7 +1,7 @@
 #include "game.h"
 
 int board_width = 70;
-int board_height = 20;
+int board_height = 19;
 
 const int console_width = 80;
 const int console_height = 25;
@@ -201,7 +201,7 @@ void game_draw()
             }
         }
     
-        interface_display(0, eaten_food, health);
+        interface_display(1, eaten_food, health);
         timer_display(37, 23);
         
         redraw_board = false;

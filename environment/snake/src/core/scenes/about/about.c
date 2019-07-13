@@ -1,6 +1,7 @@
 #include "about.h"
 
 bool redraw_about;
+bool about_exit_to_menu;
 
 const char *about_screen =
 "\n"
@@ -20,30 +21,38 @@ const char *about_screen =
 "                                  Version 1.0\n"
 "                                   SKNI  KOD \n"
 "\n"
-"                            Press any key to return\n";
+"\n"
+"\n"
+"\n"
+"\n"
+"\n"
+"\n"
+"                             Press ENTER to return\n";
 
 void about_init()
 {
     micros_console_clear();
     redraw_about = true;
+    about_exit_to_menu = false;
 }
 
 void about_input()
 {
-    
-}
-
-scene_type about_logic()
-{
-    if(!redraw_about)
+    if(micros_keyboard_is_key_pressed())
     {
         micros_keyboard_scan_ascii_pair pressed_key;
         micros_keyboard_wait_for_key_press(&pressed_key);
         
-        return scene_type_main_menu;
+        if(pressed_key.scancode == key_enter)
+        {
+            about_exit_to_menu = true;
+        }
     }
-    
-    return scene_type_none;
+}
+
+scene_type about_logic()
+{
+    return about_exit_to_menu ? scene_type_main_menu : scene_type_none;
 }
 
 void about_draw()

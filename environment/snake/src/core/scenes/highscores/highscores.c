@@ -27,6 +27,8 @@ const char *highscores_screen =
 "\n"
 "\n"
 "\n"
+"\n"
+"\n"
 "                              Press ENTER to return\n";
 
 void highscores_init()
@@ -34,7 +36,7 @@ void highscores_init()
     micros_console_clear();
     
     list_start_point.x = 16;
-    list_start_point.y = 13;
+    list_start_point.y = 12;
     exit_to_menu = false;
     
     micros_console_position cursor_position;
