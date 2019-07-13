@@ -2,18 +2,22 @@
 
 char *fgets(char *str, int num, FILE *stream)
 {
-    char c = fgetc(stream);
     int i = 0;
-
-    if (c == EOF)
+    while(1)
     {
-        return NULL;
-    }
-
-    do
-    {
+        char c = fgetc(stream);
+        if (c == EOF)
+        {
+            return NULL;
+        }
+        
         str[i++] = c;
-    } while ((c = fgetc(stream), c != '\n' && c != -1) && i < num);
+        
+        if (c == '\n' || c == -1 || i >= num)
+        {
+            break;
+        }
+    }
 
     str[i] = 0;
     return str;
