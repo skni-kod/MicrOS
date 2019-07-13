@@ -54,7 +54,7 @@ void highscores_init()
             cursor_position.y = list_start_point.y + i;
             micros_console_set_cursor_position(&cursor_position);
             
-            printf("%d. %s: %d points", i, highscores_data.entries[i].name, highscores_data.entries[i].score);
+            printf("%d. %s: %d points", i + 1, highscores_data.entries[i].name, highscores_data.entries[i].score);
         }
     }
 }

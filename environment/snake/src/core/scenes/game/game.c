@@ -33,6 +33,8 @@ void game_init()
     game_generate();
     game_generate_snake();
     
+    current_dir = dir_right;
+    future_dir = dir_right;
     current_acceleration = 0;
     food_count = 0;
     eaten_food = 0;
