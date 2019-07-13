@@ -50,6 +50,7 @@ void core_run()
 {
     micros_process_set_current_process_name("SNAKE");
     micros_console_set_cursor_visibility(false);
+    highscores_load_from_file();
     
     current_scene_type = scene_type_main_menu;
     scenes[current_scene_type].scene_init();
