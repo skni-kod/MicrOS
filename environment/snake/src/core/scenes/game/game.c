@@ -1,14 +1,14 @@
 #include "game.h"
 
-int board_width = 60;
+int board_width = 70;
 int board_height = 20;
 
 const int console_width = 80;
 const int console_height = 25;
 
 const int new_food_count = 10;
-const int generate_food_edge = 8;
-const float acceleration_ratio = 0.1f;
+const int generate_food_edge = 7;
+const float acceleration_ratio = 0.03f;
 
 int board_initial_x;
 int board_initial_y;
