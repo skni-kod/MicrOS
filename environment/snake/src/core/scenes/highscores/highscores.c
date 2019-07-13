@@ -33,7 +33,7 @@ void highscores_init()
 {
     micros_console_clear();
     
-    list_start_point.x = 13;
+    list_start_point.x = 16;
     list_start_point.y = 13;
     exit_to_menu = false;
     
@@ -101,4 +101,39 @@ void highscores_save_to_file()
     FILE *file = fopen(highscores_filename, "w");
     fwrite(&highscores_data, sizeof(highscores_container), 1, file);
     fclose(file);
+}
+
+int highscores_get_minimal_score_to_save()
+{
+    int minimal_score = INT32_MAX;
+    for(int i = 0; i < HIGHSCORES_ENTRIES_COUNT; i++)
+    {
+        if(highscores_data.entries[i].score < minimal_score)
+        {
+            minimal_score = highscores_data.entries[i].score;
+        }
+    }
+    
+    return minimal_score;
+}
+
+void highscores_add_new_entry(const char *name, int score)
+{
+    for(int i = 0; i < HIGHSCORES_ENTRIES_COUNT; i++)
+    {
+        if(score >= highscores_data.entries[i].score)
+        {
+            for(int shift_index = HIGHSCORES_ENTRIES_COUNT - 1; shift_index > i; shift_index--)
+            {
+                memcpy(&highscores_data.entries[shift_index], &highscores_data.entries[shift_index - 1], sizeof(highscores_entry));
+            }
+            
+            memcpy(highscores_data.entries[i].name, name, strlen(name) + 1);
+            highscores_data.entries[i].score = score;
+            
+            break;
+        }
+    }
+    
+    highscores_save_to_file();
 }

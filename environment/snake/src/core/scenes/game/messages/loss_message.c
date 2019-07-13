@@ -30,6 +30,7 @@ void loss_message_draw_and_wait(int score)
     micros_console_set_foreground_color(micros_console_color_light_gray);
     
     printf(loss_message_screen, score);
+    highscores_add_new_entry("Pawel", score);
     
     micros_keyboard_scan_ascii_pair pressed_key;
     

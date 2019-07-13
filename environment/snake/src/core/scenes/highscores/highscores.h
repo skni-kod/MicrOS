@@ -2,6 +2,7 @@
 #define HIGHSCORES_H
 
 #include <micros.h>
+#include <string.h>
 #include <stdio.h>
 #include "highscores_container.h"
 #include "../scene_type.h"
@@ -15,5 +16,7 @@ void highscores_delete();
 
 void highscores_load_from_file();
 void highscores_save_to_file();
+int highscores_get_minimal_score_to_save();
+void highscores_add_new_entry(const char *name, int score);
 
 #endif
