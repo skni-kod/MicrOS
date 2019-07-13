@@ -214,7 +214,24 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
                 char c = _getc(stream);
                 if (*traverse == '%')
                 {
-                    break;
+                    if (*(traverse + 1) == '%')
+                    {
+                        if (c == '%')
+                        {
+                            traverse += 2;
+                            continue;
+                        }
+                        else
+                        {
+                            return filled_arguments;
+                        }
+                    }
+                    else
+                    {
+                        --traverse;
+                        _ungetc(c, stream);
+                        break;
+                    }
                 }
                 else if (*traverse == c)
                 {
@@ -405,15 +422,18 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
                 // No input is consumed.
                 // The number of characters read so far from stdin is stored in the pointed location.
                 {
-                    int* int_ptr = va_arg(arg, int*);
+                    int *int_ptr = va_arg(arg, int *);
                     *int_ptr = _read_characters_count;
                 }
                 break;
 
             case '%':
-                // @INCOMPLETE
                 // A % followed by another % matches a single %.
-
+                {
+                    char c = _getc(stream);
+                    if (c != '%')
+                        return filled_arguments;
+                }
                 break;
 
             default:
