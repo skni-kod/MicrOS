@@ -131,8 +131,16 @@ scene_type game_logic()
         }
         else
         {
-            loss_message_draw_and_wait(eaten_food);
-            return scene_type_main_menu;
+            if(eaten_food >= highscores_get_minimal_score_to_save())
+            {
+                new_highscore_message_draw_and_wait(eaten_food);
+                return scene_type_highscores;
+            }
+            else
+            {
+                loss_message_draw_and_wait(eaten_food);
+                return scene_type_main_menu;
+            }
         }
     }
     
