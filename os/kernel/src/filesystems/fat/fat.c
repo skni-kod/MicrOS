@@ -1059,42 +1059,42 @@ uint32_t fat_generic_get_total_space()
 
 bool fat_generic_create_file(char *path)
 {
-    fat_create_file_from_path(path, false);
+    return fat_create_file_from_path(path, false);
 }
 
 bool fat_generic_create_directory(char *path)
 {
-    fat_create_file_from_path(path, true);
+    return fat_create_file_from_path(path, true);
 }
 
 bool fat_generic_delete_file(char *path)
 {
-    fat_delete_file_from_path(path, false);
+    return fat_delete_file_from_path(path, false);
 }
 
 bool fat_generic_delete_directory(char *path)
 {
-    fat_delete_file_from_path(path, true);
+    return fat_delete_file_from_path(path, true);
 }
 
 bool fat_generic_rename_file(char *path, char *new_name)
 {
-    fat_rename_file_from_path(path, new_name, false);
+    return fat_rename_file_from_path(path, new_name, false);
 }
 
 bool fat_generic_rename_directory(char *path, char *new_name)
 {
-    fat_rename_file_from_path(path, new_name, true);
+    return fat_rename_file_from_path(path, new_name, true);
 }
 
 bool fat_generic_save_to_file(char *path, char *buffer, int size)
 {
-    fat_save_file_from_path(path, buffer, size);
+    return fat_save_file_from_path(path, buffer, size);
 }
 
 bool fat_generic_append_to_file(char *path, char *buffer, int size)
 {
-    fat_append_file_from_path(path, buffer, size);
+    return fat_append_file_from_path(path, buffer, size);
 }
 
 uint8_t fat_generic_copy_filename_to_generic(char *fat_filename, char *generic_filename)

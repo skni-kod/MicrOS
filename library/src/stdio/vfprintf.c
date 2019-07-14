@@ -35,6 +35,7 @@ int _max(int a, int b)
 unsigned int _unsigned_number_len(unsigned int n, int base)
 {
     unsigned int res;
+    if (n == 0) return 1;
 
     switch (base)
     {

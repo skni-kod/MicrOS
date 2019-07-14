@@ -24,6 +24,11 @@ int streams_keyboard_fetch(FILE *stream)
     {
         micros_keyboard_scan_ascii_pair key_pair;
         micros_keyboard_wait_for_key_press(&key_pair);
+        
+        if(key_pair.ascii == 0)
+        {
+            continue;
+        }
 
         switch (key_pair.ascii)
         {
