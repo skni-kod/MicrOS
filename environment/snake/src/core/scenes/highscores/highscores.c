@@ -90,7 +90,7 @@ void highscores_delete()
 
 void highscores_load_from_file()
 {
-    if(micros_filesystem_file_exists(highscores_filename))
+    if(micros_filesystem_file_exists((char *)highscores_filename))
     {
         FILE *file = fopen(highscores_filename, "r");
         fread(&highscores_data, sizeof(highscores_container), 1, file);

@@ -49,7 +49,7 @@ void new_highscore_message_draw_and_wait(int score)
     }
     while(name[0] == '\n');
     
-    for(int i = 0; i < strlen(name); i++)
+    for(size_t i = 0; i < strlen(name); i++)
     {
         if(name[i] == '\n')
         {

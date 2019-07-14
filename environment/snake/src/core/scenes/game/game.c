@@ -297,7 +297,7 @@ void game_animate_death()
 void game_set_snake_visibility(bool visible)
 {
     micros_console_position cursor_position;
-    for(int i = 0; i < snake.count; i++)
+    for(unsigned int i = 0; i < snake.count; i++)
     {
         point *snake_part = snake.data[i];
         

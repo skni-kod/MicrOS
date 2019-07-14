@@ -2,6 +2,7 @@
 #define ABOUT_H
 
 #include <micros.h>
+#include <stdio.h>
 #include "../scene_type.h"
 
 void about_init();

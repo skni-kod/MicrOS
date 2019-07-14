@@ -112,7 +112,7 @@ unsigned char keyboard_is_buffer_empty()
 
 bool keyboard_get_key_state(char scancode)
 {
-    return keyboard_keys_state[scancode];
+    return keyboard_keys_state[(int)scancode];
 }
 
 void keyboard_increment_buffer_pointer(volatile uint16_t *const ptr)
