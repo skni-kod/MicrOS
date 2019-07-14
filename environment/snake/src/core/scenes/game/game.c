@@ -26,6 +26,7 @@ int eaten_food;
 int health;
 
 bool redraw_board;
+bool game_exit_to_menu;
 unsigned int last_update;
 
 void game_init()
@@ -38,7 +39,8 @@ void game_init()
     current_acceleration = 0;
     food_count = 0;
     eaten_food = 0;
-    health = 3;    
+    health = 3;
+    game_exit_to_menu = false; 
     
     last_update = micros_timer_get_system_clock();
     state = game_state_running;
@@ -58,13 +60,19 @@ void game_input()
             case key_keypad_8: future_dir = current_dir != dir_down ? dir_up : current_dir; break; 
             case key_keypad_2: future_dir = current_dir != dir_up ? dir_down : current_dir; break; 
             case key_keypad_4: future_dir = current_dir != dir_right ? dir_left : current_dir; break; 
-            case key_keypad_6: future_dir = current_dir != dir_left ? dir_right : current_dir; break; 
+            case key_keypad_6: future_dir = current_dir != dir_left ? dir_right : current_dir; break;
+            case key_esc: game_exit_to_menu = true; break;
         }
     }
 }
 
 scene_type game_logic()
 {
+    if(game_exit_to_menu)
+    {
+        return scene_type_main_menu;
+    }
+    
     if(micros_timer_get_system_clock() - last_update >= 200 - current_acceleration)
     {
         last_update = micros_timer_get_system_clock();

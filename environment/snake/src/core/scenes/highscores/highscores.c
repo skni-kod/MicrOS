@@ -3,7 +3,7 @@
 highscores_container highscores_data;
 point list_start_point;
 
-bool exit_to_menu;
+bool highscores_exit_to_menu;
 
 const char *highscores_filename = "/ENV/SN_HGHSC.SAV";
 const char *highscores_screen =
@@ -37,7 +37,7 @@ void highscores_init()
     
     list_start_point.x = 16;
     list_start_point.y = 12;
-    exit_to_menu = false;
+    highscores_exit_to_menu = false;
     
     micros_console_position cursor_position;
     cursor_position.x = 0;
@@ -68,14 +68,14 @@ void highscores_input()
         
         if (pressed_key.scancode == key_enter)
         {
-            exit_to_menu = true;
+            highscores_exit_to_menu = true;
         } 
     }
 }
 
 scene_type highscores_logic()
 {
-    return exit_to_menu ? scene_type_main_menu : scene_type_none;
+    return highscores_exit_to_menu ? scene_type_main_menu : scene_type_none;
 }
 
 void highscores_draw()
