@@ -1,6 +1,7 @@
 #ifndef EXIT_H
 #define EXIT_H
 
+#include <micros.h>
 #include <stdlib.h>
 #include "../scene_type.h"
 
