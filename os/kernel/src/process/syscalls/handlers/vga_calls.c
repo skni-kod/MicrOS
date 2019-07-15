@@ -2,6 +2,11 @@
 
 void syscall_vga_print_char(interrupt_state *state)
 {
+    if(!process_manager_is_current_process_active())
+    {
+        return;
+    }
+    
     vga_color color;
     color.color_without_blink.letter = state->registers.ecx;
     color.color_without_blink.background = state->registers.edx;
@@ -11,6 +16,11 @@ void syscall_vga_print_char(interrupt_state *state)
 
 void syscall_vga_print_string(interrupt_state *state)
 {
+    if(!process_manager_is_current_process_active())
+    {
+        return;
+    }
+    
     vga_color color;
     color.color_without_blink.letter = state->registers.ecx;
     color.color_without_blink.background = state->registers.edx;
@@ -25,6 +35,11 @@ void syscall_vga_get_char_at_position(interrupt_state *state)
 
 void syscall_vga_set_cursor_position(interrupt_state *state)
 {
+    if(!process_manager_is_current_process_active())
+    {
+        return;
+    }
+    
     vga_set_cursor_pos(state->registers.ebx, state->registers.ecx);
 }
 
@@ -39,10 +54,20 @@ void syscall_vga_get_cursor_position(interrupt_state *state)
 
 void syscall_vga_clear()
 {
+    if(!process_manager_is_current_process_active())
+    {
+        return;
+    }
+    
     vga_clear_screen();
 }
 
 void syscall_vga_set_cursor_visibility(interrupt_state *state)
 {
+    if(!process_manager_is_current_process_active())
+    {
+        return;
+    }
+    
     state->registers.ebx ? vga_cursor_on() : vga_cursor_off();
 }
