@@ -488,7 +488,7 @@ void process_manager_keyboard_interrupt_handler(interrupt_state *state)
     for (uint32_t i = 0; i < processes.count; i++)
     {
         process_info *process = processes.data[i];
-        if (process->id == active_process_id && process->status == process_status_waiting_key_press)
+        if (i == active_process_id && process->status == process_status_waiting_key_press)
         {
             process->status = process_status_ready;
         }
