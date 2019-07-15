@@ -63,8 +63,8 @@ char *_itoa(unsigned int number, char *buffer, int base, bool uppercase, int siz
 
     do
     {
-        char digit = (number % base);
-        buffer[idx--] = uppercase ? uppercase_table[digit] : lowercase_table[digit];
+        int digit = (number % base);
+        buffer[idx--] = uppercase ? (uppercase_table[digit]) : (lowercase_table[digit]);
 
         number /= base;
     } while (number);
@@ -110,7 +110,7 @@ char *_ftoa(float number, char *buffer, unsigned short flags, int precision)
     return buffer;
 }
 
-void _put_unsigned_integer(FILE *stream, int *put_idx, unsigned int number, unsigned short flags, int base, int width, int precision)
+void _put_unsigned_integer(FILE *stream, unsigned int *put_idx, unsigned int number, unsigned short flags, int base, int width, int precision)
 {
     int int_len = _unsigned_number_len(number, base); // length of the number
 
@@ -206,7 +206,7 @@ void _put_unsigned_integer(FILE *stream, int *put_idx, unsigned int number, unsi
     free(number_buf);
 }
 
-void _put_signed_integer(FILE *stream, int *put_idx, int number, unsigned short flags, int base, int width, int precision)
+void _put_signed_integer(FILE *stream, unsigned int *put_idx, int number, unsigned short flags, int base, int width, int precision)
 {
     bool negative = false;
     if (number < 0)
@@ -283,7 +283,7 @@ void _put_signed_integer(FILE *stream, int *put_idx, int number, unsigned short 
     free(number_buf);
 }
 
-void _put_float(FILE *stream, int *put_idx, float number, unsigned short flags, int width, int precision)
+void _put_float(FILE *stream, unsigned int *put_idx, float number, unsigned short flags, int width, int precision)
 {
     // Print NAN
     if (isnan(number))
@@ -376,7 +376,7 @@ void _put_float(FILE *stream, int *put_idx, float number, unsigned short flags, 
     free(num_buff);
 }
 
-void _put_scientific_notation(FILE *stream, int *put_idx, double number, unsigned short flags, int width, int precision)
+void _put_scientific_notation(FILE *stream, unsigned int *put_idx, double number, unsigned short flags, int width, int precision)
 {
     int exponent = 0;
     int exponent_len = _unsigned_number_len(exponent, 10);
@@ -527,19 +527,13 @@ unsigned int _parse_number_field(const char **str)
 
 int vfprintf(FILE *stream, const char *format, va_list arg)
 {
-
-    int int_arg;
-    char *str_arg;
     unsigned int put_index = 0;
-
-    char *buffer;
-    int index = 0;
 
     unsigned short flags = 0;
     int width_field = 0;
     int precision_field = 0;
 
-    char *traverse;
+    const char *traverse;
     for (traverse = format; *traverse != '\0'; ++traverse)
     {
 
@@ -677,7 +671,7 @@ int vfprintf(FILE *stream, const char *format, va_list arg)
             {
             case 'c': // CHARACTER
             {
-                int_arg = va_arg(arg, unsigned int);
+                unsigned int int_arg = va_arg(arg, unsigned int);
 
                 // Right padding
                 if (!(flags & FLAGS_LEFT))
@@ -707,20 +701,23 @@ int vfprintf(FILE *stream, const char *format, va_list arg)
 
             case 'd': // INTEGER
             case 'i':
-                int_arg = va_arg(arg, int);
+            {
+                int int_arg = va_arg(arg, int);
 
                 _put_signed_integer(stream, &put_index, int_arg, flags, 10, width_field, precision_field);
-                break;
+            }
+            break;
 
             case 'o': // OCTAL INTEGER
             {
-                int_arg = va_arg(arg, unsigned int);
+                unsigned int int_arg = va_arg(arg, unsigned int);
                 _put_unsigned_integer(stream, &put_index, int_arg, flags, 8, width_field, precision_field);
                 break;
             }
 
             case 's': // STRING
-                str_arg = va_arg(arg, char *);
+            {
+                char *str_arg = va_arg(arg, char *);
                 int str_len = strlen(str_arg);
 
                 // Check maximum number of characters (precision field)
@@ -755,13 +752,14 @@ int vfprintf(FILE *stream, const char *format, va_list arg)
                         put_index++;
                     }
                 }
-                break;
+            }
+            break;
 
             case 'X':
                 flags |= FLAGS_UPPERCASE; // Uppercase X
             case 'x':                     // HEX INTEGER
             {
-                int_arg = va_arg(arg, unsigned int);
+                unsigned int int_arg = va_arg(arg, unsigned int);
                 _put_unsigned_integer(stream, &put_index, int_arg, flags, 16, width_field, precision_field);
                 break;
             }
@@ -778,7 +776,7 @@ int vfprintf(FILE *stream, const char *format, va_list arg)
 
             case 'u':
             {
-                int_arg = va_arg(arg, unsigned int);
+                unsigned int int_arg = va_arg(arg, unsigned int);
                 _put_unsigned_integer(stream, &put_index, int_arg, flags, 10, width_field, precision_field);
                 break;
             }
@@ -794,13 +792,13 @@ int vfprintf(FILE *stream, const char *format, va_list arg)
 
             case 'p':
             {
-                uintptr_t ptr = va_arg(arg, void *);
+                void *ptr = va_arg(arg, void *);
                 flags |= FLAGS_UPPERCASE;
                 // Ignore those flags
                 flags &= ~(FLAGS_ZEROPAD | FLAGS_HASH | FLAGS_PLUS | FLAGS_SPACE);
 
                 precision_field = sizeof(void *) * 2;
-                _put_unsigned_integer(stream, &put_index, ptr, flags, 16, width_field, precision_field);
+                _put_unsigned_integer(stream, &put_index, (unsigned int)ptr, flags, 16, width_field, precision_field);
                 break;
             }
 
