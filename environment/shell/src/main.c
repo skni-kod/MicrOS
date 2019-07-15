@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
         char path[64];
         
         micros_console_position cursor_position;
-        micros_console_set_cursor_visibility(false);
+        micros_console_set_cursor_visibility(true);
         micros_console_get_cursor_position(&cursor_position);
         
         if(cursor_position.x == 0 && cursor_position.y == 0)

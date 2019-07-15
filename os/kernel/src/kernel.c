@@ -171,7 +171,7 @@ int kmain()
 
     logger_log_ok("Loading tasks...");
     vga_clear_screen();
-    process_manager_create_process("/ENV/SHELL.ELF", "", 0, false);
+    process_manager_create_process("/ENV/SHELL.ELF", "", 1000, false);
 
     process_manager_run();
 

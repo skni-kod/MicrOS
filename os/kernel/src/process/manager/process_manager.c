@@ -114,7 +114,7 @@ uint32_t process_manager_create_process(char *path, char *parameters, uint32_t p
     
     if(active)
     {
-        active_process_id = process->id;
+        active_process_id = processes.count - 1;
     }
 
     return process->id;
@@ -212,7 +212,8 @@ void process_manager_switch_to_next_process()
 
 void process_manager_close_current_process()
 {
-    process_manager_close_process(current_process_id);
+    process_info *current_process = processes.data[current_process_id];
+    process_manager_close_process(current_process->id);
 }
 
 void process_manager_close_process(uint32_t process_id)
@@ -252,16 +253,16 @@ void process_manager_close_process(uint32_t process_id)
         }
     }
     
-    if(process->id == active_process_id)
+    if(process_index == active_process_id)
     {
-        active_process_id = process->parent_id;
+        active_process_id = process_manager_get_process_index(process->parent_id);
     }
     
     io_enable_interrupts();
 
     if (processes.count > 0)
     {
-        bool switch_to_next_process = process->id == current_process_id;
+        bool switch_to_next_process = process_index == current_process_id;
         
         if(process->id <= current_process_id)
         {
@@ -394,7 +395,9 @@ bool process_manager_is_current_process_active()
 
 void process_manager_current_process_sleep(uint32_t milliseconds)
 {
-    process_info *process = process_manager_get_process_info(current_process_id);
+    process_info *current_process = processes.data[current_process_id];
+    
+    process_info *process = process_manager_get_process_info(current_process->id);
     process->status = process_status_waiting_sleep;
     process->sleep_deadline = timer_get_system_clock() + milliseconds;
 
@@ -403,7 +406,9 @@ void process_manager_current_process_sleep(uint32_t milliseconds)
 
 void process_manager_current_process_wait_for_key_press()
 {
-    process_info *process = process_manager_get_process_info(current_process_id);
+    process_info *current_process = processes.data[current_process_id];
+    
+    process_info *process = process_manager_get_process_info(current_process->id);
     process->status = process_status_waiting_key_press;
 
     run_scheduler_on_next_interrupt = true;
