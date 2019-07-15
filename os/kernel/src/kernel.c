@@ -170,14 +170,14 @@ int kmain()
     logger_log_ok("READY.");
 
     logger_log_ok("Loading tasks...");
-    process_manager_create_process("/ENV/SNAKE.ELF", "Honoka Kotori", 0);
+    process_manager_create_process("/ENV/SHELL.ELF", "Honoka Kotori", 0);
+/*
+    logger_log_ok("Loading shell...");
+    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
 
-    //logger_log_ok("Loading shell...");
-    //process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli", 0);
-
-    //logger_log_ok("Loading shell...");
-    //process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki", 0);
-
+    logger_log_ok("Loading shell...");
+    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
+*/
     process_manager_run();
 
     //while (1)
