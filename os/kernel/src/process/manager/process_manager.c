@@ -411,11 +411,14 @@ void process_manager_current_process_wait_for_key_press()
 
 void process_manager_current_process_wait_for_process(uint32_t process_id_to_wait)
 {
-    process_info *process = process_manager_get_process_info(current_process_id);
-    process->status = process_status_waiting_for_process;
-    process->process_id_to_wait = process_id_to_wait;
-    
-    run_scheduler_on_next_interrupt = true;
+    if(process_manager_get_process_info(process_id_to_wait) != NULL)
+    {
+        process_info *process = process_manager_get_process_info(current_process_id);
+        process->status = process_status_waiting_for_process;
+        process->process_id_to_wait = process_id_to_wait;
+        
+        run_scheduler_on_next_interrupt = true;
+    }
 }
 
 void process_manager_convert_process_info_to_user_info(process_info *process, process_user_info *user_info)
