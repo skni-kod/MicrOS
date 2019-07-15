@@ -37,6 +37,10 @@ bool process_manager_set_current_process_name(char *name);
 bool process_manager_set_current_process_signal_handler(void (*signal_handler)(int));
 void process_manager_finish_signal_handler(signal_params *old_state);
 
+void process_manager_set_active_process_id(uint32_t process_id);
+void process_manager_get_active_process_id(uint32_t process_id);
+bool process_manager_is_current_process_active();
+
 void process_manager_current_process_sleep(uint32_t milliseconds);
 void process_manager_current_process_wait_for_key_press();
 
