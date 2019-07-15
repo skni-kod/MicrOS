@@ -13,6 +13,7 @@ void print_memory_stats(micros_physical_memory_stats *memory_stats);
 int main(int argc, char *argv[])
 {
     micros_process_set_current_process_name("TASKS");
+    micros_console_set_cursor_visibility(false);
     printf("TASKS");
 
     while (1)
@@ -49,10 +50,26 @@ int main(int argc, char *argv[])
 
         printf("\n\n");
         print_memory_stats(&memory_stats);
+        
+        printf("\n\n\n\n");
+        printf("                               Press ESC to exit");
 
         free(processes);
         micros_process_current_process_sleep(1500);
+        
+        if(micros_keyboard_is_key_pressed())
+        {
+            micros_keyboard_scan_ascii_pair pressed_key;
+            micros_keyboard_get_pressed_key(&pressed_key);
+            
+            if(pressed_key.scancode == key_esc)
+            {
+                break;
+            }
+        }
     }
+    
+    micros_console_clear();
     return 0;
 }
 

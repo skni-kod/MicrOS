@@ -5,14 +5,21 @@
 int main(int argc, char *argv[])
 {
     micros_process_set_current_process_name("SHELL");
-    printf("MicrOS Shell v1.0\n");
-    printf("Type path to execute an application\n");
-    
     while(1)
     {
         char path[64];
         
-        printf("> ");
+        micros_console_position cursor_position;
+        micros_console_set_cursor_visibility(false);
+        micros_console_get_cursor_position(&cursor_position);
+        
+        if(cursor_position.x == 0 && cursor_position.y == 0)
+        {
+            printf("MicrOS Shell v1.0\n");
+            printf("Type path to execute an application\n");
+        }
+        
+        printf(" > ");
         gets(path);
         
         if(!micros_filesystem_file_exists(path))
