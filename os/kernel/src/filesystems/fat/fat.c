@@ -108,6 +108,11 @@ kvector *fat_parse_path(char *path)
 {
     kvector *chunks = heap_kernel_alloc(sizeof(kvector), 0);
     kvector_init(chunks);
+    
+    if(path[0] != '/')
+    {
+        return chunks;
+    }
 
     uint8_t index = 0;
 
