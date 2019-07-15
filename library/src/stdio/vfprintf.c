@@ -79,11 +79,6 @@ char *_ftoa(float number, char *buffer, unsigned short flags, int precision)
     float whole = floor(number);
     float frac = number - whole;
 
-    if (!(flags & FLAGS_PRECISION))
-    {
-        precision = 6;
-    }
-
     frac = floor(pow(10, precision) * frac);
 
     int whole_size = _fnumber_len(whole);
@@ -316,6 +311,11 @@ void _put_float(FILE *stream, int *put_idx, float number, unsigned short flags, 
     if (negative)
     {
         number *= -1;
+    }
+
+    if (!(flags & FLAGS_PRECISION))
+    {
+        precision = 6;
     }
 
     int whole_len = _fnumber_len(number);
