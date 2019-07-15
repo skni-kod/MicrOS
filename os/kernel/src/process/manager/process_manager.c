@@ -21,7 +21,7 @@ void process_manager_init()
     idt_attach_interrupt_handler(1, process_manager_keyboard_interrupt_handler);
 }
 
-uint32_t process_manager_create_process(char *path, char *parameters, uint32_t parent_id)
+uint32_t process_manager_create_process(char *path, char *parameters, uint32_t parent_id, bool active)
 {
     uint32_t path_length = strlen(path) + 1;
     uint32_t parameters_length = strlen(parameters) + 1;
@@ -111,6 +111,11 @@ uint32_t process_manager_create_process(char *path, char *parameters, uint32_t p
 
     paging_set_page_directory(page_directory);
     heap_set_user_heap(old_heap);
+    
+    if(active)
+    {
+        active_process_id = process->id;
+    }
 
     return process->id;
 }
@@ -236,10 +241,20 @@ void process_manager_close_process(uint32_t process_id)
     for(int i = processes.count - 1; i >= 0; i--)
     {
         process_info* potential_child_process = processes.data[i];
+        if(potential_child_process->status == process_status_waiting_for_process && potential_child_process->process_id_to_wait == process->id)
+        {
+            potential_child_process->status = process_status_ready;
+        }
+        
         if(potential_child_process->parent_id == process->id)
         {
             process_manager_close_process(potential_child_process->id);
         }
+    }
+    
+    if(process->id == active_process_id)
+    {
+        active_process_id = process->parent_id;
     }
     
     io_enable_interrupts();
@@ -391,6 +406,15 @@ void process_manager_current_process_wait_for_key_press()
     process_info *process = process_manager_get_process_info(current_process_id);
     process->status = process_status_waiting_key_press;
 
+    run_scheduler_on_next_interrupt = true;
+}
+
+void process_manager_current_process_wait_for_process(uint32_t process_id_to_wait)
+{
+    process_info *process = process_manager_get_process_info(current_process_id);
+    process->status = process_status_waiting_for_process;
+    process->process_id_to_wait = process_id_to_wait;
+    
     run_scheduler_on_next_interrupt = true;
 }
 

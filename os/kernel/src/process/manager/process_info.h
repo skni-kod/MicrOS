@@ -9,7 +9,8 @@ typedef enum process_status
     process_status_ready,
     process_status_working,
     process_status_waiting_sleep,
-    process_status_waiting_key_press
+    process_status_waiting_key_press,
+    process_status_waiting_for_process,
 } process_status;
 
 typedef struct process_info
@@ -28,6 +29,7 @@ typedef struct process_info
     uint32_t current_cpu_usage;
     uint32_t last_cpu_usage;
     uint32_t sleep_deadline;
+    uint32_t process_id_to_wait;
 
     interrupt_state state;
     void (*signal_handler)(int);
