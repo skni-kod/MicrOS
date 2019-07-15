@@ -10,12 +10,18 @@ int main(int argc, char *argv[])
     
     while(1)
     {
-        char buffer[64];
+        char path[64];
         
         printf("> ");
-        gets(buffer);
+        gets(path);
         
-        uint32_t child_process_id = micros_process_start_process(buffer, "", true, true);
+        if(!micros_filesystem_file_exists(path))
+        {
+            printf("File not found\n");
+            continue;
+        }
+        
+        uint32_t child_process_id = micros_process_start_process(path, "", true, true);
         micros_process_wait_for_process(child_process_id);
     }
     

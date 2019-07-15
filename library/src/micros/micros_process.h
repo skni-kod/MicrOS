@@ -8,7 +8,9 @@ typedef enum micros_process_status
 {
     micros_process_status_ready,
     micros_process_status_working,
-    micros_process_status_waiting_sleep
+    micros_process_status_waiting_sleep,
+    micros_process_status_waiting_key_press,
+    micros_process_status_waiting_for_process
 } micros_process_status;
 
 typedef struct micros_process_user_info
