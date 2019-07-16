@@ -7,6 +7,7 @@ char current_dir[64];
 
 void execute_cd(const char *str);
 void execute_app(const char *str);
+void back_to_previous_directory();
 void reduce_slashes(char *path);
 
 int main(int argc, char *argv[])
@@ -61,6 +62,11 @@ void execute_cd(const char *str)
     {
         memcpy(path_to_switch, parameter, strlen(parameter) + 1);
     }
+    else if(parameter[0] == '.' && parameter[1] == '.')
+    {
+        back_to_previous_directory();
+        return;
+    }
     else
     {
         sprintf(path_to_switch, "%s/%s", current_dir, parameter);
@@ -99,6 +105,24 @@ void execute_app(const char *str)
     
     uint32_t child_process_id = micros_process_start_process(path, "", true, true);
     micros_process_wait_for_process(child_process_id);
+}
+
+void back_to_previous_directory()
+{
+    if(current_dir[0] == '/' && current_dir[1] == 0)
+    {
+        return;
+    }
+    
+    int current_dir_length = strlen(current_dir);
+    for (int i = current_dir_length - 1; i >= 0; i--)
+    {
+        if(current_dir[i] == '/')
+        {
+            current_dir[i] = 0;
+            break;
+        }
+    }
 }
 
 void reduce_slashes(char *path)
