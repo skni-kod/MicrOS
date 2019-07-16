@@ -9,6 +9,7 @@ void execute_cd(const char *str);
 void execute_app(const char *str);
 void back_to_previous_directory();
 void reduce_slashes(char *path);
+void split_to_path_and_args(const char *str, char *path, char *args);
 
 int main(int argc, char *argv[])
 {
@@ -86,14 +87,21 @@ void execute_cd(const char *str)
 void execute_app(const char *str)
 {
     char path[64];
-    if(micros_filesystem_file_exists((char *)str))
+    char args[64];
+    
+    split_to_path_and_args(str, path, args);
+    
+    if(micros_filesystem_file_exists((char *)path))
     {
-        memcpy(path, str, strlen(str));
         reduce_slashes(path);
     }
     else
     {
-        sprintf(path, "%s/%s", current_dir, str);
+        char tmp[64];
+        
+        sprintf(tmp, "%s/%s", current_dir, path);
+        memcpy(path, tmp, sizeof(char) * 64);
+        
         reduce_slashes(path);
         
         if(!micros_filesystem_file_exists(path))
@@ -103,7 +111,15 @@ void execute_app(const char *str)
         }
     }
     
-    uint32_t child_process_id = micros_process_start_process(path, "", true, true);
+    char args_with_current_dir[64];
+    sprintf(args_with_current_dir, "%s %s", current_dir, args);
+    
+    if(args_with_current_dir[strlen(args_with_current_dir) - 1] == ' ')
+    {
+        args_with_current_dir[strlen(args_with_current_dir) - 1] = 0;
+    }
+    
+    uint32_t child_process_id = micros_process_start_process(path, args_with_current_dir, true, true);
     micros_process_wait_for_process(child_process_id);
 }
 
@@ -141,4 +157,22 @@ void reduce_slashes(char *path)
             i++;
         }
     }
+}
+
+void split_to_path_and_args(const char *str, char *path, char *args)
+{
+    int length = strlen(str);
+    
+    for(int i = 0; i < length; i++)
+    {
+        if(str[i] == ' ')
+        {
+            memcpy(path, str, i);
+            memcpy(args, str + i + 1, 63 - i);
+            return;
+        }
+    }
+    
+    memcpy(path, str, length);
+    args[0] = 0;
 }
