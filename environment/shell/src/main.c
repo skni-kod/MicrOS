@@ -6,6 +6,8 @@
 char current_dir[64];
 
 void execute_cd(const char *str);
+void execute_app(const char *str);
+void reduce_slashes(char *path);
 
 int main(int argc, char *argv[])
 {
@@ -34,19 +36,11 @@ int main(int argc, char *argv[])
         if(path[0] == 'c' && path[1] == 'd')
         {
             execute_cd(path);
-            continue;
         }
         else
         {
-            if(!micros_filesystem_file_exists(path))
-            {
-                printf("File not found\n");
-                continue;
-            }
+            execute_app(path);
         }
-        
-        uint32_t child_process_id = micros_process_start_process(path, "", true, true);
-        micros_process_wait_for_process(child_process_id);
     }
     
     return 0;
@@ -70,11 +64,8 @@ void execute_cd(const char *str)
     else
     {
         sprintf(path_to_switch, "%s/%s", current_dir, parameter);
-        if(path_to_switch[0] == '/' && path_to_switch[1] == '/')
-        {
-            memmove(path_to_switch, path_to_switch + 1, 63);
-        }
     }
+    reduce_slashes(path_to_switch);
     
     if((path_to_switch[0] == '/' && path_to_switch[1] == 0) || micros_filesystem_directory_exists(path_to_switch))
     {
@@ -83,5 +74,47 @@ void execute_cd(const char *str)
     else
     {
         printf("Invalid path\n");
+    }
+}
+
+void execute_app(const char *str)
+{
+    char path[64];
+    if(micros_filesystem_file_exists((char *)str))
+    {
+        memcpy(path, str, strlen(str));
+        reduce_slashes(path);
+    }
+    else
+    {
+        sprintf(path, "%s/%s", current_dir, str);
+        reduce_slashes(path);
+        
+        if(!micros_filesystem_file_exists(path))
+        {
+            printf("File not found\n");
+            return;
+        }
+    }
+    
+    uint32_t child_process_id = micros_process_start_process(path, "", true, true);
+    micros_process_wait_for_process(child_process_id);
+}
+
+void reduce_slashes(char *path)
+{
+    int length = strlen(path);
+    int i = 0;
+    
+    while (i < length - 1)
+    {
+        if(path[i] == '/' && path[i + 1] == '/')
+        {
+            memmove(path + i, path + i + 1, 63 - i);
+        }
+        else
+        {
+            i++;
+        }
     }
 }
