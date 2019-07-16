@@ -892,7 +892,7 @@ uint32_t fat_get_entries_in_directory(char *path, char **entries)
 
             fat_denormalise_filename(full_filename);
 
-            entries[current_entry_index] = heap_kernel_alloc(path_length + 13, 0);
+            entries[current_entry_index] = heap_user_alloc(path_length + 13, 0);
             memset(entries[current_entry_index], 0, path_length + 13);
             memcpy(entries[current_entry_index], path, path_length);
             memcpy(entries[current_entry_index] + path_length, full_filename, 12);
