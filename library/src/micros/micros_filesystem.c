@@ -20,7 +20,7 @@ uint32_t micros_filesystem_get_entries_count_in_directory(char *path)
     return micros_interrupt_1a(0x53, (uint32_t)path);
 }
 
-bool micros_filesystem_get_entries_in_directory(char *path, char *entries)
+bool micros_filesystem_get_entries_in_directory(char *path, char **entries)
 {
     return micros_interrupt_2a(0x54, (uint32_t)path, (uint32_t)entries);
 }

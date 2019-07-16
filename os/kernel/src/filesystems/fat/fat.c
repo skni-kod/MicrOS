@@ -892,10 +892,18 @@ uint32_t fat_get_entries_in_directory(char *path, char **entries)
 
             fat_denormalise_filename(full_filename);
 
-            entries[current_entry_index] = heap_user_alloc(path_length + 13, 0);
-            memset(entries[current_entry_index], 0, path_length + 13);
+            entries[current_entry_index] = heap_user_alloc(path_length + 14, 0);
+            memset(entries[current_entry_index], 0, path_length + 14);
             memcpy(entries[current_entry_index], path, path_length);
-            memcpy(entries[current_entry_index] + path_length, full_filename, 12);
+            
+            bool shift = false;
+            if(entries[current_entry_index][path_length - 1] != '/')
+            {
+                entries[current_entry_index][path_length] = '/';
+                shift = true;
+            }
+            
+            memcpy(entries[current_entry_index] + path_length + (shift ? 1 : 0), full_filename, 12);
 
             current_entry_index++;
         }
