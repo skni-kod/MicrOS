@@ -2,32 +2,35 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
 int main(int argc, char *argv[])
 {
-    micros_process_set_current_process_name("SHUKA");
-    while (1)
+    micros_process_set_current_process_name("SHELL");
+    while(1)
     {
-        micros_console_clear();
-        // uint32_t now = micros_timer_get_system_clock();
-        // while (now + 100 >= micros_timer_get_system_clock())
-        //     ;
-
-        char a = getchar();
-        printf("asd %c\n", a);
-        scanf("%c", &a);
-
-        micros_keyboard_scan_ascii_pair pair;
-        micros_keyboard_wait_for_key_press(&pair);
-
-        char b[16];
-        micros_console_print_string("ASCII: ");
-        micros_console_print_string(itoa(pair.ascii, b, 10));
-        micros_console_print_string(", code: ");
-        micros_console_print_string(itoa(pair.scancode, b, 10));
-        micros_console_print_string("\n");
-
-        //micros_process_current_process_sleep(200);
+        char path[64];
+        
+        micros_console_position cursor_position;
+        micros_console_set_cursor_visibility(true);
+        micros_console_get_cursor_position(&cursor_position);
+        
+        if(cursor_position.x == 0 && cursor_position.y == 0)
+        {
+            printf("MicrOS Shell v1.0\n");
+            printf("Type path to execute an application\n");
+        }
+        
+        printf(" > ");
+        gets(path);
+        
+        if(!micros_filesystem_file_exists(path))
+        {
+            printf("File not found\n");
+            continue;
+        }
+        
+        uint32_t child_process_id = micros_process_start_process(path, "", true, true);
+        micros_process_wait_for_process(child_process_id);
     }
+    
     return 0;
 }

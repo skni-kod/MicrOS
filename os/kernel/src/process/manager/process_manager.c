@@ -1,11 +1,12 @@
 #include "process_manager.h"
 
 kvector processes;
-volatile uint32_t current_process_id = 1;
+volatile uint32_t current_process_id = 0;
 volatile uint32_t next_process_id = 0;
 volatile uint32_t last_task_switch = 0;
 volatile uint32_t last_cpu_recalculation = 0;
 volatile uint32_t root_process_id = 0;
+volatile uint32_t active_process_id = 0;
 volatile bool run_scheduler_on_next_interrupt = false;
 
 extern void enter_user_space(interrupt_state *address);
@@ -20,7 +21,7 @@ void process_manager_init()
     idt_attach_interrupt_handler(1, process_manager_keyboard_interrupt_handler);
 }
 
-uint32_t process_manager_create_process(char *path, char *parameters, uint32_t parent_id)
+uint32_t process_manager_create_process(char *path, char *parameters, uint32_t parent_id, bool active)
 {
     uint32_t path_length = strlen(path) + 1;
     uint32_t parameters_length = strlen(parameters) + 1;
@@ -110,6 +111,11 @@ uint32_t process_manager_create_process(char *path, char *parameters, uint32_t p
 
     paging_set_page_directory(page_directory);
     heap_set_user_heap(old_heap);
+    
+    if(active)
+    {
+        active_process_id = processes.count - 1;
+    }
 
     return process->id;
 }
@@ -206,7 +212,8 @@ void process_manager_switch_to_next_process()
 
 void process_manager_close_current_process()
 {
-    process_manager_close_process(current_process_id);
+    process_info *current_process = processes.data[current_process_id];
+    process_manager_close_process(current_process->id);
 }
 
 void process_manager_close_process(uint32_t process_id)
@@ -235,17 +242,27 @@ void process_manager_close_process(uint32_t process_id)
     for(int i = processes.count - 1; i >= 0; i--)
     {
         process_info* potential_child_process = processes.data[i];
+        if(potential_child_process->status == process_status_waiting_for_process && potential_child_process->process_id_to_wait == process->id)
+        {
+            potential_child_process->status = process_status_ready;
+        }
+        
         if(potential_child_process->parent_id == process->id)
         {
             process_manager_close_process(potential_child_process->id);
         }
     }
     
+    if(process_index == active_process_id)
+    {
+        active_process_id = process_manager_get_process_index(process->parent_id);
+    }
+    
     io_enable_interrupts();
 
     if (processes.count > 0)
     {
-        bool switch_to_next_process = process->id == current_process_id;
+        bool switch_to_next_process = process_index == current_process_id;
         
         if(process->id <= current_process_id)
         {
@@ -361,9 +378,26 @@ void process_manager_finish_signal_handler(signal_params *old_state)
     enter_user_space(&state);
 }
 
+void process_manager_set_active_process_id(uint32_t process_id)
+{
+    active_process_id = process_id;    
+}
+
+void process_manager_get_active_process_id(uint32_t process_id)
+{
+    return active_process_id;
+}
+
+bool process_manager_is_current_process_active()
+{
+    return current_process_id == active_process_id;
+}
+
 void process_manager_current_process_sleep(uint32_t milliseconds)
 {
-    process_info *process = process_manager_get_process_info(current_process_id);
+    process_info *current_process = processes.data[current_process_id];
+    
+    process_info *process = process_manager_get_process_info(current_process->id);
     process->status = process_status_waiting_sleep;
     process->sleep_deadline = timer_get_system_clock() + milliseconds;
 
@@ -372,10 +406,24 @@ void process_manager_current_process_sleep(uint32_t milliseconds)
 
 void process_manager_current_process_wait_for_key_press()
 {
-    process_info *process = process_manager_get_process_info(current_process_id);
+    process_info *current_process = processes.data[current_process_id];
+    
+    process_info *process = process_manager_get_process_info(current_process->id);
     process->status = process_status_waiting_key_press;
 
     run_scheduler_on_next_interrupt = true;
+}
+
+void process_manager_current_process_wait_for_process(uint32_t process_id_to_wait)
+{
+    if(process_manager_get_process_info(process_id_to_wait) != NULL)
+    {
+        process_info *process = process_manager_get_process_info(current_process_id);
+        process->status = process_status_waiting_for_process;
+        process->process_id_to_wait = process_id_to_wait;
+        
+        run_scheduler_on_next_interrupt = true;
+    }
 }
 
 void process_manager_convert_process_info_to_user_info(process_info *process, process_user_info *user_info)
@@ -440,7 +488,7 @@ void process_manager_keyboard_interrupt_handler(interrupt_state *state)
     for (uint32_t i = 0; i < processes.count; i++)
     {
         process_info *process = processes.data[i];
-        if (process->status == process_status_waiting_key_press)
+        if (i == active_process_id && process->status == process_status_waiting_key_press)
         {
             process->status = process_status_ready;
         }

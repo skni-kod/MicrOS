@@ -8,7 +8,9 @@ typedef enum micros_process_status
 {
     micros_process_status_ready,
     micros_process_status_working,
-    micros_process_status_waiting_sleep
+    micros_process_status_waiting_sleep,
+    micros_process_status_waiting_key_press,
+    micros_process_status_waiting_for_process
 } micros_process_status;
 
 typedef struct micros_process_user_info
@@ -73,9 +75,10 @@ bool micros_process_get_process_info(uint32_t id, micros_process_user_info *user
 void micros_process_get_all_processes_info(micros_process_user_info *user_info);
 void micros_process_set_current_process_name(char *name);
 void micros_process_current_process_sleep(uint32_t milliseconds);
-void micros_process_start_process(char *path, char *arguments, bool child);
+uint32_t micros_process_start_process(char *path, char *arguments, bool child, bool active);
 void micros_process_set_current_process_signal_handler(void (*signal_handler)(micros_signal_params*));
 void micros_process_finish_signal_handler(micros_signal_params *old_state);
+void micros_process_wait_for_process(uint32_t process_id_to_wait);
 
 #ifdef __cplusplus
 }

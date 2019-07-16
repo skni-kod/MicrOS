@@ -1,5 +1,6 @@
 #include <micros.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 void draw_process_tree(micros_process_user_info *processes, uint32_t root_id, uint32_t level, uint32_t count);
 void print_total_process_count(int process_count);
@@ -12,13 +13,15 @@ void print_memory_stats(micros_physical_memory_stats *memory_stats);
 int main(int argc, char *argv[])
 {
     micros_process_set_current_process_name("TASKS");
+    micros_console_set_cursor_visibility(false);
+    printf("TASKS");
 
     while (1)
     {
         micros_console_clear();
 
-        micros_console_print_string("TASKS v1.1 @ MicrOS\n");
-        micros_console_print_string("\n");
+        printf("TASKS v1.1 @ MicrOS\n");
+        printf("\n");
 
         uint32_t processes_count = micros_process_get_processes_count();
         micros_process_user_info *processes = malloc(sizeof(micros_process_user_info) * processes_count);
@@ -40,17 +43,33 @@ int main(int argc, char *argv[])
         draw_cpu_usage_bar(total_cpu_usage, 66);
         draw_memory_usage_bar(&memory_stats, 66);
 
-        micros_console_print_char('\n');
+        printf("\n");
 
         draw_process_tree(processes, 0, 0, processes_count);
         print_total_process_count(processes_count);
 
-        micros_console_print_string("\n\n");
+        printf("\n\n");
         print_memory_stats(&memory_stats);
+        
+        printf("\n\n\n\n");
+        printf("                               Press ESC to exit");
 
         free(processes);
         micros_process_current_process_sleep(1500);
+        
+        if(micros_keyboard_is_key_pressed())
+        {
+            micros_keyboard_scan_ascii_pair pressed_key;
+            micros_keyboard_get_pressed_key(&pressed_key);
+            
+            if(pressed_key.scancode == key_esc)
+            {
+                break;
+            }
+        }
     }
+    
+    micros_console_clear();
     return 0;
 }
 
@@ -70,14 +89,14 @@ void draw_process_tree(micros_process_user_info *processes, uint32_t root_id, ui
     {
         for (uint32_t i = 0; i < level; i++)
         {
-            micros_console_print_char(' ');
+            printf(" ");
         }
 
-        micros_console_print_string("> ");
+        printf("> ");
     }
 
     print_process_info(root_process);
-    micros_console_print_string("\n");
+    printf("\n");
 
     for (uint32_t i = 0; i < count; i++)
     {
@@ -91,105 +110,66 @@ void draw_process_tree(micros_process_user_info *processes, uint32_t root_id, ui
 
 void print_total_process_count(int process_count)
 {
-    char buffer[32];
-    micros_console_print_string("Total: ");
-    micros_console_print_string(itoa(process_count, buffer, 10));
+    printf("Total: %d", process_count);
 }
 
 void draw_bar(uint32_t filled_entries, uint32_t total_entries)
 {
     for (uint32_t i = 0; i < filled_entries; i++)
     {
-        micros_console_print_char('#');
+        printf("#");
     }
 
     for (uint32_t i = 0; i < total_entries - filled_entries; i++)
     {
-        micros_console_print_char(' ');
+        printf(" ");
     }
 }
 
 void draw_cpu_usage_bar(uint32_t cpu_usage, uint32_t bar_length)
 {
-    char buffer[32];
-
     uint32_t filled_entries = (cpu_usage / 10) * bar_length / 100;
     filled_entries = bar_length < filled_entries ? bar_length : filled_entries;
 
-    micros_console_print_string("CPU: [");
+    printf("CPU: [");
     draw_bar(filled_entries, bar_length);
-    micros_console_print_string("] ");
+    printf("] ");
 
-    itoa(cpu_usage / 10, buffer, 10);
-    micros_console_print_string(buffer);
-    micros_console_print_string(" %\n");
+    printf("%d %%\n", cpu_usage / 10);
 }
 
 void draw_memory_usage_bar(micros_physical_memory_stats *memory_stats, uint32_t bar_length)
 {
-    char buffer[32];
-
     uint32_t memory_usage = memory_stats->allocated_entries + memory_stats->reserved_entries;
     uint32_t total_memory = memory_usage + memory_stats->free_entries;
 
-    micros_console_print_string("MEM: [");
+    printf("MEM: [");
     draw_bar(memory_usage * bar_length / total_memory, bar_length);
-    micros_console_print_string("] ");
+    printf("] ");
 
-    itoa(memory_usage * 100 / total_memory, buffer, 10);
-    micros_console_print_string(buffer);
-    micros_console_print_string(" %\n");
+    printf("%d %%\n", memory_usage * 100 / total_memory);
 }
 
 void print_process_info(micros_process_user_info *process_info)
 {
-    char buffer[32];
-
-    micros_console_print_string(process_info->name);
-    micros_console_print_string(" - ");
-
-    micros_console_print_string("ID: ");
-    itoa(process_info->id, buffer, 10);
-    micros_console_print_string(buffer);
+    printf("%s - ID: %d", process_info->name, process_info->id);
 
     if (process_info->id != process_info->parent_id)
     {
-        micros_console_print_string(", Parent: ");
-        itoa(process_info->parent_id, buffer, 10);
-        micros_console_print_string(buffer);
+        printf(", Parent: %d", process_info->parent_id);
     }
 
-    micros_console_print_string(", Status: ");
-    itoa(process_info->status, buffer, 10);
-    micros_console_print_string(buffer);
-    micros_console_print_string("");
-
-    micros_console_print_string(", CPU: ");
-    itoa(process_info->cpu_usage / 10, buffer, 10);
-    micros_console_print_string(buffer);
-    micros_console_print_string(" %");
-
-    micros_console_print_string(", MEMORY: ");
-    itoa(process_info->memory_usage, buffer, 10);
-    micros_console_print_string(buffer);
-    micros_console_print_string(" MB");
+    printf(", Status: %d, CPU: %d %%, MEMORY: %d MB", 
+        process_info->status,
+        (int)(process_info->cpu_usage / 10), 
+        process_info->memory_usage);
 }
 
 void print_memory_stats(micros_physical_memory_stats *memory_stats)
 {
-    char buffer[32];
-
-    micros_console_print_string("Total memory usage: ");
-    itoa((memory_stats->reserved_entries + memory_stats->allocated_entries) * 4, buffer, 10);
-    micros_console_print_string(buffer);
-    micros_console_print_string(" MB (");
-    itoa(memory_stats->allocated_entries * 4, buffer, 10);
-    micros_console_print_string(buffer);
-    micros_console_print_string(" MB allocated, ");
-    itoa(memory_stats->reserved_entries * 4, buffer, 10);
-    micros_console_print_string(buffer);
-    micros_console_print_string(" MB reserved, ");
-    itoa(memory_stats->free_entries * 4, buffer, 10);
-    micros_console_print_string(buffer);
-    micros_console_print_string(" MB free).");
+    printf("Total memory usage: %d MB (%d MB allocated, %d MB reserved, %d MB free)",
+        (memory_stats->reserved_entries + memory_stats->allocated_entries) * 4,
+        memory_stats->allocated_entries * 4,
+        memory_stats->reserved_entries * 4,
+        memory_stats->free_entries * 4);
 }

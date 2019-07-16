@@ -170,17 +170,12 @@ int kmain()
     logger_log_ok("READY.");
 
     logger_log_ok("Loading tasks...");
-    process_manager_create_process("/ENV/SHELL.ELF", "Honoka Kotori", 0);
-/*
-    logger_log_ok("Loading shell...");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nozomi Eli");
+    vga_clear_screen();
+    process_manager_create_process("/ENV/SHELL.ELF", "", 1000, false);
 
-    logger_log_ok("Loading shell...");
-    process_manager_create_process("/ENV/SHELL.ELF", "Nico Maki");
-*/
     process_manager_run();
 
-    //while (1)
+    while (1);
     //    ;
     char buff[50];
     video_mode *currentMode;

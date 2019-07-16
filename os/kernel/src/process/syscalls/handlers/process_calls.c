@@ -38,7 +38,9 @@ void syscall_process_current_process_sleep(interrupt_state *state)
 void syscall_process_start_process(interrupt_state *state)
 {
     uint32_t parent_id = (bool)state->registers.edx ? process_manager_get_current_process()->id : process_manager_get_root_process();
-    process_manager_create_process((char *)state->registers.ebx, (char *)state->registers.ecx, parent_id);
+    uint32_t process_id = process_manager_create_process((char *)state->registers.ebx, (char *)state->registers.ecx, parent_id, (bool)state->registers.edx);
+    
+    state->registers.eax = process_id;
 }
 
 void syscall_process_set_current_process_signal_handler(interrupt_state *state)
@@ -49,4 +51,9 @@ void syscall_process_set_current_process_signal_handler(interrupt_state *state)
 void syscall_process_finish_signal_handler(interrupt_state *state)
 {
     process_manager_finish_signal_handler((signal_params *)state->registers.ebx);
+}
+
+void syscall_process_wait_for_process(interrupt_state *state)
+{
+    process_manager_current_process_wait_for_process(state->registers.ebx);
 }

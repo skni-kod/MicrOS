@@ -16,7 +16,7 @@
 #include "memory/heap/heap.h"
 
 void process_manager_init();
-uint32_t process_manager_create_process(char *path, char *parameters, uint32_t parent_id);
+uint32_t process_manager_create_process(char *path, char *parameters, uint32_t parent_id, bool active);
 process_info *process_manager_get_process(uint32_t process_id);
 process_info *process_manager_get_current_process();
 
@@ -37,8 +37,13 @@ bool process_manager_set_current_process_name(char *name);
 bool process_manager_set_current_process_signal_handler(void (*signal_handler)(int));
 void process_manager_finish_signal_handler(signal_params *old_state);
 
+void process_manager_set_active_process_id(uint32_t process_id);
+void process_manager_get_active_process_id(uint32_t process_id);
+bool process_manager_is_current_process_active();
+
 void process_manager_current_process_sleep(uint32_t milliseconds);
 void process_manager_current_process_wait_for_key_press();
+void process_manager_current_process_wait_for_process(uint32_t process_id_to_wait);
 
 void process_manager_convert_process_info_to_user_info(process_info *process, process_user_info *user_info);
 uint32_t process_manager_get_process_memory_usage(process_info *process);

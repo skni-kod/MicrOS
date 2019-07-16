@@ -2,12 +2,26 @@
 
 void syscall_keyboard_is_key_pressed(interrupt_state *state)
 {
-    state->registers.eax = !keyboard_is_buffer_empty();
+    if(process_manager_is_current_process_active())
+    {
+        state->registers.eax = !keyboard_is_buffer_empty();
+    }
+    else
+    {
+        state->registers.eax = false;
+    }
 }
 
 void syscall_keyboard_get_pressed_key(interrupt_state *state)
 {
-    state->registers.eax = keyboard_get_key_from_buffer((keyboard_scan_ascii_pair *)state->registers.ebx);
+    if(process_manager_is_current_process_active())
+    {
+        state->registers.eax = keyboard_get_key_from_buffer((keyboard_scan_ascii_pair *)state->registers.ebx);
+    }
+    else
+    {
+        state->registers.eax = false;
+    }
 }
 
 void syscall_keyboard_wait_for_key_press(interrupt_state *state)
