@@ -5,11 +5,6 @@
 int main(int argc, char *argv[])
 {
     micros_process_set_current_process_name("LS");
-    if(argc < 2)
-    {
-        return -1;
-    }
-    
     char *path = argc >= 4 ? argv[2] : argv[1];
     
     if((path[0] == '/' && path[1] == 0) || micros_filesystem_directory_exists(path))

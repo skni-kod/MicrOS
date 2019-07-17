@@ -141,6 +141,12 @@ void back_to_previous_directory()
             break;
         }
     }
+    
+    if (current_dir[0] == 0)
+    {
+        current_dir[0] = '/';
+        current_dir[1] = 0; 
+    }
 }
 
 void reduce_slashes(char *path)

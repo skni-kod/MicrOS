@@ -7,7 +7,7 @@ void reduce_slashes(char *path);
 int main(int argc, char *argv[])
 {
     micros_process_set_current_process_name("RM");
-    if(argc < 3)
+    if(argc <= 3)
     {
         return -1;
     }

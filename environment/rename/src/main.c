@@ -7,7 +7,7 @@ void reduce_slashes(char *path);
 int main(int argc, char *argv[])
 {
     micros_process_set_current_process_name("RENAME");
-    if(argc < 4)
+    if(argc <= 4)
     {
         return -1;
     }
