@@ -10,6 +10,7 @@ void execute_app(const char *str);
 void back_to_previous_directory();
 void reduce_slashes(char *path);
 void split_to_path_and_args(const char *str, char *path, char *args);
+void capitalize_string(char *str);
 
 int main(int argc, char *argv[])
 {
@@ -92,6 +93,8 @@ void execute_app(const char *str)
     split_to_path_and_args(str, path, args);
     int path_length = strlen(path);
     
+    capitalize_string(path);
+    
     char path_variations[5][64];
     memcpy(path_variations[0], path, path_length);
     sprintf(path_variations[1], "%s/%s", current_dir, path);
@@ -117,7 +120,7 @@ void execute_app(const char *str)
             
             return;
         }
-    } 
+    }
     
     printf("File not found\n");
 }
@@ -162,16 +165,29 @@ void split_to_path_and_args(const char *str, char *path, char *args)
 {
     int length = strlen(str);
     
-    for(int i = 0; i < length; i++)
+    for(int i = 0; i < length + 1; i++)
     {
-        if(str[i] == ' ')
+        if(str[i] == ' ' || str[i] == 0)
         {
             memcpy(path, str, i);
             memcpy(args, str + i + 1, 63 - i);
+            
+            path[i] = 0;
             return;
         }
     }
     
     memcpy(path, str, length);
     args[0] = 0;
+}
+
+void capitalize_string(char *str)
+{
+    for(size_t i = 0; i < strlen(str); i++)
+    {
+        if(str[i] > 'a' && str[i] < 'z')
+        {
+            str[i] -= 'a' - 'A';
+        }
+    }
 }
