@@ -90,37 +90,36 @@ void execute_app(const char *str)
     char args[64];
     
     split_to_path_and_args(str, path, args);
+    int path_length = strlen(path);
     
-    if(micros_filesystem_file_exists((char *)path))
+    char path_variations[5][64];
+    memcpy(path_variations[0], path, path_length);
+    sprintf(path_variations[1], "%s/%s", current_dir, path);
+    sprintf(path_variations[2], "%s/%s.ELF", current_dir, path);
+    sprintf(path_variations[3], "/ENV/%s", path);
+    sprintf(path_variations[4], "/ENV/%s.ELF", path);
+   
+    for (int i = 0; i < 5; i++)
     {
-        reduce_slashes(path);
-    }
-    else
-    {
-        char tmp[64];
-        
-        sprintf(tmp, "%s/%s", current_dir, path);
-        memcpy(path, tmp, sizeof(char) * 64);
-        
-        reduce_slashes(path);
-        
-        if(!micros_filesystem_file_exists(path))
+        reduce_slashes(path_variations[i]);
+        if(micros_filesystem_file_exists(path_variations[i]))
         {
-            printf("File not found\n");
+            char args_with_current_dir[64];
+            sprintf(args_with_current_dir, "%s %s", current_dir, args);
+            
+            if(args_with_current_dir[strlen(args_with_current_dir) - 1] == ' ')
+            {
+                args_with_current_dir[strlen(args_with_current_dir) - 1] = 0;
+            }
+            
+            uint32_t child_process_id = micros_process_start_process(path_variations[i], args_with_current_dir, true, true);
+            micros_process_wait_for_process(child_process_id);
+            
             return;
         }
-    }
+    } 
     
-    char args_with_current_dir[64];
-    sprintf(args_with_current_dir, "%s %s", current_dir, args);
-    
-    if(args_with_current_dir[strlen(args_with_current_dir) - 1] == ' ')
-    {
-        args_with_current_dir[strlen(args_with_current_dir) - 1] = 0;
-    }
-    
-    uint32_t child_process_id = micros_process_start_process(path, args_with_current_dir, true, true);
-    micros_process_wait_for_process(child_process_id);
+    printf("File not found\n");
 }
 
 void back_to_previous_directory()
