@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+void reduce_slashes(char *path);
+
 int main(int argc, char *argv[])
 {
     micros_process_set_current_process_name("RENAME");
@@ -20,6 +22,7 @@ int main(int argc, char *argv[])
     
     for (int i = 0; i < 2; i++)
     {
+        reduce_slashes(path_variations[i]);
         if(micros_filesystem_is_file(path_variations[i]))
         {
             micros_filesystem_rename_file(path_variations[i], new_name);
@@ -34,4 +37,22 @@ int main(int argc, char *argv[])
     
     printf("Invalid path\n");
     return -1;
+}
+
+void reduce_slashes(char *path)
+{
+    int length = strlen(path);
+    int i = 0;
+    
+    while (i < length - 1)
+    {
+        if(path[i] == '/' && path[i + 1] == '/')
+        {
+            memmove(path + i, path + i + 1, 63 - i);
+        }
+        else
+        {
+            i++;
+        }
+    }
 }

@@ -304,7 +304,7 @@ bool fat_delete_file_from_path(char* path, bool is_directory)
     bool root_dir = false;
     
     kvector *chunks = fat_parse_path(path);
-    fat_directory_entry *file_info = fat_get_info_from_chunks(chunks, false);
+    fat_directory_entry *file_info = fat_get_info_from_chunks(chunks, is_directory);
     
     chunks->count--;
     fat_directory_entry *dir_info = fat_get_info_from_chunks(chunks, true);
