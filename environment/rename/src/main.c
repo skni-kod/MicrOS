@@ -23,12 +23,12 @@ int main(int argc, char *argv[])
     for (int i = 0; i < 2; i++)
     {
         reduce_slashes(path_variations[i]);
-        if(micros_filesystem_is_file(path_variations[i]))
+        if(micros_filesystem_file_exists(path_variations[i]))
         {
             micros_filesystem_rename_file(path_variations[i], new_name);
             return 0;
         }
-        else if(micros_filesystem_is_directory(path_variations[i]))
+        else if(micros_filesystem_directory_exists(path_variations[i]))
         {
             micros_filesystem_rename_directory(path_variations[i], new_name);
             return 0;

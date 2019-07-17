@@ -20,6 +20,12 @@ int main(int argc, char *argv[])
     sprintf(final_path, "%s/%s", current_dir, name);
     
     reduce_slashes(final_path);
+    if(micros_filesystem_file_exists(final_path) || micros_filesystem_directory_exists(final_path))
+    {
+        printf("File or directory with the specified name already exists\n");
+        return -1;
+    }
+    
     micros_filesystem_create_directory(final_path);
     
     return -1;
