@@ -16,6 +16,12 @@ int main(int argc, char *argv[])
     char *current_dir = argv[1];
     char *name = argv[2];
     
+    if(strlen(name) > 12)
+    {
+        printf("Name too long\n");
+        return -1;
+    }
+    
     char final_path[64];
     sprintf(final_path, "%s/%s", current_dir, name);
     

@@ -16,6 +16,12 @@ int main(int argc, char *argv[])
     char *path = argv[2];
     char *new_name = argv[3];
     
+    if(strlen(new_name) > 12)
+    {
+        printf("Name too long\n");
+        return -1;
+    }
+    
     char path_variations[2][64];
     sprintf(path_variations[0], "%s", path);
     sprintf(path_variations[1], "%s/%s", current_dir, path);
