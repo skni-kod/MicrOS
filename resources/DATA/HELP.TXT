@@ -1,3 +1,11 @@
-lorem
-ipsum
-123
+MicrOS HELP
+ cat [filename] - display file content
+ ls [?path] - display list of files
+ mkdir [dirname] - create new directory
+ rename [path] [newname] - rename file or the directory
+ rm [path] - delete file or the directory
+ snake - run Snake game
+ space - display space stats
+ tasks - display running tasks
+ time - display current time
+ touch [filename] - create new file
