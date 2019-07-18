@@ -86,3 +86,13 @@ bool micros_filesystem_directory_exists(char *path)
     micros_filesystem_directory_info info;
     return micros_filesystem_get_directory_info(path, &info);
 }
+
+int micros_filesystem_get_free_space()
+{
+    return micros_interrupt_0a(0x70);
+}
+
+int micros_filesystem_get_total_space()
+{
+    return micros_interrupt_0a(0x71);
+}

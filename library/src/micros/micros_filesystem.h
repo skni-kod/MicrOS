@@ -58,6 +58,9 @@ bool micros_filesystem_append_to_file(char *path, char *buffer, int size);
 bool micros_filesystem_file_exists(char *path);
 bool micros_filesystem_directory_exists(char *path);
 
+int micros_filesystem_get_free_space();
+int micros_filesystem_get_total_space();
+
 #ifdef __cplusplus
 }
 #endif

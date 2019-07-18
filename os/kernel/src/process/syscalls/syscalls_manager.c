@@ -54,7 +54,9 @@ void syscalls_manager_init()
     // 0x6X - Timer
     syscalls_manager_attach_handler(0x60, syscall_timer_get_system_clock);
 
-    // 0x7X - Power
+    // 0x7X - File system 2
+    syscalls_manager_attach_handler(0x70, syscall_filesystem_get_free_space);
+    syscalls_manager_attach_handler(0x71, syscall_filesystem_get_total_space);
 
     // 0x8X - PC Speaker
     syscalls_manager_attach_handler(0x80, syscall_pc_speaker_enable_sound);
