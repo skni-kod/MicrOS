@@ -304,7 +304,7 @@ bool fat_delete_file_from_path(char* path, bool is_directory)
     bool root_dir = false;
     
     kvector *chunks = fat_parse_path(path);
-    fat_directory_entry *file_info = fat_get_info_from_chunks(chunks, false);
+    fat_directory_entry *file_info = fat_get_info_from_chunks(chunks, is_directory);
     
     chunks->count--;
     fat_directory_entry *dir_info = fat_get_info_from_chunks(chunks, true);
@@ -892,10 +892,18 @@ uint32_t fat_get_entries_in_directory(char *path, char **entries)
 
             fat_denormalise_filename(full_filename);
 
-            entries[current_entry_index] = heap_user_alloc(path_length + 13, 0);
-            memset(entries[current_entry_index], 0, path_length + 13);
+            entries[current_entry_index] = heap_user_alloc(path_length + 14, 0);
+            memset(entries[current_entry_index], 0, path_length + 14);
             memcpy(entries[current_entry_index], path, path_length);
-            memcpy(entries[current_entry_index] + path_length, full_filename, 12);
+            
+            bool shift = false;
+            if(entries[current_entry_index][path_length - 1] != '/')
+            {
+                entries[current_entry_index][path_length] = '/';
+                shift = true;
+            }
+            
+            memcpy(entries[current_entry_index] + path_length + (shift ? 1 : 0), full_filename, 12);
 
             current_entry_index++;
         }

@@ -1,0 +1,34 @@
+#include <micros.h>
+#include <stdio.h>
+
+const char help_path[] = "/DATA/HELP.TXT";
+
+int main(int argc, char *argv[])
+{
+    micros_process_set_current_process_name("HELP");
+    if(!micros_filesystem_file_exists((char *)help_path))
+    {
+        printf("No HELP.TXT file\n");
+        return -1;
+    }
+    
+    micros_filesystem_file_info info;
+    micros_filesystem_get_file_info((char *)help_path, &info);
+    
+    uint8_t *buffer = malloc(sizeof(char) * info.size);
+    micros_filesystem_read_file(help_path, buffer, 0, info.size);
+    
+    for(uint32_t i = 0; i < info.size; i++)
+    {
+        if(buffer[i] == '\r')
+        {
+            continue;
+        }
+        
+        micros_console_print_char((char *)buffer[i]);
+    }
+    micros_console_print_char('\n');
+    
+    free(buffer);
+    return 0;
+}

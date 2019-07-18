@@ -78,3 +78,13 @@ void syscall_filesystem_append_to_file(interrupt_state *state)
 {
     state->registers.eax = filesystem_append_to_file((char *)state->registers.ebx, (char *)state->registers.ecx, (int)state->registers.edx);
 }
+
+void syscall_filesystem_get_free_space(interrupt_state *state)
+{
+    state->registers.eax = filesystem_get_free_space();
+}
+
+void syscall_filesystem_get_total_space(interrupt_state *state)
+{
+    state->registers.eax = filesystem_get_total_space();
+}
