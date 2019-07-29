@@ -2,6 +2,11 @@
 #include "../stdio.h"
 #include "../ctype.h"
 
+#define FLAGS_CHAR (1)
+#define FLAGS_SHORT (1 << 1)
+#define FLAGS_LONG (1 << 2)
+#define FLAGS_LONG_LONG (1 << 3)
+
 unsigned int _read_characters_count;
 
 static inline int _getc(FILE *stream)
@@ -18,18 +23,23 @@ static inline int _ungetc(int c, FILE *stream)
     return ungetc(c, stream);
 }
 
-int _get_number_from_file(FILE *stream)
+int _get_number_from_file(FILE *stream, int width)
 {
+    // @INCOMPLETE: handle width
     int ret = 0;
     short base = 10;
     bool minus = false;
 
     char c = _getc(stream);
+    width--;
+    if (width <= 0)
+        return 0;
 
     if (c == '-')
     {
         minus = true;
         c = _getc(stream);
+        width--;
     }
 
     if (c == '0')
@@ -37,12 +47,22 @@ int _get_number_from_file(FILE *stream)
         // number is octal
         base = 8;
 
+        if (width <= 0)
+            return 0;
+
         c = _getc(stream);
+        width--;
+
         if (c == 'x' || c == 'X')
         {
             // number is hexadecimal
             base = 16;
+
+            if (width <= 0)
+                return 0;
+
             c = _getc(stream);
+            width--;
         }
     }
 
@@ -57,7 +77,17 @@ int _get_number_from_file(FILE *stream)
             digit = c - 'a' + 10;
 
         ret = ret * base + digit;
+
+        if (width <= 0)
+        {
+            if (minus)
+                ret *= -1;
+
+            return ret;
+        }
+
         c = _getc(stream);
+        width--;
     }
 
     if (minus)
@@ -66,8 +96,10 @@ int _get_number_from_file(FILE *stream)
     return ret;
 }
 
-int _get_decimal_number_from_file(FILE *stream)
+int _get_decimal_number_from_file(FILE *stream, int width)
 {
+    // @INCOMPLETE: handle width
+
     int ret = 0;
     bool minus = false;
 
@@ -93,8 +125,10 @@ int _get_decimal_number_from_file(FILE *stream)
     return ret;
 }
 
-int _get_hex_number_from_file(FILE *stream)
+int _get_hex_number_from_file(FILE *stream, int width)
 {
+    // @INCOMPLETE: handle width
+
     int ret = 0;
     short base = 16;
     bool minus = false;
@@ -138,8 +172,10 @@ int _get_hex_number_from_file(FILE *stream)
     return ret;
 }
 
-int _get_octal_number_from_file(FILE *stream)
+int _get_octal_number_from_file(FILE *stream, int width)
 {
+    // @INCOMPLETE: handle width
+
     int ret = 0;
     short base = 8;
     bool minus = false;
@@ -176,9 +212,13 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
 {
 
     printf("SCAN FUNCTION INCOMPLETE, MAY CAUSE UNDEFINED BEHAVIOR!\n");
+    _read_characters_count = 0;
 
     unsigned short flags = 0;
     int width_field = 0;
+
+    // An optional starting asterisk indicates that the data is to be read from
+    // the stream but ignored (i.e. it is not stored in the location pointed by an argument).
     bool have_asterisk = false;
 
     int filled_arguments = 0;
@@ -262,6 +302,9 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
         }
         else
         {
+            have_asterisk = false;
+            width_field = -1;
+
             ++traverse;
             if (*traverse == '\0')
             {
@@ -277,14 +320,60 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
             }
 
             // Evaluate width field
-            // @TODO find way to reset width field
+            if (*traverse >= '0' && *traverse <= '9')
+            {
+                width_field = 0;
+            }
+
             while (*traverse >= '0' && *traverse <= '9')
             {
                 int digit = (int)(*traverse);
-                width_field = width_field * 10 + digit;
+                width_field = width_field * 10 + (digit - '0');
+
+                ++traverse;
             }
 
-            // @TODO evaluate length field
+            // evaluate length field
+            switch (*traverse)
+            {
+            case 'l':
+                flags |= FLAGS_LONG;
+                ++traverse;
+                if (*traverse == 'l')
+                {
+                    flags |= FLAGS_LONG_LONG;
+                    ++traverse;
+                }
+                break;
+            case 'h':
+                flags |= FLAGS_SHORT;
+                ++traverse;
+                if (*traverse == 'h')
+                {
+                    flags |= FLAGS_CHAR;
+                    ++traverse;
+                }
+                break;
+
+            case 't':
+                flags |= (sizeof(ptrdiff_t) == sizeof(long) ? FLAGS_LONG : FLAGS_LONG_LONG);
+                ++traverse;
+                break;
+
+            case 'j':
+                flags |= (sizeof(intmax_t) == sizeof(long) ? FLAGS_LONG : FLAGS_LONG_LONG);
+                ++traverse;
+                break;
+
+            case 'z':
+                flags |= (sizeof(size_t) == sizeof(long) ? FLAGS_LONG : FLAGS_LONG_LONG);
+                ++traverse;
+                break;
+
+            case 'L':
+                // @INCOMPLETE
+                break;
+            }
 
             switch (*traverse)
             {
@@ -294,10 +383,13 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
                 // Decimal digits assumed by default (0-9), but a 0 prefix introduces octal digits (0-7), and 0x hexadecimal digits (0-f).
                 // Signed argument.
                 int *int_ptr = va_arg(arg, int *);
-                int n = _get_number_from_file(stream);
+                int n = _get_number_from_file(stream, width_field);
 
-                *int_ptr = n;
-                filled_arguments++;
+                if (!have_asterisk)
+                {
+                    *int_ptr = n;
+                    filled_arguments++;
+                }
             }
             break;
 
@@ -306,10 +398,13 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
                 // Any number of decimal digits (0-9), optionally preceded by a sign. Unsigned.
                 {
                     int *int_ptr = va_arg(arg, int *);
-                    int n = _get_decimal_number_from_file(stream);
+                    int n = _get_decimal_number_from_file(stream, width_field);
 
-                    *int_ptr = n;
-                    filled_arguments++;
+                    if (!have_asterisk)
+                    {
+                        *int_ptr = n;
+                        filled_arguments++;
+                    }
                 }
                 break;
 
@@ -318,10 +413,13 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
                 // Unsigned argument.
                 {
                     int *int_ptr = va_arg(arg, int *);
-                    int n = _get_octal_number_from_file(stream);
+                    int n = _get_octal_number_from_file(stream, width_field);
 
-                    *int_ptr = n;
-                    filled_arguments++;
+                    if (!have_asterisk)
+                    {
+                        *int_ptr = n;
+                        filled_arguments++;
+                    }
                 }
                 break;
 
@@ -330,10 +428,13 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
                 // Unsigned argument.
                 {
                     int *int_ptr = va_arg(arg, int *);
-                    int n = _get_hex_number_from_file(stream);
+                    int n = _get_hex_number_from_file(stream, width_field);
 
-                    *int_ptr = n;
-                    filled_arguments++;
+                    if (!have_asterisk)
+                    {
+                        *int_ptr = n;
+                        filled_arguments++;
+                    }
                 }
                 break;
 
@@ -368,30 +469,33 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
 
                     str_buffer[index] = 0;
 
-                    *float_ptr = strtod(str_buffer, NULL);
+                    if (!have_asterisk)
+                    {
+                        double d = strtod(str_buffer, NULL);
+                        *float_ptr = d;
+                        filled_arguments++;
+                    }
                     free(str_buffer);
-                    filled_arguments++;
                 }
-                break;
-
-            case 'a':
-                // ???
-                // @INCOMPLETE
                 break;
 
             case 'c':
             {
+                // @INCOMPLETE:
                 // The next character. If a width other than 1 is specified, the function reads exactly width characters and stores them
                 // in the successive locations of the array passed as argument. No null character is appended at the end.
                 char *ch_arg = va_arg(arg, char *);
-                *ch_arg = _getc(stream);
-                filled_arguments++;
+                char c = _getc(stream);
+
+                if (!have_asterisk)
+                {
+                    *ch_arg = c;
+                    filled_arguments++;
+                }
             }
             break;
 
             case 's':
-                // @INCOMPLETE
-
                 // Any number of non-whitespace characters, stopping at the first whitespace character found.
                 // A terminating null character is automatically added at the end of the stored sequence.
                 {
@@ -401,12 +505,18 @@ int vfscanf(FILE *stream, const char *format, va_list arg)
 
                     while (!isspace(c))
                     {
-                        char_ptr[index++] = c;
+                        if (!have_asterisk)
+                        {
+                            char_ptr[index++] = c;
+                        }
                         c = _getc(stream);
                     }
 
-                    char_ptr[index] = 0;
-                    filled_arguments++;
+                    if (!have_asterisk)
+                    {
+                        char_ptr[index] = 0;
+                        filled_arguments++;
+                    }
                 }
                 break;
 
