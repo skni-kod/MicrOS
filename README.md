@@ -44,19 +44,25 @@ The repository doesn't contain all files necessary to successful compilation - w
 
 ## Examples
 ![MicrOS boot sequence](https://i.imgur.com/Y200tKQ.png)
+
 Boot sequence, floppy calibration, reading content of the example file and heap dump.
 
 ![MicrOS multitasking](https://i.imgur.com/tKVWytt.png)
+
 Multitasking with five processes incrementing internal counters and printing them on the console.
 
 ![Tasks manager](https://i.imgur.com/GETPuxo.png)
+
 Tasks manager displaying basic info about the current operating system state.
 
 ![Shell](https://i.imgur.com/CpRxnFe.png)
+
 Simple shell which allows to execute other applications.
 
 ![CAT application](https://i.imgur.com/CC2bwX6.png)
+
 Example of working "cat" application.
 
 ![Snake game](https://i.imgur.com/8Bjz6IN.png)
+
 Snake game.
