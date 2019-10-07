@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include "assembly/io.h"
 
+// This all is for mode 3h
+
 #define VGA_BASE_ADDR 0xC00B8000
 #define VGA_SCREEN_COLUMNS 80
 #define VGA_SCREEN_ROWS 25
