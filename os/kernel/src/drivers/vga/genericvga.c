@@ -46,6 +46,39 @@ void generic_vga_driver_init()
 int16_t generic_vga_set_video_mode(uint16_t mode){
     switch(mode)
     {
+        case 0x00:
+            video_card_turn_off_buffer();
+            if(mode00h_set_mode() != 0x00) return -1;
+            current_video_mode.colors = 16;
+            current_video_mode.height = 25;
+            current_video_mode.width = 40;
+            current_video_mode.id = 0x00;
+            current_video_mode.monochrome = 1;
+            current_video_mode.planar = 0;
+            text_mode = 1;
+            return 0x00;
+        case 0x01:
+            video_card_turn_off_buffer();
+            if(mode01h_set_mode() != 0x01) return -1;
+            current_video_mode.colors = 16;
+            current_video_mode.height = 25;
+            current_video_mode.width = 40;
+            current_video_mode.id = 0x01;
+            current_video_mode.monochrome = 0;
+            current_video_mode.planar = 0;
+            text_mode = 1;
+            return 0x01;
+        case 0x02:
+            video_card_turn_off_buffer();
+            if(mode02h_set_mode() != 0x02) return -1;
+            current_video_mode.colors = 16;
+            current_video_mode.height = 25;
+            current_video_mode.width = 80;
+            current_video_mode.id = 0x02;
+            current_video_mode.monochrome = 1;
+            current_video_mode.planar = 0;
+            text_mode = 1;
+            return 0x02;
         case 0x03:
             video_card_turn_off_buffer();
             if(mode03h_set_mode() != 0x03) return -1;
