@@ -243,6 +243,8 @@ void vga_set_cursor_pos(uint16_t x, uint16_t y);
 void vga_set_cursor_pos_struct(vga_screen_pos spos);
 vga_screen_pos vga_get_cursor_pos();
 void vga_clear_screen();
+void vga_clear_given_screen(uint8_t screen);
+void vga_clear_all_screens();
 void vga_change_printing_screen(uint8_t a);
 void vga_copy_screen(uint8_t from, uint8_t to);
 void vga_cursor_on();

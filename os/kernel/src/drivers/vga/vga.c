@@ -26,7 +26,7 @@ uint8_t vga_init(uint8_t mode)
             vga_current_printing_screen = 0;
             vga_screen_offset = 0;
             vga_video = (volatile screen *)(VGA_MODE_00H_BASE_ADDR);
-            vga_clear_screen();
+            vga_clear_all_screens();
             vga_update_cursor_struct(vga_cursor_pos);
             return 1;
         case VGA_MODE_01H:
@@ -40,7 +40,7 @@ uint8_t vga_init(uint8_t mode)
             vga_current_printing_screen = 0;
             vga_screen_offset = 0;
             vga_video = (volatile screen *)(VGA_MODE_01H_BASE_ADDR);
-            vga_clear_screen();
+            vga_clear_all_screens();
             vga_update_cursor_struct(vga_cursor_pos);
             return 1;
         case VGA_MODE_02H:
@@ -54,7 +54,7 @@ uint8_t vga_init(uint8_t mode)
             vga_current_printing_screen = 0;
             vga_screen_offset = 0;
             vga_video = (volatile screen *)(VGA_MODE_02H_BASE_ADDR);
-            vga_clear_screen();
+            vga_clear_all_screens();
             vga_update_cursor_struct(vga_cursor_pos);
             return 1;
         case VGA_MODE_03H:
@@ -68,7 +68,7 @@ uint8_t vga_init(uint8_t mode)
             vga_current_printing_screen = 0;
             vga_screen_offset = 0;
             vga_video = (volatile screen *)(VGA_MODE_03H_BASE_ADDR);
-            vga_clear_screen();
+            vga_clear_all_screens();
             vga_update_cursor_struct(vga_cursor_pos);
             return 1;
         case VGA_MODE_07H:
@@ -82,7 +82,7 @@ uint8_t vga_init(uint8_t mode)
             vga_current_printing_screen = 0;
             vga_screen_offset = 0;
             vga_video = (volatile screen *)(VGA_MODE_07H_BASE_ADDR);
-            vga_clear_screen();
+            vga_clear_all_screens();
             vga_update_cursor_struct(vga_cursor_pos);
             return 1;
         default:
@@ -242,6 +242,36 @@ void vga_clear_screen()
     vga_cursor_pos.x = 0;
     vga_cursor_pos.y = 0;
     vga_update_cursor_struct(vga_cursor_pos);
+}
+
+void vga_clear_given_screen(uint8_t screen)
+{
+    if (screen < vga_current_max_screens)
+    {
+        vga_color_without_blink col = {.background = VGA_COLOR_BLACK, .letter = VGA_COLOR_LIGHT_GRAY};
+        uint16_t offset_to_screen = vga_current_screen_offset * (uint16_t)screen;
+        // Clear all rows
+        for (uint16_t i = 0; i < vga_current_rows; ++i)
+        {
+            // Clear all lines
+            for (uint16_t j = 0; j < vga_current_columns; ++j)
+            {
+                uint16_t pos = vga_calcualte_position_without_offset(j, i);
+                // Clear
+                vga_video[pos + offset_to_screen].c.code = 0;
+                vga_video[pos + offset_to_screen].c.color.color_without_blink = col;
+            }
+        }
+    }
+}
+
+void vga_clear_all_screens()
+{
+    vga_clear_screen();
+    for(int i = 1; i < vga_current_max_screens; ++i)
+    {
+        vga_clear_given_screen(i);
+    }
 }
 
 void vga_change_printing_screen(uint8_t a)
