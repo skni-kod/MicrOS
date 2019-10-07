@@ -8,6 +8,8 @@ uint16_t vga_screen_offset = 0;
 uint8_t vga_current_mode = 0;
 uint16_t vga_current_columns = 0;
 uint16_t vga_current_rows = 0;
+uint16_t vga_current_max_screens = 0;
+uint16_t vga_current_screen_offset = 0;
 
 uint8_t vga_init(uint8_t mode)
 {
@@ -17,6 +19,8 @@ uint8_t vga_init(uint8_t mode)
             vga_current_mode = mode;
             vga_current_columns = VGA_MODE_00H_SCREEN_COLUMNS;
             vga_current_rows = VGA_MODE_00H_SCREEN_ROWS;
+            vga_current_max_screens = VGA_MODE_00H_MAX_SCREENS;
+            vga_current_screen_offset = VGA_MODE_00H_SCREEN_OFFSET;
             vga_cursor_pos.x = 0;
             vga_cursor_pos.y = 0;
             vga_current_printing_screen = 0;
@@ -29,6 +33,8 @@ uint8_t vga_init(uint8_t mode)
             vga_current_mode = mode;
             vga_current_columns = VGA_MODE_01H_SCREEN_COLUMNS;
             vga_current_rows = VGA_MODE_01H_SCREEN_ROWS;
+            vga_current_max_screens = VGA_MODE_01H_MAX_SCREENS;
+            vga_current_screen_offset = VGA_MODE_01H_SCREEN_OFFSET;
             vga_cursor_pos.x = 0;
             vga_cursor_pos.y = 0;
             vga_current_printing_screen = 0;
@@ -41,6 +47,8 @@ uint8_t vga_init(uint8_t mode)
             vga_current_mode = mode;
             vga_current_columns = VGA_MODE_02H_SCREEN_COLUMNS;
             vga_current_rows = VGA_MODE_02H_SCREEN_ROWS;
+            vga_current_max_screens = VGA_MODE_02H_MAX_SCREENS;
+            vga_current_screen_offset = VGA_MODE_02H_SCREEN_OFFSET;
             vga_cursor_pos.x = 0;
             vga_cursor_pos.y = 0;
             vga_current_printing_screen = 0;
@@ -53,6 +61,8 @@ uint8_t vga_init(uint8_t mode)
             vga_current_mode = mode;
             vga_current_columns = VGA_MODE_03H_SCREEN_COLUMNS;
             vga_current_rows = VGA_MODE_03H_SCREEN_ROWS;
+            vga_current_max_screens = VGA_MODE_03H_MAX_SCREENS;
+            vga_current_screen_offset = VGA_MODE_03H_SCREEN_OFFSET;
             vga_cursor_pos.x = 0;
             vga_cursor_pos.y = 0;
             vga_current_printing_screen = 0;
@@ -62,8 +72,19 @@ uint8_t vga_init(uint8_t mode)
             vga_update_cursor_struct(vga_cursor_pos);
             return 1;
         case VGA_MODE_07H:
-            // TODO: Add mode 07h
-            return -1;
+            vga_current_mode = mode;
+            vga_current_columns = VGA_MODE_07H_SCREEN_COLUMNS;
+            vga_current_rows = VGA_MODE_07H_SCREEN_ROWS;
+            vga_current_max_screens = VGA_MODE_07H_MAX_SCREENS;
+            vga_current_screen_offset = VGA_MODE_07H_SCREEN_OFFSET;
+            vga_cursor_pos.x = 0;
+            vga_cursor_pos.y = 0;
+            vga_current_printing_screen = 0;
+            vga_screen_offset = 0;
+            vga_video = (volatile screen *)(VGA_MODE_07H_BASE_ADDR);
+            vga_clear_screen();
+            vga_update_cursor_struct(vga_cursor_pos);
+            return 1;
         default:
             return -1;
     }
@@ -225,19 +246,19 @@ void vga_clear_screen()
 
 void vga_change_printing_screen(uint8_t a)
 {
-    if (a < VGA_MAX_SCREENS)
+    if (a < vga_current_max_screens)
     {
         vga_current_printing_screen = a;
-        vga_screen_offset = VGA_SCREEN_OFFSET * (uint16_t)a;
+        vga_screen_offset = vga_current_screen_offset * (uint16_t)a;
     }
 }
 
 void vga_copy_screen(uint8_t from, uint8_t to)
 {
-    if (from < VGA_MAX_SCREENS && to < VGA_MAX_SCREENS)
+    if (from < vga_current_max_screens && to < vga_current_max_screens)
     {
-        uint16_t offset_from = VGA_SCREEN_OFFSET * (uint16_t)from;
-        uint16_t offset_to = VGA_SCREEN_OFFSET * (uint16_t)to;
+        uint16_t offset_from = vga_current_screen_offset * (uint16_t)from;
+        uint16_t offset_to = vga_current_screen_offset * (uint16_t)to;
 
         // Copy all rows
         for (uint16_t i = 0; i < vga_current_rows; ++i)
