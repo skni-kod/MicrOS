@@ -360,6 +360,7 @@ int8_t mode03h_set_mode()
 	pokeb(0xC0000040, 0xC0000084, rows - 1); /* rows on screen - 1 */
 	pokeb(0xC0000040, 0xC0000085, ht);		 /* char height */
 											 /* set white-on-black attributes for all text */
+	vga_init(VGA_MODE_03H);
 	vga_clear_screen();
 	vga_color col;
 	col.color_without_blink.letter = VGA_COLOR_WHITE;
