@@ -29,6 +29,14 @@
 #define VGA_NOT_BLINK 0x00
 #define VGA_BLINK 0x01
 
+// Modes
+
+#define VGA_MODE_00H 0x00
+#define VGA_MODE_01H 0x01
+#define VGA_MODE_02H 0x02
+#define VGA_MODE_03H 0x03
+#define VGA_MODE_07H 0x07
+
 // Mode 00h
 
 #define VGA_MODE_00H_BASE_ADDR 0xC00B8000
@@ -199,7 +207,7 @@ typedef union screen {
 } screen;
 
 // Functions for users
-void vga_init();
+uint8_t vga_init(uint8_t mode);
 void vga_printchar(char c);
 void vga_printchar_color(char c, vga_color *color);
 void vga_printstring(const char *str);

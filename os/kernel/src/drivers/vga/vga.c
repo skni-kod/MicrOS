@@ -2,18 +2,72 @@
 
 // Position on screen
 vga_screen_pos vga_cursor_pos;
-volatile screen *const vga_video = (volatile screen *)(VGA_BASE_ADDR);
-uint8_t vga_current_printing_screen;
-uint16_t vga_screen_offset;
+volatile screen *vga_video;
+uint8_t vga_current_printing_screen = 0;
+uint16_t vga_screen_offset = 0;
+uint8_t vga_current_mode = 0;
+uint16_t vga_current_columns = 0;
+uint16_t vga_current_rows = 0;
 
-void vga_init()
+uint8_t vga_init(uint8_t mode)
 {
-    vga_cursor_pos.x = 0;
-    vga_cursor_pos.y = 0;
-    vga_current_printing_screen = 0;
-    vga_screen_offset = 0;
-    vga_clear_screen();
-    vga_update_cursor_struct(vga_cursor_pos);
+    switch(mode)
+    {
+        case VGA_MODE_00H:
+            vga_current_mode = mode;
+            vga_current_columns = VGA_MODE_00H_SCREEN_COLUMNS;
+            vga_current_rows = VGA_MODE_00H_SCREEN_ROWS;
+            vga_cursor_pos.x = 0;
+            vga_cursor_pos.y = 0;
+            vga_current_printing_screen = 0;
+            vga_screen_offset = 0;
+            vga_video = (volatile screen *)(VGA_MODE_00H_BASE_ADDR);
+            vga_clear_screen();
+            vga_update_cursor_struct(vga_cursor_pos);
+            return 1;
+        case VGA_MODE_01H:
+            vga_current_mode = mode;
+            vga_current_columns = VGA_MODE_01H_SCREEN_COLUMNS;
+            vga_current_rows = VGA_MODE_01H_SCREEN_ROWS;
+            vga_cursor_pos.x = 0;
+            vga_cursor_pos.y = 0;
+            vga_current_printing_screen = 0;
+            vga_screen_offset = 0;
+            vga_video = (volatile screen *)(VGA_MODE_01H_BASE_ADDR);
+            vga_clear_screen();
+            vga_update_cursor_struct(vga_cursor_pos);
+            return 1;
+        case VGA_MODE_02H:
+            vga_current_mode = mode;
+            vga_current_columns = VGA_MODE_02H_SCREEN_COLUMNS;
+            vga_current_rows = VGA_MODE_02H_SCREEN_ROWS;
+            vga_cursor_pos.x = 0;
+            vga_cursor_pos.y = 0;
+            vga_current_printing_screen = 0;
+            vga_screen_offset = 0;
+            vga_video = (volatile screen *)(VGA_MODE_02H_BASE_ADDR);
+            vga_clear_screen();
+            vga_update_cursor_struct(vga_cursor_pos);
+            return 1;
+        case VGA_MODE_03H:
+            vga_current_mode = mode;
+            vga_current_columns = VGA_MODE_03H_SCREEN_COLUMNS;
+            vga_current_rows = VGA_MODE_03H_SCREEN_ROWS;
+            vga_cursor_pos.x = 0;
+            vga_cursor_pos.y = 0;
+            vga_current_printing_screen = 0;
+            vga_screen_offset = 0;
+            vga_video = (volatile screen *)(VGA_MODE_03H_BASE_ADDR);
+            vga_clear_screen();
+            vga_update_cursor_struct(vga_cursor_pos);
+            return 1;
+        case VGA_MODE_07H:
+            // TODO: Add mode 07h
+            return -1;
+        default:
+            return -1;
+    }
+    
 }
 
 void vga_printchar(char c)
@@ -33,7 +87,7 @@ void vga_printchar_color(char c, vga_color *color)
             vga_video[pos].c.color = *color;
         }
         vga_cursor_pos.x += 1;
-        if (vga_cursor_pos.x == VGA_SCREEN_COLUMNS)
+        if (vga_cursor_pos.x == vga_current_columns)
         {
             vga_newline();
         }
@@ -152,10 +206,10 @@ void vga_clear_screen()
 {
     vga_color_without_blink col = {.background = VGA_COLOR_BLACK, .letter = VGA_COLOR_LIGHT_GRAY};
     // Clear all rows
-    for (uint16_t i = 0; i < VGA_SCREEN_ROWS; ++i)
+    for (uint16_t i = 0; i < vga_current_rows; ++i)
     {
         // Clear all lines
-        for (uint16_t j = 0; j < VGA_SCREEN_COLUMNS; ++j)
+        for (uint16_t j = 0; j < vga_current_columns; ++j)
         {
             uint16_t pos = vga_calcualte_position_with_offset(j, i);
             // Clear
@@ -186,10 +240,10 @@ void vga_copy_screen(uint8_t from, uint8_t to)
         uint16_t offset_to = VGA_SCREEN_OFFSET * (uint16_t)to;
 
         // Copy all rows
-        for (uint16_t i = 0; i < VGA_SCREEN_ROWS; ++i)
+        for (uint16_t i = 0; i < vga_current_rows; ++i)
         {
             // Copy all lines
-            for (uint16_t j = 0; j < VGA_SCREEN_COLUMNS; ++j)
+            for (uint16_t j = 0; j < vga_current_columns; ++j)
             {
                 uint16_t pos = vga_calcualte_position_without_offset(j, i);
                 // Copy
@@ -214,23 +268,23 @@ void vga_newline()
     vga_cursor_pos.x = 0;
     vga_cursor_pos.y++;
     // When we reach end of screen
-    if (vga_cursor_pos.y == VGA_SCREEN_ROWS)
+    if (vga_cursor_pos.y == vga_current_rows)
     {
         // To current line we copy next line
-        for (uint16_t i = 0; i < VGA_SCREEN_ROWS - 1; ++i)
+        for (uint16_t i = 0; i < vga_current_rows - 1; ++i)
         {
-            for (uint16_t j = 0; j < VGA_SCREEN_COLUMNS; ++j)
+            for (uint16_t j = 0; j < vga_current_columns; ++j)
             {
                 uint16_t pos = vga_calcualte_position_with_offset(j, i);
                 // Copy byte from next line
-                vga_video[pos] = vga_video[pos + VGA_SCREEN_COLUMNS];
+                vga_video[pos] = vga_video[pos + vga_current_columns];
             }
         }
-        vga_cursor_pos.y = VGA_SCREEN_ROWS - 1;
+        vga_cursor_pos.y = vga_current_rows - 1;
 
         // Clear last line
         vga_color_without_blink col = {.background = VGA_COLOR_BLACK, .letter = VGA_COLOR_LIGHT_GRAY};
-        for (uint16_t i = 0; i < VGA_SCREEN_COLUMNS; ++i)
+        for (uint16_t i = 0; i < vga_current_columns; ++i)
         {
             uint16_t pos = vga_calcualte_position_with_offset(i, vga_cursor_pos.y);
             // Clear
@@ -242,12 +296,12 @@ void vga_newline()
 
 uint16_t vga_calcualte_position_with_offset(uint16_t x, uint16_t y)
 {
-    return (x + y * VGA_SCREEN_COLUMNS) + vga_screen_offset;
+    return (x + y * vga_current_columns) + vga_screen_offset;
 }
 
 uint16_t vga_calcualte_position_without_offset(uint16_t x, uint16_t y)
 {
-    return x + y * VGA_SCREEN_COLUMNS;
+    return x + y * vga_current_columns;
 }
 
 void vga_enable_cursor(uint8_t cursor_start, uint8_t cursor_end)
