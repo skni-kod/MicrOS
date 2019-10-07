@@ -44,8 +44,24 @@ unsigned int _unsigned_number_len(u64 n, int base)
     switch (base)
     {
     case 10:
-        res = floor(log10(fabs(n))) + 1;
+    {
+        // Due to floating point inaccuracy, we need to ignore small rounding errors. This is very dirty
+        // workaround, but thanks to it, log10(1000) doesn't return 2 instead of 3. Don't blame me.
+        //
+        // Example:
+        // log2(1000) = 9.965784284662087
+        // log2(10)   = 3.3219280948873626
+        // log2(1000) / log2(10) = 2.9999999999999996 <- this needs to be fixed
+        //
+        double logRes = log10(fabs(n));
+        if(fabs(round(logRes) - logRes) < 0.0000000001)
+        {
+            logRes = round(logRes);
+        }
+        
+        res = floor(logRes) + 1;
         break;
+    }
     case 16:
     case 8:
         res = floor(_log_base(n, base)) + 1;
