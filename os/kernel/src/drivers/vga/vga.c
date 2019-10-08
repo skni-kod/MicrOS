@@ -91,18 +91,18 @@ uint8_t vga_init(uint8_t mode)
     
 }
 
-void vga_printchar(char c)
+void vga_printchar(char character)
 {
-    vga_printchar_color(c, 0);
+    vga_printchar_color(character, 0);
 }
 
-void vga_printchar_color(char c, vga_color *color)
+void vga_printchar_color(char character, vga_color *color)
 {
     uint16_t pos = vga_calcualte_position_with_offset(vga_cursor_pos.x, vga_cursor_pos.y);
 
-    if (c != '\n')
+    if (character != '\n')
     {
-        vga_video[pos].c.code = c;
+        vga_video[pos].c.code = character;
         if (color != 0)
         {
             vga_video[pos].c.color = *color;
@@ -140,10 +140,10 @@ void vga_printstring_color(const char *str, vga_color *color)
     }
 }
 
-void vga_set_char(uint16_t x, uint16_t y, char c)
+void vga_set_char(uint16_t x, uint16_t y, char character)
 {
     uint16_t pos = vga_calcualte_position_with_offset(x, y);
-    vga_video[pos].c.code = c;
+    vga_video[pos].c.code = character;
 }
 
 void vga_set_char_struct(vga_screen_pos spos, char c)
@@ -184,15 +184,15 @@ vga_color vga_get_color_struct(vga_screen_pos spos)
     return vga_get_color(spos.x, spos.y);
 }
 
-void vga_set_character(uint16_t x, uint16_t y, vga_character c)
+void vga_set_character(uint16_t x, uint16_t y, vga_character character)
 {
     uint16_t pos = vga_calcualte_position_with_offset(x, y);
-    vga_video[pos].c = c;
+    vga_video[pos].c = character;
 }
 
-void vga_set_character_struct(vga_screen_pos spos, vga_character c)
+void vga_set_character_struct(vga_screen_pos spos, vga_character character)
 {
-    vga_set_character(spos.x, spos.y, c);
+    vga_set_character(spos.x, spos.y, character);
 }
 
 vga_character vga_get_character(uint16_t x, uint16_t y)
@@ -274,12 +274,12 @@ void vga_clear_all_screens()
     }
 }
 
-void vga_change_printing_screen(uint8_t a)
+void vga_change_printing_screen(uint8_t screen)
 {
-    if (a < vga_current_max_screens)
+    if (screen < vga_current_max_screens)
     {
-        vga_current_printing_screen = a;
-        vga_screen_offset = vga_current_screen_offset * (uint16_t)a;
+        vga_current_printing_screen = screen;
+        vga_screen_offset = vga_current_screen_offset * (uint16_t)screen;
     }
 }
 

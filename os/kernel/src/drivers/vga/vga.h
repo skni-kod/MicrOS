@@ -34,11 +34,14 @@
 
 // Modes
 
-#define VGA_MODE_00H 0x00
-#define VGA_MODE_01H 0x01
-#define VGA_MODE_02H 0x02
-#define VGA_MODE_03H 0x03
-#define VGA_MODE_07H 0x07
+enum VGA_TEXT_MODES
+{
+    VGA_MODE_00H = 0x00,
+    VGA_MODE_01H = 0x01,
+    VGA_MODE_02H = 0x02,
+    VGA_MODE_03H = 0x03,
+    VGA_MODE_07H = 0x07
+};
 
 // Mode 00h
 
@@ -222,41 +225,266 @@ typedef union screen {
 } screen;
 
 // Functions for users
+
+//! Initialization of VGA.
+/*!
+    Sets internal variables to given text mode and clear all screens.
+    \param mode Text mode you want to switch.
+    \return 1 is succes, 0 is failure.
+*/
 uint8_t vga_init(uint8_t mode);
-void vga_printchar(char c);
-void vga_printchar_color(char c, vga_color *color);
+
+//! Print character on screen.
+/*!
+    Print character on screen without changing color of character and background.
+    \param character Character.
+*/
+void vga_printchar(char character);
+
+//! Print character on screen.
+/*!
+    Print character on screen with given color of character and background.
+    \param character Character.
+    \param color Color.
+*/
+void vga_printchar_color(char character, vga_color *color);
+
+//! Print string on screen.
+/*!
+    Print string on screen without changing color of characters and background.
+    \param str String.
+*/
 void vga_printstring(const char *str);
+
+//! Print string on screen.
+/*!
+    Print string on screen with given color of characters and background.
+    \param str String.
+    \param color Color.
+*/
 void vga_printstring_color(const char *str, vga_color *color);
-void vga_set_char(uint16_t x, uint16_t y, char c);
-void vga_set_char_struct(vga_screen_pos spos, char c);
+
+//! Set character on given point on screen.
+/*!
+    Set character on given point on screen without changing color of character and background.
+    \param x x coordinate.
+    \param y y coordinate.
+    \param character Character.
+*/
+void vga_set_char(uint16_t x, uint16_t y, char character);
+
+//! Set character on given point on screen.
+/*!
+    Set character on given point on screen without changing color of character and background.
+    \param spos Position on screen.
+    \param character Character.
+*/
+void vga_set_char_struct(vga_screen_pos spos, char character);
+
+//! Get character from given point on screen.
+/*!
+    Get character on given point on screen.
+    \param x x coordinate.
+    \param y y coordinate.
+    \return Character.
+*/
 char vga_get_char(uint16_t x, uint16_t y);
+
+//! Get character from given point on screen.
+/*!
+    Get character on given point on screen.
+    \param spos Position on screen.
+    \return Character.
+*/
 char vga_get_char_struct(vga_screen_pos spos);
+
+//! Set character color on given point on screen.
+/*!
+    Set character color on given point on screen without changing letter.
+    \param x x coordinate.
+    \param y y coordinate.
+    \param col Color.
+*/
 void vga_set_color(uint16_t x, uint16_t y, vga_color col);
+
+//! Set character color on given point on screen.
+/*!
+    Set character color on given point on screen without changing letter.
+    \param spos Position on screen.
+    \param col Color.
+*/
 void vga_set_color_struct(vga_screen_pos spos, vga_color col);
+
+//! Get character color from given point on screen.
+/*!
+    Get character color on given point on screen.
+    \param x x coordinate.
+    \param y y coordinate.
+    \return Color.
+*/
 union vga_color vga_get_color(uint16_t x, uint16_t y);
+
+//! Get character color from given point on screen.
+/*!
+    Get character color on given point on screen.
+    \param spos Position on screen.
+    \return Color.
+*/
 union vga_color vga_get_color_struct(vga_screen_pos spos);
-void vga_set_character(uint16_t x, uint16_t y, vga_character c);
-void vga_set_character_struct(vga_screen_pos spos, vga_character c);
+
+//! Set character and character color on given point on screen.
+/*!
+    Set character and character color on given point on screen.
+    \param x x coordinate.
+    \param y y coordinate.
+    \param character Character and character color.
+*/
+void vga_set_character(uint16_t x, uint16_t y, vga_character character);
+
+//! Set character and character color on given point on screen.
+/*!
+    Set character and character color on given point on screen.
+    \param spos Position on screen.
+    \param character Character and character color.
+*/
+void vga_set_character_struct(vga_screen_pos spos, vga_character character);
+
+//! Get character and character color color from given point on screen.
+/*!
+    Get character and character color color on given point on screen.
+    \param x x coordinate.
+    \param y y coordinate.
+    \return Character and character color.
+*/
 vga_character vga_get_character(uint16_t x, uint16_t y);
+
+//! Get character and character color color from given point on screen.
+/*!
+    Get character and character color color on given point on screen.
+    \param spos Position on screen.
+    \return Character and character color.
+*/
 vga_character vga_get_character_struct(vga_screen_pos spos);
+
+//! Set cursor position.
+/*!
+    Set cursor position on screen.
+    \param x x coordinate.
+    \param y y coordinate.
+*/
 void vga_set_cursor_pos(uint16_t x, uint16_t y);
+
+//! Set cursor position.
+/*!
+    Set cursor position on screen.
+    \param spos Position on screen.
+*/
 void vga_set_cursor_pos_struct(vga_screen_pos spos);
+
+//! Get cursor position.
+/*!
+    Get cursor position on screen.
+    \return Position on screen.
+*/
 vga_screen_pos vga_get_cursor_pos();
+
+//! Clear screen.
+/*!
+    Clears letters and colors. Set colors to default.
+*/
 void vga_clear_screen();
+
+//! Clear given screen.
+/*!
+    Clears letters and colors from given screen. Set colors to default.
+    \param screen Screen to clear. Value valid for current text mode.
+*/
 void vga_clear_given_screen(uint8_t screen);
+
+//! Clear all screen.
+/*!
+    Clears letters and colors from all screens. Set colors to default.
+*/
 void vga_clear_all_screens();
-void vga_change_printing_screen(uint8_t a);
+
+//! Change printing screen.
+/*!
+    Change screen where text are printing.
+    /param screen New screen for printing. Value valid for current text mode.
+*/
+void vga_change_printing_screen(uint8_t screen);
+
+//! Copy printing screen.
+/*!
+    Copy screen from one to another.
+    /param from Screen to copy. Value valid for current text mode.
+    /param to Destination screen. Value valid for current text mode.
+*/
 void vga_copy_screen(uint8_t from, uint8_t to);
+
+//! Turn on cursor.
+/*!
+    Turn on cursor with default size and position.
+    Copy screen from one to another.
+*/
 void vga_cursor_on();
+
+//! Turn off cursor.
+/*!
+*/
 void vga_cursor_off();
 
 // Helpers
+
+//! Print new line.
+/*!
+*/
 void vga_newline();
+
+//! Calculate position with offset.
+/*!
+    Calculate position on screen takes into account the current offset. Which means function return value that added to base address will give you position of current character on current screen in memory.
+    \param x x coordinate.
+    \param y y coordinate.
+    \return Calculated position on screen.
+*/
 uint16_t vga_calcualte_position_with_offset(uint16_t x, uint16_t y);
+
+//! Calculate position without offset.
+/*!
+    Calculate position on screen doesn't take into account the current offset. Which means function return value that added to base address will give you position of current character on first screen in memory.
+    \param x x coordinate.
+    \param y y coordinate.
+    \return Calculated position on screen.
+*/
 uint16_t vga_calcualte_position_without_offset(uint16_t x, uint16_t y);
+
+//! Turn on cursor.
+/*!
+    Turn on cursor with given size and position.
+    \param cursor_start Scanline where cursor should start.
+    \param cursor_end Scanline where cursor should end.
+*/
 void vga_enable_cursor(uint8_t cursor_start, uint8_t cursor_end);
+
+//! Disable cursor.
+/*!
+*/
 void vga_disable_cursor();
+
+//! Update cursor.
+/*!
+    Move cursor to given position.
+    \param x x coordinate.
+    \param y y coordinate.
+*/
 void vga_update_cursor(uint16_t x, uint16_t y);
+
+//! Update cursor.
+/*!
+    Move cursor to given position.
+    \param pos Position on screen.
+*/
 void vga_update_cursor_struct(vga_screen_pos pos);
 
 #endif
