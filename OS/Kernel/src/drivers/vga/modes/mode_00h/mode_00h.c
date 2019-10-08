@@ -5,7 +5,7 @@
 #include "drivers/vga/vga.h"
 
 //REGISTER VALUES
-uint8_t g_40x25_textm[] =
+uint8_t g_40x25_text_00h[] =
 	{
 		/* MISC */
         0x67, 
@@ -78,7 +78,7 @@ unsigned char palette00H[] = {
 };
 
 //FONT
-unsigned char g_8x16_font[4096] =
+unsigned char g_8x16_font_00h[4096] =
 	{
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x7E, 0x81, 0xA5, 0x81, 0x81, 0xBD, 0x99, 0x81, 0x81, 0x7E, 0x00, 0x00, 0x00, 0x00,
@@ -343,16 +343,69 @@ screen *mode00h_buffer = NULL;
 
 int8_t mode00h_set_mode()
 {
-    return -1;
+    unsigned rows, cols, ht;
+	cols = MODE00H_WIDTH;
+	rows = MODE00H_HEIGHT;
+	ht = 16;
+
+	writeRegisters(g_40x25_text_00h);
+	setFont(g_8x16_font_00h, 16);
+
+	/* tell the BIOS what we've done, so BIOS text output works OK */
+	pokew(0xC0000040, 0xC000004A, cols);			/* columns on screen */
+	pokew(0xC0000040, 0xC000004C, cols * rows * 2); /* framebuffer size */
+	pokew(0xC0000040, 0xC0000050, 0);				/* cursor pos'n */
+	pokeb(0xC0000040, 0xC0000060, ht - 1);			/* cursor shape */
+	pokeb(0xC0000040, 0xC0000061, ht - 2);
+	pokeb(0xC0000040, 0xC0000084, rows - 1); /* rows on screen - 1 */
+	pokeb(0xC0000040, 0xC0000085, ht);		 /* char height */
+											 /* set white-on-black attributes for all text */
+	vga_init(VGA_MODE_00H);
+	vga_clear_screen();
+	vga_color col;
+	col.color_without_blink.letter = VGA_COLOR_WHITE;
+	col.color_without_blink.background = VGA_COLOR_BLACK;
+	for(int i = 0; i < MODE00H_HEIGHT; i++)
+		for(int j = 0; j < MODE00H_WIDTH; j++)
+			vga_set_color(i, j, col);
+	vga_clear_screen();
+    set_vga_palette(palette00H);
+	video_card_set_turn_on_buffer_func(mode00h_turn_on_buffer);
+    video_card_set_turn_off_buffer_func(mode00h_turn_off_buffer);
+    video_card_set_is_buffer_on_func(mode00h_is_buffer_on);
+    video_card_set_swap_buffers_func(mode00h_swap_buffers);
+    video_card_set_draw_pixel_func(mode00h_draw_pixel);
+    video_card_set_draw_line_func(mode00h_draw_line);
+    video_card_set_draw_circle_func(mode00h_draw_circle);
+    video_card_set_draw_rectangle_func(mode00h_draw_rectangle);
+    video_card_set_clear_screen_func(mode00h_clear_screen);
+    return 0x00;
 }
 
 int8_t mode00h_turn_on_buffer()
 {
-    return -1;
+    if(mode00h_buffer != NULL) return -1;
+    mode00h_buffer = heap_kernel_alloc(MODE00H_HEIGHT * MODE00H_WIDTH * sizeof(screen), 0);
+    if(mode00h_buffer == NULL)
+        return -1;
+    video_card_set_draw_pixel_func(mode00h_draw_pixel_buffered);
+    video_card_set_draw_line_func(mode00h_draw_line_buffered);
+    video_card_set_draw_circle_func(mode00h_draw_circle_buffered);
+    video_card_set_draw_rectangle_func(mode00h_draw_rectangle_buffered);
+    video_card_set_clear_screen_func(mode00h_clear_screen_buffered);
+    return 0;
 }
 int8_t mode00h_turn_off_buffer()
 {
-    return -1;
+    if(mode00h_buffer == NULL) return -1;
+    heap_kernel_dealloc(mode00h_buffer);
+    mode00h_buffer = NULL;
+    video_card_set_draw_pixel_func(mode00h_draw_pixel);
+    video_card_set_draw_line_func(mode00h_draw_line);
+    video_card_set_draw_circle_func(mode00h_draw_circle);
+    video_card_set_draw_rectangle_func(mode00h_draw_rectangle);
+    video_card_set_clear_screen_func(mode00h_clear_screen);
+    return 0;
 }
 uint8_t mode00h_is_buffer_on()
 {
@@ -361,16 +414,54 @@ uint8_t mode00h_is_buffer_on()
 
 int8_t mode00h_swap_buffers()
 {
-    return -1;
+    if(mode00h_buffer == NULL) return -1;
+    memcpy((screen*)VGA_MODE_00H_BASE_ADDR, mode00h_buffer, MODE00H_HEIGHT * MODE00H_WIDTH * sizeof(screen));
+    return 0;
 }
 
 int8_t mode00h_draw_pixel(uint8_t color, uint16_t x, uint16_t y)
 {
-    return -1;
+    if((x>=MODE00H_WIDTH) || (y >=MODE00H_HEIGHT)) return -1;
+	vga_color c;
+	c.color_without_blink.letter = color & 0x0F;
+	c.color_without_blink.background = color & 0x0F;
+	vga_character ch;
+	ch.code = ' ';
+	ch.color = c;
+	vga_screen_pos pos;
+	pos.x = x;
+	pos.y = y;
+	vga_set_character_struct(pos, ch);
+	return 0;
 }
 int8_t mode00h_draw_line(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
 {
-    return -1;
+    if(ax == bx) return -1;
+    int32_t dx = (int32_t)bx - ax;
+    int32_t dy = (int32_t)by - ay;
+    if(_abs(dx) >= _abs(dy))
+    {
+        float a = dy/(float)(dx);
+        float b = ay - a * ax;
+        if(ax > bx)
+            for(int x = bx; x <= ax; ++x)
+                mode00h_draw_pixel(color, x, a * x + b);
+        else
+            for(int x = ax; x <= bx; ++x)
+                mode00h_draw_pixel(color, x, a * x + b);
+	}
+    else
+    {
+        float a = dx/(float)(dy);
+        float b = ax - a * ay;
+        if(ay > by)
+            for(int y = by; y <= ay; ++ y)
+                mode00h_draw_pixel(color, a * y + b, y);
+        else
+            for(int y = ay; y <= by; ++ y)
+                mode00h_draw_pixel(color, a * y + b, y);
+    }
+    return 0;
 }
 int8_t mode00h_draw_circle(uint8_t color, uint16_t x, uint16_t y, uint16_t radius)
 {
@@ -387,11 +478,43 @@ int8_t mode00h_clear_screen()
 
 int8_t mode00h_draw_pixel_buffered(uint8_t color, uint16_t x, uint16_t y)
 {
-    return -1;
+    if((mode00h_buffer == NULL)|| (x>=MODE00H_WIDTH) || (y >=MODE00H_HEIGHT)) return -1;
+	screen s;
+	s.c.code = ' ';
+	s.c.color.color_without_blink.background = color & 0x0F;
+	s.c.color.color_without_blink.letter = color & 0x0F;
+	mode00h_buffer[vga_calcualte_position_without_offset(x, y)] = s;
+	return 0;
 }
 int8_t mode00h_draw_line_buffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
 {
-    return -1;
+    if(mode00h_buffer == NULL) return -1;
+    if(ax == bx) return -1;
+    int32_t dx = (int32_t)bx - ax;
+    int32_t dy = (int32_t)by - ay;
+    if(_abs(dx) >= _abs(dy))
+    {
+        float a = dy/(float)(dx);
+        float b = ay - a * ax;
+        if(ax > bx)
+            for(int x = bx; x <= ax; ++x)
+                mode00h_draw_pixel(color, x, a * x + b);
+        else
+            for(int x = ax; x <= bx; ++x)
+                mode00h_draw_pixel(color, x, a * x + b);
+    }
+    else
+    {
+        float a = dx/(float)(dy);
+        float b = ax - a * ay;
+        if(ay > by)
+            for(int y = by; y <= ay; ++ y)
+                mode00h_draw_pixel(color, a * y + b, y);
+        else
+            for(int y = ay; y <= by; ++ y)
+                mode00h_draw_pixel(color, a * y + b, y);
+    }
+    return 0;
 }
 int8_t mode00h_draw_circle_buffered(uint8_t color, uint16_t x, uint16_t y, uint16_t radius)
 {
@@ -403,5 +526,18 @@ int8_t mode00h_draw_rectangle_buffered(uint8_t color, uint16_t ax, uint16_t ay, 
 }
 int8_t mode00h_clear_screen_buffered()
 {
-    return -1;
+    if(mode00h_buffer == NULL) return -1;
+    vga_color_without_blink col = {.background = VGA_COLOR_BLACK, .letter = VGA_COLOR_LIGHT_GRAY};
+	for (uint16_t i = 0; i < VGA_SCREEN_ROWS; ++i)
+    {
+        // Clear all lines
+        for (uint16_t j = 0; j < VGA_SCREEN_COLUMNS; ++j)
+        {
+            uint16_t pos = vga_calcualte_position_without_offset(j, i);
+            // Clear
+            mode00h_buffer[pos].c.code = 0;
+            mode00h_buffer[pos].c.color.color_without_blink = col;
+        }
+    }
+	return 0;
 }

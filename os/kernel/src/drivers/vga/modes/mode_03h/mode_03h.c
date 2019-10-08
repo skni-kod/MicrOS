@@ -344,8 +344,8 @@ screen *mode03h_buffer = NULL;
 int8_t mode03h_set_mode()
 {
     unsigned rows, cols, ht;
-	cols = 80;
-	rows = 25;
+	cols = MODE03H_WIDTH;
+	rows = MODE03H_HEIGHT;
 	ht = 16;
 
 	writeRegisters(g_80x25_text);
@@ -365,8 +365,8 @@ int8_t mode03h_set_mode()
 	vga_color col;
 	col.color_without_blink.letter = VGA_COLOR_WHITE;
 	col.color_without_blink.background = VGA_COLOR_BLACK;
-	for(int i = 0; i < 80; i++)
-		for(int j = 0; j < 25; j++)
+	for(int i = 0; i < MODE03H_WIDTH; i++)
+		for(int j = 0; j < MODE03H_HEIGHT; j++)
 			vga_set_color(i, j, col);
 	vga_clear_screen();
     set_vga_palette(palette03H);
