@@ -45,8 +45,11 @@ enum VGA_TEXT_MODES
 
 // Mode 00h
 
+//! The base memory address for mode 00h.
 #define VGA_MODE_00H_BASE_ADDR 0xC00B8000
+//! The number of columns in mode 00h.
 #define VGA_MODE_00H_SCREEN_COLUMNS 40
+//! The number of rows in mode 00h.
 #define VGA_MODE_00H_SCREEN_ROWS 25
 
 #define VGA_MODE_00H_COLOR_BLACK 0x00
@@ -73,8 +76,11 @@ enum VGA_TEXT_MODES
 
 // Mode 01h
 
+//! The base memory address for mode 01h.
 #define VGA_MODE_01H_BASE_ADDR 0xC00B8000
+//! The number of columns in mode 01h.
 #define VGA_MODE_01H_SCREEN_COLUMNS 40
+//! The number of rows in mode 01h.
 #define VGA_MODE_01H_SCREEN_ROWS 25
 
 #define VGA_MODE_01H_COLOR_BLACK 0x00
@@ -101,8 +107,11 @@ enum VGA_TEXT_MODES
 
 // Mode 02h
 
+//! The base memory address for mode 02h.
 #define VGA_MODE_02H_BASE_ADDR 0xC00B8000
+//! The number of columns in mode 02h.
 #define VGA_MODE_02H_SCREEN_COLUMNS 80
+//! The number of rows in mode 02h.
 #define VGA_MODE_02H_SCREEN_ROWS 25
 
 #define VGA_MODE_02H_COLOR_BLACK 0x00
@@ -129,8 +138,11 @@ enum VGA_TEXT_MODES
 
 // Mode 03h
 
+//! The base memory address for mode 03h.
 #define VGA_MODE_03H_BASE_ADDR 0xC00B8000
+//! The number of columns in mode 03h.
 #define VGA_MODE_03H_SCREEN_COLUMNS 80
+//! The number of rows in mode 03h.
 #define VGA_MODE_03H_SCREEN_ROWS 25
 
 #define VGA_MODE_03H_COLOR_BLACK 0x00
@@ -157,8 +169,11 @@ enum VGA_TEXT_MODES
 
 // Mode 07h
 
+//! The base memory address for mode 07h.
 #define VGA_MODE_07H_BASE_ADDR 0xC00B0000
+//! The number of columns in mode 07h.
 #define VGA_MODE_07H_SCREEN_COLUMNS 80
+//! The number of rows in mode 07h.
 #define VGA_MODE_07H_SCREEN_ROWS 25
 
 #define VGA_MODE_07H_COLOR_BLACK 0x00
