@@ -363,8 +363,8 @@ int8_t mode07h_set_mode()
 	vga_init(VGA_MODE_07H);
 	vga_clear_screen();
 	vga_color col;
-	col.color_without_blink.letter = VGA_COLOR_WHITE;
-	col.color_without_blink.background = VGA_COLOR_BLACK;
+	col.color_without_blink.letter = VGA_MODE_07H_COLOR_WHITE;
+	col.color_without_blink.background = VGA_MODE_07H_COLOR_BLACK;
 	for(int i = 0; i < MODE07H_HEIGHT; i++)
 		for(int j = 0; j < MODE07H_WIDTH; j++)
 			vga_set_color(i, j, col);
@@ -528,11 +528,11 @@ int8_t mode07h_draw_rectangle_buffered(uint8_t color, uint16_t ax, uint16_t ay, 
 int8_t mode07h_clear_screen_buffered()
 {
     if(mode07h_buffer == NULL) return -1;
-    vga_color_without_blink col = {.background = VGA_COLOR_BLACK, .letter = VGA_COLOR_LIGHT_GRAY};
-	for (uint16_t i = 0; i < VGA_SCREEN_ROWS; ++i)
+    vga_color_without_blink col = {.background = VGA_MODE_07H_COLOR_BLACK, .letter = VGA_MODE_07H_COLOR_LIGHT_GRAY};
+	for (uint16_t i = 0; i < VGA_MODE_07H_SCREEN_ROWS; ++i)
     {
         // Clear all lines
-        for (uint16_t j = 0; j < VGA_SCREEN_COLUMNS; ++j)
+        for (uint16_t j = 0; j < VGA_MODE_07H_SCREEN_COLUMNS; ++j)
         {
             uint16_t pos = vga_calcualte_position_without_offset(j, i);
             // Clear

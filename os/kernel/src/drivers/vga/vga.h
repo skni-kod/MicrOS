@@ -6,10 +6,6 @@
 
 // Legacy shit, please switch to 03h defines or proper to current graphic mode
 
-#define VGA_BASE_ADDR 0xC00B8000
-#define VGA_SCREEN_COLUMNS 80
-#define VGA_SCREEN_ROWS 25
-
 #define VGA_COLOR_BLACK 0x00
 #define VGA_COLOR_BLUE 0x01
 #define VGA_COLOR_GREEN 0x02
@@ -28,9 +24,6 @@
 #define VGA_COLOR_WHITE 0x0F
 #define VGA_NOT_BLINK 0x00
 #define VGA_BLINK 0x01
-
-#define VGA_MAX_SCREENS 8
-#define VGA_SCREEN_OFFSET 4000
 
 // Modes
 
