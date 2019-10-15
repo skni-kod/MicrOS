@@ -495,4 +495,12 @@ void vga_update_cursor(uint16_t x, uint16_t y);
 */
 void vga_update_cursor_struct(vga_screen_pos pos);
 
+//! Get default terminal color.
+/*!
+    Get default terminal color for mode. 
+    \param vga_mode Current mode of graphic card.
+    \return Default terminal letter and background color. When wrong mode given returns default color for mode 3h.
+*/
+vga_color vga_get_default_terminal_color(uint8_t vga_current_mode);
+
 #endif

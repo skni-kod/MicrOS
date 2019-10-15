@@ -225,34 +225,7 @@ vga_screen_pos vga_get_cursor_pos()
 
 void vga_clear_screen()
 {
-    vga_color_without_blink col;
-    switch(vga_current_mode)
-    {
-        case VGA_MODE_00H:
-            col.background = VGA_MODE_00H_COLOR_BLACK;
-            col.letter = VGA_MODE_00H_COLOR_LIGHT_GRAY; 
-            break;
-        case VGA_MODE_01H:
-            col.background = VGA_MODE_01H_COLOR_BLACK;
-            col.letter = VGA_MODE_01H_COLOR_LIGHT_GRAY;
-            break;
-        case VGA_MODE_02H:
-            col.background = VGA_MODE_02H_COLOR_BLACK;
-            col.letter = VGA_MODE_02H_COLOR_LIGHT_GRAY;
-            break;
-        case VGA_MODE_03H:
-            col.background = VGA_MODE_03H_COLOR_BLACK;
-            col.letter = VGA_MODE_03H_COLOR_LIGHT_GRAY;
-            break;
-        case VGA_MODE_07H:
-            col.background = VGA_MODE_07H_COLOR_BLACK;
-            col.letter = VGA_MODE_07H_COLOR_LIGHT_GRAY;
-            break;
-        default:
-            col.background = VGA_MODE_03H_COLOR_BLACK;
-            col.letter = VGA_MODE_03H_COLOR_LIGHT_GRAY;
-            break;
-    }
+    vga_color col = vga_get_default_terminal_color(vga_current_mode);
     // Clear all rows
     for (uint16_t i = 0; i < vga_current_rows; ++i)
     {
@@ -262,7 +235,7 @@ void vga_clear_screen()
             uint16_t pos = vga_calcualte_position_with_offset(j, i);
             // Clear
             vga_video[pos].c.code = 0;
-            vga_video[pos].c.color.color_without_blink = col;
+            vga_video[pos].c.color = col;
         }
     }
 
@@ -275,34 +248,7 @@ void vga_clear_given_screen(uint8_t screen)
 {
     if (screen < vga_current_max_screens)
     {
-        vga_color_without_blink col;
-        switch(vga_current_mode)
-        {
-            case VGA_MODE_00H:
-                col.background = VGA_MODE_00H_COLOR_BLACK;
-                col.letter = VGA_MODE_00H_COLOR_LIGHT_GRAY; 
-                break;
-            case VGA_MODE_01H:
-                col.background = VGA_MODE_01H_COLOR_BLACK;
-                col.letter = VGA_MODE_01H_COLOR_LIGHT_GRAY;
-                break;
-            case VGA_MODE_02H:
-                col.background = VGA_MODE_02H_COLOR_BLACK;
-                col.letter = VGA_MODE_02H_COLOR_LIGHT_GRAY;
-                break;
-            case VGA_MODE_03H:
-                col.background = VGA_MODE_03H_COLOR_BLACK;
-                col.letter = VGA_MODE_03H_COLOR_LIGHT_GRAY;
-                break;
-            case VGA_MODE_07H:
-                col.background = VGA_MODE_07H_COLOR_BLACK;
-                col.letter = VGA_MODE_07H_COLOR_LIGHT_GRAY;
-                break;
-            default:
-                col.background = VGA_MODE_03H_COLOR_BLACK;
-                col.letter = VGA_MODE_03H_COLOR_LIGHT_GRAY;
-                break;
-        }
+        vga_color col = vga_get_default_terminal_color(vga_current_mode);
         uint16_t offset_to_screen = vga_current_screen_offset * (uint16_t)screen;
         // Clear all rows
         for (uint16_t i = 0; i < vga_current_rows; ++i)
@@ -313,7 +259,7 @@ void vga_clear_given_screen(uint8_t screen)
                 uint16_t pos = vga_calcualte_position_without_offset(j, i);
                 // Clear
                 vga_video[pos + offset_to_screen].c.code = 0;
-                vga_video[pos + offset_to_screen].c.color.color_without_blink = col;
+                vga_video[pos + offset_to_screen].c.color = col;
             }
         }
     }
@@ -388,40 +334,13 @@ void vga_newline()
         vga_cursor_pos.y = vga_current_rows - 1;
 
         // Clear last line
-        vga_color_without_blink col;
-        switch(vga_current_mode)
-        {
-            case VGA_MODE_00H:
-                col.background = VGA_MODE_00H_COLOR_BLACK;
-                col.letter = VGA_MODE_00H_COLOR_LIGHT_GRAY; 
-                break;
-            case VGA_MODE_01H:
-                col.background = VGA_MODE_01H_COLOR_BLACK;
-                col.letter = VGA_MODE_01H_COLOR_LIGHT_GRAY;
-                break;
-            case VGA_MODE_02H:
-                col.background = VGA_MODE_02H_COLOR_BLACK;
-                col.letter = VGA_MODE_02H_COLOR_LIGHT_GRAY;
-                break;
-            case VGA_MODE_03H:
-                col.background = VGA_MODE_03H_COLOR_BLACK;
-                col.letter = VGA_MODE_03H_COLOR_LIGHT_GRAY;
-                break;
-            case VGA_MODE_07H:
-                col.background = VGA_MODE_07H_COLOR_BLACK;
-                col.letter = VGA_MODE_07H_COLOR_LIGHT_GRAY;
-                break;
-            default:
-                col.background = VGA_MODE_03H_COLOR_BLACK;
-                col.letter = VGA_MODE_03H_COLOR_LIGHT_GRAY;
-                break;
-        }
+        vga_color col = vga_get_default_terminal_color(vga_current_mode);
         for (uint16_t i = 0; i < vga_current_columns; ++i)
         {
             uint16_t pos = vga_calcualte_position_with_offset(i, vga_cursor_pos.y);
             // Clear
             vga_video[pos].c.code = 0;
-            vga_video[pos].c.color.color_without_blink = col;
+            vga_video[pos].c.color = col;
         }
     }
 }
@@ -464,4 +383,37 @@ void vga_update_cursor(uint16_t x, uint16_t y)
 void vga_update_cursor_struct(vga_screen_pos pos)
 {
     vga_update_cursor(pos.x, pos.y);
+}
+
+vga_color vga_get_default_terminal_color(uint8_t vga_current_mode)
+{
+    vga_color col;
+    switch(vga_current_mode)
+    {
+        case VGA_MODE_00H:
+            col.color_without_blink.background = VGA_MODE_00H_COLOR_BLACK;
+            col.color_without_blink.letter = VGA_MODE_00H_COLOR_LIGHT_GRAY; 
+            break;
+        case VGA_MODE_01H:
+            col.color_without_blink.background = VGA_MODE_01H_COLOR_BLACK;
+            col.color_without_blink.letter = VGA_MODE_01H_COLOR_LIGHT_GRAY;
+            break;
+        case VGA_MODE_02H:
+            col.color_without_blink.background = VGA_MODE_02H_COLOR_BLACK;
+            col.color_without_blink.letter = VGA_MODE_02H_COLOR_LIGHT_GRAY;
+            break;
+        case VGA_MODE_03H:
+            col.color_without_blink.background = VGA_MODE_03H_COLOR_BLACK;
+            col.color_without_blink.letter = VGA_MODE_03H_COLOR_LIGHT_GRAY;
+            break;
+        case VGA_MODE_07H:
+            col.color_without_blink.background = VGA_MODE_07H_COLOR_BLACK;
+            col.color_without_blink.letter = VGA_MODE_07H_COLOR_LIGHT_GRAY;
+            break;
+        default:
+            col.color_without_blink.background = VGA_MODE_03H_COLOR_BLACK;
+            col.color_without_blink.letter = VGA_MODE_03H_COLOR_LIGHT_GRAY;
+            break;
+    }
+    return col;
 }
