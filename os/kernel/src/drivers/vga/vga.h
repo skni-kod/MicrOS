@@ -5,7 +5,7 @@
 #include "assembly/io.h"
 
 // Legacy shit, please switch to 03h defines or proper to current graphic mode
-
+// TODO: Remove this
 #define VGA_COLOR_BLACK 0x00
 #define VGA_COLOR_BLUE 0x01
 #define VGA_COLOR_GREEN 0x02
@@ -191,6 +191,8 @@ enum VGA_TEXT_MODES
 #define VGA_MODE_07H_MAX_SCREENS 1
 #define VGA_MODE_07H_SCREEN_OFFSET 4000
 
+
+// TODO: Change some names  
 // Position on screen
 typedef struct vga_screen_pos
 {
