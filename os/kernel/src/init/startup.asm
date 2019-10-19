@@ -163,6 +163,9 @@ main_protected_area:
     ; Set data and stack segments to the third GDI descriptor
     mov ax, 0x10
     mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
     mov ss, ax
     
     call clear_page_directory
