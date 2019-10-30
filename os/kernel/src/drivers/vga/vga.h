@@ -195,9 +195,6 @@ enum VGA_TEXT_MODES
 #define VGA_MODE_07H_MAX_SCREENS 1
 #define VGA_MODE_07H_SCREEN_OFFSET 4000
 
-
-// TODO: Change some names
-
 //! Struct that defines position on screen.
 typedef struct vga_screen_pos
 {
