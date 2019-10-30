@@ -47,7 +47,7 @@ void startup()
     paging_init();
 
     //Don't use VGA before calling VGA init
-    vga_init();
+    vga_init(VGA_MODE_03H);
     logger_log_info("MicrOS is starting...");
     logger_log_ok("BASIC TEXT VGA Driver");
 

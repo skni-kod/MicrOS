@@ -1,9 +1,13 @@
 #include "genericvga.h"
 #include "drivers/dal/videocard/videocard.h"
+#include "modes/mode_00h/mode_00h.h"
+#include "modes/mode_01h/mode_01h.h"
+#include "modes/mode_02h/mode_02h.h"
 #include "modes/mode_03h/mode_03h.h"
 #include "modes/mode_04h/mode_04h.h"
 #include "modes/mode_05h/mode_05h.h"
 #include "modes/mode_06h/mode_06h.h"
+#include "modes/mode_07h/mode_07h.h"
 #include "modes/mode_0Dh/mode_0Dh.h"
 #include "modes/mode_0Eh/mode_0Eh.h"
 #include "modes/mode_0Fh/mode_0Fh.h"
@@ -46,6 +50,39 @@ void generic_vga_driver_init()
 int16_t generic_vga_set_video_mode(uint16_t mode){
     switch(mode)
     {
+        case 0x00:
+            video_card_turn_off_buffer();
+            if(mode00h_set_mode() != 0x00) return -1;
+            current_video_mode.colors = 16;
+            current_video_mode.height = 25;
+            current_video_mode.width = 40;
+            current_video_mode.id = 0x00;
+            current_video_mode.monochrome = 1;
+            current_video_mode.planar = 0;
+            text_mode = 1;
+            return 0x00;
+        case 0x01:
+            video_card_turn_off_buffer();
+            if(mode01h_set_mode() != 0x01) return -1;
+            current_video_mode.colors = 16;
+            current_video_mode.height = 25;
+            current_video_mode.width = 40;
+            current_video_mode.id = 0x01;
+            current_video_mode.monochrome = 0;
+            current_video_mode.planar = 0;
+            text_mode = 1;
+            return 0x01;
+        case 0x02:
+            video_card_turn_off_buffer();
+            if(mode02h_set_mode() != 0x02) return -1;
+            current_video_mode.colors = 16;
+            current_video_mode.height = 25;
+            current_video_mode.width = 80;
+            current_video_mode.id = 0x02;
+            current_video_mode.monochrome = 1;
+            current_video_mode.planar = 0;
+            text_mode = 1;
+            return 0x02;
         case 0x03:
             video_card_turn_off_buffer();
             if(mode03h_set_mode() != 0x03) return -1;
@@ -90,6 +127,17 @@ int16_t generic_vga_set_video_mode(uint16_t mode){
             current_video_mode.planar = 0;
             text_mode = 0;
             return 0x06;
+        case 0x07:
+            video_card_turn_off_buffer();
+            if(mode07h_set_mode() != 0x07) return -1;
+            current_video_mode.colors = 3;
+            current_video_mode.height = 25;
+            current_video_mode.width = 80;
+            current_video_mode.id = 0x07;
+            current_video_mode.monochrome = 1;
+            current_video_mode.planar = 0;
+            text_mode = 1;
+            return 0x07;
         case 0x0D:
             video_card_turn_off_buffer();
             if(mode0dh_set_mode() != 0x0D) return -1;
