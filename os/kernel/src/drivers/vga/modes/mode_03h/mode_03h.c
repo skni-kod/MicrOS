@@ -428,7 +428,7 @@ int8_t mode03h_draw_pixel(uint8_t color, uint16_t x, uint16_t y)
 	c.color_without_blink.letter = color & 0x0F;
 	c.color_without_blink.background = color & 0x0F;
 	vga_character ch;
-	ch.code = ' ';
+	ch.ascii_code = ' ';
 	ch.color = c;
 	vga_screen_pos pos;
 	pos.x = x;
@@ -486,9 +486,9 @@ int8_t mode03h_draw_pixel_buffered(uint8_t color, uint16_t x, uint16_t y)
 {
     if((mode03h_buffer == NULL)|| (x>=MODE03H_WIDTH) || (y >=MODE03H_HEIGHT)) return -1;
 	screen s;
-	s.c.code = ' ';
-	s.c.color.color_without_blink.background = color & 0x0F;
-	s.c.color.color_without_blink.letter = color & 0x0F;
+	s.character.ascii_code = ' ';
+	s.character.color.color_without_blink.background = color & 0x0F;
+	s.character.color.color_without_blink.letter = color & 0x0F;
 	mode03h_buffer[vga_calcualte_position_without_offset(x, y)] = s;
 	return 0;
 }
@@ -542,8 +542,8 @@ int8_t mode03h_clear_screen_buffered()
         {
             uint16_t pos = vga_calcualte_position_without_offset(j, i);
             // Clear
-            mode03h_buffer[pos].c.code = 0;
-            mode03h_buffer[pos].c.color.color_without_blink = col;
+            mode03h_buffer[pos].character.ascii_code = 0;
+            mode03h_buffer[pos].character.color.color_without_blink = col;
         }
     }
 	return 0;

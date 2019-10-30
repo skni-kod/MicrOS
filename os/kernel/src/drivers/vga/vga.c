@@ -102,10 +102,10 @@ void vga_printchar_color(char character, vga_color *color)
 
     if (character != '\n')
     {
-        vga_video[pos].c.code = character;
+        vga_video[pos].character.ascii_code = character;
         if (color != 0)
         {
-            vga_video[pos].c.color = *color;
+            vga_video[pos].character.color = *color;
         }
         vga_cursor_pos.x += 1;
         if (vga_cursor_pos.x == vga_current_columns)
@@ -143,7 +143,7 @@ void vga_printstring_color(const char *str, vga_color *color)
 void vga_set_char(uint16_t x, uint16_t y, char character)
 {
     uint16_t pos = vga_calcualte_position_with_offset(x, y);
-    vga_video[pos].c.code = character;
+    vga_video[pos].character.ascii_code = character;
 }
 
 void vga_set_char_struct(vga_screen_pos spos, char c)
@@ -154,7 +154,7 @@ void vga_set_char_struct(vga_screen_pos spos, char c)
 char vga_get_char(uint16_t x, uint16_t y)
 {
     uint16_t pos = vga_calcualte_position_with_offset(x, y);
-    return vga_video[pos].c.code;
+    return vga_video[pos].character.ascii_code;
 }
 
 char vga_get_char_struct(vga_screen_pos spos)
@@ -165,7 +165,7 @@ char vga_get_char_struct(vga_screen_pos spos)
 void vga_set_color(uint16_t x, uint16_t y, vga_color col)
 {
     uint16_t pos = vga_calcualte_position_with_offset(x, y);
-    vga_video[pos].c.color = col;
+    vga_video[pos].character.color = col;
 }
 
 void vga_set_color_struct(vga_screen_pos spos, vga_color col)
@@ -176,7 +176,7 @@ void vga_set_color_struct(vga_screen_pos spos, vga_color col)
 vga_color vga_get_color(uint16_t x, uint16_t y)
 {
     uint16_t pos = vga_calcualte_position_with_offset(x, y);
-    return vga_video[pos].c.color;
+    return vga_video[pos].character.color;
 }
 
 vga_color vga_get_color_struct(vga_screen_pos spos)
@@ -187,7 +187,7 @@ vga_color vga_get_color_struct(vga_screen_pos spos)
 void vga_set_character(uint16_t x, uint16_t y, vga_character character)
 {
     uint16_t pos = vga_calcualte_position_with_offset(x, y);
-    vga_video[pos].c = character;
+    vga_video[pos].character = character;
 }
 
 void vga_set_character_struct(vga_screen_pos spos, vga_character character)
@@ -198,7 +198,7 @@ void vga_set_character_struct(vga_screen_pos spos, vga_character character)
 vga_character vga_get_character(uint16_t x, uint16_t y)
 {
     uint16_t pos = vga_calcualte_position_with_offset(x, y);
-    return vga_video[pos].c;
+    return vga_video[pos].character;
 }
 
 vga_character vga_get_character_struct(vga_screen_pos spos)
@@ -234,8 +234,8 @@ void vga_clear_screen()
         {
             uint16_t pos = vga_calcualte_position_with_offset(j, i);
             // Clear
-            vga_video[pos].c.code = 0;
-            vga_video[pos].c.color = col;
+            vga_video[pos].character.ascii_code = 0;
+            vga_video[pos].character.color = col;
         }
     }
 
@@ -258,8 +258,8 @@ void vga_clear_given_screen(uint8_t screen)
             {
                 uint16_t pos = vga_calcualte_position_without_offset(j, i);
                 // Clear
-                vga_video[pos + offset_to_screen].c.code = 0;
-                vga_video[pos + offset_to_screen].c.color = col;
+                vga_video[pos + offset_to_screen].character.ascii_code = 0;
+                vga_video[pos + offset_to_screen].character.color = col;
             }
         }
     }
@@ -339,8 +339,8 @@ void vga_newline()
         {
             uint16_t pos = vga_calcualte_position_with_offset(i, vga_cursor_pos.y);
             // Clear
-            vga_video[pos].c.code = 0;
-            vga_video[pos].c.color = col;
+            vga_video[pos].character.ascii_code = 0;
+            vga_video[pos].character.color = col;
         }
     }
 }

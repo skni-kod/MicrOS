@@ -25,14 +25,18 @@
 #define VGA_NOT_BLINK 0x00
 #define VGA_BLINK 0x01
 
-// Modes
-
+//! Enum represent available VGA text modes.
 enum VGA_TEXT_MODES
 {
+    //! VGA mode 00h.
     VGA_MODE_00H = 0x00,
+    //! VGA mode 01h.
     VGA_MODE_01H = 0x01,
+    //! VGA mode 02h.
     VGA_MODE_02H = 0x02,
+    //! VGA mode 03h.
     VGA_MODE_03H = 0x03,
+    //! VGA mode 07h.
     VGA_MODE_07H = 0x07
 };
 
@@ -192,46 +196,69 @@ enum VGA_TEXT_MODES
 #define VGA_MODE_07H_SCREEN_OFFSET 4000
 
 
-// TODO: Change some names  
-// Position on screen
+// TODO: Change some names
+
+//! Struct that defines position on screen.
 typedef struct vga_screen_pos
 {
+    //! Position x on screen.
     uint16_t x;
+    //! Position y on screen.
     uint16_t y;
 } vga_screen_pos;
 
-// Color with blinking bit
+//! Color of one character with blinking bit.
+/*! Defines color of one letter and it's background in blinking mode. Struct contains 4 bits of letter color,
+3 bits of background color and 1 bit for indication of blinking character.*/
 typedef struct vga_color_with_blink
 {
+    //! Color of letter.
     unsigned char letter : 4;
+    //! Color of background.
     unsigned char background : 3;
+    //! Flag for enable blinking.
     unsigned char blikning : 1;
 } vga_color_with_blink;
 
-// Color without blinking bit
+//! Color of one character without blinking bit.
+/*! Defines color of one letter and it's background in non blinking mode. Struct contains 4 bits of letter color,
+4 bits of background color.*/
 typedef struct vga_color_without_blink
 {
+    //! Color of letter.
     unsigned char letter : 4;
+    //! Color of background.
     unsigned char background : 4;
 } vga_color_without_blink;
 
-// Color
+//! Color of one character.
+/*! Union that defines color of one character and it's background. When you use blinking mode you should use
+`color_with_blink` field and when you use non blinking mode you should use `color_without_blink` field.*/
 typedef union vga_color {
+    //! Uses to define color in blinking mode.
     vga_color_with_blink color_with_blink;
+    //! Usese to define color in non blinking mode.
     vga_color_without_blink color_without_blink;
 } vga_color;
 
-// Character
+//! Struct that define one character.
+/*! Contains code of letter and it's color.*/
 typedef struct vga_character
 {
-    unsigned char code;
+    //! ASCII code of letter.
+    unsigned char ascii_code;
+    //! Color of letter and background. In blinking mode also include blinking flag.
     vga_color color;
 } vga_character;
 
-// Screen
+//! Define one character on screen.
+/*! Union contains 16 bit value of field (which include ASCII letter and color data) and vga_character strunc that allow to
+access letter and color separately. Table of then can define whole screen.*/
 typedef union screen {
+    //! 16 bit value of field.
     uint16_t value;
-    vga_character c;
+    //! Struct contains ASCII code and color data.
+    vga_character character;
 } screen;
 
 // Functions for users
