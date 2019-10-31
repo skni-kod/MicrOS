@@ -26,11 +26,6 @@ bool _is_digit(char c)
     return c >= '0' && c <= '9';
 }
 
-double _log_base(long double n, int base)
-{
-    return log10(n) / log10(base);
-}
-
 int _max(int a, int b)
 {
     return a > b ? a : b;
@@ -38,34 +33,12 @@ int _max(int a, int b)
 
 unsigned int _unsigned_number_len(u64 n, int base)
 {
-    unsigned int res;
-    if (n == 0) return 1;
+    unsigned int res = 1;
 
-    switch (base)
+    while (n >= base)
     {
-    case 10:
-    {
-        // Due to floating point inaccuracy, we need to ignore small rounding errors. This is very dirty
-        // workaround, but thanks to it, log10(1000) doesn't return 2 instead of 3. Don't blame me.
-        //
-        // Example:
-        // log2(1000) = 9.965784284662087
-        // log2(10)   = 3.3219280948873626
-        // log2(1000) / log2(10) = 2.9999999999999996 <- this needs to be fixed
-        //
-        double logRes = log10(fabs(n));
-        if(fabs(round(logRes) - logRes) < 0.0000000001)
-        {
-            logRes = round(logRes);
-        }
-        
-        res = floor(logRes) + 1;
-        break;
-    }
-    case 16:
-    case 8:
-        res = floor(_log_base(n, base)) + 1;
-        break;
+        res++;
+        n /= base;
     }
 
     return res;
