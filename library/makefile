@@ -19,6 +19,7 @@ GCC_COMPILE_FLAGS := -ffreestanding -Wall -Wextra -Wno-unused-parameter
 
 ifeq ($(MODE),release)
 GCC_COMPILE_FLAGS += -O2
+GCC_LINK_FLAGS += -s -DNDEBUG
 else
 GCC_COMPILE_FLAGS += -O0 -ggdb3
 endif
