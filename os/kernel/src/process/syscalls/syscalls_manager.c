@@ -14,7 +14,7 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0x04, syscall_heap_verify_integrity);
     syscalls_manager_attach_handler(0x05, syscall_heap_get_process_heap);
 
-    // 0x1X - VGA
+    // 0x1X - VGA and generic VGA
     syscalls_manager_attach_handler(0x10, syscall_vga_print_char);
     syscalls_manager_attach_handler(0x11, syscall_vga_print_string);
     syscalls_manager_attach_handler(0x12, syscall_vga_get_char_at_position);
@@ -22,6 +22,10 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0x14, syscall_vga_get_cursor_position);
     syscalls_manager_attach_handler(0x15, syscall_vga_clear);
     syscalls_manager_attach_handler(0x16, syscall_vga_set_cursor_visibility);
+    
+    syscalls_manager_attach_handler(0x17, syscall_generic_vga_set_video_mode);
+    syscalls_manager_attach_handler(0x18, syscall_generic_vga_is_text_mode);
+    syscalls_manager_attach_handler(0x19, syscall_generic_vga_get_current_video_mode);
 
     // 0x2X - Keyboard
     syscalls_manager_attach_handler(0x20, syscall_keyboard_is_key_pressed);
