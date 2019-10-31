@@ -73,7 +73,31 @@ scene_type game_logic()
         return scene_type_main_menu;
     }
     
-    if(micros_timer_get_system_clock() - last_update >= 200 - current_acceleration)
+    float time_edge = 0;
+    switch (future_dir)
+    {
+        case dir_up:
+        case dir_down:
+        {
+            time_edge = 250;
+            break;
+        }
+        
+        case dir_right:
+        case dir_left:
+        {
+            time_edge = 200;
+            break;
+        }
+    }
+    
+    time_edge -= current_acceleration;
+    if(time_edge < 0)
+    {
+        time_edge = 0;
+    }
+    
+    if(micros_timer_get_system_clock() - last_update >= time_edge)
     {
         last_update = micros_timer_get_system_clock();
         
