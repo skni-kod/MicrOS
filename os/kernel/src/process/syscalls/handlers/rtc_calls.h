@@ -5,5 +5,6 @@
 #include "Drivers/RTC/rtc.h"
 
 void syscall_rtc_get_time(interrupt_state *state);
+void syscall_rtc_set_time(interrupt_state *state);
 
 #endif

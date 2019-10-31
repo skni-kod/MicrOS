@@ -19,6 +19,7 @@ extern "C" {
 #endif
 
 void micros_rtc_read_time(micros_rtc_time *time);
+void micros_rtc_set_time(micros_rtc_time *time);
 
 #ifdef __cplusplus
 }
