@@ -340,8 +340,8 @@ void process_manager_get_all_processes_user_info(process_user_info *user_info)
 }
 
 bool process_manager_set_current_process_name(char *name)
-{
-    process_info *process = process_manager_get_process_info(current_process_id);
+{ 
+    process_info *process = processes.data[current_process_id];
     if (process != NULL)
     {
         memcpy(process->name, name, 32);
@@ -353,7 +353,7 @@ bool process_manager_set_current_process_name(char *name)
 
 bool process_manager_set_current_process_signal_handler(void (*signal_handler)(int))
 {
-    process_info *process = process_manager_get_process_info(current_process_id);
+    process_info *process = processes.data[current_process_id];
     if (process != NULL)
     {
         process->signal_handler = signal_handler;
@@ -418,7 +418,7 @@ void process_manager_current_process_wait_for_process(uint32_t process_id_to_wai
 {
     if(process_manager_get_process_info(process_id_to_wait) != NULL)
     {
-        process_info *process = process_manager_get_process_info(current_process_id);
+        process_info *process = processes.data[current_process_id];
         process->status = process_status_waiting_for_process;
         process->process_id_to_wait = process_id_to_wait;
         
