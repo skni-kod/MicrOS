@@ -24,6 +24,7 @@
 #include "cpu/tss/tss.h"
 #include "drivers/dal/videocard/videocard.h"
 #include "drivers/vga/genericvga.h"
+#include "drivers/harddisk/harddisk.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
@@ -73,6 +74,62 @@ void startup()
 
     floppy_init();
     logger_log_ok("Floppy");
+    
+    harddisk_init();
+    logger_log_ok("Hard Disks");
+    harddisk_states hdd_states = get_harddisk_states();
+    if(hdd_states.primary_master == HARDDISK_PRESENT)
+    {
+        logger_log_info("Primary Master: present");
+    }
+    else if(hdd_states.primary_master == HARDDISK_NOT_PRESENT)
+    {
+        logger_log_info("Primary Master: not present");
+    }
+    else
+    {
+        logger_log_error("Primary Master: error");
+    }
+
+    if(hdd_states.primary_slave == HARDDISK_PRESENT)
+    {
+        logger_log_info("Primary Slave: present");
+    }
+    else if(hdd_states.primary_slave == HARDDISK_NOT_PRESENT)
+    {
+        logger_log_info("Primary Slave: not present");
+    }
+    else
+    {
+        logger_log_error("Primary Slave: error");
+    }
+
+    if(hdd_states.secondary_master == HARDDISK_PRESENT)
+    {
+        logger_log_info("Secondary Master: present");
+    }
+    else if(hdd_states.secondary_master == HARDDISK_NOT_PRESENT)
+    {
+        logger_log_info("Secondary Master: not present");
+    }
+    else
+    {
+        logger_log_error("Secondary Master: error");
+    }
+
+    if(hdd_states.secondary_slave== HARDDISK_PRESENT)
+    {
+        logger_log_info("Secondary Slave: present");
+    }
+    else if(hdd_states.secondary_slave == HARDDISK_NOT_PRESENT)
+    {
+        logger_log_info("Secondary Slave: not present");
+    }
+    else
+    {
+        logger_log_error("Secondary Slave: error");
+    }
+    
 
     keyboard_init();
     logger_log_ok("Keyboard");
@@ -168,7 +225,7 @@ int kmain()
     logger_log_info("Hello, World!");
     //startup_music_play();
     logger_log_ok("READY.");
-
+    /*
     logger_log_ok("Loading tasks...");
     vga_clear_screen();
     process_manager_create_process("/ENV/SHELL.ELF", "", 1000, false);
@@ -495,6 +552,6 @@ int kmain()
             }
         }
     }
-
+    */
     return 0;
 }
