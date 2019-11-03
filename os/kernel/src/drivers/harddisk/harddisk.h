@@ -28,11 +28,11 @@ typedef enum MASTER_SLAVE
 typedef enum HARDDISK_STATE
 {
     //! Present.
-    PRESENT = 1,
+    HARDDISK_PRESENT = 1,
     //! Not present.
-    NOT_PRESENT = 0,
+    HARDDISK_NOT_PRESENT = 0,
     //! Error.
-    ERROR = -1
+    HARDDISK_ERROR = -1
 } HARDDISK_STATE;
 
 //! Defines status of hard disks in system.
