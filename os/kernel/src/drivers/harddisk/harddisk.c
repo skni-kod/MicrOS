@@ -87,6 +87,8 @@ uint8_t check_harddisk_presence(MASTER_SLAVE master, BUS_TYPE bus)
                     if(result.fields.has_pio_data_to_transfer_or_ready_to_accept_pio_data == 1)
                     {
                         return 1;
+                        // TODO At that point, if ERR is clear, the data is ready to read from the Data port (0x1F0). Read 256 16-bit values, and store them.
+                        // There's a lot of shit
                     }
                     else if(result.fields.error_occurred)
                     {
