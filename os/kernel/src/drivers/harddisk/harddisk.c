@@ -65,11 +65,12 @@ uint8_t check_harddisk_presence(MASTER_SLAVE master, BUS_TYPE bus)
     // Send the IDENTIFY command (0xEC) to the Command IO port (0x1F7).
     io_out_byte(0x1F7, 0xEC);
 
-    // Read the Status port (0x1F7) again. 
-    uint8_t value = io_in_byte(0x1F7);
+    // Read the Status port (0x1F7) again.
+    harddisk_io_control_status_register result;
+    result.value = io_in_byte(0x1F7);
 
     // If the value read is 0, the drive does not exist.
-    if(value == 0)
+    if(result.value == 0)
     {
         return 0;
     }  
@@ -77,19 +78,17 @@ uint8_t check_harddisk_presence(MASTER_SLAVE master, BUS_TYPE bus)
     {   // For any other value: poll the Status port (0x1F7) until bit 7 (BSY, value = 0x80) clears.
         for(;;)
         {
-            harddisk_io_control_status_register *status = (harddisk_io_control_status_register *) &value;
-            if(status->busy == 0)
+            if(result.fields.busy == 0)
             {
                 // Otherwise, continue polling one of the Status ports until bit 3 (DRQ, value = 8) sets, or until bit 0 (ERR, value = 1) sets.
                 for(;;)
                 {
-                    value = io_in_byte(0x1F7);
-                    status = (harddisk_io_control_status_register *) &value;
-                    if(status->has_pio_data_to_transfer_or_ready_to_accept_pio_data == 1)
+                    result.value = io_in_byte(0x1F7);
+                    if(result.fields.has_pio_data_to_transfer_or_ready_to_accept_pio_data == 1)
                     {
                         return 1;
                     }
-                    else if(status->error_occurred)
+                    else if(result.fields.error_occurred)
                     {
                         return -1;
                     }
@@ -105,7 +104,7 @@ uint8_t check_harddisk_presence(MASTER_SLAVE master, BUS_TYPE bus)
                     return 0;
                 }
             }
-            value = io_in_byte(0x1F7);
+            result.value = io_in_byte(0x1F7);
         }
     }
 }

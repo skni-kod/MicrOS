@@ -9,30 +9,23 @@
 //! Enum represent bus type.
 typedef enum BUS_TYPE
 {
-    //! Primary bus.
-    HARDDISK_PRIMARY_BUS = 1,
-    //! Secondary bus.
-    HARDDISK_SECONDARY_BUS = 2
+    HARDDISK_PRIMARY_BUS = 1, /*!< Primary bus. */
+    HARDDISK_SECONDARY_BUS = 2 /*!< Secondary bus. */
 } BUS_TYPE;
 
 //! Enum represent hard disk type.
 typedef enum MASTER_SLAVE
 {
-    //! Master hard disk.
-    HARDDISK_MASTER = 1,
-    //! Slave hard disk.
-    HARDDISK_SLAVE = 0
+    HARDDISK_MASTER = 1, /*!< Master hard disk. */
+    HARDDISK_SLAVE = 0 /*!< Slave hard disk. */
 } MASTER_SLAVE;
 
 //! Enum represent hard disk status.
 typedef enum HARDDISK_STATE
 {
-    //! Present.
-    HARDDISK_PRESENT = 1,
-    //! Not present.
-    HARDDISK_NOT_PRESENT = 0,
-    //! Error.
-    HARDDISK_ERROR = -1
+    HARDDISK_PRESENT = 1, /*!< Present. */
+    HARDDISK_NOT_PRESENT = 0, /*!< Not present. */
+    HARDDISK_ERROR = -1 /*!< Error. */
 } HARDDISK_STATE;
 
 //! Defines status of hard disks in system.
