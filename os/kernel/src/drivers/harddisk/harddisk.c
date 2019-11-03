@@ -1,17 +1,31 @@
 #include "harddisk.h"
 
+harddisk_states current_states;
 
-uint8_t check_harddisk_presence(uint8_t master, uint8_t bus)
+void harddisk_init()
+{
+    current_states.primary_master = (HARDDISK_STATE) check_harddisk_presence(HARDDISK_MASTER, HARDDISK_PRIMARY_BUS);
+    current_states.primary_slave = (HARDDISK_STATE) check_harddisk_presence(HARDDISK_SLAVE, HARDDISK_PRIMARY_BUS);
+    current_states.secondary_master = (HARDDISK_STATE) check_harddisk_presence(HARDDISK_MASTER, HARDDISK_SECONDARY_BUS);
+    current_states.secondary_slave = (HARDDISK_STATE) check_harddisk_presence(HARDDISK_SLAVE, HARDDISK_SECONDARY_BUS);
+}
+
+harddisk_states get_harddisk_states()
+{
+    return current_states;
+}
+
+uint8_t check_harddisk_presence(MASTER_SLAVE master, BUS_TYPE bus)
 {
     uint16_t io_port = 0;
     uint16_t message_to_drive = 0;
 
     // Set port of drive
-    if (bus == 1)
+    if (bus == HARDDISK_PRIMARY_BUS)
     {
         io_port = harddisk_primary_bus_io_port;
     }
-    else if(bus == 2)
+    else if(bus == HARDDISK_SECONDARY_BUS)
     {
         io_port = harddisk_secondary_bus_io_port;
     }
@@ -23,10 +37,10 @@ uint8_t check_harddisk_presence(uint8_t master, uint8_t bus)
     // Set drive
     switch (master)
     {
-    case 1:
+    case HARDDISK_MASTER:
         message_to_drive = 0xA0;
         break;
-    case 2:
+    case HARDDISK_SLAVE:
         message_to_drive = 0xB0;
         break;
     default:

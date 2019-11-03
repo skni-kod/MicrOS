@@ -213,4 +213,4 @@ typedef struct harddisk_control_drive_address_register
     uint8_t select_drive_0 : 1;  
 } harddisk_control_drive_address_register;
 
-#endif HARDDISK_PIO_MODE_HEADER
+#endif
