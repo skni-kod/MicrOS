@@ -2,6 +2,7 @@
 #define HARDDISK_H
 
 #include <stdint.h>
+#include <stddef.h>
 #include <stdbool.h>
 #include "harddisk_pio_mode_header.h"
 #include "harddisk_identify_devide_data.h"
@@ -50,26 +51,46 @@ typedef struct harddisk_states
     harddisk_identify_device_data secondary_slave_data;
 } harddisk_states;
 
-//! Initialization of hard disk driver.
-/*!
-    Should be called during boot up once. Check for hard disks and store informations about them.
-*/
-void harddisk_init();
+
 
 //! Get hard disk states.
 /*!
     Call this function after init, which should be called during system boot up.
     \return State off all hard drives in system.
 */
-harddisk_states get_harddisk_states();
+harddisk_states harddisk_get_states();
+
+//! Get space of hard disk.
+/*!
+    \param type Type of harddisk.
+    \param bus Type of bus.
+    \return Space in bytes.
+*/
+uint32_t harddisk_get_disk_space(MASTER_SLAVE type, BUS_TYPE bus);
+
+//! Initialization of hard disk driver.
+/*!
+    Should be called during boot up once. Check for hard disks and store informations about them.
+*/
+void harddisk_init();
+
+//! Gets pointers to harddisk data.
+/*!
+    Sets state to proper state and data from harddisk_states structure to proper values for given harddisk and bus type.
+    \param type Type of harddisk.
+    \param bus Type of bus.
+    \param state Pointer to state.
+    \param bus Pointer to data.
+*/
+void harddisk_get_pointers(MASTER_SLAVE type, BUS_TYPE bus, HARDDISK_STATE **state, harddisk_identify_device_data **data);
 
 //! Check hard disk presence in computer.
 /*!
     Check if given hard disk is installed in computer.
-    \param master Set 1 to check master, set 2 to check slave.
-    \param bus Set 1 to check primary bus, set 2 to check secondary bus.
+    \param type Type of harddisk.
+    \param bus Type of bus.
     \return 0 no disk, 1 disk present, -1 disk present but ERR set, -2 wrong parameters.
 */
-uint8_t check_harddisk_presence(MASTER_SLAVE master, BUS_TYPE bus);
+uint8_t harddisk_check_presence(MASTER_SLAVE type, BUS_TYPE bus);
 
 #endif

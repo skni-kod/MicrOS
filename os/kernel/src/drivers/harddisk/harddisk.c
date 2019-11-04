@@ -2,20 +2,75 @@
 
 harddisk_states current_states;
 
-void harddisk_init()
-{
-    current_states.primary_master = (HARDDISK_STATE) check_harddisk_presence(HARDDISK_MASTER, HARDDISK_PRIMARY_BUS);
-    current_states.primary_slave = (HARDDISK_STATE) check_harddisk_presence(HARDDISK_SLAVE, HARDDISK_PRIMARY_BUS);
-    current_states.secondary_master = (HARDDISK_STATE) check_harddisk_presence(HARDDISK_MASTER, HARDDISK_SECONDARY_BUS);
-    current_states.secondary_slave = (HARDDISK_STATE) check_harddisk_presence(HARDDISK_SLAVE, HARDDISK_SECONDARY_BUS);
-}
-
-harddisk_states get_harddisk_states()
+harddisk_states harddisk_get_states()
 {
     return current_states;
 }
 
-uint8_t check_harddisk_presence(MASTER_SLAVE type, BUS_TYPE bus)
+uint32_t harddisk_get_disk_space(MASTER_SLAVE type, BUS_TYPE bus)
+{
+    HARDDISK_STATE *state;
+    harddisk_identify_device_data *data;
+    harddisk_get_pointers(type, bus, &state, &data);
+    
+    // Multiply total number of user addressable sectors by number of bytes per sector (currently hard coded).
+    return data->fields.total_number_of_user_addressable_sectors * 512;
+}
+
+void harddisk_init()
+{
+    current_states.primary_master = (HARDDISK_STATE) harddisk_check_presence(HARDDISK_MASTER, HARDDISK_PRIMARY_BUS);
+    current_states.primary_slave = (HARDDISK_STATE) harddisk_check_presence(HARDDISK_SLAVE, HARDDISK_PRIMARY_BUS);
+    current_states.secondary_master = (HARDDISK_STATE) harddisk_check_presence(HARDDISK_MASTER, HARDDISK_SECONDARY_BUS);
+    current_states.secondary_slave = (HARDDISK_STATE) harddisk_check_presence(HARDDISK_SLAVE, HARDDISK_SECONDARY_BUS);
+}
+
+void harddisk_get_pointers(MASTER_SLAVE type, BUS_TYPE bus, HARDDISK_STATE **state, harddisk_identify_device_data **data)
+{
+    *state = NULL;
+    *data = NULL;
+    switch(type)
+    {
+    case HARDDISK_MASTER:
+        switch(bus)
+        {
+            case HARDDISK_PRIMARY_BUS:
+                // Primary master
+                *state = &current_states.primary_master;
+                *data = &current_states.primary_master_data;
+                break;
+            case HARDDISK_SECONDARY_BUS:
+                // Secondary master
+                *state = &current_states.secondary_master;
+                *data = &current_states.secondary_master_data;
+                break;
+            default:
+                return;
+        }
+        break;
+    case HARDDISK_SLAVE:
+        switch(bus)
+        {
+            case HARDDISK_PRIMARY_BUS:
+                // Primary slave
+                *state = &current_states.primary_slave;
+                *data = &current_states.primary_slave_data;
+                break;
+            case HARDDISK_SECONDARY_BUS:
+                // Secondary slave
+                *state = &current_states.secondary_slave;
+                *data = &current_states.secondary_slave_data;
+                break;
+            default:
+                return;
+        }
+        break;
+    default:
+        return;      
+    }
+}
+
+uint8_t harddisk_check_presence(MASTER_SLAVE type, BUS_TYPE bus)
 {
     uint16_t io_port = 0;
     uint16_t message_to_drive = 0;
@@ -94,6 +149,7 @@ uint8_t check_harddisk_presence(MASTER_SLAVE type, BUS_TYPE bus)
                     {
                         for(int i = 0; i < 256; i++)
                         {
+                            //  Read 256 16-bit values, and store them.
                             data->values[i] = io_in_word(io_port);
                         }
                         return 1;

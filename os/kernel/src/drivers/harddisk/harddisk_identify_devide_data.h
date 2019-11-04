@@ -155,7 +155,7 @@ typedef struct harddisk_identify_device_data_fields
 
     // 60-61 word
     //! Total number of user addressable sectors
-    uint32_t total_number_of_user_addressable_space          : 32;
+    uint32_t total_number_of_user_addressable_sectors        : 32;
 
     // 62 word
     uint16_t                                                 : 16;
