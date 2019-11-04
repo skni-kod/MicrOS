@@ -15,7 +15,7 @@ harddisk_states get_harddisk_states()
     return current_states;
 }
 
-uint8_t check_harddisk_presence(MASTER_SLAVE master, BUS_TYPE bus)
+uint8_t check_harddisk_presence(MASTER_SLAVE type, BUS_TYPE bus)
 {
     uint16_t io_port = 0;
     uint16_t message_to_drive = 0;
@@ -35,7 +35,7 @@ uint8_t check_harddisk_presence(MASTER_SLAVE master, BUS_TYPE bus)
     }
 
     // Set drive
-    switch (master)
+    switch (type)
     {
     case HARDDISK_MASTER:
         message_to_drive = 0xA0;
@@ -46,6 +46,12 @@ uint8_t check_harddisk_presence(MASTER_SLAVE master, BUS_TYPE bus)
     default:
         return -2;
     }
+
+    harddisk_identify_device_data *data;
+    if(type == HARDDISK_MASTER && bus == HARDDISK_PRIMARY_BUS) data = &current_states.primary_master_data;
+    else if(type == HARDDISK_SLAVE && bus == HARDDISK_PRIMARY_BUS) data = &current_states.primary_slave_data;
+    else if(type == HARDDISK_MASTER && bus == HARDDISK_SECONDARY_BUS) data = &current_states.secondary_master_data;
+    else if(type == HARDDISK_SLAVE && bus == HARDDISK_SECONDARY_BUS) data = &current_states.secondary_slave_data;
 
     // Send message to drive
     io_out_byte(io_port + harddisk_io_drive_head_register_offset, message_to_drive);
@@ -86,9 +92,11 @@ uint8_t check_harddisk_presence(MASTER_SLAVE master, BUS_TYPE bus)
                     result.value = io_in_byte(0x1F7);
                     if(result.fields.has_pio_data_to_transfer_or_ready_to_accept_pio_data == 1)
                     {
+                        for(int i = 0; i < 256; i++)
+                        {
+                            data->values[i] = io_in_word(io_port);
+                        }
                         return 1;
-                        // TODO At that point, if ERR is clear, the data is ready to read from the Data port (0x1F0). Read 256 16-bit values, and store them.
-                        // There's a lot of shit
                     }
                     else if(result.fields.error_occurred)
                     {

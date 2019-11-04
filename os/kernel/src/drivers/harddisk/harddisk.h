@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "harddisk_pio_mode_header.h"
+#include "harddisk_identify_devide_data.h"
 #include "assembly/io.h"
 
 //! Enum represent bus type.
@@ -31,14 +32,22 @@ typedef enum HARDDISK_STATE
 //! Defines status of hard disks in system.
 typedef struct harddisk_states
 {
-    //! Presence od primary master
+    //! Presence of primary master
     HARDDISK_STATE primary_master;
-    //! Presence od primary slave
+    //! Data of primary master
+    harddisk_identify_device_data primary_master_data;
+    //! Presence of primary slave
     HARDDISK_STATE primary_slave;
-    //! Presence od secondary master
+    //! Data of primary slave
+    harddisk_identify_device_data primary_slave_data;
+    //! Presence of secondary master
     HARDDISK_STATE secondary_master;
-    //! Presence od secondary slave
+    //! Data of secondary master
+    harddisk_identify_device_data secondary_master_data;
+    //! Presence of secondary slave
     HARDDISK_STATE secondary_slave;
+    //! Data of secondary slave
+    harddisk_identify_device_data secondary_slave_data;
 } harddisk_states;
 
 //! Initialization of hard disk driver.
