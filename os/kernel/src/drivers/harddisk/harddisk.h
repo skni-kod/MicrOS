@@ -60,6 +60,37 @@ typedef struct harddisk_states
 */
 harddisk_states harddisk_get_states();
 
+//! Get serial number of hard disk.
+/*!
+    Function copy serial number to buffer and terminate string with /0.
+    \param type Type of harddisk.
+    \param bus Type of bus.
+    \param buffer Buffer for serial number with size at least 21.
+    \return Pointer to buffer where serial number is stored.
+*/
+char* harddisk_get_disk_serial_number_terminated(MASTER_SLAVE type, BUS_TYPE bus, char *buffer);
+
+//! Get firmware version of hard disk.
+/*!
+    Function copy firmware version to buffer and terminate string with /0.
+    \param type Type of harddisk.
+    \param bus Type of bus.
+    \param buffer Buffer firmware version with size at least 9.
+    \return Pointer to buffer where firmware version is stored.
+*/
+char* harddisk_get_disk_firmware_version_terminated(MASTER_SLAVE type, BUS_TYPE bus, char *buffer);
+
+
+//! Get model number of hard disk.
+/*!
+    Function copy model number to buffer and terminate string with /0.
+    \param type Type of harddisk.
+    \param bus Type of bus.
+    \param buffer Buffer model number with size at least 41.
+    \return Pointer to buffer where model number is stored.
+*/
+char* harddisk_get_disk_model_number_terminated(MASTER_SLAVE type, BUS_TYPE bus, char *buffer);
+
 //! Get space of hard disk.
 /*!
     \param type Type of harddisk.

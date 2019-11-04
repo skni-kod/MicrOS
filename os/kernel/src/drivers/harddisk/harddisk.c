@@ -7,6 +7,51 @@ harddisk_states harddisk_get_states()
     return current_states;
 }
 
+char* harddisk_get_disk_serial_number_terminated(MASTER_SLAVE type, BUS_TYPE bus, char *buffer)
+{
+    HARDDISK_STATE *state;
+    harddisk_identify_device_data *data;
+    harddisk_get_pointers(type, bus, &state, &data);
+
+    // Copy serial number to buffer
+    for(int i = 0; i < HARDDISK_SERIAL_NUMBER_LENGTH; ++i)
+    {
+        buffer[i] = data->fields.serial_number[i];
+    }
+    buffer[HARDDISK_SERIAL_NUMBER_LENGTH] = '\0';
+    return buffer;
+}
+
+char* harddisk_get_disk_firmware_version_terminated(MASTER_SLAVE type, BUS_TYPE bus, char *buffer)
+{
+    HARDDISK_STATE *state;
+    harddisk_identify_device_data *data;
+    harddisk_get_pointers(type, bus, &state, &data);
+
+    // Copy firmware version to buffer
+    for(int i = 0; i < HARDDISK_FIRMWARE_VERSION_LENGTH; ++i)
+    {
+        buffer[i] = data->fields.firmware_version[i];
+    }
+    buffer[HARDDISK_FIRMWARE_VERSION_LENGTH] = '\0';
+    return buffer;
+}
+
+char* harddisk_get_disk_model_number_terminated(MASTER_SLAVE type, BUS_TYPE bus, char *buffer)
+{
+    HARDDISK_STATE *state;
+    harddisk_identify_device_data *data;
+    harddisk_get_pointers(type, bus, &state, &data);
+
+    // Copy model number to buffer
+    for(int i = 0; i < HARDDISK_MODEL_NUMBER_LENGTH; ++i)
+    {
+        buffer[i] = data->fields.model_number[i];
+    }
+    buffer[HARDDISK_MODEL_NUMBER_LENGTH] = '\0';
+    return buffer;
+}
+
 uint32_t harddisk_get_disk_space(MASTER_SLAVE type, BUS_TYPE bus)
 {
     HARDDISK_STATE *state;

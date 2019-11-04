@@ -3,6 +3,15 @@
 
 #include <stdint.h>
 
+//! Length of hard disk serial number.
+#define HARDDISK_SERIAL_NUMBER_LENGTH 20
+
+//! Length of hard disk firmware version.
+#define HARDDISK_FIRMWARE_VERSION_LENGTH 8
+
+//! Length of hard disk model number.
+#define HARDDISK_MODEL_NUMBER_LENGTH 40
+
 //! Hard disk Identify Device Data.
 /*! Struct contains all data about hard disk.*/
 typedef struct harddisk_identify_device_data_fields
@@ -48,7 +57,7 @@ typedef struct harddisk_identify_device_data_fields
 
     // 10-19 word
     //! Serial number (20 ASCII characters)
-    char serial_number[20];
+    char serial_number[HARDDISK_SERIAL_NUMBER_LENGTH];
 
     // 20 word
     uint16_t                                                 : 16;
@@ -61,11 +70,11 @@ typedef struct harddisk_identify_device_data_fields
 
     // 23-26 word
     //! Firmware version (8 ASCII characters)
-    char firmware_version[8];
+    char firmware_version[HARDDISK_FIRMWARE_VERSION_LENGTH];
 
     // 27-46 word
     //! Model number (40 ASCII characters)
-    char model_number[40];
+    char model_number[HARDDISK_MODEL_NUMBER_LENGTH];
 
     // 47 word
     //! Value 80h
