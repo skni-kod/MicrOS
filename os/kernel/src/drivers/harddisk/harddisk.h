@@ -123,9 +123,9 @@ uint32_t harddisk_get_disk_space(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE b
     \param high_lba Higher bits of lba (24 bits are used).
     \param low_lba Lower bits of lba (24 bits are used).
     \param buffer Buffer f 256 16-bits values for store data.
-    \return Pointer to data.
+    \return 1 = success, -1 = disk error, -2 = parameter error.
 */
-uint16_t* harddisk_read_sector(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t *buffer);
+uint8_t harddisk_read_sector(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t *buffer);
 
 //! Initialization of hard disk driver.
 /*!
@@ -151,6 +151,14 @@ void harddisk_get_pointers(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, HA
     \return 0 no disk, 1 disk present, -1 disk present but ERR set, -2 wrong parameters.
 */
 uint8_t harddisk_check_presence(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus);
+
+//! Doing pooling.
+/*!
+    Check if disk is ready.
+    \param port Port for do delay.
+    \return 1 if ready, -1 if error
+*/
+uint8_t harddisk_poll(uint16_t io_port);
 
 //! Makes 400ns delay.
 /*!
