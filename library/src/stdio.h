@@ -414,17 +414,37 @@ int vprintf(const char *format, va_list arg);
 */
 int vsprintf(char *str, const char *format, va_list arg);
 
+//! Read formatted data from stream into variable argument list
+/*!
+    Reads data from the stream and stores them according to parameter format into the locations pointed by the elements in the variable argument list identified by arg.
+    \param Pointer to a FILE object that identifies an input stream.
+    \param C string that contains the text to be written to the stream.Can contain embedded format specifiers.
+    \param A value identifying a variable arguments list initialized with va_start.
+    \return On success, the function returns the number of items of the argument list successfully filled. Otherwise, EOF.
+*/
 int vfscanf(FILE *stream, const char *format, va_list arg);
 
+//! Read formatted data from stdin
+/*!
+    Reads data from stdin and stores them according to the parameter format into the locations pointed by the additional arguments.
+    \param C string that contains the text to be written to the stream.Can contain embedded format specifiers.
+    \param Depending on the format string, the function may expect a sequence of additional arguments, each containing a pointer to allocated storage where the interpretation of the extracted characters is stored with the appropriate type.
+    \return On success, the function returns the number of items of the argument list successfully filled. Otherwise, EOF.
+*/
 int scanf(const char *format, ...);
 
-//! Creates new stream.
+//! Creates new stream
 /*!
     Creates new stream (not assigned to any file or device) and returns it.
     \return A newly created stream.
 */
 FILE *__stdio_create_stream();
 
+//! Parses file mode
+/*!
+    Parses file mode in string format (eg. r+) and returns corresponding enum.
+    \return File mode in enum representation.
+*/
 file_mode __stdio_get_file_mode(const char *str_mode);
 
 #ifdef __cplusplus
