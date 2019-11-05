@@ -24,7 +24,7 @@
 #include "cpu/tss/tss.h"
 #include "drivers/dal/videocard/videocard.h"
 #include "drivers/vga/genericvga.h"
-#include "drivers/harddisk/harddisk.h"
+#include "drivers/harddisk/ata/harddisk_ata.h"
 #include "drivers/harddisk/harddisk_identify_devide_data.h"
 #include <stdint.h>
 #include <stdlib.h>
@@ -48,45 +48,45 @@ linesStruct ssBuffer[64];
     \param bus Type of bus for hard disk.
     \param name Name for hard disk eg. "Primary Master", that is printed during boot to specify disk.
  */
-void print_harddisk_details(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, char* name)
+void print_harddisk_details(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, char* name)
 {
     char buff[50];
     char buff2[100];
-    HARDDISK_STATE state = harddisk_get_state(type, bus);
+    HARDDISK_ATA_STATE state = harddisk_ata_get_state(type, bus);
 
-    if(state == HARDDISK_PRESENT)
+    if(state == HARDDISK_ATA_PRESENT)
     {
         strcpy(buff2, name);        
         strcat(buff2, ": present");
         logger_log_info(buff2);
 
-        harddisk_get_disk_model_number_terminated(type, bus, buff);
+        harddisk_ata_get_disk_model_number_terminated(type, bus, buff);
         strcpy(buff2, "Model name: ");        
         strcat(buff2, buff);
         logger_log_info(buff2);
 
-        harddisk_get_disk_firmware_version_terminated(type, bus, buff);
+        harddisk_ata_get_disk_firmware_version_terminated(type, bus, buff);
         strcpy(buff2, "Firmware version: ");        
         strcat(buff2, buff);
         logger_log_info(buff2);
 
-        harddisk_get_disk_serial_number_terminated(type, bus, buff);
+        harddisk_ata_get_disk_serial_number_terminated(type, bus, buff);
         strcpy(buff2, "Serial number: ");        
         strcat(buff2, buff);
         logger_log_info(buff2);
 
-        itoa(harddisk_get_user_addressable_sectors(type, bus), buff, 10);
+        itoa(harddisk_ata_get_user_addressable_sectors(type, bus), buff, 10);
         strcpy(buff2, "Total number of user addressable sectors: ");
         strcat(buff2, buff);
         logger_log_info(buff2);
 
-        itoa(harddisk_get_disk_space(type, bus) / (1024 * 1024), buff, 10);
+        itoa(harddisk_ata_get_disk_space(type, bus) / (1024 * 1024), buff, 10);
         strcpy(buff2, "Total number of megabytes: ");
         strcat(buff2, buff);
         strcat(buff2, " MB");
         logger_log_info(buff2);
     }
-    else if(state == HARDDISK_NOT_PRESENT)
+    else if(state == HARDDISK_ATA_NOT_PRESENT)
     {
         strcpy(buff2, name);        
         strcat(buff2, ": not present");
@@ -105,10 +105,10 @@ void print_harddisk_details(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, c
  */
 void print_harddisks_status()
 {
-    print_harddisk_details(HARDDISK_MASTER, HARDDISK_PRIMARY_BUS, "Primary Master");
-    print_harddisk_details(HARDDISK_SLAVE, HARDDISK_PRIMARY_BUS, "Primary Slave");
-    print_harddisk_details(HARDDISK_MASTER, HARDDISK_SECONDARY_BUS, "Secondary Master");
-    print_harddisk_details(HARDDISK_SLAVE, HARDDISK_SECONDARY_BUS, "Secondary Slave");
+    print_harddisk_details(HARDDISK_ATA_MASTER, HARDDISK_ATA_PRIMARY_BUS, "Primary Master");
+    print_harddisk_details(HARDDISK_ATA_SLAVE, HARDDISK_ATA_PRIMARY_BUS, "Primary Slave");
+    print_harddisk_details(HARDDISK_ATA_MASTER, HARDDISK_ATA_SECONDARY_BUS, "Secondary Master");
+    print_harddisk_details(HARDDISK_ATA_SLAVE, HARDDISK_ATA_SECONDARY_BUS, "Secondary Slave");
 }
 
 void startup()
@@ -145,7 +145,7 @@ void startup()
     floppy_init();
     logger_log_ok("Floppy");
     
-    harddisk_init();
+    harddisk_ata_init();
     logger_log_ok("Hard Disks");
     print_harddisks_status();
 
