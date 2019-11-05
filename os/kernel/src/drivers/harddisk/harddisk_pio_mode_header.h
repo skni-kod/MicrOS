@@ -9,19 +9,19 @@
 
 //! Primary bus I/O port.
 /*! Used to transfer data with drives on primary bus*/
-#define HARDDISK_PRIMARY_BUS_IO_PORT 0x1F0
+#define HARDDISK_ATA_PRIMARY_BUS_IO_PORT 0x1F0
 
 //! Primary bus control port.
 /*! Used to transfer control informations with drives on primary bus*/
-#define HARDDISK_PRIMARY_BUS_CONTROL_PORT 0x3F6
+#define HARDDISK_ATA_PRIMARY_BUS_CONTROL_PORT 0x3F6
 
 //! Secondary bus I/O port.
 /*! Used to transfer data with drives on secondary bus*/
-#define HARDDISK_SECONDARY_BUS_IO_PORT 0x170
+#define HARDDISK_ATA_SECONDARY_BUS_IO_PORT 0x170
 
 //! Secondary bus control port.
 /*! Used to transfer control informations with drives on secondary bus*/
-#define HARDDISK_SECONDARY_BUS_CONTROL_PORT 0x376
+#define HARDDISK_ATA_SECONDARY_BUS_CONTROL_PORT 0x376
 
 // Registers offsets
 

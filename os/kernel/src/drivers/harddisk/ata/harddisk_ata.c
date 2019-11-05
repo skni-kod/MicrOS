@@ -1,28 +1,28 @@
-#include "harddisk.h"
+#include "harddisk_ata.h"
 
 //! Current states of all hard drives.
-harddisk_states current_states;
+harddisk_ata_states current_states;
 
 
-harddisk_states harddisk_get_states()
+harddisk_ata_states harddisk_ata_get_states()
 {
     return current_states;
 }
 
-HARDDISK_STATE harddisk_get_state(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus)
+HARDDISK_ATA_STATE harddisk_ata_get_state(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus)
 {
-    HARDDISK_STATE *state;
-    harddisk_identify_device_data *data;
-    harddisk_get_pointers(type, bus, &state, &data);
+    const HARDDISK_ATA_STATE *state;
+    const harddisk_identify_device_data *data;
+    __harddisk_ata_get_pointers(type, bus, &state, &data);
 
     return *state;
 }
 
-char* harddisk_get_disk_serial_number_terminated(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, char *buffer)
+char* harddisk_ata_get_disk_serial_number_terminated(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, char *buffer)
 {
-    HARDDISK_STATE *state;
-    harddisk_identify_device_data *data;
-    harddisk_get_pointers(type, bus, &state, &data);
+    const HARDDISK_ATA_STATE *state;
+    const harddisk_identify_device_data *data;
+    __harddisk_ata_get_pointers(type, bus, &state, &data);
 
     // Copy serial number to buffer
     for(int i = 0; i < HARDDISK_SERIAL_NUMBER_LENGTH; i += 2)
@@ -34,11 +34,11 @@ char* harddisk_get_disk_serial_number_terminated(HARDDISK_MASTER_SLAVE type, HAR
     return buffer;
 }
 
-char* harddisk_get_disk_firmware_version_terminated(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, char *buffer)
+char* harddisk_ata_get_disk_firmware_version_terminated(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, char *buffer)
 {
-    HARDDISK_STATE *state;
-    harddisk_identify_device_data *data;
-    harddisk_get_pointers(type, bus, &state, &data);
+    const HARDDISK_ATA_STATE *state;
+    const harddisk_identify_device_data *data;
+    __harddisk_ata_get_pointers(type, bus, &state, &data);
 
     // Copy firmware version to buffer
     for(int i = 0; i < HARDDISK_FIRMWARE_VERSION_LENGTH; i += 2)
@@ -50,11 +50,11 @@ char* harddisk_get_disk_firmware_version_terminated(HARDDISK_MASTER_SLAVE type, 
     return buffer;
 }
 
-char* harddisk_get_disk_model_number_terminated(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, char *buffer)
+char* harddisk_ata_get_disk_model_number_terminated(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, char *buffer)
 {
-    HARDDISK_STATE *state;
-    harddisk_identify_device_data *data;
-    harddisk_get_pointers(type, bus, &state, &data);
+    const HARDDISK_ATA_STATE *state;
+    const harddisk_identify_device_data *data;
+    __harddisk_ata_get_pointers(type, bus, &state, &data);
 
     // Copy model number to buffer
     for(int i = 0; i < HARDDISK_MODEL_NUMBER_LENGTH; i += 2)
@@ -66,44 +66,44 @@ char* harddisk_get_disk_model_number_terminated(HARDDISK_MASTER_SLAVE type, HARD
     return buffer;
 }
 
-uint32_t harddisk_get_user_addressable_sectors(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus)
+uint32_t harddisk_ata_get_user_addressable_sectors(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus)
 {
-    HARDDISK_STATE *state;
-    harddisk_identify_device_data *data;
-    harddisk_get_pointers(type, bus, &state, &data);
+    const HARDDISK_ATA_STATE *state;
+    const harddisk_identify_device_data *data;
+    __harddisk_ata_get_pointers(type, bus, &state, &data);
     
     return data->fields.total_number_of_user_addressable_sectors;
 }
 
-uint32_t harddisk_get_disk_space(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus)
+uint32_t harddisk_ata_get_disk_space(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus)
 {
-    HARDDISK_STATE *state;
-    harddisk_identify_device_data *data;
-    harddisk_get_pointers(type, bus, &state, &data);
+    const HARDDISK_ATA_STATE *state;
+    const harddisk_identify_device_data *data;
+    __harddisk_ata_get_pointers(type, bus, &state, &data);
     
     // Multiply total number of user addressable sectors by number of bytes per sector (currently hard coded).
     return data->fields.total_number_of_user_addressable_sectors * 512;
 }
 
-int8_t harddisk_read_sector(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t *buffer)
+int8_t harddisk_ata_read_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t *buffer)
 {
     if(buffer == NULL) return -2;
     uint16_t io_port = 0;
     harddisk_io_drive_head_register message_to_drive = {.value = 0};
 
     // Set port of drive
-    if (bus == HARDDISK_PRIMARY_BUS) io_port = HARDDISK_PRIMARY_BUS_IO_PORT;
-    else if(bus == HARDDISK_SECONDARY_BUS) io_port = HARDDISK_SECONDARY_BUS_IO_PORT;
+    if (bus == HARDDISK_ATA_PRIMARY_BUS) io_port = HARDDISK_ATA_PRIMARY_BUS_IO_PORT;
+    else if(bus == HARDDISK_ATA_SECONDARY_BUS) io_port = HARDDISK_ATA_SECONDARY_BUS_IO_PORT;
     else return -2;
 
     // Set drive
     switch (type)
     {
-    case HARDDISK_MASTER:
+    case HARDDISK_ATA_MASTER:
         // For master set it to 0x40. Choose to use LBA.
         message_to_drive.fields.chs_head_lba_block_number = 1;
         break;
-    case HARDDISK_SLAVE:
+    case HARDDISK_ATA_SLAVE:
         // For slave set it to 0x50. Choose to use LBA and drive 1.
         message_to_drive.fields.chs_head_lba_block_number = 1;
         message_to_drive.fields.drive_number = 1;
@@ -128,10 +128,10 @@ int8_t harddisk_read_sector(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, u
     // Send the READ SECTORS EX" command to command register of I/O port.
     io_out_byte(io_port + HARDDISK_IO_COMMAND_REGISTER_OFFSET, HARDDISK_READ_SECTORS_EXT_COMMAND);
 
-    harddisk_400ns_delay(io_port);
+    __harddisk_ata_400ns_delay(io_port);
 
     // For any other value: poll the Status port until bit 7 (BSY, value = 0x80) clears.
-    int8_t pooling_result = harddisk_poll(io_port);
+    int8_t pooling_result = __harddisk_ata_poll(io_port);
     if(pooling_result == 1)
     {
         for(int i = 0; i < 256; i++)
@@ -149,25 +149,25 @@ int8_t harddisk_read_sector(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, u
 
 }
 
-int8_t harddisk_write_sector(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t *buffer)
+int8_t harddisk_ata_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t *buffer)
 {
     if(buffer == NULL) return -2;
     uint16_t io_port = 0;
     harddisk_io_drive_head_register message_to_drive = {.value = 0};
 
     // Set port of drive
-    if (bus == HARDDISK_PRIMARY_BUS) io_port = HARDDISK_PRIMARY_BUS_IO_PORT;
-    else if(bus == HARDDISK_SECONDARY_BUS) io_port = HARDDISK_SECONDARY_BUS_IO_PORT;
+    if (bus == HARDDISK_ATA_PRIMARY_BUS) io_port = HARDDISK_ATA_PRIMARY_BUS_IO_PORT;
+    else if(bus == HARDDISK_ATA_SECONDARY_BUS) io_port = HARDDISK_ATA_SECONDARY_BUS_IO_PORT;
     else return -2;
 
     // Set drive
     switch (type)
     {
-    case HARDDISK_MASTER:
+    case HARDDISK_ATA_MASTER:
         // For master set it to 0x40. Choose to use LBA.
         message_to_drive.fields.chs_head_lba_block_number = 1;
         break;
-    case HARDDISK_SLAVE:
+    case HARDDISK_ATA_SLAVE:
         // For slave set it to 0x50. Choose to use LBA and drive 1.
         message_to_drive.fields.chs_head_lba_block_number = 1;
         message_to_drive.fields.drive_number = 1;
@@ -192,10 +192,10 @@ int8_t harddisk_write_sector(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, 
     // Send the WRITE SECTORS EXT command to command register of I/O port.
     io_out_byte(io_port + HARDDISK_IO_COMMAND_REGISTER_OFFSET, HARDDISK_WRITE_SECTORS_EXT_COMMAND);
 
-    harddisk_400ns_delay(io_port);
+    __harddisk_ata_400ns_delay(io_port);
 
     // For any other value: poll the Status port until bit 7 (BSY, value = 0x80) clears.
-    int8_t pooling_result = harddisk_poll(io_port);
+    int8_t pooling_result = __harddisk_ata_poll(io_port);
     if(pooling_result == 1)
     {
         for(int i = 0; i < 256; i++)
@@ -215,29 +215,29 @@ int8_t harddisk_write_sector(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, 
 
 }
 
-void harddisk_init()
+void harddisk_ata_init()
 {
-    current_states.primary_master = (HARDDISK_STATE) harddisk_check_presence(HARDDISK_MASTER, HARDDISK_PRIMARY_BUS);
-    current_states.primary_slave = (HARDDISK_STATE) harddisk_check_presence(HARDDISK_SLAVE, HARDDISK_PRIMARY_BUS);
-    current_states.secondary_master = (HARDDISK_STATE) harddisk_check_presence(HARDDISK_MASTER, HARDDISK_SECONDARY_BUS);
-    current_states.secondary_slave = (HARDDISK_STATE) harddisk_check_presence(HARDDISK_SLAVE, HARDDISK_SECONDARY_BUS);
+    current_states.primary_master = (HARDDISK_ATA_STATE) __harddisk_ata_check_presence(HARDDISK_ATA_MASTER, HARDDISK_ATA_PRIMARY_BUS);
+    current_states.primary_slave = (HARDDISK_ATA_STATE) __harddisk_ata_check_presence(HARDDISK_ATA_SLAVE, HARDDISK_ATA_PRIMARY_BUS);
+    current_states.secondary_master = (HARDDISK_ATA_STATE) __harddisk_ata_check_presence(HARDDISK_ATA_MASTER, HARDDISK_ATA_SECONDARY_BUS);
+    current_states.secondary_slave = (HARDDISK_ATA_STATE) __harddisk_ata_check_presence(HARDDISK_ATA_SLAVE, HARDDISK_ATA_SECONDARY_BUS);
 }
 
-void harddisk_get_pointers(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, HARDDISK_STATE **state, harddisk_identify_device_data **data)
+void __harddisk_ata_get_pointers(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, const HARDDISK_ATA_STATE **state, const harddisk_identify_device_data **data)
 {
     *state = NULL;
     *data = NULL;
     switch(type)
     {
-    case HARDDISK_MASTER:
+    case HARDDISK_ATA_MASTER:
         switch(bus)
         {
-            case HARDDISK_PRIMARY_BUS:
+            case HARDDISK_ATA_PRIMARY_BUS:
                 // Primary master
                 *state = &current_states.primary_master;
                 *data = &current_states.primary_master_data;
                 break;
-            case HARDDISK_SECONDARY_BUS:
+            case HARDDISK_ATA_SECONDARY_BUS:
                 // Secondary master
                 *state = &current_states.secondary_master;
                 *data = &current_states.secondary_master_data;
@@ -246,15 +246,15 @@ void harddisk_get_pointers(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, HA
                 return;
         }
         break;
-    case HARDDISK_SLAVE:
+    case HARDDISK_ATA_SLAVE:
         switch(bus)
         {
-            case HARDDISK_PRIMARY_BUS:
+            case HARDDISK_ATA_PRIMARY_BUS:
                 // Primary slave
                 *state = &current_states.primary_slave;
                 *data = &current_states.primary_slave_data;
                 break;
-            case HARDDISK_SECONDARY_BUS:
+            case HARDDISK_ATA_SECONDARY_BUS:
                 // Secondary slave
                 *state = &current_states.secondary_slave;
                 *data = &current_states.secondary_slave_data;
@@ -268,25 +268,25 @@ void harddisk_get_pointers(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, HA
     }
 }
 
-int8_t harddisk_check_presence(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus)
+int8_t __harddisk_ata_check_presence(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus)
 {
     uint16_t io_port = 0;
     harddisk_io_drive_head_register message_to_drive = {.value = 0};
 
     // Set port of drive
-    if (bus == HARDDISK_PRIMARY_BUS) io_port = HARDDISK_PRIMARY_BUS_IO_PORT;
-    else if(bus == HARDDISK_SECONDARY_BUS) io_port = HARDDISK_SECONDARY_BUS_IO_PORT;
+    if (bus == HARDDISK_ATA_PRIMARY_BUS) io_port = HARDDISK_ATA_PRIMARY_BUS_IO_PORT;
+    else if(bus == HARDDISK_ATA_SECONDARY_BUS) io_port = HARDDISK_ATA_SECONDARY_BUS_IO_PORT;
     else return -2;
 
     // Set drive
     switch (type)
     {
-    case HARDDISK_MASTER:
+    case HARDDISK_ATA_MASTER:
         // For master set it to 0xA0. We set 2 bits that should be always 1.
         message_to_drive.fields.always_set_field_1 = 1;
         message_to_drive.fields.always_set_field_2 = 1;
         break;
-    case HARDDISK_SLAVE:
+    case HARDDISK_ATA_SLAVE:
         // For slave set it to 0xB0. We set 2 bits that should be always 1 and drive number to 1.
         message_to_drive.fields.always_set_field_1 = 1;
         message_to_drive.fields.always_set_field_2 = 1;
@@ -297,16 +297,16 @@ int8_t harddisk_check_presence(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus
     }
 
     harddisk_identify_device_data *data;
-    if(type == HARDDISK_MASTER && bus == HARDDISK_PRIMARY_BUS) data = &current_states.primary_master_data;
-    else if(type == HARDDISK_SLAVE && bus == HARDDISK_PRIMARY_BUS) data = &current_states.primary_slave_data;
-    else if(type == HARDDISK_MASTER && bus == HARDDISK_SECONDARY_BUS) data = &current_states.secondary_master_data;
-    else if(type == HARDDISK_SLAVE && bus == HARDDISK_SECONDARY_BUS) data = &current_states.secondary_slave_data;
+    if(type == HARDDISK_ATA_MASTER && bus == HARDDISK_ATA_PRIMARY_BUS) data = &current_states.primary_master_data;
+    else if(type == HARDDISK_ATA_SLAVE && bus == HARDDISK_ATA_PRIMARY_BUS) data = &current_states.primary_slave_data;
+    else if(type == HARDDISK_ATA_MASTER && bus == HARDDISK_ATA_SECONDARY_BUS) data = &current_states.secondary_master_data;
+    else if(type == HARDDISK_ATA_SLAVE && bus == HARDDISK_ATA_SECONDARY_BUS) data = &current_states.secondary_slave_data;
 
     // Send message to drive
     io_out_byte(io_port + HARDDISK_IO_DRIVE_HEAD_REGISTER_OFFSET, message_to_drive.value);
 
     // Make 400ns delay
-    harddisk_400ns_delay(io_port);
+    __harddisk_ata_400ns_delay(io_port);
 
     // Set the Sectorcount, LBAlo, LBAmid, and LBAhi IO ports to 0
     io_out_word(io_port + HARDDISK_IO_SECTOR_COUNT_REGISTER_OFFSET, 0);
@@ -365,7 +365,7 @@ int8_t harddisk_check_presence(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus
     }
 }
 
-int8_t harddisk_poll(uint16_t io_port)
+int8_t __harddisk_ata_poll(uint16_t io_port)
 {
     harddisk_io_control_status_register result;
     for(;;)
@@ -391,7 +391,7 @@ int8_t harddisk_poll(uint16_t io_port)
     }
 }
 
-void harddisk_400ns_delay(uint16_t port)
+void __harddisk_ata_400ns_delay(uint16_t port)
 {
     for(int i = 0; i < 4; ++i)
     {
