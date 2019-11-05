@@ -186,12 +186,12 @@ uint8_t harddisk_check_presence(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bu
     io_out_word(io_port + harddisk_io_cylinder_low_register_offset, 0);
     io_out_word(io_port + harddisk_io_cylinder_high_register_offset, 0);
 
-    // Send the IDENTIFY command (0xEC) to the Command IO port (0x1F7).
-    io_out_byte(0x1F7, 0xEC);
+    // Send the IDENTIFY command (0xEC) to the Command IO port.
+    io_out_byte(io_port + harddisk_io_command_register_offset, IDENTIFY_COMMAND);
 
-    // Read the Status port (0x1F7) again.
+    // Read the Status port again.
     harddisk_io_control_status_register result;
-    result.value = io_in_byte(0x1F7);
+    result.value = io_in_byte(io_port + harddisk_io_status_register_offset);
 
     // If the value read is 0, the drive does not exist.
     if(result.value == 0)
@@ -199,7 +199,7 @@ uint8_t harddisk_check_presence(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bu
         return 0;
     }  
     else
-    {   // For any other value: poll the Status port (0x1F7) until bit 7 (BSY, value = 0x80) clears.
+    {   // For any other value: poll the Status port until bit 7 (BSY, value = 0x80) clears.
         for(;;)
         {
             if(result.fields.busy == 0)
@@ -207,7 +207,7 @@ uint8_t harddisk_check_presence(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bu
                 // Otherwise, continue polling one of the Status ports until bit 3 (DRQ, value = 8) sets, or until bit 0 (ERR, value = 1) sets.
                 for(;;)
                 {
-                    result.value = io_in_byte(0x1F7);
+                    result.value = io_in_byte(io_port + harddisk_io_status_register_offset);
                     if(result.fields.has_pio_data_to_transfer_or_ready_to_accept_pio_data == 1)
                     {
                         for(int i = 0; i < 256; i++)
@@ -232,7 +232,7 @@ uint8_t harddisk_check_presence(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bu
                     return 0;
                 }
             }
-            result.value = io_in_byte(0x1F7);
+            result.value = io_in_byte(io_port + harddisk_io_status_register_offset);
         }
     }
 }
