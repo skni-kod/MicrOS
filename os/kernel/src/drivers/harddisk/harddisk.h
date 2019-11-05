@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include "harddisk_pio_mode_header.h"
 #include "harddisk_identify_devide_data.h"
+#include "harddisk_ata_command_matrix.h"
 #include "assembly/io.h"
 
 //! Enum represent bus type.

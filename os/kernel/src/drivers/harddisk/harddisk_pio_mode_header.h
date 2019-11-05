@@ -5,9 +5,6 @@
 
 // This OS currently use LBA 48bit for handling hard disks.
 
-//! Value for identify command.
-#define IDENTIFY_COMMAND 0xEC
-
 // Ports
 
 //! Primary bus I/O port.

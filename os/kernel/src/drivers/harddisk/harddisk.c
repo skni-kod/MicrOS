@@ -89,7 +89,7 @@ int8_t harddisk_read_sector(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, u
 {
     if(buffer == NULL) return -2;
     uint16_t io_port = 0;
-    uint16_t message_to_drive = 0;
+    harddisk_io_drive_head_register message_to_drive = {.value = 0};
 
     // Set port of drive
     if (bus == HARDDISK_PRIMARY_BUS) io_port = HARDDISK_PRIMARY_BUS_IO_PORT;
@@ -100,17 +100,20 @@ int8_t harddisk_read_sector(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, u
     switch (type)
     {
     case HARDDISK_MASTER:
-        message_to_drive = 0x40;
+        // For master set it to 0x40. Choose to use LBA.
+        message_to_drive.fields.chs_head_lba_block_number = 1;
         break;
     case HARDDISK_SLAVE:
-        message_to_drive = 0x50;
+        // For slave set it to 0x50. Choose to use LBA and drive 1.
+        message_to_drive.fields.chs_head_lba_block_number = 1;
+        message_to_drive.fields.drive_number = 1;
         break;
     default:
         return -2;
     }
 
     // Send message to drive
-    io_out_byte(io_port + HARDDISK_IO_DRIVE_HEAD_REGISTER_OFFSET, message_to_drive);
+    io_out_byte(io_port + HARDDISK_IO_DRIVE_HEAD_REGISTER_OFFSET, message_to_drive.value);
 
     // Send what to read
     io_out_byte(io_port + HARDDISK_IO_SECTOR_COUNT_REGISTER_OFFSET, 0);
@@ -122,13 +125,13 @@ int8_t harddisk_read_sector(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, u
     io_out_byte(io_port + HARDDISK_IO_CYLINDER_LOW_REGISTER_OFFSET, (uint8_t)(low_lba >> 8));
     io_out_byte(io_port + HARDDISK_IO_CYLINDER_HIGH_REGISTER_OFFSET, (uint8_t)(low_lba >> 16));
 
-    // Send the "READ SECTORS EXT" command (0x24) to port 0x1F7: outb(0x1F7, 0x24)
-    io_out_byte(io_port + HARDDISK_IO_COMMAND_REGISTER_OFFSET, 0x24);
+    // Send the READ SECTORS EX" command to command register of I/O port.
+    io_out_byte(io_port + HARDDISK_IO_COMMAND_REGISTER_OFFSET, HARDDISK_READ_SECTORS_EXT_COMMAND);
 
     harddisk_400ns_delay(io_port);
 
     // For any other value: poll the Status port until bit 7 (BSY, value = 0x80) clears.
-    uint8_t pooling_result = harddisk_poll(io_port);
+    int8_t pooling_result = harddisk_poll(io_port);
     if(pooling_result == 1)
     {
         for(int i = 0; i < 256; i++)
@@ -138,7 +141,7 @@ int8_t harddisk_read_sector(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, u
         }
         return 1;
     }
-    else if(pooling_result == -1)
+    else
     {
         // Error occured
         return -1;
@@ -150,7 +153,7 @@ int8_t harddisk_write_sector(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, 
 {
     if(buffer == NULL) return -2;
     uint16_t io_port = 0;
-    uint16_t message_to_drive = 0;
+    harddisk_io_drive_head_register message_to_drive = {.value = 0};
 
     // Set port of drive
     if (bus == HARDDISK_PRIMARY_BUS) io_port = HARDDISK_PRIMARY_BUS_IO_PORT;
@@ -161,17 +164,20 @@ int8_t harddisk_write_sector(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, 
     switch (type)
     {
     case HARDDISK_MASTER:
-        message_to_drive = 0x40;
+        // For master set it to 0x40. Choose to use LBA.
+        message_to_drive.fields.chs_head_lba_block_number = 1;
         break;
     case HARDDISK_SLAVE:
-        message_to_drive = 0x50;
+        // For slave set it to 0x50. Choose to use LBA and drive 1.
+        message_to_drive.fields.chs_head_lba_block_number = 1;
+        message_to_drive.fields.drive_number = 1;
         break;
     default:
         return -2;
     }
 
     // Send message to drive
-    io_out_byte(io_port + HARDDISK_IO_DRIVE_HEAD_REGISTER_OFFSET, message_to_drive);
+    io_out_byte(io_port + HARDDISK_IO_DRIVE_HEAD_REGISTER_OFFSET, message_to_drive.value);
 
     // Send what to write
     io_out_byte(io_port + HARDDISK_IO_SECTOR_COUNT_REGISTER_OFFSET, 0);
@@ -183,13 +189,13 @@ int8_t harddisk_write_sector(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, 
     io_out_byte(io_port + HARDDISK_IO_CYLINDER_LOW_REGISTER_OFFSET, (uint8_t)(low_lba >> 8));
     io_out_byte(io_port + HARDDISK_IO_CYLINDER_HIGH_REGISTER_OFFSET, (uint8_t)(low_lba >> 16));
 
-    // Send the "WRITE SECTORS EXT" command (0x34) to port 0x1F7: outb(0x1F7, 0x34)
-    io_out_byte(io_port + HARDDISK_IO_COMMAND_REGISTER_OFFSET, 0x34);
+    // Send the WRITE SECTORS EXT command to command register of I/O port.
+    io_out_byte(io_port + HARDDISK_IO_COMMAND_REGISTER_OFFSET, HARDDISK_WRITE_SECTORS_EXT_COMMAND);
 
     harddisk_400ns_delay(io_port);
 
     // For any other value: poll the Status port until bit 7 (BSY, value = 0x80) clears.
-    uint8_t pooling_result = harddisk_poll(io_port);
+    int8_t pooling_result = harddisk_poll(io_port);
     if(pooling_result == 1)
     {
         for(int i = 0; i < 256; i++)
@@ -201,7 +207,7 @@ int8_t harddisk_write_sector(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, 
         }
         return 1;
     }
-    else if(pooling_result == -1)
+    else
     {
         // Error occured
         return -1;
@@ -265,7 +271,7 @@ void harddisk_get_pointers(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, HA
 int8_t harddisk_check_presence(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus)
 {
     uint16_t io_port = 0;
-    uint16_t message_to_drive = 0;
+    harddisk_io_drive_head_register message_to_drive = {.value = 0};
 
     // Set port of drive
     if (bus == HARDDISK_PRIMARY_BUS) io_port = HARDDISK_PRIMARY_BUS_IO_PORT;
@@ -276,10 +282,15 @@ int8_t harddisk_check_presence(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus
     switch (type)
     {
     case HARDDISK_MASTER:
-        message_to_drive = 0xA0;
+        // For master set it to 0xA0. We set 2 bits that should be always 1.
+        message_to_drive.fields.always_set_field_1 = 1;
+        message_to_drive.fields.always_set_field_2 = 1;
         break;
     case HARDDISK_SLAVE:
-        message_to_drive = 0xB0;
+        // For slave set it to 0xB0. We set 2 bits that should be always 1 and drive number to 1.
+        message_to_drive.fields.always_set_field_1 = 1;
+        message_to_drive.fields.always_set_field_2 = 1;
+        message_to_drive.fields.drive_number = 1;
         break;
     default:
         return -2;
@@ -292,7 +303,7 @@ int8_t harddisk_check_presence(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus
     else if(type == HARDDISK_SLAVE && bus == HARDDISK_SECONDARY_BUS) data = &current_states.secondary_slave_data;
 
     // Send message to drive
-    io_out_byte(io_port + HARDDISK_IO_DRIVE_HEAD_REGISTER_OFFSET, message_to_drive);
+    io_out_byte(io_port + HARDDISK_IO_DRIVE_HEAD_REGISTER_OFFSET, message_to_drive.value);
 
     // Make 400ns delay
     harddisk_400ns_delay(io_port);
@@ -304,7 +315,7 @@ int8_t harddisk_check_presence(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus
     io_out_word(io_port + HARDDISK_IO_CYLINDER_HIGH_REGISTER_OFFSET, 0);
 
     // Send the IDENTIFY command (0xEC) to the Command IO port.
-    io_out_byte(io_port + HARDDISK_IO_COMMAND_REGISTER_OFFSET, IDENTIFY_COMMAND);
+    io_out_byte(io_port + HARDDISK_IO_COMMAND_REGISTER_OFFSET, HARDDISK_IDENTIFY_DEVICE_COMMAND);
 
     // Read the Status port again.
     harddisk_io_control_status_register result;
