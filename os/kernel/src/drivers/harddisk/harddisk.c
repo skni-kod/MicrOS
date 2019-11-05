@@ -159,11 +159,8 @@ uint8_t harddisk_check_presence(MASTER_SLAVE type, BUS_TYPE bus)
     // Send message to drive
     io_out_byte(io_port + harddisk_io_drive_head_register_offset, message_to_drive);
 
-    // Read four times to allow drive to set
-    io_in_byte(io_port + harddisk_io_drive_head_register_offset);
-    io_in_byte(io_port + harddisk_io_drive_head_register_offset);
-    io_in_byte(io_port + harddisk_io_drive_head_register_offset);
-    io_in_byte(io_port + harddisk_io_drive_head_register_offset);
+    // Make 400ns delay
+    harddisk_400ns_delay(io_port);
 
     // Set the Sectorcount, LBAlo, LBAmid, and LBAhi IO ports to 0
     io_out_word(io_port + harddisk_io_sector_count_register_offset, 0);
@@ -202,12 +199,11 @@ uint8_t harddisk_check_presence(MASTER_SLAVE type, BUS_TYPE bus)
                         }
                         return 1;
                     }
-                    else if(result.fields.error_occurred)
+                    else if(result.fields.error_occurred == 1)
                     {
                         return -1;
                     }
                 }
-                return true;
             }
             else
             {
@@ -220,5 +216,13 @@ uint8_t harddisk_check_presence(MASTER_SLAVE type, BUS_TYPE bus)
             }
             result.value = io_in_byte(0x1F7);
         }
+    }
+}
+
+void harddisk_400ns_delay(uint16_t port)
+{
+    for(int i = 0; i < 4; ++i)
+    {
+        io_in_byte(port + harddisk_io_status_register_offset);
     }
 }

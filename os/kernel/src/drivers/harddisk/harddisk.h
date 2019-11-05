@@ -124,4 +124,11 @@ void harddisk_get_pointers(MASTER_SLAVE type, BUS_TYPE bus, HARDDISK_STATE **sta
 */
 uint8_t harddisk_check_presence(MASTER_SLAVE type, BUS_TYPE bus);
 
+//! Makes 400ns delay.
+/*!
+    Makes 400ns delay by checking drive status 4 times. User after switching type of drive in bus.
+    \param port Port for do delay.
+*/
+void harddisk_400ns_delay(uint16_t port);
+
 #endif
