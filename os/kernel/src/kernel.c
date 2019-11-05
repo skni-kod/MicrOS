@@ -100,7 +100,7 @@ void print_harddisk_details(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, c
     }    
 }
 
-//! Prints hard diskd details.
+//! Prints hard disks details.
 /*! Used during boot to print informations about all hard disks.
  */
 void print_harddisks_status()
