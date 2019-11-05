@@ -96,7 +96,7 @@ void print_harddisk_details(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, c
     {
         strcpy(buff2, name);        
         strcat(buff2, ": error");
-        logger_log_info(buff2);
+        logger_log_error(buff2);
     }    
 }
 
