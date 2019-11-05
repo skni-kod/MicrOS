@@ -37,6 +37,7 @@ void syscalls_manager_init()
 
     // 0x4X - RTC
     syscalls_manager_attach_handler(0x40, syscall_rtc_get_time);
+    syscalls_manager_attach_handler(0x41, syscall_rtc_set_time);
 
     // 0x5X - File system
     syscalls_manager_attach_handler(0x50, syscall_filesystem_get_file_info);

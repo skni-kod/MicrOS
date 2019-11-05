@@ -24,6 +24,8 @@
 #include "cpu/tss/tss.h"
 #include "drivers/dal/videocard/videocard.h"
 #include "drivers/vga/genericvga.h"
+#include "drivers/harddisk/harddisk.h"
+#include "drivers/harddisk/harddisk_identify_devide_data.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
@@ -39,6 +41,75 @@ typedef struct _linesStruct
 
 char buff[50];
 linesStruct ssBuffer[64];
+
+//! Prints hard disk detail.
+/*! Used during boot to print informations about hard disk.
+    \param type Type of hard disk.
+    \param bus Type of bus for hard disk.
+    \param name Name for hard disk eg. "Primary Master", that is printed during boot to specify disk.
+ */
+void print_harddisk_details(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, char* name)
+{
+    char buff[50];
+    char buff2[100];
+    HARDDISK_STATE state = harddisk_get_state(type, bus);
+
+    if(state == HARDDISK_PRESENT)
+    {
+        strcpy(buff2, name);        
+        strcat(buff2, ": present");
+        logger_log_info(buff2);
+
+        harddisk_get_disk_model_number_terminated(type, bus, buff);
+        strcpy(buff2, "Model name: ");        
+        strcat(buff2, buff);
+        logger_log_info(buff2);
+
+        harddisk_get_disk_firmware_version_terminated(type, bus, buff);
+        strcpy(buff2, "Firmware version: ");        
+        strcat(buff2, buff);
+        logger_log_info(buff2);
+
+        harddisk_get_disk_serial_number_terminated(type, bus, buff);
+        strcpy(buff2, "Serial number: ");        
+        strcat(buff2, buff);
+        logger_log_info(buff2);
+
+        itoa(harddisk_get_user_addressable_sectors(type, bus), buff, 10);
+        strcpy(buff2, "Total number of user addressable sectors: ");
+        strcat(buff2, buff);
+        logger_log_info(buff2);
+
+        itoa(harddisk_get_disk_space(type, bus) / (1024 * 1024), buff, 10);
+        strcpy(buff2, "Total number of megabytes: ");
+        strcat(buff2, buff);
+        strcat(buff2, " MB");
+        logger_log_info(buff2);
+    }
+    else if(state == HARDDISK_NOT_PRESENT)
+    {
+        strcpy(buff2, name);        
+        strcat(buff2, ": not present");
+        logger_log_info(buff2);
+    }
+    else
+    {
+        strcpy(buff2, name);        
+        strcat(buff2, ": error");
+        logger_log_info(buff2);
+    }    
+}
+
+//! Prints hard diskd details.
+/*! Used during boot to print informations about all hard disks.
+ */
+void print_harddisks_status()
+{
+    print_harddisk_details(HARDDISK_MASTER, HARDDISK_PRIMARY_BUS, "Primary Master");
+    print_harddisk_details(HARDDISK_SLAVE, HARDDISK_PRIMARY_BUS, "Primary Slave");
+    print_harddisk_details(HARDDISK_MASTER, HARDDISK_SECONDARY_BUS, "Secondary Master");
+    print_harddisk_details(HARDDISK_SLAVE, HARDDISK_SECONDARY_BUS, "Secondary Slave");
+}
 
 void startup()
 {
@@ -73,6 +144,10 @@ void startup()
 
     floppy_init();
     logger_log_ok("Floppy");
+    
+    harddisk_init();
+    logger_log_ok("Hard Disks");
+    print_harddisks_status();
 
     keyboard_init();
     logger_log_ok("Keyboard");
@@ -168,7 +243,7 @@ int kmain()
     logger_log_info("Hello, World!");
     //startup_music_play();
     logger_log_ok("READY.");
-
+    /*
     logger_log_ok("Loading tasks...");
     vga_clear_screen();
     process_manager_create_process("/ENV/SHELL.ELF", "", 1000, false);
@@ -495,6 +570,6 @@ int kmain()
             }
         }
     }
-
+    */
     return 0;
 }

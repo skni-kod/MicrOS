@@ -10,6 +10,7 @@ char *strcat(char *destination, const char *source)
         *destination = *source;
         destination++,source++;
     }while(*source);
+    *destination = '\0';
     return ret;
         
 }
