@@ -8,5 +8,6 @@ char *strcpy(char *destination, const char *source)
         *destination = *source;
         source++,destination++;
     }while(*source);
+    *destination = '\0';
     return str;
 }
