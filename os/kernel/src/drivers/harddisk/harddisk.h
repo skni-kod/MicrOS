@@ -115,6 +115,18 @@ uint32_t harddisk_get_user_addressable_sectors(HARDDISK_MASTER_SLAVE type, HARDD
 */
 uint32_t harddisk_get_disk_space(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus);
 
+
+//! Reads hard disk sector.
+/*!
+    \param type Type of harddisk.
+    \param bus Type of bus.
+    \param high_lba Higher bits of lba (24 bits are used).
+    \param low_lba Lower bits of lba (24 bits are used).
+    \param buffer Buffer f 256 16-bits values for store data.
+    \return Pointer to data.
+*/
+uint16_t* harddisk_read_sector(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t *buffer);
+
 //! Initialization of hard disk driver.
 /*!
     Should be called during boot up once. Check for hard disks and store informations about them.

@@ -64,6 +64,15 @@ char* harddisk_get_disk_model_number_terminated(HARDDISK_MASTER_SLAVE type, HARD
     return buffer;
 }
 
+uint32_t harddisk_get_user_addressable_sectors(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus)
+{
+    HARDDISK_STATE *state;
+    harddisk_identify_device_data *data;
+    harddisk_get_pointers(type, bus, &state, &data);
+    
+    return data->fields.total_number_of_user_addressable_sectors;
+}
+
 uint32_t harddisk_get_disk_space(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus)
 {
     HARDDISK_STATE *state;
@@ -74,13 +83,86 @@ uint32_t harddisk_get_disk_space(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE b
     return data->fields.total_number_of_user_addressable_sectors * 512;
 }
 
-uint32_t harddisk_get_user_addressable_sectors(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus)
+uint16_t* harddisk_read_sector(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t *buffer)
 {
-    HARDDISK_STATE *state;
-    harddisk_identify_device_data *data;
-    harddisk_get_pointers(type, bus, &state, &data);
-    
-    return data->fields.total_number_of_user_addressable_sectors;
+    if(buffer == NULL) return;
+    uint16_t io_port = 0;
+    uint16_t message_to_drive = 0;
+
+    // Set port of drive
+    if (bus == HARDDISK_PRIMARY_BUS)
+    {
+        io_port = HARDDISK_PRIMARY_BUS_IO_PORT;
+    }
+    else if(bus == HARDDISK_SECONDARY_BUS)
+    {
+        io_port = HARDDISK_SECONDARY_BUS_IO_PORT;
+    }
+    else
+    {
+        return -2;
+    }
+
+    // Set drive
+    switch (type)
+    {
+    case HARDDISK_MASTER:
+        message_to_drive = 0x40;
+        break;
+    case HARDDISK_SLAVE:
+        message_to_drive = 0x50;
+        break;
+    default:
+        return -2;
+    }
+
+    // Send message to drive
+    io_out_byte(io_port + HARDDISK_IO_DRIVE_HEAD_REGISTER_OFFSET, message_to_drive);
+
+    // Send what to read
+    io_out_byte(io_port + HARDDISK_IO_SECTOR_COUNT_REGISTER_OFFSET, 0);
+    io_out_byte(io_port + HARDDISK_IO_SECTOR_NUMBER_REGISTER_OFFSET, (uint8_t)high_lba);
+    io_out_byte(io_port + HARDDISK_IO_CYLINDER_LOW_REGISTER_OFFSET, (uint8_t)(high_lba >> 8));
+    io_out_byte(io_port + HARDDISK_IO_CYLINDER_HIGH_REGISTER_OFFSET, (uint8_t)(high_lba >> 16));
+    io_out_byte(io_port + HARDDISK_IO_SECTOR_COUNT_REGISTER_OFFSET, 1);
+    io_out_byte(io_port + HARDDISK_IO_SECTOR_NUMBER_REGISTER_OFFSET, (uint8_t)low_lba);
+    io_out_byte(io_port + HARDDISK_IO_CYLINDER_LOW_REGISTER_OFFSET, (uint8_t)(low_lba >> 8));
+    io_out_byte(io_port + HARDDISK_IO_CYLINDER_HIGH_REGISTER_OFFSET, (uint8_t)(low_lba >> 16));
+
+    // Send the "READ SECTORS EXT" command (0x24) to port 0x1F7: outb(0x1F7, 0x24)
+    io_out_byte(io_port + HARDDISK_IO_COMMAND_REGISTER_OFFSET, 0x24);
+
+    harddisk_400ns_delay(io_port);
+
+    // For any other value: poll the Status port until bit 7 (BSY, value = 0x80) clears.
+    harddisk_io_control_status_register result;
+    for(;;)
+    {
+        result.value = io_in_byte(io_port + HARDDISK_IO_STATUS_REGISTER_OFFSET);
+        if(result.fields.busy == 0)
+        {
+            // Otherwise, continue polling one of the Status ports until bit 3 (DRQ, value = 8) sets, or until bit 0 (ERR, value = 1) sets.
+            for(;;)
+            {
+                result.value = io_in_byte(io_port + HARDDISK_IO_STATUS_REGISTER_OFFSET);
+                if(result.fields.has_pio_data_to_transfer_or_ready_to_accept_pio_data == 1)
+                {
+                    for(int i = 0; i < 256; i++)
+                    {
+                        //  Read 256 16-bit values, and store them.
+                        buffer[i] = io_in_word(io_port);
+                    }
+                    return 1;
+                }
+                else if(result.fields.error_occurred == 1)
+                {
+                    return;
+                }
+            }
+        }
+ 
+    }
+
 }
 
 void harddisk_init()
