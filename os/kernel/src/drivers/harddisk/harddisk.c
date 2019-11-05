@@ -7,7 +7,16 @@ harddisk_states harddisk_get_states()
     return current_states;
 }
 
-char* harddisk_get_disk_serial_number_terminated(MASTER_SLAVE type, BUS_TYPE bus, char *buffer)
+HARDDISK_STATE harddisk_get_state(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus)
+{
+    HARDDISK_STATE *state;
+    harddisk_identify_device_data *data;
+    harddisk_get_pointers(type, bus, &state, &data);
+
+    return *state;
+}
+
+char* harddisk_get_disk_serial_number_terminated(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, char *buffer)
 {
     HARDDISK_STATE *state;
     harddisk_identify_device_data *data;
@@ -23,7 +32,7 @@ char* harddisk_get_disk_serial_number_terminated(MASTER_SLAVE type, BUS_TYPE bus
     return buffer;
 }
 
-char* harddisk_get_disk_firmware_version_terminated(MASTER_SLAVE type, BUS_TYPE bus, char *buffer)
+char* harddisk_get_disk_firmware_version_terminated(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, char *buffer)
 {
     HARDDISK_STATE *state;
     harddisk_identify_device_data *data;
@@ -39,7 +48,7 @@ char* harddisk_get_disk_firmware_version_terminated(MASTER_SLAVE type, BUS_TYPE 
     return buffer;
 }
 
-char* harddisk_get_disk_model_number_terminated(MASTER_SLAVE type, BUS_TYPE bus, char *buffer)
+char* harddisk_get_disk_model_number_terminated(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, char *buffer)
 {
     HARDDISK_STATE *state;
     harddisk_identify_device_data *data;
@@ -55,7 +64,7 @@ char* harddisk_get_disk_model_number_terminated(MASTER_SLAVE type, BUS_TYPE bus,
     return buffer;
 }
 
-uint32_t harddisk_get_disk_space(MASTER_SLAVE type, BUS_TYPE bus)
+uint32_t harddisk_get_disk_space(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus)
 {
     HARDDISK_STATE *state;
     harddisk_identify_device_data *data;
@@ -63,6 +72,15 @@ uint32_t harddisk_get_disk_space(MASTER_SLAVE type, BUS_TYPE bus)
     
     // Multiply total number of user addressable sectors by number of bytes per sector (currently hard coded).
     return data->fields.total_number_of_user_addressable_sectors * 512;
+}
+
+uint32_t harddisk_get_user_addressable_sectors(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus)
+{
+    HARDDISK_STATE *state;
+    harddisk_identify_device_data *data;
+    harddisk_get_pointers(type, bus, &state, &data);
+    
+    return data->fields.total_number_of_user_addressable_sectors;
 }
 
 void harddisk_init()
@@ -73,7 +91,7 @@ void harddisk_init()
     current_states.secondary_slave = (HARDDISK_STATE) harddisk_check_presence(HARDDISK_SLAVE, HARDDISK_SECONDARY_BUS);
 }
 
-void harddisk_get_pointers(MASTER_SLAVE type, BUS_TYPE bus, HARDDISK_STATE **state, harddisk_identify_device_data **data)
+void harddisk_get_pointers(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, HARDDISK_STATE **state, harddisk_identify_device_data **data)
 {
     *state = NULL;
     *data = NULL;
@@ -118,7 +136,7 @@ void harddisk_get_pointers(MASTER_SLAVE type, BUS_TYPE bus, HARDDISK_STATE **sta
     }
 }
 
-uint8_t harddisk_check_presence(MASTER_SLAVE type, BUS_TYPE bus)
+uint8_t harddisk_check_presence(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus)
 {
     uint16_t io_port = 0;
     uint16_t message_to_drive = 0;
