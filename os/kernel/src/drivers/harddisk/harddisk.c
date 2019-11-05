@@ -144,11 +144,11 @@ uint8_t harddisk_check_presence(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bu
     // Set port of drive
     if (bus == HARDDISK_PRIMARY_BUS)
     {
-        io_port = harddisk_primary_bus_io_port;
+        io_port = HARDDISK_PRIMARY_BUS_IO_PORT;
     }
     else if(bus == HARDDISK_SECONDARY_BUS)
     {
-        io_port = harddisk_secondary_bus_io_port;
+        io_port = HARDDISK_SECONDARY_BUS_IO_PORT;
     }
     else
     {
@@ -175,23 +175,23 @@ uint8_t harddisk_check_presence(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bu
     else if(type == HARDDISK_SLAVE && bus == HARDDISK_SECONDARY_BUS) data = &current_states.secondary_slave_data;
 
     // Send message to drive
-    io_out_byte(io_port + harddisk_io_drive_head_register_offset, message_to_drive);
+    io_out_byte(io_port + HARDDISK_IO_DRIVE_HEAD_REGISTER_OFFSET, message_to_drive);
 
     // Make 400ns delay
     harddisk_400ns_delay(io_port);
 
     // Set the Sectorcount, LBAlo, LBAmid, and LBAhi IO ports to 0
-    io_out_word(io_port + harddisk_io_sector_count_register_offset, 0);
-    io_out_word(io_port + harddisk_io_sector_number_register_offset, 0);
-    io_out_word(io_port + harddisk_io_cylinder_low_register_offset, 0);
-    io_out_word(io_port + harddisk_io_cylinder_high_register_offset, 0);
+    io_out_word(io_port + HARDDISK_IO_SECTOR_COUNT_REGISTER_OFFSET, 0);
+    io_out_word(io_port + HARDDISK_IO_SECTOR_NUMBER_REGISTER_OFFSET, 0);
+    io_out_word(io_port + HARDDISK_IO_CYLINDER_LOW_REGISTER_OFFSET, 0);
+    io_out_word(io_port + HARDDISK_IO_CYLINDER_HIGH_REGISTER_OFFSET, 0);
 
     // Send the IDENTIFY command (0xEC) to the Command IO port.
-    io_out_byte(io_port + harddisk_io_command_register_offset, IDENTIFY_COMMAND);
+    io_out_byte(io_port + HARDDISK_IO_COMMAND_REGISTER_OFFSET, IDENTIFY_COMMAND);
 
     // Read the Status port again.
     harddisk_io_control_status_register result;
-    result.value = io_in_byte(io_port + harddisk_io_status_register_offset);
+    result.value = io_in_byte(io_port + HARDDISK_IO_STATUS_REGISTER_OFFSET);
 
     // If the value read is 0, the drive does not exist.
     if(result.value == 0)
@@ -207,7 +207,7 @@ uint8_t harddisk_check_presence(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bu
                 // Otherwise, continue polling one of the Status ports until bit 3 (DRQ, value = 8) sets, or until bit 0 (ERR, value = 1) sets.
                 for(;;)
                 {
-                    result.value = io_in_byte(io_port + harddisk_io_status_register_offset);
+                    result.value = io_in_byte(io_port + HARDDISK_IO_STATUS_REGISTER_OFFSET);
                     if(result.fields.has_pio_data_to_transfer_or_ready_to_accept_pio_data == 1)
                     {
                         for(int i = 0; i < 256; i++)
@@ -227,12 +227,12 @@ uint8_t harddisk_check_presence(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bu
             {
                 // Because of some ATAPI drives that do not follow spec, at this point you need to check the LBAmid and LBAhi ports (0x1F4 and 0x1F5)
                 // to see if they are non-zero. If so, the drive is not ATA, and you should stop polling.
-                if(io_in_word(io_port + harddisk_io_cylinder_low_register_offset) != 0 || io_in_word(io_port + harddisk_io_cylinder_high_register_offset) != 0)
+                if(io_in_word(io_port + HARDDISK_IO_CYLINDER_LOW_REGISTER_OFFSET) != 0 || io_in_word(io_port + HARDDISK_IO_CYLINDER_HIGH_REGISTER_OFFSET) != 0)
                 {
                     return 0;
                 }
             }
-            result.value = io_in_byte(io_port + harddisk_io_status_register_offset);
+            result.value = io_in_byte(io_port + HARDDISK_IO_STATUS_REGISTER_OFFSET);
         }
     }
 }
@@ -241,6 +241,6 @@ void harddisk_400ns_delay(uint16_t port)
 {
     for(int i = 0; i < 4; ++i)
     {
-        io_in_byte(port + harddisk_io_status_register_offset);
+        io_in_byte(port + HARDDISK_IO_STATUS_REGISTER_OFFSET);
     }
 }
