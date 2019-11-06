@@ -24,10 +24,11 @@ The repository doesn't contain all files necessary to successful compilation - w
 * ELF executing
 * Multitasking (with primitive round-rubin scheduler, but it will be changed for something better)
 * Standard library for C - partially
+* ATA Hard disk drive support
 
 ## TODO
 * Full support for the FAT12, FAT16 and FAT32 filesystems
-* Hard disk drive support
+* Other standards of hard disk drive support
 * Shell and other important applications
 * More advanced scheduler with priorities and IO blocking
 * Rest of the C standard library functions
