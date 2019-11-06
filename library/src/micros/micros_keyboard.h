@@ -4,12 +4,17 @@
 #include <stdbool.h>
 #include "micros_interrupts.h"
 
+//! Structure with the scancode and the ASCII representation
 typedef struct micros_keyboard_scan_ascii_pair
 {
+    //! Scancode representing the specified key
     unsigned char scancode;
+    
+    //! ASCII representation of the specified key
     unsigned char ascii;
 } micros_keyboard_scan_ascii_pair;
 
+//! Represents a set of keyboard keys
 typedef enum micros_keyboard_keys
 {
     key_esc = 1,
@@ -104,9 +109,34 @@ extern "C"
 {
 #endif
 
+//! Checks if any key is pressed
+/*!
+    Checks if any key is pressed and returns flag.
+    \return True if some key is pressed and is ready to retrieve, otherwise false.
+*/
 bool micros_keyboard_is_key_pressed();
+
+//! Retrieves pressed key from the buffer if possible
+/*!
+    Retrieves pressed key from the buffer if possible and fill passed struture with data about it.
+    \param scan_ascii_pair Structure which will be filled with data about it.
+    \return True if key was available in the buffer and structure was filled, otherwise false.
+*/
 bool micros_keyboard_get_pressed_key(micros_keyboard_scan_ascii_pair *scan_ascii_pair);
+
+//! Retrieves pressed key from the buffer (or waits if buffer is empty)
+/*!
+    Retrieves pressed key from the buffer (or waits if buffer is empty) and fill passed struture with data about it.
+    \param scan_ascii_pair Structure which will be filled with data about it.
+*/
 void micros_keyboard_wait_for_key_press(micros_keyboard_scan_ascii_pair *scan_ascii_pair);
+
+//! Retrieves key state (is pressed or not)
+/*!
+    Retrieves key state (is pressed or not) and returns boolean.
+    \param scancode Structure with the key data to check.
+    \return True if the key with the specified scancode is pressed, otherwise false.
+*/
 bool micros_keyboard_get_key_state(micros_keyboard_keys scancode);
 
 #ifdef __cplusplus
