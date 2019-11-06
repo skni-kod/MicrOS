@@ -139,16 +139,86 @@ typedef struct micros_signal_params
 extern "C" {
 #endif
 
+//! Forces current process to exit
+/*!
+    Forces current process to exit with the specified status code (typically 0 means success).
+    \param status Exis status code.
+*/
 void micros_process_exit(int status);
+
+//! Returns number of processes
+/*!
+    Returns number of processes working in the operating system.
+    \return Number of the working processes.
+*/
 uint32_t micros_process_get_processes_count();
+
+//! Retrieves from the kernel information about the current process
+/*!
+    Retrieves from the kernel information about the current process and saves it to the passed structure.
+    \param user_info Pointer to the structure where the information about the current process will be stored.
+*/
 void micros_process_get_current_process_info(micros_process_user_info *user_info);
+
+//! Retrieves from the kernel information about the process with the specified id
+/*!
+    Retrieves from the kernel information about the process with the specified id and saves it to the passed structure.
+    \param user_info Pointer to the structure where the information about the process with the specified id will be stored.
+    \return True if process with the specified ID was found, otherwise false.
+*/
 bool micros_process_get_process_info(uint32_t id, micros_process_user_info *user_info);
+
+//! Retrieves from the kernel information about all processes
+/*!
+    Retrieves from the kernel information about all processes id and saves them to the passed structure.
+    \param user_info Pointer to the structure where the information about all processes will be stored.
+*/
 void micros_process_get_all_processes_info(micros_process_user_info *user_info);
+
+//! Sets name of the current process
+/*!
+    Sets name of the current process. Name cannot be longer than 32 chars.
+    \param name New name of the current process.
+*/
 void micros_process_set_current_process_name(char *name);
+
+//! Stops process for the specified amount of time
+/*!
+    Stops process for the specified amount of time. Kernel won't jump to this process until the time will pass.
+    \param milliseconds Milliseconds to wait.
+*/
 void micros_process_current_process_sleep(uint32_t milliseconds);
+
+//! Creates new process
+/*!
+    Creates new process from the specified path with parameters.
+    \param path Path to the executable file.
+    \param arguments Arguments passed to the main function of the new process.
+    \param child Flag indicates it the newly created process will be child of the current process.
+    \param active Flag indicates if the newly created process will become active (on foreground).
+    \return ID of the create process.
+*/
 uint32_t micros_process_start_process(char *path, char *arguments, bool child, bool active);
+
+//! Sets function which will be called on the signal raise
+/*!
+    Sets function which will be called on the signal raise. Should be called by the standard library before entering to the main function of the program.
+    \param micros_signal_params Pointer to the function.
+*/
 void micros_process_set_current_process_signal_handler(void (*signal_handler)(micros_signal_params*));
+
+//! Confirms the end of signal handler execution
+/*!
+    Confirms the end of signal handler execution. Kernel will return to the last instruction before signal was raised.
+    \param old_state Signal state retrieved from the kernel.
+*/
 void micros_process_finish_signal_handler(micros_signal_params *old_state);
+
+//! Stops process until the end of the another process
+/*!
+    Stops process until the end of the another process with the specified ID.
+    \param process_id_to_wait Process ID to wait.
+*/
 void micros_process_wait_for_process(uint32_t process_id_to_wait);
 
 #ifdef __cplusplus
