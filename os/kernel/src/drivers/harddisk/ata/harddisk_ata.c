@@ -1,17 +1,6 @@
 #include "harddisk_ata.h"
 
-uint32_t harddisk_ata_get_user_addressable_sectors(const harddisk_identify_device_data *data)
-{
-    return data->fields.total_number_of_user_addressable_sectors;
-}
-
-uint32_t harddisk_ata_get_disk_space(const harddisk_identify_device_data *data)
-{
-    // Multiply total number of user addressable sectors by number of bytes per sector (currently hard coded).
-    return data->fields.total_number_of_user_addressable_sectors * 512;
-}
-
-int8_t harddisk_ata_read_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t *buffer)
+int8_t __harddisk_ata_read_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t *buffer)
 {
     if(buffer == NULL) return -2;
     uint16_t io_port = 0;
@@ -75,7 +64,7 @@ int8_t harddisk_ata_read_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS
 
 }
 
-int8_t harddisk_ata_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t *buffer)
+int8_t __harddisk_ata_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t *buffer)
 {
     if(buffer == NULL) return -2;
     uint16_t io_port = 0;
