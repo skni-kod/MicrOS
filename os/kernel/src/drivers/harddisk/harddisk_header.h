@@ -9,7 +9,7 @@
 
 //! Enum represent bus type.
 typedef enum HARDDISK_ATA_BUS_TYPE
-{
+{ 
     HARDDISK_ATA_PRIMARY_BUS = 1, /*!< Primary bus. */
     HARDDISK_ATA_SECONDARY_BUS = 2 /*!< Secondary bus. */
 } HARDDISK_ATA_BUS_TYPE;

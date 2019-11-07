@@ -44,16 +44,6 @@ int8_t harddisk_ata_read_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS
 */
 int8_t harddisk_ata_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t *buffer);
 
-//! Check hard disk presence in computer.
-/*!
-    Check if given hard disk is installed in computer.
-    \param type Type of harddisk.
-    \param bus Type of bus.
-    \param data Harddisk identify device data for current drive.
-    \return 0 no disk, 1 disk present, -1 disk present but ERR set, -2 wrong parameters.
-*/
-int8_t __harddisk_ata_check_presence(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, harddisk_identify_device_data *data);
-
 //! Doing pooling.
 /*!
     Check if disk is ready.
