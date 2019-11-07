@@ -24,7 +24,7 @@ char *itoa(int input, char *buffer, int base)
         buffer[idx++] = '-';
     }
 
-    int size = idx;
+    size_t size = idx;
     idx--;
 
     // revert string
