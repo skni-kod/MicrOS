@@ -120,3 +120,33 @@ bool harddisk_get_is_removable_media_device(HARDDISK_ATA_MASTER_SLAVE type, HARD
 
     return data->fields.general_configuration.removable_media_device;
 }
+
+int8_t harddisk_read_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t *buffer)
+{
+    const HARDDISK_STATE *state;
+    const harddisk_identify_device_data *data;
+    __harddisk_get_pointers(type, bus, &state, &data);
+    switch(*state)
+    {
+        case HARDDISK_ATA_PRESENT:
+            return __harddisk_ata_read_sector(type, bus, high_lba, low_lba, buffer);
+            break;
+        default:
+            return 0;
+    }
+}
+
+int8_t harddisk_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t *buffer)
+{
+    const HARDDISK_STATE *state;
+    const harddisk_identify_device_data *data;
+    __harddisk_get_pointers(type, bus, &state, &data);
+    switch(*state)
+    {
+        case HARDDISK_ATA_PRESENT:
+            return __harddisk_ata_write_sector(type, bus, high_lba, low_lba, buffer);
+            break;
+        default:
+            return 0;
+    }
+}
