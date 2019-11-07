@@ -6,8 +6,6 @@
 #include <stdbool.h>
 #include "assembly/io.h"
 #include "drivers/harddisk/harddisk_header.h"
-#include "drivers/harddisk/harddisk_pio_mode_header.h"
-#include "drivers/harddisk/harddisk_identify_device_data.h"
 #include "harddisk_ata_command_matrix.h"
 
 //! Get user addressable sectors of hard disk.

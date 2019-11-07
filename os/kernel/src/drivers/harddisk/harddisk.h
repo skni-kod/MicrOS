@@ -7,6 +7,7 @@
 #include "harddisk_header.h"
 #include "harddisk_detection.h"
 #include "ata/harddisk_ata.h"
+#include "atapi/harddisk_atapi.h"
 
 //! Initialization of hard disk driver.
 /*!

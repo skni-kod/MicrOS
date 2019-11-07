@@ -4,7 +4,6 @@
 
 #include "assembly/io.h"
 #include "harddisk_header.h"
-#include "harddisk_pio_mode_header.h"
 #include "ata/harddisk_ata.h "
 #include "atapi/harddisk_atapi.h "
 
