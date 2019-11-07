@@ -30,6 +30,14 @@ harddisk_states harddisk_get_states();
 */
 HARDDISK_STATE harddisk_get_state(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus);
 
+//! Get identify data of hard disk.
+/*!
+    \param type Type of harddisk.
+    \param bus Type of bus.
+    \return Identify data of hard disk.
+*/
+const harddisk_identify_device_data* harddisk_get_identify_data(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus);
+
 //! Get serial number of hard disk.
 /*!
     Function copy serial number to buffer and terminate string with /0.
@@ -75,5 +83,14 @@ uint32_t harddisk_get_user_addressable_sectors(HARDDISK_ATA_MASTER_SLAVE type, H
     \return Space in bytes.
 */
 uint32_t harddisk_get_disk_space(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus);
+
+//! Check if device is removable media.
+/*!
+    Check if device can contain removable media.
+    \param type Type of harddisk.
+    \param bus Type of bus.
+    \return True if device can contain removable media, false otherwise.
+*/
+bool harddisk_get_is_removable_media_device(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus);
 
 #endif

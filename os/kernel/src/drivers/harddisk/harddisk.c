@@ -25,6 +25,15 @@ HARDDISK_STATE harddisk_get_state(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_B
     return *state;
 }
 
+const harddisk_identify_device_data* harddisk_get_identify_data(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus)
+{
+    const HARDDISK_STATE *state;
+    const harddisk_identify_device_data *data;
+    __harddisk_get_pointers(type, bus, &state, &data);
+
+    return data;
+}
+
 char* harddisk_get_disk_serial_number_terminated(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, char *buffer)
 {
     const HARDDISK_STATE *state;
@@ -101,4 +110,13 @@ uint32_t harddisk_get_disk_space(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BU
         default:
             return 0;
     }
+}
+
+bool harddisk_get_is_removable_media_device(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus)
+{
+    const HARDDISK_STATE *state;
+    const harddisk_identify_device_data *data;
+    __harddisk_get_pointers(type, bus, &state, &data);
+
+    return data->fields.general_configuration.removable_media_device;
 }

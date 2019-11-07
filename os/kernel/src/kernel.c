@@ -86,6 +86,15 @@ void print_harddisk_details(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYP
         strcat(buff2, buff);
         strcat(buff2, " MB");
         logger_log_info(buff2);
+
+        if(harddisk_get_is_removable_media_device(type, bus) == true)
+        {
+            logger_log_info("Removable media: true");
+        }
+        else
+        {
+            logger_log_info("Removable media: false");
+        }
     }
     else if(state == HARDDISK_ATAPI_PRESENT)
     {
@@ -107,6 +116,15 @@ void print_harddisk_details(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYP
         strcpy(buff2, "Serial number: ");        
         strcat(buff2, buff);
         logger_log_info(buff2);
+
+        if(harddisk_get_is_removable_media_device(type, bus) == true)
+        {
+            logger_log_info("Removable media: true");
+        }
+        else
+        {
+            logger_log_info("Removable media: false");
+        }
     }
     else if(state == HARDDISK_NOT_PRESENT)
     {
