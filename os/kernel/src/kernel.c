@@ -24,8 +24,9 @@
 #include "cpu/tss/tss.h"
 #include "drivers/dal/videocard/videocard.h"
 #include "drivers/vga/genericvga.h"
+#include "drivers/harddisk/harddisk.h"
 #include "drivers/harddisk/ata/harddisk_ata.h"
-#include "drivers/harddisk/harddisk_identify_devide_data.h"
+#include "drivers/harddisk/harddisk_identify_device_data.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
@@ -52,51 +53,90 @@ void print_harddisk_details(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYP
 {
     char buff[50];
     char buff2[100];
-    HARDDISK_ATA_STATE state = harddisk_ata_get_state(type, bus);
+    HARDDISK_STATE state = harddisk_get_state(type, bus);
 
     if(state == HARDDISK_ATA_PRESENT)
     {
         strcpy(buff2, name);        
-        strcat(buff2, ": present");
+        strcat(buff2, ": ATA device");
         logger_log_info(buff2);
 
-        harddisk_ata_get_disk_model_number_terminated(type, bus, buff);
+        harddisk_get_disk_model_number_terminated(type, bus, buff);
         strcpy(buff2, "Model name: ");        
         strcat(buff2, buff);
         logger_log_info(buff2);
 
-        harddisk_ata_get_disk_firmware_version_terminated(type, bus, buff);
+        harddisk_get_disk_firmware_version_terminated(type, bus, buff);
         strcpy(buff2, "Firmware version: ");        
         strcat(buff2, buff);
         logger_log_info(buff2);
 
-        harddisk_ata_get_disk_serial_number_terminated(type, bus, buff);
+        harddisk_get_disk_serial_number_terminated(type, bus, buff);
         strcpy(buff2, "Serial number: ");        
         strcat(buff2, buff);
         logger_log_info(buff2);
 
-        itoa(harddisk_ata_get_user_addressable_sectors(type, bus), buff, 10);
+        itoa(harddisk_get_user_addressable_sectors(type, bus), buff, 10);
         strcpy(buff2, "Total number of user addressable sectors: ");
         strcat(buff2, buff);
         logger_log_info(buff2);
 
-        itoa(harddisk_ata_get_disk_space(type, bus) / (1024 * 1024), buff, 10);
+        itoa(harddisk_get_disk_space(type, bus) / (1024 * 1024), buff, 10);
         strcpy(buff2, "Total number of megabytes: ");
         strcat(buff2, buff);
         strcat(buff2, " MB");
         logger_log_info(buff2);
+
+        if(harddisk_get_is_removable_media_device(type, bus) == true)
+        {
+            logger_log_info("Removable media: true");
+        }
+        else
+        {
+            logger_log_info("Removable media: false");
+        }
     }
-    else if(state == HARDDISK_ATA_NOT_PRESENT)
+    else if(state == HARDDISK_ATAPI_PRESENT)
     {
         strcpy(buff2, name);        
-        strcat(buff2, ": not present");
+        strcat(buff2, ": ATAPI device");
+        logger_log_info(buff2);
+
+        harddisk_get_disk_model_number_terminated(type, bus, buff);
+        strcpy(buff2, "Model name: ");        
+        strcat(buff2, buff);
+        logger_log_info(buff2);
+
+        harddisk_get_disk_firmware_version_terminated(type, bus, buff);
+        strcpy(buff2, "Firmware version: ");        
+        strcat(buff2, buff);
+        logger_log_info(buff2);
+
+        harddisk_get_disk_serial_number_terminated(type, bus, buff);
+        strcpy(buff2, "Serial number: ");        
+        strcat(buff2, buff);
+        logger_log_info(buff2);
+
+        if(harddisk_get_is_removable_media_device(type, bus) == true)
+        {
+            logger_log_info("Removable media: true");
+        }
+        else
+        {
+            logger_log_info("Removable media: false");
+        }
+    }
+    else if(state == HARDDISK_NOT_PRESENT)
+    {
+        strcpy(buff2, name);        
+        strcat(buff2, ": not detected");
         logger_log_info(buff2);
     }
     else
     {
         strcpy(buff2, name);        
-        strcat(buff2, ": error");
-        logger_log_error(buff2);
+        strcat(buff2, ": error or not supported device");
+        logger_log_info(buff2);
     }    
 }
 
@@ -145,7 +185,7 @@ void startup()
     floppy_init();
     logger_log_ok("Floppy");
     
-    harddisk_ata_init();
+    harddisk_init();
     logger_log_ok("Hard Disks");
     print_harddisks_status();
 
