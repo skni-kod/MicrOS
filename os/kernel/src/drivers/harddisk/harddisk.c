@@ -90,7 +90,7 @@ uint32_t harddisk_get_user_addressable_sectors(HARDDISK_ATA_MASTER_SLAVE type, H
     switch(*state)
     {
         case HARDDISK_ATA_PRESENT:
-            return harddisk_ata_get_user_addressable_sectors(data);
+            return __harddisk_ata_get_user_addressable_sectors(data);
             break;
         default:
             return 0;
@@ -105,7 +105,7 @@ uint32_t harddisk_get_disk_space(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BU
     switch(*state)
     {
         case HARDDISK_ATA_PRESENT:
-            return harddisk_ata_get_disk_space(data);
+            return __harddisk_ata_get_disk_space(data);
             break;
         default:
             return 0;
