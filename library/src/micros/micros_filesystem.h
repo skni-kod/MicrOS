@@ -89,30 +89,144 @@ bool micros_filesystem_get_directory_info(char *path, micros_filesystem_director
 /*!
     Reads content from the file and stores data in the buffer passed in the parameter.
     \param path Path to the directory.
-    \param buffer Structure which will be filled.
-    \param start_index Position where the data will be started read.
-    \param length Structure which will be filled.
-    \return True if directory exists and structure has been filled, otherwise false.
+    \param buffer Buffer where the read data will be stored. Size must be equal or bigger than length.
+    \param start_index Position where the reading will be started.
+    \param length Requested size of the read data.
+    \return True if file was found and data was read, otherwise false.
 */
 bool micros_filesystem_read_file(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length);
+
+//! Gets entries count in the directory
+/*!
+    Gets entries count (files and directories) in the directory.
+    \param path Path to the directory.
+    \return Entries count.
+*/
 uint32_t micros_filesystem_get_entries_count_in_directory(char *path);
+
+//! Gets pathes of the entries in the directory 
+/*!
+    Gets pathes of the entries in the directory and stores them in the passed buffer.
+    \param path Path to the directory.
+    \param path Buffer where the pathes will be stored.
+    \return True if the target directory was found, otherwise false.
+*/
 bool micros_filesystem_get_entries_in_directory(char *path, char **entries);
+
+//! Check if the specified entry is a file 
+/*!
+    Check if the specified entry is a file and returns corresponding flag.
+    \param path Path to the entry.
+    \return True if the specified entry is a directory, otherwise false.
+*/
 bool micros_filesystem_is_file(char *path);
+
+//! Check if the specified entry is a directory 
+/*!
+    Check if the specified entry is a directory and returns corresponding flag.
+    \param path Path to the entry.
+    \return True if the specified entry is a directory, otherwise false.
+*/
 bool micros_filesystem_is_directory(char *path);
 
+//! Creates file 
+/*!
+    Creates file with the specified path.
+    \param path Path to the new file.
+    \return True if the file has been creates with success, otherwise false.
+*/
 bool micros_filesystem_create_file(char *path);
+
+//! Creates directory 
+/*!
+    Creates directory with the specified path.
+    \param path Path to the new directory.
+    \return True if the directory has been creates with success, otherwise false.
+*/
 bool micros_filesystem_create_directory(char *path);
+
+//! Deletes file 
+/*!
+    Deletes file with the specified path.
+    \param path Path to the file.
+    \return True if the file has been deleted with success, otherwise false.
+*/
 bool micros_filesystem_delete_file(char *path);
+
+//! Deletes directory 
+/*!
+    Deletes directory with the specified path.
+    \param path Path to the directory.
+    \return True if the directory has been deleted with success, otherwise false.
+*/
 bool micros_filesystem_delete_directory(char *path);
+
+//! Renames file 
+/*!
+    Renames file with the specified path.
+    \param path Path to the file.
+    \param new_name New name of the file (Without leading path).
+    \return True if the file has been renamed with success, otherwise false.
+*/
 bool micros_filesystem_rename_file(char *path, char *new_name);
+
+//! Renames directory 
+/*!
+    Renames directory with the specified path.
+    \param path Path to the directory.
+    \param new_name New name of the directory (Without leading path).
+    \return True if the directory has been renamed with success, otherwise false.
+*/
 bool micros_filesystem_rename_directory(char *path, char *new_name);
+
+//! Saves content stored in the buffer to the specified file 
+/*!
+    Saves content stored in the buffer to the specified file and returns flag indicating success. If file is not empty, then old data is overwrited.
+    \param path Path to the file.
+    \param buffer Buffer with content to save.
+    \param size Buffer size.
+    \return True if the content has been saved with success, otherwise false.
+*/
 bool micros_filesystem_save_to_file(char *path, char *buffer, int size);
+
+//! Appends content stored in the buffer to the end of the specified file 
+/*!
+    Appends content stored in the buffer to the end of the specified file and returns flag indicating success.
+    \param path Path to the file.
+    \param buffer Buffer with content to save.
+    \param size Buffer size.
+    \return True if the content has been saved with success, otherwise false.
+*/
 bool micros_filesystem_append_to_file(char *path, char *buffer, int size);
 
+//! Checks if file with the specified path exists 
+/*!
+    Checks if file with the specified path exists and returns corresponding flag
+    \param path Path to the file.
+    \return True if the file exists, otherwise false.
+*/
 bool micros_filesystem_file_exists(char *path);
+
+//! Checks if directory with the specified path exists 
+/*!
+    Checks if directory with the specified path exists and returns corresponding flag
+    \param path Path to the directory.
+    \return True if the directory exists, otherwise false.
+*/
 bool micros_filesystem_directory_exists(char *path);
 
+//! Gets free space on storage device
+/*!
+    Gets free space on storage device (in bytes). In the future it will support also partitions.
+    \return Free space in bytes.
+*/
 int micros_filesystem_get_free_space();
+
+//! Gets total space on storage device
+/*!
+    Gets total space on storage device (in bytes). In the future it will support also partitions.
+    \return Total space in bytes.
+*/
 int micros_filesystem_get_total_space();
 
 #ifdef __cplusplus
