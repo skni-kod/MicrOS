@@ -1,7 +1,6 @@
 #include "floppy.h"
 
 volatile floppy_header *floppy_header_data = (floppy_header *)FLOPPY_HEADER_DATA;
-volatile uint8_t *dma_buffer = (uint8_t *)DMA_ADDRESS;
 volatile uint32_t time_of_last_activity = 0;
 volatile bool motor_enabled = false;
 
@@ -261,7 +260,7 @@ void floppy_write_sector(uint16_t sector, uint8_t *content)
     uint8_t head, track, true_sector;
     floppy_lba_to_chs(sector, &head, &track, &true_sector);
 
-    memcpy((void *)dma_buffer, content, 512);
+    memcpy((void *)dma_get_buffer(), content, 512);
     floppy_do_operation_on_sector(head, track, true_sector, false);
 }
 
@@ -273,7 +272,7 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
     for (int i = 0; i < 100; i++)
     {
         // Init DMA
-        floppy_dma_init(read);
+        dma_init_transfer(0x06, read);
 
         if (!floppy_seek(track, head))
         {
@@ -399,7 +398,7 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
             continue;
         }
 
-        return st1 == 0 ? (uint8_t *)dma_buffer : NULL;
+        return st1 == 0 ? (uint8_t *)dma_get_buffer() : NULL;
     }
 
     return NULL;
@@ -442,49 +441,6 @@ bool floppy_seek(uint8_t cylinder, uint8_t head)
 
     logger_log_error("[Floppy] Seek timeout.");
     return false;
-}
-
-void floppy_dma_init(bool read)
-{
-    // Tell DMA that we want to configure floppy (channel 2)
-    io_out_byte(DMA_SINGLE_CHANNEL_MASK_REGISTER, 0x06);
-
-    // Reset Flip-Flop register
-    io_out_byte(DMA_FLIP_FLOP_RESET_REGISTER, 0xff);
-
-    // Set buffer to the specified address
-    io_out_byte(DMA_START_ADDRESS_REGISTER, (uint8_t)((uint32_t)(dma_buffer - 0xc0000000) & 0xff));
-    io_out_byte(DMA_START_ADDRESS_REGISTER, (uint8_t)((uint32_t)(dma_buffer - 0xc0000000) >> 8));
-
-    // Reset Flip-Flop register
-    io_out_byte(DMA_FLIP_FLOP_RESET_REGISTER, 0xff);
-
-    // Count to 0x01ff (number of bytes in a 3.5" floppy disk track)
-    io_out_byte(DMA_COUNT_REGISTER_CHANNEL, (0xff));
-    io_out_byte(DMA_COUNT_REGISTER_CHANNEL, 0x01);
-
-    // We don't want to have external page register
-    io_out_byte(DMA_EXTERNAL_PAGE_REGISTER, 0);
-
-    // | MOD1 | MOD0 | DOWN | AUTO | TRA1 | TRA0 | SEL1 | SEL0 |
-    // |  0   |  1   |  0   |  1   |  x   |  x   |  1   |  0   | = 0x56
-    // MOD1, MOD0 - mode
-    //  00 - transfer on demand
-    //  01 - single DMA transfer
-    //  10 - block DMA transfer
-    //  11 - cascade mode (with another DMA controller)
-    // DOWN - set order of data
-    // AUTO - reset address after transfer if set
-    // TRA1, TRA0 - transfer type
-    //  00 - self test of the controller
-    //  01 - reading from memory
-    //  10 - writing to memory
-    //  11 - invalid
-    // SEL0, SEL1 - channel to change
-    io_out_byte(DMA_MODE_REGISTER, 0x52 | (read ? 0x04 : 0x08));
-
-    // Release channel
-    io_out_byte(DMA_SINGLE_CHANNEL_MASK_REGISTER, 0x02);
 }
 
 void floppy_wait_for_interrupt()

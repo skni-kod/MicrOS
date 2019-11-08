@@ -49,20 +49,20 @@ double strtod(const char *str, char **endptr)
     -> set errno error in case of overflow (how to detect it..?)
     -> return 0.0 if cannot convert 
     */
-    double base_number = _atod(&str);
+    double base_number = _atod((char **)&str);
     double exp_number = 0;
 
     // scientific notation
     if (*str == 'e' || *str == 'E')
     {
         ++str;
-        exp_number = _atod(&str);
+        exp_number = _atod((char **)&str);
 
         base_number *= pow(10, exp_number);
     }
 
     if (endptr != NULL)
-        *endptr = str;
+        *endptr = (char *)str;
 
     return base_number;
 }

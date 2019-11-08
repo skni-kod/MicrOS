@@ -37,7 +37,7 @@ unsigned char get_RTC_register(int reg)
 
 void rtc_read(rtc_time *time)
 {
-      unsigned char century;
+      unsigned char century = 0;
       unsigned char last_second;
       unsigned char last_minute;
       unsigned char last_hour;
@@ -307,7 +307,7 @@ uint8_t rtc_read_month()
 
 uint32_t rtc_read_year()
 {
-      unsigned char century;
+      unsigned char century = 0;
       unsigned char last_century;
       unsigned char last_year;
       uint32_t year;

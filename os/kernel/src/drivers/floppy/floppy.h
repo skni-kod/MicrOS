@@ -1,18 +1,10 @@
 #ifndef FLOPPY_H
 #define FLOPPY_H
 
-#define DMA_ADDRESS 0xc0000500
 #define FLOPPY_HEADER_DATA 0xc0007c00
 
 #define DEVICE_NUMBER 0
 #define IDLE_TIME 3000
-
-#define DMA_SINGLE_CHANNEL_MASK_REGISTER 0x0A
-#define DMA_FLIP_FLOP_RESET_REGISTER 0xD8
-#define DMA_START_ADDRESS_REGISTER 0x04
-#define DMA_COUNT_REGISTER_CHANNEL 0x05
-#define DMA_EXTERNAL_PAGE_REGISTER 0x81
-#define DMA_MODE_REGISTER 0x0B
 
 #define FLOPPY_DIGITAL_OUTPUT_REGISTER 0x3f2
 #define FLOPPY_MAIN_STAUTS_REGISTER 0x3f4
@@ -29,6 +21,7 @@
 #include <string.h>
 #include "logger/logger.h"
 #include "cpu/timer/timer.h"
+#include "cpu/dma/dma.h"
 #include <ktime.h>
 
 bool floppy_init();
@@ -46,8 +39,6 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
 void floppy_enable_motor();
 void floppy_disable_motor();
 bool floppy_seek(uint8_t cylinder, uint8_t head);
-
-void floppy_dma_init(bool read);
 
 void floppy_wait_for_interrupt();
 void floppy_interrupt();

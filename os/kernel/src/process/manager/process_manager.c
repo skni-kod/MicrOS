@@ -383,7 +383,7 @@ void process_manager_set_active_process_id(uint32_t process_id)
     active_process_id = process_id;    
 }
 
-void process_manager_get_active_process_id(uint32_t process_id)
+uint32_t process_manager_get_active_process_id(uint32_t process_id)
 {
     return active_process_id;
 }

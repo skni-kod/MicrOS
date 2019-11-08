@@ -24,6 +24,7 @@
 #include "cpu/tss/tss.h"
 #include "drivers/dal/videocard/videocard.h"
 #include "drivers/vga/genericvga.h"
+#include "cpu/dma/dma.h"
 #include "drivers/harddisk/harddisk.h"
 #include "drivers/harddisk/ata/harddisk_ata.h"
 #include "drivers/harddisk/harddisk_identify_device_data.h"
@@ -181,6 +182,9 @@ void startup()
 
     timer_init();
     logger_log_ok("Timer");
+    
+    dma_init(0xc0000500);
+    logger_log_ok("DMA");
 
     floppy_init();
     logger_log_ok("Floppy");
