@@ -16,7 +16,7 @@ DEPS := $(C_OBJECTS:.o=.d)
 GCC_COMPILE_FLAGS := -I../../library/src -ffreestanding -Wall -Wextra -Wno-unused-parameter -Wno-packed-bitfield-compat
 GCC_LINK_FLAGS := -L../../Library/bin -lc -lgcc -nostdlib
 
-ifneq ($(MODE),release)
+ifeq ($(MODE),release)
 GCC_COMPILE_FLAGS += -O2
 GCC_LINK_FLAGS += -s -DNDEBUG
 else
