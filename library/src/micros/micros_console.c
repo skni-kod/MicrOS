@@ -33,9 +33,9 @@ void micros_console_set_cursor_position(micros_console_position *position)
     micros_interrupt_2a(0x13, position->x, position->y);
 }
 
-void micros_console_get_cursor_position(micros_console_position *micros_console_position)
+void micros_console_get_cursor_position(micros_console_position *position)
 {
-    micros_interrupt_1a(0x14, (uint32_t)micros_console_position);
+    micros_interrupt_1a(0x14, (uint32_t)position);
 }
 
 void micros_console_clear()
