@@ -28,8 +28,8 @@ MaxRootDirectoryEntries         dw 0x00E0
 TotalLogicalSectors             dw 0x0B40
 MediaDescriptor                 db 0xF0
 LogicalSectorsPerFAT            dw 0x0009
-PhysicalSectorsPerTrack         dw 0x0012
-Heads                           dw 0x0002
+PhysicalSectorsPerTrack         dw 0x0000
+Heads                           dw 0x0000
 HiddenSectors                   dd 0x00000000
 TotalLogicalAndHiddenSectors    dd 0x00000000
 PhysicalDriveNumber             db 0x00
@@ -41,6 +41,16 @@ FileSystemType                  db 'FAT12   '       ; 8 chars
 
 KernelFileName                  db 'KERNEL  BIN'    ; 11 chars
 NonDataSectors                  dw 0x0000
+
+HddData:
+HddResultBufferSize             dw  1Eh
+HddInformationFlags             dw  0
+HddPhysicalNumberOfCylylinders  dd  0
+HddPhysicalNumberOfHeads        dd  0
+HddPhysicalNumberOfSectors      dd  0
+HddTotalNumberOfSectors         dq  0
+HddBytesPerSector               dw  0
+HddPointerToEDD                 dd  0
 
 ; Entry point of bootloader
 Main:
@@ -70,6 +80,16 @@ Main:
 
     ; Save device number (DL register) to memory
     mov [INT13Scratchpad], dl
+    
+    ; Load data about HDD and update FAT12 structure
+    mov ah, 48h
+    mov si, HddData
+    int 13h
+    
+    mov ax, [HddPhysicalNumberOfHeads]
+    mov [Heads], ax
+    mov ax, [HddPhysicalNumberOfSectors]
+    mov [PhysicalSectorsPerTrack], ax
 
     ; Save non data sectors count to memory
     call GetNonDataSectorsCount
