@@ -7,6 +7,7 @@
 #define IDLE_TIME 3000
 
 #define FLOPPY_DIGITAL_OUTPUT_REGISTER 0x3f2
+#define FLOPPY_DIGITAL_INPUT_REGISTER 0x3f7
 #define FLOPPY_MAIN_STAUTS_REGISTER 0x3f4
 #define FLOPPY_DATA_REGISTER 0x3f5
 #define FLOPPY_CONTROL_REGISTER 0x3f7
@@ -25,6 +26,8 @@
 #include <ktime.h>
 
 bool floppy_init();
+bool floppy_is_controller_present();
+bool floppy_is_inserted();
 void floppy_lba_to_chs(uint16_t lba, uint8_t *head, uint8_t *track, uint8_t *sector);
 bool floppy_reset();
 bool floppy_wait_until_ready();

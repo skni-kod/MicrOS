@@ -62,6 +62,20 @@ bool floppy_init()
     return true;
 }
 
+bool floppy_is_controller_present()
+{
+    uint8_t NMI_bit = io_in_byte(112) & 0x80;
+    io_out_byte(112, 0x10 | NMI_bit);
+    
+    return io_in_byte(113) != 0;
+}
+
+bool floppy_is_inserted()
+{
+    floppy_enable_motor();
+    return (io_in_byte(FLOPPY_DIGITAL_INPUT_REGISTER) & 0x80) == 0;
+}
+
 void floppy_lba_to_chs(uint16_t lba, uint8_t *head, uint8_t *track, uint8_t *sector)
 {
     *head = (lba % ((*floppy_header_data).sectors_per_track * 2)) / (*floppy_header_data).sectors_per_track;
