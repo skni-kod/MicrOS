@@ -25,6 +25,7 @@
 #include "cpu/dma/dma.h"
 #include <ktime.h>
 
+bool fdc_init();
 bool floppy_init();
 bool floppy_is_controller_present();
 bool floppy_is_inserted();
@@ -43,7 +44,7 @@ void floppy_enable_motor();
 void floppy_disable_motor();
 bool floppy_seek(uint8_t cylinder, uint8_t head);
 
-void floppy_wait_for_interrupt();
+bool floppy_wait_for_interrupt();
 void floppy_interrupt();
 void floppy_timer_interrupt();
 

@@ -186,8 +186,11 @@ void startup()
     dma_init(0xc0000500);
     logger_log_ok("DMA");
 
-    floppy_init();
-    logger_log_ok("Floppy");
+    if(floppy_is_controller_present())
+    {
+        fdc_init();
+        logger_log_ok("Floppy Disc Controller");
+    }
     
     harddisk_init();
     logger_log_ok("Hard Disks");
@@ -256,8 +259,8 @@ void startup()
     log_info(itoa(dev->class_code, buff, 16));
     log_info(itoa(dev->subclass, buff, 16));
     log_info(itoa(dev->prog_if, buff, 16));*/
-    fat_init();
-    logger_log_ok("FAT12");
+    //fat_init();
+    //logger_log_ok("FAT12");
 
     process_manager_init();
     logger_log_ok("Process manager");
@@ -287,7 +290,9 @@ int kmain()
     logger_log_info("Hello, World!");
     //startup_music_play();
     logger_log_ok("READY.");
-    /*
+    
+    while (1);
+    
     logger_log_ok("Loading tasks...");
     vga_clear_screen();
     process_manager_create_process("/ENV/SHELL.ELF", "", 1000, false);
@@ -296,7 +301,7 @@ int kmain()
 
     while (1);
     //    ;
-    char buff[50];
+    /*char buff[50];
     video_mode *currentMode;
     srand(clock());
     char shouldDrawLines = 0;
