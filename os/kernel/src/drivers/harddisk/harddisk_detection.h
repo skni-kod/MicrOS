@@ -4,8 +4,8 @@
 
 #include "assembly/io.h"
 #include "harddisk_header.h"
-#include "ata/harddisk_ata.h "
-#include "atapi/harddisk_atapi.h "
+#include "ata/harddisk_ata.h"
+#include "atapi/harddisk_atapi.h"
 
 //! Check hard disk presence in computer.
 /*!

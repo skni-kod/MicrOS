@@ -7,7 +7,7 @@
 #include "process_user_info.h"
 #include "cpu/paging/paging.h"
 #include "process/elf/parser/elf_header.h"
-#include "process/elf/Loader/elf_loader.h"
+#include "process/elf/loader/elf_loader.h"
 #include "filesystems/fat/fat.h"
 #include "assembly/io.h"
 #include "cpu/idt/idt.h"
