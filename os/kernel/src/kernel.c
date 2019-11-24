@@ -28,6 +28,7 @@
 #include "drivers/harddisk/harddisk.h"
 #include "drivers/harddisk/ata/harddisk_ata.h"
 #include "drivers/harddisk/harddisk_identify_device_data.h"
+#include "filesystems/partitions/partitions.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
@@ -186,7 +187,7 @@ void startup()
     dma_init(0xc0000500);
     logger_log_ok("DMA");
 
-    if(floppy_is_controller_present())
+    if(fdc_is_present())
     {
         fdc_init();
         logger_log_ok("Floppy Disc Controller");
@@ -195,6 +196,9 @@ void startup()
     harddisk_init();
     logger_log_ok("Hard Disks");
     print_harddisks_status();
+    
+    partitions_init();
+    logger_log_ok("Partitions");
 
     keyboard_init();
     logger_log_ok("Keyboard");
@@ -291,11 +295,11 @@ int kmain()
     //startup_music_play();
     logger_log_ok("READY.");
     
-    while (1);
+    //while (1);
     
     logger_log_ok("Loading tasks...");
     vga_clear_screen();
-    process_manager_create_process("/ENV/SHELL.ELF", "", 1000, false);
+    process_manager_create_process("A:/ENV/SHELL.ELF", "", 1000, false);
 
     process_manager_run();
 
