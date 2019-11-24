@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 int micros_partitions_get_count();
+void micros_partitions_get_symbols(char *symbols_array);
 
 #ifdef __cplusplus
 }

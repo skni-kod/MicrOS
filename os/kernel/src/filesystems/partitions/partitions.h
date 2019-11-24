@@ -9,5 +9,6 @@
 void partitions_init();
 partition *partitions_get(char *path);
 int partitions_get_count();
+void partitions_get_symbols(char *symbol_array);
 
 #endif

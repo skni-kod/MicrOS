@@ -40,3 +40,12 @@ int partitions_get_count()
 {
     return partitions.count;
 }
+
+void partitions_get_symbols(char *symbol_array)
+{
+    for (int i = 0; i < partitions.count; i++)
+    {
+        partition *partition_to_check = partitions.data[i];
+        symbol_array[i] = partition_to_check->symbol;
+    }
+}
