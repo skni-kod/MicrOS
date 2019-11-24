@@ -11,7 +11,7 @@
 #include "Drivers/Floppy/floppy.h"
 #include "FileSystems/generic/filesystem_file_info.h"
 #include "FileSystems/generic/filesystem_directory_info.h"
-#include "filesystems/partition.h"
+#include "filesystems/partitions/partition.h"
 
 void fat_init();
 void fat_load_fat();

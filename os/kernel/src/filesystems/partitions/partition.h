@@ -2,6 +2,7 @@
 #define PARTITION_H
 
 #include "filesystem_type.h"
+#include "device_type.h"
 
 typedef struct partition
 {
@@ -9,6 +10,9 @@ typedef struct partition
     
     filesystem_type type;
     floppy_header *header;
+    
+    device_type device_type;
+    int device_number;
     
     floppy_header *fat_header_data;
     uint8_t *fat;
