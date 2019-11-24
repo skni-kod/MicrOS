@@ -8,5 +8,6 @@
 
 void partitions_init();
 partition *partitions_get(char *path);
+int partitions_get_count();
 
 #endif

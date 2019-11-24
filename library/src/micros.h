@@ -10,5 +10,6 @@
 #include "MicrOS/micros_process.h"
 #include "MicrOS/micros_memory.h"
 #include "MicrOS/micros_keyboard.h"
+#include "micros/micros_partitions.h"
 
 #endif

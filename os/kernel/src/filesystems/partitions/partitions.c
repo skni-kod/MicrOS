@@ -35,3 +35,8 @@ partition *partitions_get(char *path)
     
     return 0;
 }
+
+int partitions_get_count()
+{
+    return partitions.count;
+}
