@@ -27,7 +27,7 @@
 
 bool fdc_init();
 bool floppy_init();
-bool floppy_is_controller_present();
+bool fdc_is_present();
 bool floppy_is_inserted();
 void floppy_lba_to_chs(uint16_t lba, uint8_t *head, uint8_t *track, uint8_t *sector);
 bool floppy_reset();

@@ -11,6 +11,7 @@
 #include "Drivers/Floppy/floppy.h"
 #include "FileSystems/generic/filesystem_file_info.h"
 #include "FileSystems/generic/filesystem_directory_info.h"
+#include "filesystems/partition.h"
 
 void fat_init();
 void fat_load_fat();
@@ -52,6 +53,7 @@ void fat_merge_filename_and_extension(fat_directory_entry *entry, char *buffer);
 uint32_t fat_get_free_sector_index();
 
 // Generic filesystem functions
+void fat_generic_set_current_partition(partition *partition);
 bool fat_generic_get_file_info(char *path, filesystem_file_info *generic_file_info);
 bool fat_generic_get_file_info(char *path, filesystem_file_info *generic_file_info);
 bool fat_generic_get_directory_info(char *path, filesystem_directory_info *generic_directory_info);

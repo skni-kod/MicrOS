@@ -61,7 +61,7 @@ bool floppy_init()
     return true;
 }
 
-bool floppy_is_controller_present()
+bool fdc_is_present()
 {
     uint8_t NMI_bit = io_in_byte(112) & 0x80;
     io_out_byte(112, 0x10 | NMI_bit);

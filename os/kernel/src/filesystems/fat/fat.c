@@ -1,5 +1,6 @@
 #include "fat.h"
 
+volatile partition *current_partition;
 volatile floppy_header *fat_header_data = (floppy_header *)FLOPPY_HEADER_DATA;
 volatile uint8_t *fat;
 volatile fat_directory_entry *root;
@@ -955,6 +956,11 @@ void fat_merge_filename_and_extension(fat_directory_entry *entry, char *buffer)
 }
 
 // Generic filesystem functions
+void fat_generic_set_current_partition(partition *partition)
+{
+    current_partition = partition;
+}
+
 bool fat_generic_get_file_info(char *path, filesystem_file_info *generic_file_info)
 {
     fat_directory_entry *fat_file_info = fat_get_info_from_path(path, false);
