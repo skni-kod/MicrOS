@@ -4,6 +4,9 @@
 #include <string.h>
 
 char current_dir[64];
+int partitions_count;
+char partition_symbols[16];
+char current_partition_symbol;
 
 void execute_cd(const char *str);
 void execute_app(const char *str);
@@ -17,6 +20,11 @@ int main(int argc, char *argv[])
     micros_process_set_current_process_name("SHELL");
     current_dir[0] = '/';
     current_dir[1] = 0;
+    
+    partitions_count = micros_partitions_get_count();
+    micros_partitions_get_symbols(partition_symbols);
+    
+    current_partition_symbol = argv[0][0];
     
     while(1)
     {
@@ -32,7 +40,7 @@ int main(int argc, char *argv[])
             printf("Type path to execute an application\n");
         }
         
-        printf(" %s> ", current_dir);
+        printf(" %c:%s> ", current_partition_symbol, current_dir);
         gets(path);
         
         path[strlen(path) - 1] = 0;
@@ -59,6 +67,7 @@ void execute_cd(const char *str)
     
     char *parameter = (char *)str + 3;
     char path_to_switch[64];
+    char path_to_switch_with_partition_symbol[64];
     
     if(parameter[0] == '/')
     {
@@ -72,10 +81,12 @@ void execute_cd(const char *str)
     else
     {
         sprintf(path_to_switch, "%s/%s", current_dir, parameter);
+        sprintf(path_to_switch_with_partition_symbol, "%c:%s/%s", current_partition_symbol, current_dir, parameter);
     }
     reduce_slashes(path_to_switch);
+    reduce_slashes(path_to_switch_with_partition_symbol);
     
-    if((path_to_switch[0] == '/' && path_to_switch[1] == 0) || micros_filesystem_directory_exists(path_to_switch))
+    if((path_to_switch[0] == '/' && path_to_switch[1] == 0) || micros_filesystem_directory_exists(path_to_switch_with_partition_symbol))
     {
         memcpy(current_dir, path_to_switch, sizeof(path_to_switch));
     }
@@ -96,11 +107,11 @@ void execute_app(const char *str)
     capitalize_string(path);
     
     char path_variations[5][64];
-    memcpy(path_variations[0], path, path_length);
-    sprintf(path_variations[1], "%s/%s", current_dir, path);
-    sprintf(path_variations[2], "%s/%s.ELF", current_dir, path);
-    sprintf(path_variations[3], "/ENV/%s", path);
-    sprintf(path_variations[4], "/ENV/%s.ELF", path);
+    sprintf(path_variations[0], "%c:%s", current_partition_symbol, path);
+    sprintf(path_variations[1], "%c:%s/%s", current_partition_symbol, current_dir, path);
+    sprintf(path_variations[2], "%c:%s/%s.ELF", current_partition_symbol, current_dir, path);
+    sprintf(path_variations[3], "%c:/ENV/%s", current_partition_symbol, path);
+    sprintf(path_variations[4], "%c:/ENV/%s.ELF", current_partition_symbol, path);
    
     for (int i = 0; i < 5; i++)
     {
@@ -108,7 +119,7 @@ void execute_app(const char *str)
         if(micros_filesystem_file_exists(path_variations[i]))
         {
             char args_with_current_dir[64];
-            sprintf(args_with_current_dir, "%s %s", current_dir, args);
+            sprintf(args_with_current_dir, "%c:%s %s", current_partition_symbol, current_dir, args);
             
             if(args_with_current_dir[strlen(args_with_current_dir) - 1] == ' ')
             {
