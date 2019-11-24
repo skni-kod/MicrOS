@@ -1,61 +1,55 @@
 #include "fat.h"
 
 volatile partition *current_partition;
-volatile floppy_header *fat_header_data = (floppy_header *)FLOPPY_HEADER_DATA;
-volatile uint8_t *fat;
-volatile fat_directory_entry *root;
-
-uint32_t fat_length;
-uint32_t directory_length;
 
 void fat_init()
 {
-    fat_length = fat_header_data->bytes_per_sector * fat_header_data->sectors_per_fat;
-    fat = heap_kernel_alloc(fat_length, 0);
+    current_partition->fat_length = current_partition->header->bytes_per_sector * current_partition->header->sectors_per_fat;
+    current_partition->fat = heap_kernel_alloc(current_partition->fat_length, 0);
     fat_load_fat();
 
-    directory_length = fat_header_data->directory_entries * 32;
-    root = heap_kernel_alloc(directory_length, 0);
+    current_partition->directory_length = current_partition->header->directory_entries * 32;
+    current_partition->root = heap_kernel_alloc(current_partition->directory_length, 0);
     fat_load_root();
 }
 
 void fat_load_fat()
 {
-    for (int i = 1; i < fat_header_data->sectors_per_fat; i++)
+    for (int i = 1; i < current_partition->header->sectors_per_fat; i++)
     {
         uint8_t *buffer = floppy_read_sector(i);
-        memcpy((void *)((uint32_t)fat + ((i - 1) * 512)), buffer, 512);
+        memcpy((void *)((uint32_t)current_partition->fat + ((i - 1) * 512)), buffer, 512);
     }
 }
 
 void fat_save_fat()
 {
-    for (int i = 1; i < fat_header_data->sectors_per_fat; i++)
+    for (int i = 1; i < current_partition->header->sectors_per_fat; i++)
     {
-        floppy_write_sector(i, (uint8_t *)((uint32_t)fat + ((i - 1) * 512)));
+        floppy_write_sector(i, (uint8_t *)((uint32_t)current_partition->fat + ((i - 1) * 512)));
     }
 }
 
 void fat_load_root()
 {
-    uint8_t root_first_sector = 1 + (fat_header_data->sectors_per_fat * 2);
-    uint8_t root_sectors_count = (fat_header_data->directory_entries * 32) / fat_header_data->bytes_per_sector;
+    uint8_t root_first_sector = 1 + (current_partition->header->sectors_per_fat * 2);
+    uint8_t root_sectors_count = (current_partition->header->directory_entries * 32) / current_partition->header->bytes_per_sector;
 
     for (int i = root_first_sector; i < root_first_sector + root_sectors_count; i++)
     {
         uint8_t *buffer = floppy_read_sector(i);
-        memcpy((void *)((uint32_t)root + ((i - root_first_sector) * 512)), buffer, 512);
+        memcpy((void *)((uint32_t)current_partition->root + ((i - root_first_sector) * 512)), buffer, 512);
     }
 }
 
 void fat_save_root()
 {
-    uint8_t root_first_sector = 1 + (fat_header_data->sectors_per_fat * 2);
-    uint8_t root_sectors_count = (fat_header_data->directory_entries * 32) / fat_header_data->bytes_per_sector;
+    uint8_t root_first_sector = 1 + (current_partition->header->sectors_per_fat * 2);
+    uint8_t root_sectors_count = (current_partition->header->directory_entries * 32) / current_partition->header->bytes_per_sector;
 
     for (int i = root_first_sector; i < root_first_sector + root_sectors_count; i++)
     {
-        floppy_write_sector(i, (uint8_t *)((uint32_t)root + ((i - root_first_sector) * 512)));
+        floppy_write_sector(i, (uint8_t *)((uint32_t)current_partition->root + ((i - root_first_sector) * 512)));
     }
 }
 
@@ -66,15 +60,15 @@ uint16_t fat_read_sector_value(uint32_t sector_number)
 
     if (sector_number % 2 == 0)
     {
-        high_byte = *(fat + (uint32_t)(sector_number * 1.5f + 1)) & 0x0F;
-        low_byte = *(fat + (uint32_t)(sector_number * 1.5f));
+        high_byte = *(current_partition->fat + (uint32_t)(sector_number * 1.5f + 1)) & 0x0F;
+        low_byte = *(current_partition->fat + (uint32_t)(sector_number * 1.5f));
 
         return high_byte << 8 | low_byte;
     }
     else
     {
-        high_byte = *(fat + (uint32_t)(((sector_number - 1) * 1.5f) + 2));
-        low_byte = *(fat + (uint32_t)((sector_number - 1) * 1.5f) + 1) & 0xF0;
+        high_byte = *(current_partition->fat + (uint32_t)(((sector_number - 1) * 1.5f) + 2));
+        low_byte = *(current_partition->fat + (uint32_t)((sector_number - 1) * 1.5f) + 1) & 0xF0;
 
         return high_byte << 4 | low_byte >> 4;
     }
@@ -87,21 +81,21 @@ void fat_save_sector_value(uint32_t sector_number, uint16_t value)
 
     if (sector_number % 2 == 0)
     {
-        high_byte = *(fat + (uint32_t)(sector_number * 1.5f + 1)) & 0xF0;
+        high_byte = *(current_partition->fat + (uint32_t)(sector_number * 1.5f + 1)) & 0xF0;
         high_byte |= (value >> 8) & 0x0F;
         low_byte = value & 0xFF;
         
-        *(fat + (uint32_t)(sector_number * 1.5f + 1)) = high_byte;
-        *(fat + (uint32_t)(sector_number * 1.5f)) = low_byte;
+        *(current_partition->fat + (uint32_t)(sector_number * 1.5f + 1)) = high_byte;
+        *(current_partition->fat + (uint32_t)(sector_number * 1.5f)) = low_byte;
     }
     else
     {
         high_byte = (value >> 4) & 0xFF;
-        low_byte = *(fat + (uint32_t)((sector_number - 1) * 1.5f) + 1) & 0x0F;
+        low_byte = *(current_partition->fat + (uint32_t)((sector_number - 1) * 1.5f) + 1) & 0x0F;
         low_byte |= (value << 4) & 0xF0;
         
-        *(fat + (uint32_t)(((sector_number - 1) * 1.5f) + 2)) = high_byte;
-        *(fat + (uint32_t)((sector_number - 1) * 1.5f) + 1) = low_byte;
+        *(current_partition->fat + (uint32_t)(((sector_number - 1) * 1.5f) + 2)) = high_byte;
+        *(current_partition->fat + (uint32_t)((sector_number - 1) * 1.5f) + 1) = low_byte;
     }
 }
 
@@ -341,7 +335,7 @@ bool fat_delete_file_from_path(char* path, bool is_directory)
         }
         else
         {
-            memcpy((void *)root, directory, directory_length);
+            memcpy((void *)current_partition->root, directory, current_partition->directory_length);
             fat_save_root();
         }
         
@@ -409,7 +403,7 @@ bool fat_rename_file_from_path(char* path, char* new_name, bool is_directory)
         }
         else
         {
-            memcpy((void *)root, directory, directory_length);
+            memcpy((void *)current_partition->root, directory, current_partition->directory_length);
             fat_save_root();
         }  
     }
@@ -478,7 +472,7 @@ bool fat_save_file_from_path(char* path, char* buffer, uint32_t size)
         }
         else
         {
-            memcpy((void *)root, directory, directory_length);
+            memcpy((void *)current_partition->root, directory, current_partition->directory_length);
             fat_save_root();
         }  
     }
@@ -553,7 +547,7 @@ bool fat_append_file_from_path(char* path, char* buffer, uint32_t size)
         }
         else
         {
-            memcpy((void *)root, directory, directory_length);
+            memcpy((void *)current_partition->root, directory, current_partition->directory_length);
             fat_save_root();
         }  
     }
@@ -643,7 +637,7 @@ bool fat_create_file_from_path(char* path, bool is_directory)
         }
         else
         {
-            memcpy((void *)root, directory, directory_length);
+            memcpy((void *)current_partition->root, directory, current_partition->directory_length);
             fat_save_root();
         }
         
@@ -674,14 +668,14 @@ fat_directory_entry *fat_get_directory_from_path(char *path, uint32_t *read_sect
 
 fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks, uint32_t *read_sectors, bool *root_dir)
 {
-    fat_directory_entry *current_directory = heap_kernel_alloc(directory_length, 0);
-    memcpy(current_directory, (void *)root, directory_length);
+    fat_directory_entry *current_directory = heap_kernel_alloc(current_partition->directory_length, 0);
+    memcpy(current_directory, (void *)current_partition->root, current_partition->directory_length);
 
     fat_directory_entry *result = NULL;
 
     if (chunks->count == 0)
     {
-        *read_sectors = (fat_header_data->directory_entries * 32) / fat_header_data->bytes_per_sector;
+        *read_sectors = (current_partition->header->directory_entries * 32) / current_partition->header->bytes_per_sector;
         *root_dir = true;
         
         return current_directory;
@@ -690,7 +684,7 @@ fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks, uint32_t *re
 
     fat_directory_entry *current_file_ptr = current_directory;
     uint32_t current_chunk_index = 0;
-    uint32_t items_count = fat_header_data->directory_entries;
+    uint32_t items_count = current_partition->header->directory_entries;
 
     for (uint32_t i = 0; i < items_count; i++)
     {
@@ -986,7 +980,7 @@ bool fat_generic_get_file_info(char *path, filesystem_file_info *generic_file_in
 
 uint32_t fat_get_free_sector_index()
 {
-    for(int i=0; i<fat_header_data->total_sectors; i++)
+    for(int i=0; i<current_partition->header->total_sectors; i++)
     {
         if(fat_read_sector_value(i) == 0)
         {
@@ -1058,7 +1052,7 @@ bool fat_generic_is_directory(char *path)
 uint32_t fat_generic_get_free_space()
 {
     uint32_t free_sectors = 0;
-    for(int i = 0; i < fat_header_data->total_sectors; i++)
+    for(int i = 0; i < current_partition->header->total_sectors; i++)
     {
         uint32_t sector = fat_read_sector_value(i);
         if(sector == 0)
@@ -1067,12 +1061,12 @@ uint32_t fat_generic_get_free_space()
         }
     }
     
-    return free_sectors * fat_header_data->bytes_per_sector;
+    return free_sectors * current_partition->header->bytes_per_sector;
 }
 
 uint32_t fat_generic_get_total_space()
 {
-    return fat_header_data->total_sectors * fat_header_data->bytes_per_sector;
+    return current_partition->header->total_sectors * current_partition->header->bytes_per_sector;
 }
 
 
