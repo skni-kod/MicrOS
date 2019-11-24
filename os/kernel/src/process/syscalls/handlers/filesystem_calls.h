@@ -1,9 +1,9 @@
 #ifndef FILESYSTEM_CALLS_H
 #define FILESYSTEM_CALLS_H
 
-#include "fileSystems/filesystem.h"
-#include "FileSystems/generic/filesystem_file_info.h"
-#include "FileSystems/generic/filesystem_directory_info.h"
+#include "filesystems/filesystem.h"
+#include "filesystems/generic/filesystem_file_info.h"
+#include "filesystems/generic/filesystem_directory_info.h"
 #include "memory/heap/heap.h"
 
 void syscall_filesystem_get_file_info(interrupt_state *state);

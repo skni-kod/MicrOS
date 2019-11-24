@@ -14,10 +14,10 @@
 #include "cpu/paging/paging.h"
 #include "memory/map/memory_map.h"
 #include "memory/physical/physical_memory_manager.h"
-#include "fileSystems/filesystem.h"
+#include "filesystems/filesystem.h"
 #include "cpu/panic/panic_screen.h"
 #include "process/elf/parser/elf_parser.h"
-#include "process/elf/Loader/elf_loader.h"
+#include "process/elf/loader/elf_loader.h"
 #include "process/manager/process_manager.h"
 #include "process/syscalls/syscalls_manager.h"
 #include "process/signals/signals_manager.h"
@@ -59,22 +59,22 @@ void print_harddisk_details(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYP
 
     if(state == HARDDISK_ATA_PRESENT)
     {
-        strcpy(buff2, name);        
+        strcpy(buff2, name);
         strcat(buff2, ": ATA device");
         logger_log_info(buff2);
 
         harddisk_get_disk_model_number_terminated(type, bus, buff);
-        strcpy(buff2, "Model name: ");        
+        strcpy(buff2, "Model name: ");
         strcat(buff2, buff);
         logger_log_info(buff2);
 
         harddisk_get_disk_firmware_version_terminated(type, bus, buff);
-        strcpy(buff2, "Firmware version: ");        
+        strcpy(buff2, "Firmware version: ");
         strcat(buff2, buff);
         logger_log_info(buff2);
 
         harddisk_get_disk_serial_number_terminated(type, bus, buff);
-        strcpy(buff2, "Serial number: ");        
+        strcpy(buff2, "Serial number: ");
         strcat(buff2, buff);
         logger_log_info(buff2);
 
@@ -100,22 +100,22 @@ void print_harddisk_details(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYP
     }
     else if(state == HARDDISK_ATAPI_PRESENT)
     {
-        strcpy(buff2, name);        
+        strcpy(buff2, name);
         strcat(buff2, ": ATAPI device");
         logger_log_info(buff2);
 
         harddisk_get_disk_model_number_terminated(type, bus, buff);
-        strcpy(buff2, "Model name: ");        
+        strcpy(buff2, "Model name: ");
         strcat(buff2, buff);
         logger_log_info(buff2);
 
         harddisk_get_disk_firmware_version_terminated(type, bus, buff);
-        strcpy(buff2, "Firmware version: ");        
+        strcpy(buff2, "Firmware version: ");
         strcat(buff2, buff);
         logger_log_info(buff2);
 
         harddisk_get_disk_serial_number_terminated(type, bus, buff);
-        strcpy(buff2, "Serial number: ");        
+        strcpy(buff2, "Serial number: ");
         strcat(buff2, buff);
         logger_log_info(buff2);
 
@@ -130,16 +130,16 @@ void print_harddisk_details(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYP
     }
     else if(state == HARDDISK_NOT_PRESENT)
     {
-        strcpy(buff2, name);        
+        strcpy(buff2, name);
         strcat(buff2, ": not detected");
         logger_log_info(buff2);
     }
     else
     {
-        strcpy(buff2, name);        
+        strcpy(buff2, name);
         strcat(buff2, ": error or not supported device");
         logger_log_info(buff2);
-    }    
+    }
 }
 
 //! Prints hard disks details.
@@ -183,7 +183,7 @@ void startup()
 
     timer_init();
     logger_log_ok("Timer");
-    
+
     dma_init(0xc0000500);
     logger_log_ok("DMA");
 

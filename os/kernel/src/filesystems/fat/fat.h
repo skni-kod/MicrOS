@@ -7,10 +7,10 @@
 #include <kvector.h>
 #include "fat_directory_entry.h"
 #include "drivers/rtc/rtc.h"
-#include "Drivers/Floppy/floppy_header.h"
-#include "Drivers/Floppy/floppy.h"
-#include "FileSystems/generic/filesystem_file_info.h"
-#include "FileSystems/generic/filesystem_directory_info.h"
+#include "drivers/floppy/floppy_header.h"
+#include "drivers/floppy/floppy.h"
+#include "filesystems/generic/filesystem_file_info.h"
+#include "filesystems/generic/filesystem_directory_info.h"
 #include "filesystems/partitions/partition.h"
 
 void fat_init();

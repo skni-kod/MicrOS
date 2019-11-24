@@ -1,5 +1,5 @@
 GCC := /opt/cross/bin/i386-elf-gcc
-NASM := "../../Tools/nasm"
+NASM := "../../tools/nasm"
 
 SRC_DIR := src
 OBJ_DIR := obj

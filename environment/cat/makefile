@@ -14,7 +14,7 @@ ASM_OBJECTS := $(ASM_SOUCES:%.asm=$(OBJ_DIR)/%.o)
 DEPS := $(C_OBJECTS:.o=.d)
 
 GCC_COMPILE_FLAGS := -I../../library/src -ffreestanding -Wall -Wextra -Wno-unused-parameter -Wno-packed-bitfield-compat
-GCC_LINK_FLAGS := -L../../Library/bin -lc -lgcc -nostdlib
+GCC_LINK_FLAGS := -L../../library/bin -lc -lgcc -nostdlib
 
 ifeq ($(MODE),release)
 GCC_COMPILE_FLAGS += -O2
