@@ -1,6 +1,6 @@
 #include "floppy.h"
 
-volatile floppy_header *floppy_header_data = (floppy_header *)FLOPPY_HEADER_DATA;
+volatile uint32_t floppy_sectors_per_track;
 volatile uint32_t time_of_last_activity = 0;
 volatile bool motor_enabled = false;
 
@@ -39,8 +39,9 @@ bool fdc_init()
     }
 }
 
-bool floppy_init()
+bool floppy_init(int sectors_per_track)
 {
+    floppy_sectors_per_track = sectors_per_track;
     for (int i = 0; i < 10; i++)
     {
         if (!floppy_calibrate())
@@ -76,9 +77,9 @@ bool floppy_is_inserted()
 
 void floppy_lba_to_chs(uint16_t lba, uint8_t *head, uint8_t *track, uint8_t *sector)
 {
-    *head = (lba % ((*floppy_header_data).sectors_per_track * 2)) / (*floppy_header_data).sectors_per_track;
-    *track = lba / ((*floppy_header_data).sectors_per_track * 2);
-    *sector = lba % (*floppy_header_data).sectors_per_track + 1;
+    *head = (lba % (floppy_sectors_per_track * 2)) / floppy_sectors_per_track;
+    *track = lba / (floppy_sectors_per_track * 2);
+    *sector = lba % floppy_sectors_per_track + 1;
 }
 
 bool floppy_reset()
@@ -304,7 +305,7 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
         // Sector size (2 = 512)
         floppy_send_command(2);
 
-        uint8_t sectors_per_track = (*floppy_header_data).sectors_per_track;
+        uint8_t sectors_per_track = floppy_sectors_per_track;
 
         // Sectors per track
         floppy_send_command(((sector + 1) >= sectors_per_track) ? sectors_per_track : (sector + 1));

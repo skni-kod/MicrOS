@@ -1,8 +1,6 @@
 #ifndef FLOPPY_H
 #define FLOPPY_H
 
-#define FLOPPY_HEADER_DATA 0xc0007c00
-
 #define DEVICE_NUMBER 0
 #define IDLE_TIME 3000
 
@@ -14,7 +12,6 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "floppy_header.h"
 #include "cpu/pic/pic.h"
 #include "cpu/idt/idt.h"
 #include "assembly/io.h"
@@ -23,10 +20,11 @@
 #include "logger/logger.h"
 #include "cpu/timer/timer.h"
 #include "cpu/dma/dma.h"
+#include "filesystems/fat/fat_header.h"
 #include <ktime.h>
 
 bool fdc_init();
-bool floppy_init();
+bool floppy_init(int sectors_per_track);
 bool fdc_is_present();
 bool floppy_is_inserted();
 void floppy_lba_to_chs(uint16_t lba, uint8_t *head, uint8_t *track, uint8_t *sector);

@@ -9,14 +9,14 @@ typedef struct partition
     char symbol;
     
     filesystem_type type;
-    floppy_header *header;
+    fat_header *header;
     
     device_type device_type;
     int device_number;
     void (*write_on_device)(int device_number, int sector, char *data);
     uint8_t *(*read_from_device)(int device_number, int sector);
     
-    floppy_header *fat_header_data;
+    fat_header *fat_header_data;
     uint8_t *fat;
     fat_directory_entry *root;
 
