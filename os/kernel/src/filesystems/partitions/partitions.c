@@ -12,9 +12,13 @@ void partitions_init()
         floppy_partition->header = heap_kernel_alloc(512, 0);
         floppy_partition->device_type = device_type_floppy;
         floppy_partition->device_number = 0;
+        floppy_partition->write_on_device = floppy_write_sector;
+        floppy_partition->read_from_device = floppy_read_sector;
         
-        memcpy(floppy_partition->header, floppy_read_sector(0), 512);
+        memcpy(floppy_partition->header, floppy_read_sector(0, 0), 512);
         kvector_add(&partitions, floppy_partition);
+        
+        floppy_init();
         
         fat_generic_set_current_partition(floppy_partition);
         fat_init();

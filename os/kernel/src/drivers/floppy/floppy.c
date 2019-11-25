@@ -71,7 +71,7 @@ bool fdc_is_present()
 
 bool floppy_is_inserted()
 {
-    return floppy_reset() && floppy_seek(0, 0) && floppy_read_sector(1);
+    return floppy_reset() && floppy_seek(0, 0) && floppy_read_sector(0, 1);
 }
 
 void floppy_lba_to_chs(uint16_t lba, uint8_t *head, uint8_t *track, uint8_t *sector)
@@ -250,7 +250,7 @@ void floppy_disable_motor()
     }
 }
 
-uint8_t *floppy_read_sector(uint16_t sector)
+uint8_t *floppy_read_sector(int device_number, uint16_t sector)
 {
     uint8_t head, track, true_sector;
     floppy_lba_to_chs(sector, &head, &track, &true_sector);
@@ -258,7 +258,7 @@ uint8_t *floppy_read_sector(uint16_t sector)
     return floppy_do_operation_on_sector(head, track, true_sector, true);
 }
 
-void floppy_write_sector(uint16_t sector, uint8_t *content)
+void floppy_write_sector(int device_number, uint16_t sector, uint8_t *content)
 {
     uint8_t head, track, true_sector;
     floppy_lba_to_chs(sector, &head, &track, &true_sector);

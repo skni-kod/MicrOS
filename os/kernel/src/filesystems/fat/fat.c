@@ -17,7 +17,7 @@ void fat_load_fat()
 {
     for (int i = 1; i < current_partition->header->sectors_per_fat; i++)
     {
-        uint8_t *buffer = floppy_read_sector(i);
+        uint8_t *buffer = current_partition->read_from_device(current_partition->device_number, i);
         memcpy((void *)((uint32_t)current_partition->fat + ((i - 1) * 512)), buffer, 512);
     }
 }
@@ -26,7 +26,7 @@ void fat_save_fat()
 {
     for (int i = 1; i < current_partition->header->sectors_per_fat; i++)
     {
-        floppy_write_sector(i, (uint8_t *)((uint32_t)current_partition->fat + ((i - 1) * 512)));
+        current_partition->write_on_device(current_partition->device_number, i, (uint8_t *)((uint32_t)current_partition->fat + ((i - 1) * 512)));
     }
 }
 
@@ -37,7 +37,7 @@ void fat_load_root()
 
     for (int i = root_first_sector; i < root_first_sector + root_sectors_count; i++)
     {
-        uint8_t *buffer = floppy_read_sector(i);
+        uint8_t *buffer = current_partition->read_from_device(current_partition->device_number, i);
         memcpy((void *)((uint32_t)current_partition->root + ((i - root_first_sector) * 512)), buffer, 512);
     }
 }
@@ -49,7 +49,7 @@ void fat_save_root()
 
     for (int i = root_first_sector; i < root_first_sector + root_sectors_count; i++)
     {
-        floppy_write_sector(i, (uint8_t *)((uint32_t)current_partition->root + ((i - root_first_sector) * 512)));
+        current_partition->write_on_device(current_partition->device_number, i, (uint8_t *)((uint32_t)current_partition->root + ((i - root_first_sector) * 512)));
     }
 }
 
@@ -208,7 +208,7 @@ uint16_t fat_save_file_to_sector(uint16_t initial_sector, uint16_t sectors_count
     
     for(int i=0; i<sectors_count; i++)
     {
-        floppy_write_sector(sector + 31, (uint8_t *)(buffer + (i * 512)));
+        current_partition->write_on_device(current_partition->device_number, sector + 31, (uint8_t *)(buffer + (i * 512)));
         
         uint16_t next_sector = fat_read_sector_value(sector);
         if(next_sector == 0 || next_sector >= 0xFF0)
@@ -283,7 +283,7 @@ uint8_t *fat_read_file_from_sector(uint16_t initial_sector, uint16_t sector_offs
     {
         buffer = heap_kernel_realloc(buffer, 512 * (*read_sectors + 1), 0);
 
-        uint8_t *read_data = floppy_read_sector(sector + 31);
+        uint8_t *read_data = current_partition->read_from_device(current_partition->device_number, sector + 31);
         sector = fat_read_sector_value(sector);
 
         memcpy(buffer + (*read_sectors * 512), read_data, 512);
