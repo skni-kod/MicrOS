@@ -1,0 +1,3 @@
+language c:
+  scripts:
+    - ./travis_scripts/download_dependecies.sh
