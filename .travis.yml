@@ -2,7 +2,7 @@ language: c
 dist: bionic
 sudo: true
 before_install: 
-  - sudo apt-get update && sudo apt install -y nasm mtools curl build-essential libmpfr6
+  - sudo apt-get update && sudo apt install -y nasm mtools curl build-essential libmpfr6 libfl
 script:
   - source ./travis_scripts/download_dependecies.sh
   - ./configure.sh -w $TRAVIS_BUILD_DIR -t 1
