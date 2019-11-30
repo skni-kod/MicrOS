@@ -1,6 +1,6 @@
 language: c
 sudo: true
-install: nasm mtools curl build-essential
+install: apt install -y nasm mtools curl build-essential
 script:
   - source ./travis_scripts/download_dependecies.sh
   - source ./Scripts/configure.h -w $TRAVIS_BUILD_DIR -t 1
