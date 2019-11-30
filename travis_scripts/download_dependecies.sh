@@ -11,3 +11,4 @@ pwd
 echo $TRAVIS_BUILD_DIR
 export gcc_compiler=$(readlink -f ./gcc_cross)
 echo $gcc_compiler
+ls ./Scripts
