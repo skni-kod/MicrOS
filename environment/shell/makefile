@@ -1,10 +1,5 @@
 GCC := /opt/cross/bin/i386-elf-gcc
 
-ifeq ($(TRAVIS),"true")
-        GCC := $(gcc_compiler)/bin/i386-elf-gcc
-		AR := $(gcc_compiler)/bin/i386-elf-ar
-endif
-
 SRC_DIR := src
 OBJ_DIR := obj
 BIN_DIR := bin

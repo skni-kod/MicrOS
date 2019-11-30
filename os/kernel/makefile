@@ -1,9 +1,5 @@
 GCC := /opt/cross/bin/i386-elf-gcc
 OBJCOPY := /opt/cross/i386-elf/bin/objcopy
-ifeq ($(TRAVIS),"true")
-        GCC := $(gcc_compiler)/bin/i386-elf-gcc
-		OBJCOPY := $(gcc_compiler)/i386-elf/bin/objcopy
-endif
 NASM := "../../tools/nasm"
 
 SRC_DIR := src
