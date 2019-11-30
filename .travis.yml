@@ -2,3 +2,4 @@ language: c
 sudo: true
 script:
   - source ./travis_scripts/download_dependecies.sh
+  - source ./Scrips/configure.h -w $TRAVIS_BUILD_DIR -t 1
