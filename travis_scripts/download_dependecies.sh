@@ -9,3 +9,4 @@ ls
 rm i386-elf-4.9.1-Linux-x86_64.tar.xz
 pwd
 echo $TRAVIS_BUILD_DIR
+readlink -f ./gcc_cross

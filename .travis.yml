@@ -1,4 +1,4 @@
 language: c
 sudo: true
 script:
-  - bash ./travis_scripts/download_dependecies.sh
+  - source ./travis_scripts/download_dependecies.sh
