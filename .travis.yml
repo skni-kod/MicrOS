@@ -3,4 +3,4 @@ sudo: true
 before_install: sudo apt-get update && sudo apt install -y nasm mtools curl build-essential
 script:
   - source ./travis_scripts/download_dependecies.sh
-  - source ./Scripts/configure.h -w $TRAVIS_BUILD_DIR -t 1
+  - source ./Scripts/configure.sh -w $TRAVIS_BUILD_DIR -t 1
