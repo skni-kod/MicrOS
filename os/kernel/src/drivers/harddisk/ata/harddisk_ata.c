@@ -16,11 +16,11 @@ int8_t __harddisk_ata_read_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_B
     {
     case HARDDISK_ATA_MASTER:
         // For master set it to 0x40. Choose to use LBA.
-        message_to_drive.fields.chs_head_lba_block_number = 1;
+        message_to_drive.fields.uses_lba = 1;
         break;
     case HARDDISK_ATA_SLAVE:
         // For slave set it to 0x50. Choose to use LBA and drive 1.
-        message_to_drive.fields.chs_head_lba_block_number = 1;
+        message_to_drive.fields.uses_lba = 1;
         message_to_drive.fields.drive_number = 1;
         break;
     default:
@@ -80,11 +80,11 @@ int8_t __harddisk_ata_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_
     {
     case HARDDISK_ATA_MASTER:
         // For master set it to 0x40. Choose to use LBA.
-        message_to_drive.fields.chs_head_lba_block_number = 1;
+        message_to_drive.fields.uses_lba = 1;
         break;
     case HARDDISK_ATA_SLAVE:
         // For slave set it to 0x50. Choose to use LBA and drive 1.
-        message_to_drive.fields.chs_head_lba_block_number = 1;
+        message_to_drive.fields.uses_lba = 1;
         message_to_drive.fields.drive_number = 1;
         break;
     default:
@@ -129,6 +129,18 @@ int8_t __harddisk_ata_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_
     }
 
 }
+
+uint32_t __harddisk_ata_get_user_addressable_sectors(const harddisk_identify_device_data *data)
+{
+    return data->fields.total_number_of_user_addressable_sectors;
+}
+
+uint32_t __harddisk_ata_get_disk_space(const harddisk_identify_device_data *data)
+{
+    // Multiply total number of user addressable sectors by number of bytes per sector (currently hard coded).
+    return data->fields.total_number_of_user_addressable_sectors * 512;
+}
+
 
 int8_t __harddisk_ata_poll(uint16_t io_port)
 {
