@@ -1,5 +1,9 @@
 # MicrOS
 
+[![Build Status](https://travis-ci.org/Tearth/MicrOS.svg?branch=develop)](https://travis-ci.org/Tearth/MicrOS)
+[![Build Status](https://img.shields.io/github/issues-pr-closed-raw/Tearth/MicrOS)](https://github.com/Tearth/MicrOS/pulls?q=is%3Apr+is%3Aclosed)
+[![Build Status](https://img.shields.io/github/license/Tearth/MicrOS)](https://github.com/Tearth/MicrOS/blob/master/LICENSE)
+
 This is the simple 32-bit operating system developed by the SKNI KOD (Studenckie Koło Naukowe Informatyków KOD). Our main goal is to create the OS which will have functionality similar to the famous MS-DOS and be able to run on every modern computer (but no, we won't sell it and compete with Windows or Linux).
 
 The repository doesn't contain all files necessary to successful compilation - we use our internal build scripts which aren't present here. We will release complete image files when the OS will be ready for basic usage. Feel free to analyze and use any part of this project (but remember about GPL-3 license restrictions).
