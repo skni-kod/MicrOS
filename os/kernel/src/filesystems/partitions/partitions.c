@@ -4,6 +4,16 @@ kvector partitions;
 
 void partitions_init()
 {
+    partitions_init_floppy();
+    
+    partitions_init_harddisks(HARDDISK_ATA_MASTER, HARDDISK_ATA_PRIMARY_BUS);
+    partitions_init_harddisks(HARDDISK_ATA_SLAVE, HARDDISK_ATA_PRIMARY_BUS);
+    partitions_init_harddisks(HARDDISK_ATA_MASTER, HARDDISK_ATA_SECONDARY_BUS);
+    partitions_init_harddisks(HARDDISK_ATA_SLAVE, HARDDISK_ATA_SECONDARY_BUS);
+}
+
+void partitions_init_floppy()
+{
     if(fdc_is_present())
     {
         floppy_init(18);
@@ -24,6 +34,32 @@ void partitions_init()
             fat_generic_set_current_partition(floppy_partition);
             fat_init();
         }
+    }
+}
+
+void partitions_init_harddisks(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus)
+{
+    HARDDISK_STATE state = harddisk_get_state(type, bus);
+    if(state == HARDDISK_ATA_PRESENT)
+    {
+        mbr mbr_data;
+        harddisk_read_sector(type, bus, 0, 0, (uint8_t *)&mbr_data);
+        
+        for(int i = 0; i < 4; i++)
+        {
+            if (mbr_data.partitions[i].status != 0)
+            {
+                int fat_header_sector = mbr_data.partitions[i].first_sector_lba;
+                
+                partition *hdd_partition = (partition*)heap_kernel_alloc(sizeof(partition), 0);
+                hdd_partition->header = heap_kernel_alloc(512, 0);
+                harddisk_read_sector(type, bus, fat_header_sector >> 32, fat_header_sector, (uint8_t *)&hdd_partition->header);
+                
+                while(1);
+            }
+        }
+        
+        while(1);
     }
 }
 
