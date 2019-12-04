@@ -5,12 +5,17 @@
 #include <stdbool.h>
 #include "micros_interrupts.h"
 
+//! Structure representing cursor position in the console
 typedef struct micros_console_position
 {
+    //! X (horizontal) part
     uint16_t x;
+    
+    //! Y (vertical) part
     uint16_t y;
 } micros_console_position;
 
+//! Enum representing VGA color
 typedef enum micros_console_color
 {
     micros_console_color_black = 0x00,
@@ -35,14 +40,67 @@ typedef enum micros_console_color
 extern "C" {
 #endif
 
+//! Prints one char
+/*!
+    Prints one char at the cursor position.
+    \param c Char to print.
+*/
 void micros_console_print_char(char c);
+
+//! Prints string
+/*!
+    Prints string at the cursor position (must be ended with 0).
+    \param str String to print.
+*/
 void micros_console_print_string(const char *str);
+
+//! Returns char from the specified cursor position.
+/*!
+    Returns char from the specified cursor position.
+    \param position Char position.
+    \return Char at the specified position
+*/
 char micros_console_get_char_at_position(micros_console_position *position);
+
+//! Sets foreground color.
+/*!
+    Sets foreground color which will be used for all next prints.
+    \param color Foreground color.
+*/
 void micros_console_set_foreground_color(micros_console_color color);
+
+//! Sets background color.
+/*!
+    Sets background color which will be used for all next prints.
+    \param color Background color.
+*/
 void micros_console_set_background_color(micros_console_color color);
+
+//! Sets cursor position.
+/*!
+    Sets cursor position where the next print will be started.
+    \param position Cursor position.
+*/
 void micros_console_set_cursor_position(micros_console_position *position);
-void micros_console_get_cursor_position(micros_console_position *micros_console_position);
+
+//! Gets cursor position.
+/*!
+    Gets cursor position and stores it in the structure.
+    \param position Cursor position where data will be stored.
+*/
+void micros_console_get_cursor_position(micros_console_position *position);
+
+//! Clears whole console.
+/*!
+    Clears whole console and sets cursor position at the begin.
+*/
 void micros_console_clear();
+
+//! Sets cursor visibility.
+/*!
+    Sets cursor visibility (true in parameters means it will blink at the current position, otherwise it will be hided).
+    \param visibility Visibility flag.
+*/
 void micros_console_set_cursor_visibility(bool visibility);
 
 #ifdef __cplusplus

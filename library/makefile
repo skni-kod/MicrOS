@@ -1,6 +1,6 @@
 GCC := /opt/cross/bin/i386-elf-gcc
 AR := /opt/cross/bin/i386-elf-ar
-NASM := "../Tools/nasm"
+NASM := "../tools/nasm"
 
 SRC_DIR := src
 OBJ_DIR := obj
@@ -15,7 +15,7 @@ ASM_OBJECTS := $(patsubst $(SRC_DIR)/%.asm,$(OBJ_DIR)/%.o,$(ASM_SOUCES))
 
 DEPS := $(C_OBJECTS:.o=.d)
 
-GCC_COMPILE_FLAGS := -ffreestanding -Wall -Wextra -Wno-unused-parameter
+GCC_COMPILE_FLAGS := -ffreestanding -Wall -Wextra -Wno-unused-parameter -Wno-packed-bitfield-compat -Wno-implicit-fallthrough
 
 ifeq ($(MODE),release)
 GCC_COMPILE_FLAGS += -O2

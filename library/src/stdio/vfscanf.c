@@ -68,7 +68,7 @@ int _get_number_from_file(FILE *stream, int width)
 
     while (!isspace(c))
     {
-        int digit;
+        int digit = 0;
         if (c >= '0' && c <= '9')
             digit = c - '0';
         else if (c >= 'A' && c <= 'F')
@@ -154,7 +154,7 @@ int _get_hex_number_from_file(FILE *stream, int width)
 
     while (!isspace(c))
     {
-        int digit;
+        int digit = 0;
         if (c >= '0' && c <= '9')
             digit = c - '0';
         else if (c >= 'A' && c <= 'F')

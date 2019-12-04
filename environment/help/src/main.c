@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     micros_filesystem_get_file_info((char *)help_path, &info);
     
     uint8_t *buffer = malloc(sizeof(char) * info.size);
-    micros_filesystem_read_file(help_path, buffer, 0, info.size);
+    micros_filesystem_read_file((char *)help_path, buffer, 0, info.size);
     
     for(uint32_t i = 0; i < info.size; i++)
     {
@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
             continue;
         }
         
-        micros_console_print_char((char *)buffer[i]);
+        micros_console_print_char((char)buffer[i]);
     }
     micros_console_print_char('\n');
     

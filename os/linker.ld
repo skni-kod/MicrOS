@@ -7,10 +7,10 @@ KERNEL_VIRTUAL_ADDRESS   = 0xC0000000;
 SECTIONS
 {
 	. = STARTUP_PHYSICAL_ADDRESS;
- 
+
 	.boot :
 	{
-		obj\init\startup.o
+		obj/init/startup.o
 	}
 
 	. = KERNEL_PHYSICAL_ADDRESS;
@@ -20,19 +20,19 @@ SECTIONS
 	{
 		*(.text)
 	}
- 
+
 	.rodata ALIGN(4K) : AT(ADDR(.rodata) - KERNEL_VIRTUAL_ADDRESS)
 	{
 		*(.rodata)
 	}
- 
+
 	.data ALIGN(4K) : AT(ADDR(.data) - KERNEL_VIRTUAL_ADDRESS)
 	{
 		*(.data)
 	}
 
 	BSS_SECTION_START = .;
- 
+
 	.bss ALIGN(4K) : AT(ADDR(.bss) - KERNEL_VIRTUAL_ADDRESS)
 	{
 		*(.bss)

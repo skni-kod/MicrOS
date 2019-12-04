@@ -8,6 +8,11 @@
 extern "C" {
 #endif
 
+//! Gets current system clock
+/*!
+    Gets current system clock (milliseconds from MicrOS startup).
+    \return Milliseconds from MicrOS startup.
+*/
 uint32_t micros_timer_get_system_clock();
 
 #ifdef __cplusplus
