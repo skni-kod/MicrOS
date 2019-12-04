@@ -141,18 +141,6 @@ int8_t __harddisk_ata_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_
 
 }
 
-uint32_t __harddisk_ata_get_user_addressable_sectors(const harddisk_identify_device_data *data)
-{
-    return data->fields.total_number_of_user_addressable_sectors;
-}
-
-uint32_t __harddisk_ata_get_disk_space(const harddisk_identify_device_data *data)
-{
-    // Multiply total number of user addressable sectors by number of bytes per sector (currently hard coded).
-    return data->fields.total_number_of_user_addressable_sectors * 512;
-}
-
-
 int8_t __harddisk_ata_poll(uint16_t io_port)
 {
     harddisk_io_control_status_register result;
