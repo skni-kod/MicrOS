@@ -27,11 +27,11 @@ int8_t __harddisk_ata_read_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_B
     {
     case HARDDISK_ATA_MASTER:
         // For master set it to 0x40. Choose to use LBA.
-        message_to_drive.fields.chs_head_lba_block_number = 1;
+        message_to_drive.fields.uses_lba = 1;
         break;
     case HARDDISK_ATA_SLAVE:
         // For slave set it to 0x50. Choose to use LBA and drive 1.
-        message_to_drive.fields.chs_head_lba_block_number = 1;
+        message_to_drive.fields.uses_lba = 1;
         message_to_drive.fields.drive_number = 1;
         break;
     default:
@@ -91,11 +91,11 @@ int8_t __harddisk_ata_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_
     {
     case HARDDISK_ATA_MASTER:
         // For master set it to 0x40. Choose to use LBA.
-        message_to_drive.fields.chs_head_lba_block_number = 1;
+        message_to_drive.fields.uses_lba = 1;
         break;
     case HARDDISK_ATA_SLAVE:
         // For slave set it to 0x50. Choose to use LBA and drive 1.
-        message_to_drive.fields.chs_head_lba_block_number = 1;
+        message_to_drive.fields.uses_lba = 1;
         message_to_drive.fields.drive_number = 1;
         break;
     default:
