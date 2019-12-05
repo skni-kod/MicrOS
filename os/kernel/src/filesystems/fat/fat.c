@@ -15,29 +15,30 @@ void fat_init()
 
 void fat_load_fat()
 {
-    for (int i = 1; i < current_partition->header->sectors_per_fat; i++)
+    for (int i = current_partition->header->reserved_sectors; i < current_partition->header->sectors_per_fat; i++)
     {
-        uint8_t *buffer = current_partition->read_from_device(current_partition->device_number, i);
-        memcpy((void *)((uint32_t)current_partition->fat + ((i - 1) * 512)), buffer, 512);
+        uint8_t *buffer = current_partition->read_from_device(current_partition->device_number, i + current_partition->first_sector);
+        memcpy((void *)((uint32_t)current_partition->fat + ((i - current_partition->header->reserved_sectors) * 512)), buffer, 512);
     }
 }
 
 void fat_save_fat()
 {
-    for (int i = 1; i < current_partition->header->sectors_per_fat; i++)
+    for (int i = current_partition->header->reserved_sectors; i < current_partition->header->sectors_per_fat; i++)
     {
-        current_partition->write_on_device(current_partition->device_number, i, (uint8_t *)((uint32_t)current_partition->fat + ((i - 1) * 512)));
+        current_partition->write_on_device(current_partition->device_number, i + current_partition->first_sector,
+                                           (uint8_t *)((uint32_t)current_partition->fat + ((i - current_partition->header->reserved_sectors) * 512)));
     }
 }
 
 void fat_load_root()
 {
-    uint8_t root_first_sector = 1 + (current_partition->header->sectors_per_fat * 2);
-    uint8_t root_sectors_count = (current_partition->header->directory_entries * 32) / current_partition->header->bytes_per_sector;
+    int root_first_sector = current_partition->header->reserved_sectors + (current_partition->header->sectors_per_fat * 2);
+    int root_sectors_count = (current_partition->header->directory_entries * 32) / current_partition->header->bytes_per_sector;
 
     for (int i = root_first_sector; i < root_first_sector + root_sectors_count; i++)
     {
-        uint8_t *buffer = current_partition->read_from_device(current_partition->device_number, i);
+        uint8_t *buffer = current_partition->read_from_device(current_partition->device_number, i + current_partition->first_sector);
         memcpy((void *)((uint32_t)current_partition->root + ((i - root_first_sector) * 512)), buffer, 512);
     }
 }
@@ -49,7 +50,8 @@ void fat_save_root()
 
     for (int i = root_first_sector; i < root_first_sector + root_sectors_count; i++)
     {
-        current_partition->write_on_device(current_partition->device_number, i, (uint8_t *)((uint32_t)current_partition->root + ((i - root_first_sector) * 512)));
+        current_partition->write_on_device(current_partition->device_number, i + current_partition->first_sector,
+                                           (uint8_t *)((uint32_t)current_partition->root + ((i - root_first_sector) * 512)));
     }
 }
 
@@ -58,19 +60,31 @@ uint16_t fat_read_sector_value(uint32_t sector_number)
     uint8_t high_byte;
     uint8_t low_byte;
 
-    if (sector_number % 2 == 0)
+    switch (current_partition->type)
     {
-        high_byte = *(current_partition->fat + (uint32_t)(sector_number * 1.5f + 1)) & 0x0F;
-        low_byte = *(current_partition->fat + (uint32_t)(sector_number * 1.5f));
+        case filesystem_fat12:
+        {
+            if (sector_number % 2 == 0)
+            {
+                high_byte = *(current_partition->fat + (uint32_t)(sector_number * 1.5f + 1)) & 0x0F;
+                low_byte = *(current_partition->fat + (uint32_t)(sector_number * 1.5f));
 
-        return high_byte << 8 | low_byte;
-    }
-    else
-    {
-        high_byte = *(current_partition->fat + (uint32_t)(((sector_number - 1) * 1.5f) + 2));
-        low_byte = *(current_partition->fat + (uint32_t)((sector_number - 1) * 1.5f) + 1) & 0xF0;
+                return high_byte << 8 | low_byte;
+            }
+            else
+            {
+                high_byte = *(current_partition->fat + (uint32_t)(((sector_number - 1) * 1.5f) + 2));
+                low_byte = *(current_partition->fat + (uint32_t)((sector_number - 1) * 1.5f) + 1) & 0xF0;
 
-        return high_byte << 4 | low_byte >> 4;
+                return high_byte << 4 | low_byte >> 4;
+            }
+        }
+        
+        case filesystem_fat16:
+        {
+            high_byte = *(current_partition->fat + (uint32_t)(sector_number * 2 + 1));
+            low_byte = *(current_partition->fat + (uint32_t)(sector_number * 2));
+        }
     }
 }
 
@@ -208,7 +222,8 @@ uint16_t fat_save_file_to_sector(uint16_t initial_sector, uint16_t sectors_count
     
     for(int i=0; i<sectors_count; i++)
     {
-        current_partition->write_on_device(current_partition->device_number, sector + 31, (uint8_t *)(buffer + (i * 512)));
+        current_partition->write_on_device(current_partition->device_number, sector + 31 + current_partition->first_sector,
+                                           (uint8_t *)(buffer + (i * 512)));
         
         uint16_t next_sector = fat_read_sector_value(sector);
         if(next_sector == 0 || next_sector >= 0xFF0)
@@ -283,7 +298,15 @@ uint8_t *fat_read_file_from_sector(uint16_t initial_sector, uint16_t sector_offs
     {
         buffer = heap_kernel_realloc(buffer, 512 * (*read_sectors + 1), 0);
 
-        uint8_t *read_data = current_partition->read_from_device(current_partition->device_number, sector + 31);
+        // is 557
+        // should be 572  
+        int sector_to_read = sector - 2 +
+                             2 * current_partition->header->sectors_per_fat + 
+                             current_partition->header->directory_entries * 32 / 512 +
+                             current_partition->header->reserved_sectors +
+                             current_partition->first_sector;
+                           
+        uint8_t *read_data = current_partition->read_from_device(current_partition->device_number, sector_to_read);
         sector = fat_read_sector_value(sector);
 
         memcpy(buffer + (*read_sectors * 512), read_data, 512);
