@@ -8,6 +8,8 @@
 #include "mbr.h"
 #include "drivers/floppy/floppy.h"
 #include "drivers/harddisk/harddisk.h"
+#include "filesystems/fat/fat_header.h"
+#include "hdd_wrapper/hdd_wrapper.h"
 
 void partitions_init();
 void partitions_init_floppy();
@@ -15,5 +17,6 @@ void partitions_init_harddisks(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_
 partition *partitions_get(char *path);
 int partitions_get_count();
 void partitions_get_symbols(char *symbol_array);
+filesystem_type partitions_get_filesystem_type(char *name);
 
 #endif

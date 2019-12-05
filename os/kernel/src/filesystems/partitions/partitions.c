@@ -21,12 +21,13 @@ void partitions_init_floppy()
         {
             partition *floppy_partition = (partition*)heap_kernel_alloc(sizeof(partition), 0);
             floppy_partition->type = filesystem_fat12;
-            floppy_partition->symbol = 'A';
+            floppy_partition->symbol = 'A' + partitions.count;
             floppy_partition->header = heap_kernel_alloc(512, 0);
             floppy_partition->device_type = device_type_floppy;
             floppy_partition->device_number = 0;
             floppy_partition->write_on_device = floppy_write_sector;
             floppy_partition->read_from_device = floppy_read_sector;
+            floppy_partition->first_sector = 0;
             
             memcpy(floppy_partition->header, floppy_do_operation_on_sector(0, 0, 1, true), 512);
             kvector_add(&partitions, floppy_partition);
@@ -47,19 +48,31 @@ void partitions_init_harddisks(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_
         
         for(int i = 0; i < 4; i++)
         {
-            if (mbr_data.partitions[i].status != 0)
+            if (mbr_data.partitions[i].type != 0)
             {
-                int fat_header_sector = mbr_data.partitions[i].first_sector_lba;
+                uint8_t buffer[512];
+                uint32_t fat_header_sector = mbr_data.partitions[i].first_sector_lba;
+                
+                harddisk_read_sector(type, bus, 0, fat_header_sector, buffer);
                 
                 partition *hdd_partition = (partition*)heap_kernel_alloc(sizeof(partition), 0);
                 hdd_partition->header = heap_kernel_alloc(512, 0);
-                harddisk_read_sector(type, bus, fat_header_sector >> 32, fat_header_sector, (uint8_t *)&hdd_partition->header);
+                memcpy(hdd_partition->header, buffer, 512);
                 
-                while(1);
+                hdd_partition->type = partitions_get_filesystem_type(hdd_partition->header->system_identifier);
+                hdd_partition->symbol = 'A' + partitions.count;
+                hdd_partition->device_type = device_type_harddisk;
+                hdd_partition->device_number = hdd_wrapper_get_device_number(type, bus);
+                hdd_partition->write_on_device = hdd_wrapper_write_sector;
+                hdd_partition->read_from_device = hdd_wrapper_read_sector;
+                hdd_partition->first_sector = fat_header_sector;
+                
+                kvector_add(&partitions, hdd_partition);
+                
+                fat_generic_set_current_partition(hdd_partition);
+                fat_init();
             }
         }
-        
-        while(1);
     }
 }
 
@@ -90,4 +103,18 @@ void partitions_get_symbols(char *symbol_array)
         partition *partition_to_check = partitions.data[i];
         symbol_array[i] = partition_to_check->symbol;
     }
+}
+
+filesystem_type partitions_get_filesystem_type(char *name)
+{
+    if (strncmp("FAT12", name, 4) == 0)
+    {
+        return filesystem_fat12;
+    }
+    else if(strncmp("FAT16", name, 4) == 0)
+    {
+        return filesystem_fat16;
+    }
+    
+    return 0;
 }

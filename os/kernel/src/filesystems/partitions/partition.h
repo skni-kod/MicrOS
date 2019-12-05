@@ -20,6 +20,7 @@ typedef struct partition
     uint8_t *fat;
     fat_directory_entry *root;
 
+    int first_sector;
     uint32_t fat_length;
     uint32_t directory_length;
 } partition;
