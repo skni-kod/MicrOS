@@ -272,24 +272,24 @@ uint16_t fat_save_file_to_sector(uint16_t initial_sector, uint16_t sectors_count
         current_partition->write_on_device(current_partition->device_number, sector_number, sector_offset);
         
         uint16_t next_sector = fat_read_sector_value(sector);
-        if(next_sector == 0 || next_sector >= 0xFF0)
+        if(next_sector == 0 || next_sector >= current_partition->last_valid_sector_mark)
         {
             if(i == sectors_count - 1)
             {
-                fat_save_sector_value(sector, 0xFFF);
+                fat_save_sector_value(sector, current_partition->end_sector_mark);
                 break;
             }
             else
             {
                 next_sector = fat_get_free_sector_index();
-                fat_save_sector_value(next_sector, 0xFFF);
+                fat_save_sector_value(next_sector, current_partition->end_sector_mark);
             }
         }
         else
         {
             if(i == sectors_count - 1)
             {
-                fat_save_sector_value(sector, 0xFFF);
+                fat_save_sector_value(sector, current_partition->end_sector_mark);
                 fat_clear_file_sectors(next_sector);
                 break;
             }
@@ -342,9 +342,6 @@ uint8_t *fat_read_file_from_sector(uint16_t initial_sector, uint16_t sector_offs
 
     while (*read_sectors < sectors_count * current_partition->header->sectors_per_cluster && sector < current_partition->last_valid_sector_mark)
     {
-
-        // is 557
-        // should be 572  
         int sector_to_read = ((sector - 2) * current_partition->header->sectors_per_cluster) +
                              current_partition->header->fat_count * current_partition->header->sectors_per_fat + 
                              current_partition->header->directory_entries * 32 / current_partition->header->bytes_per_sector +
@@ -1142,7 +1139,6 @@ uint32_t fat_generic_get_total_space()
 {
     return current_partition->header->total_sectors * current_partition->header->bytes_per_sector;
 }
-
 
 bool fat_generic_create_file(char *path)
 {
