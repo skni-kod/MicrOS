@@ -16,13 +16,15 @@ typedef struct partition
     void (*write_on_device)(int device_number, int sector, char *data);
     uint8_t *(*read_from_device)(int device_number, int sector);
     
-    fat_header *fat_header_data;
     uint8_t *fat;
     fat_directory_entry *root;
 
     int first_sector;
     uint32_t fat_length;
     uint32_t directory_length;
+    
+    int end_sector_mark;
+    int last_valid_sector_mark;
 } partition;
 
 #endif
