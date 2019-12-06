@@ -267,10 +267,10 @@ uint16_t fat_save_file_to_cluster(uint16_t initial_cluster, uint16_t clusters_co
     for(int i = 0; i < clusters_count; i++)
     {
         int cluster_to_write = ((cluster - 2) * current_partition->header->sectors_per_cluster) +
-                              current_partition->header->fat_count * current_partition->header->sectors_per_fat + 
-                              current_partition->header->directory_entries * 32 / current_partition->header->bytes_per_sector +
-                              current_partition->header->reserved_sectors +
-                              current_partition->first_sector;
+                               current_partition->header->fat_count * current_partition->header->sectors_per_fat + 
+                               current_partition->header->directory_entries * 32 / current_partition->header->bytes_per_sector +
+                               current_partition->header->reserved_sectors +
+                               current_partition->first_sector;
         
         for (int p = 0; p < current_partition->header->sectors_per_cluster; p++)
         {
@@ -318,13 +318,13 @@ bool fat_read_file_from_path(char *path, uint8_t *buffer, uint32_t start_index, 
         return false;
     }
 
-    uint16_t initial_cluster = start_index / current_partition->header->bytes_per_sector;
-    uint16_t last_cluster = (start_index + length) / current_partition->header->bytes_per_sector;
-    uint16_t clusters_count = length == 0 ? file_info->size / current_partition->header->bytes_per_sector + 1 : (uint16_t)(last_cluster - initial_cluster + 1);
+    uint16_t initial_cluster = start_index / current_partition->header->bytes_per_sector / current_partition->header->sectors_per_cluster;
+    uint16_t last_cluster = (start_index + length) / current_partition->header->bytes_per_sector / current_partition->header->sectors_per_cluster;
+    uint16_t clusters_count = length == 0 ? file_info->size / current_partition->header->bytes_per_sector / current_partition->header->sectors_per_cluster + 1 : (uint16_t)(last_cluster - initial_cluster + 1);
     uint32_t read_clusters = 0;
 
     uint8_t *result = fat_read_file_from_cluster(file_info->first_sector, initial_cluster, clusters_count, &read_clusters);
-    memcpy(buffer, result + (start_index % current_partition->header->bytes_per_sector), length);
+    memcpy(buffer, result + (start_index % (current_partition->header->bytes_per_sector * current_partition->header->sectors_per_cluster)), length);
 
     heap_kernel_dealloc(result);
     if(file_info != 0) heap_kernel_dealloc(file_info);
@@ -347,7 +347,7 @@ uint8_t *fat_read_file_from_cluster(uint16_t initial_cluster, uint16_t cluster_o
     uint8_t *buffer = heap_kernel_alloc(current_partition->header->bytes_per_sector, 0);
     *read_clusters = 0;
 
-    while (*read_clusters < clusters_count * current_partition->header->sectors_per_cluster && cluster < current_partition->last_valid_cluster_mark)
+    while (*read_clusters < clusters_count && cluster < current_partition->last_valid_cluster_mark)
     {
         int cluster_to_read = ((cluster - 2) * current_partition->header->sectors_per_cluster) +
                              current_partition->header->fat_count * current_partition->header->sectors_per_fat + 
@@ -355,17 +355,19 @@ uint8_t *fat_read_file_from_cluster(uint16_t initial_cluster, uint16_t cluster_o
                              current_partition->header->reserved_sectors +
                              current_partition->first_sector;
         
-        for (int i = 0; i < current_partition->header->sectors_per_cluster && cluster < current_partition->last_valid_cluster_mark; i++)
+        buffer = heap_kernel_realloc(buffer, current_partition->header->bytes_per_sector * (*read_clusters + 1) * current_partition->header->sectors_per_cluster, 0);
+        uint8_t *buffer_ptr = buffer + *read_clusters * current_partition->header->bytes_per_sector * current_partition->header->sectors_per_cluster;
+    
+        for (int i = 0; i < current_partition->header->sectors_per_cluster; i++)
         {
             uint8_t *read_data = current_partition->read_from_device(current_partition->device_number, cluster_to_read + i);
-
-            buffer = heap_kernel_realloc(buffer, current_partition->header->bytes_per_sector * (*read_clusters + 1), 0);
-            memcpy(buffer + (*read_clusters * current_partition->header->bytes_per_sector), read_data, current_partition->header->bytes_per_sector);
-        
-            (*read_clusters)++;
+            memcpy(buffer_ptr, read_data, current_partition->header->bytes_per_sector);
+            
+            buffer_ptr += current_partition->header->bytes_per_sector;
         }
         
         cluster = fat_read_cluster_value(cluster); 
+        (*read_clusters)++;
     }
 
     return buffer;
