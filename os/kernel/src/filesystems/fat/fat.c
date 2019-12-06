@@ -70,8 +70,8 @@ void fat_load_root()
 
 void fat_save_root()
 {
-    uint8_t root_first_sector = 1 + (current_partition->header->sectors_per_fat * current_partition->header->fat_count);
-    uint8_t root_sectors_count = (current_partition->header->directory_entries * 32) / current_partition->header->bytes_per_sector;
+    int root_first_sector = current_partition->header->reserved_sectors + current_partition->header->sectors_per_fat * current_partition->header->fat_count;
+    int root_sectors_count = current_partition->header->directory_entries * 32 / current_partition->header->bytes_per_sector;
 
     for (int i = root_first_sector; i < root_first_sector + root_sectors_count; i++)
     {
@@ -348,16 +348,17 @@ uint8_t *fat_read_file_from_sector(uint16_t initial_sector, uint16_t sector_offs
                              current_partition->header->reserved_sectors +
                              current_partition->first_sector;
         
-        for (int i = 0; i < current_partition->header->sectors_per_cluster; i++)
+        for (int i = 0; i < current_partition->header->sectors_per_cluster && sector < current_partition->last_valid_sector_mark; i++)
         {
             uint8_t *read_data = current_partition->read_from_device(current_partition->device_number, sector_to_read + i);
-            sector = fat_read_sector_value(sector);
 
             buffer = heap_kernel_realloc(buffer, current_partition->header->bytes_per_sector * (*read_sectors + 1), 0);
             memcpy(buffer + (*read_sectors * current_partition->header->bytes_per_sector), read_data, current_partition->header->bytes_per_sector);
         
             (*read_sectors)++;
-        }   
+        }
+        
+        sector = fat_read_sector_value(sector); 
     }
 
     return buffer;
@@ -696,8 +697,8 @@ bool fat_create_file_from_path(char* path, bool is_directory)
         
         current_file_ptr->first_sector = fat_get_free_sector_index();
         
-        char *empty_sector = heap_kernel_alloc(current_partition->header->bytes_per_sector, 0);
-        memset(empty_sector, 0, current_partition->header->bytes_per_sector);
+        char *empty_sector = heap_kernel_alloc(current_partition->header->bytes_per_sector * current_partition->header->reserved_sectors, 0);
+        memset(empty_sector, 0, current_partition->header->bytes_per_sector * current_partition->header->reserved_sectors);
         
         fat_save_file_to_sector(current_file_ptr->first_sector, 1, empty_sector);
         heap_kernel_dealloc(empty_sector);
@@ -1051,7 +1052,11 @@ bool fat_generic_get_file_info(char *path, filesystem_file_info *generic_file_in
 
 uint32_t fat_get_free_sector_index()
 {
-    for(int i=0; i<current_partition->header->total_sectors; i++)
+    int total_sectors = current_partition->header->total_sectors != 0 ?
+        current_partition->header->total_sectors :
+        current_partition->header->large_sectors;
+        
+    for(int i = 0; i < total_sectors; i++)
     {
         if(fat_read_sector_value(i) == 0)
         {
