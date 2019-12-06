@@ -76,13 +76,27 @@ void partitions_init_harddisks(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_
     }
 }
 
-partition *partitions_get(char *path)
+partition *partitions_get_by_path(char *path)
 {
     char partition_symbol = path[0];
     for (int i = 0; i < partitions.count; i++)
     {
         partition *partition_to_check = partitions.data[i];
         if(partition_to_check->symbol == partition_symbol)
+        {
+            return partition_to_check;
+        }
+    }
+    
+    return 0;
+}
+
+partition *partitions_get_by_symbol(char symbol)
+{
+    for (int i = 0; i < partitions.count; i++)
+    {
+        partition *partition_to_check = partitions.data[i];
+        if(partition_to_check->symbol == symbol)
         {
             return partition_to_check;
         }

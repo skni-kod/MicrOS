@@ -20,8 +20,8 @@ uint32_t filesystem_get_entries_count_in_directory(char *path);
 bool filesystem_get_entries_in_directory(char *path, char **entries);
 bool filesystem_is_file(char *path);
 bool filesystem_is_directory(char *path);
-uint32_t filesystem_get_free_space();
-uint32_t filesystem_get_total_space();
+uint32_t filesystem_get_free_space(char partition_symbol);
+uint32_t filesystem_get_total_space(char partition_symbol);
 
 bool filesystem_create_file(char *path);
 bool filesystem_create_directory(char *path);

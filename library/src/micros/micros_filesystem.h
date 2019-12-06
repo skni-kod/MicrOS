@@ -215,19 +215,21 @@ bool micros_filesystem_file_exists(char *path);
 */
 bool micros_filesystem_directory_exists(char *path);
 
-//! Gets free space on storage device
+//! Gets free space on the specified partition
 /*!
-    Gets free space on storage device (in bytes). In the future it will support also partitions.
+    Gets free space on the specified partition (in bytes).
+    \param partition_symbol Partition symbol.
     \return Free space in bytes.
 */
-int micros_filesystem_get_free_space();
+int micros_filesystem_get_free_space(char partition_symbol);
 
-//! Gets total space on storage device
+//! Gets total space on the specified partition
 /*!
-    Gets total space on storage device (in bytes). In the future it will support also partitions.
+    Gets total space on specified partition (in bytes).
+    \param partition_symbol Partition symbol.
     \return Total space in bytes.
 */
-int micros_filesystem_get_total_space();
+int micros_filesystem_get_total_space(char partition_symbol);
 
 #ifdef __cplusplus
 }
