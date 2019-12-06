@@ -23,8 +23,8 @@ typedef struct partition
     uint32_t fat_length;
     uint32_t directory_length;
     
-    int end_sector_mark;
-    int last_valid_sector_mark;
+    int end_cluster_mark;
+    int last_valid_cluster_mark;
 } partition;
 
 #endif
