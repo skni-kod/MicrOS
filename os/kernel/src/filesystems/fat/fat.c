@@ -264,12 +264,19 @@ uint16_t fat_save_file_to_sector(uint16_t initial_sector, uint16_t sectors_count
     uint16_t sector = initial_sector == 0 ? fat_get_free_sector_index() : initial_sector;
     uint16_t sector_to_return = sector;
     
-    for(int i=0; i<sectors_count; i++)
+    for(int i = 0; i < sectors_count; i++)
     {
-        uint16_t sector_number = sector + 31 + current_partition->first_sector;
-        uint32_t sector_offset = (uint8_t *)(buffer + (i * current_partition->header->bytes_per_sector));
+        int sector_to_write = ((sector - 2) * current_partition->header->sectors_per_cluster) +
+                              current_partition->header->fat_count * current_partition->header->sectors_per_fat + 
+                              current_partition->header->directory_entries * 32 / current_partition->header->bytes_per_sector +
+                              current_partition->header->reserved_sectors +
+                              current_partition->first_sector;
         
-        current_partition->write_on_device(current_partition->device_number, sector_number, sector_offset);
+        for (int p = 0; p < current_partition->header->sectors_per_cluster; p++)
+        {
+            uint32_t sector_offset = (uint8_t *)(buffer + ((i + p) * current_partition->header->bytes_per_sector));
+            current_partition->write_on_device(current_partition->device_number, sector_to_write + p, sector_offset);
+        }
         
         uint16_t next_sector = fat_read_sector_value(sector);
         if(next_sector == 0 || next_sector >= current_partition->last_valid_sector_mark)

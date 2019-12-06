@@ -30,9 +30,6 @@ uint8_t *hdd_wrapper_read_sector(int device_number, uint16_t sector)
     HARDDISK_ATA_BUS_TYPE bus = hdd_wrapper_get_bus_by_device_number(device_number);
     harddisk_read_sector(type, bus, 0, sector, read_content);
     
-    uint32_t current_time = timer_get_system_clock();
-    while(timer_get_system_clock() - current_time < 5);
-    
     return read_content;
 }
 
@@ -43,5 +40,5 @@ void hdd_wrapper_write_sector(int device_number, uint16_t sector, uint8_t *conte
     harddisk_write_sector(type, bus, 0, sector, content);
     
     uint32_t current_time = timer_get_system_clock();
-    while(timer_get_system_clock() - current_time < 5);
+    while(timer_get_system_clock() - current_time < 15);
 }
