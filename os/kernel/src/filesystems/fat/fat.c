@@ -184,9 +184,12 @@ kvector *fat_parse_path(char *path)
         }
         else
         {
-            char *string = chunks->data[chunks->count - 1];
-            string[index] = *path;
-            index++;
+            if (index < 12)
+            {
+                char *string = chunks->data[chunks->count - 1];
+                string[index] = *path;
+                index++;
+            }
         }
 
         path++;
