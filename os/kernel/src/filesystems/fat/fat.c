@@ -1137,7 +1137,11 @@ bool fat_generic_is_directory(char *path)
 uint32_t fat_generic_get_free_space()
 {
     uint32_t free_clusters = 0;
-    for(int i = 0; i < current_partition->header->total_sectors; i++)
+    int total_sectors = current_partition->header->total_sectors != 0 ?
+        current_partition->header->total_sectors :
+        current_partition->header->large_sectors;
+        
+    for(int i = 0; i < total_sectors / current_partition->header->sectors_per_cluster; i++)
     {
         uint32_t cluster = fat_read_cluster_value(i);
         if(cluster == 0)
@@ -1146,12 +1150,16 @@ uint32_t fat_generic_get_free_space()
         }
     }
     
-    return free_clusters * current_partition->header->bytes_per_sector;
+    return free_clusters * current_partition->header->bytes_per_sector * current_partition->header->sectors_per_cluster;
 }
 
 uint32_t fat_generic_get_total_space()
 {
-    return current_partition->header->total_sectors * current_partition->header->bytes_per_sector;
+    int total_sectors = current_partition->header->total_sectors != 0 ?
+        current_partition->header->total_sectors :
+        current_partition->header->large_sectors;
+        
+    return total_sectors * current_partition->header->bytes_per_sector;
 }
 
 bool fat_generic_create_file(char *path)
