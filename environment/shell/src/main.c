@@ -118,14 +118,15 @@ void execute_app(const char *str)
     
     for (int p = 0; p < partitions_count; p++)
     {
-        char path_variations[5][64];
-        sprintf(path_variations[0], "%c:%s", partition_symbols[p], path);
-        sprintf(path_variations[1], "%c:%s/%s", partition_symbols[p], current_dir, path);
-        sprintf(path_variations[2], "%c:%s/%s.ELF", partition_symbols[p], current_dir, path);
-        sprintf(path_variations[3], "%c:/ENV/%s", partition_symbols[p], path);
-        sprintf(path_variations[4], "%c:/ENV/%s.ELF", partition_symbols[p], path);
+        char path_variations[6][64];
+        sprintf(path_variations[0], "%s", path);
+        sprintf(path_variations[1], "%c:%s", partition_symbols[p], path);
+        sprintf(path_variations[2], "%c:%s/%s", partition_symbols[p], current_dir, path);
+        sprintf(path_variations[3], "%c:%s/%s.ELF", partition_symbols[p], current_dir, path);
+        sprintf(path_variations[4], "%c:/ENV/%s", partition_symbols[p], path);
+        sprintf(path_variations[5], "%c:/ENV/%s.ELF", partition_symbols[p], path);
     
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 6; i++)
         {
             reduce_slashes(path_variations[i]);
             if(micros_filesystem_file_exists(path_variations[i]))

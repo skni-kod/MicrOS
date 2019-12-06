@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
     sprintf(path_variations[1], "%c:/%s", current_partition_symbol, path); // /ENV -> A:/ENV
     sprintf(path_variations[2], "%s/%s", current_dir, path); // DATA -> A:/ENV/DATA
     
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < 3; i++)
     {
         reduce_slashes(path_variations[i]);
         if(micros_filesystem_file_exists(path_variations[i]))
