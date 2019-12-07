@@ -452,15 +452,14 @@ bool floppy_wait_for_interrupt()
     {
         if(floppy_interrupt_flag)
         {
-            return false;
-            break;
+            floppy_interrupt_flag = false;
+            return true;
         }
         
         sleep(1);
     }
     
-    floppy_interrupt_flag = false;
-    return true;
+    return false;
 }
 
 void floppy_interrupt()
