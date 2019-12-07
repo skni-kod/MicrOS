@@ -840,6 +840,11 @@ fat_directory_entry *fat_get_info_from_chunks(kvector *chunks, bool is_directory
     fat_directory_entry *current_file_ptr = directory;
     fat_directory_entry *result = NULL;
     
+    if (directory == NULL)
+    {
+        return NULL;
+    }
+    
     chunks->count++;
 
     for (uint32_t i = 0; i < read_clusters * 16; i++)
