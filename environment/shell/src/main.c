@@ -112,8 +112,6 @@ void execute_app(const char *str)
     char args[64];
     
     split_to_path_and_args(str, path, args);
-    int path_length = strlen(path);
-    
     capitalize_string(path);
     
     for (int p = 0; p < partitions_count; p++)
@@ -140,7 +138,7 @@ void execute_app(const char *str)
                 }
                 
                 uint32_t child_process_id = micros_process_start_process(path_variations[i], args_with_current_dir, true, true);
-                if(child_process_id == -1)
+                if((int32_t)child_process_id == -1)
                 {
                     printf("Invalid ELF header\n");
                     return;

@@ -13,7 +13,7 @@ typedef struct partition
     
     device_type device_type;
     int device_number;
-    void (*write_on_device)(int device_number, int sector, char *data);
+    void (*write_on_device)(int device_number, int sector, uint8_t *data);
     uint8_t *(*read_from_device)(int device_number, int sector);
     
     uint8_t *fat;

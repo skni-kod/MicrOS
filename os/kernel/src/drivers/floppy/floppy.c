@@ -37,6 +37,8 @@ bool fdc_init()
             return false;
         }
     }
+    
+    return true;
 }
 
 bool floppy_init(int sectors_per_track)
@@ -251,7 +253,7 @@ void floppy_disable_motor()
     }
 }
 
-uint8_t *floppy_read_sector(int device_number, uint16_t sector)
+uint8_t *floppy_read_sector(int device_number, int sector)
 {
     uint8_t head, track, true_sector;
     floppy_lba_to_chs(sector, &head, &track, &true_sector);
@@ -259,7 +261,7 @@ uint8_t *floppy_read_sector(int device_number, uint16_t sector)
     return floppy_do_operation_on_sector(head, track, true_sector, true);
 }
 
-void floppy_write_sector(int device_number, uint16_t sector, uint8_t *content)
+void floppy_write_sector(int device_number, int sector, uint8_t *content)
 {
     uint8_t head, track, true_sector;
     floppy_lba_to_chs(sector, &head, &track, &true_sector);
@@ -450,6 +452,7 @@ bool floppy_wait_for_interrupt()
     {
         if(floppy_interrupt_flag)
         {
+            return false;
             break;
         }
         
@@ -457,6 +460,7 @@ bool floppy_wait_for_interrupt()
     }
     
     floppy_interrupt_flag = false;
+    return true;
 }
 
 void floppy_interrupt()

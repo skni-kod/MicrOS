@@ -7,5 +7,5 @@ int micros_partitions_get_count()
 
 void micros_partitions_get_symbols(char *symbols_array)
 {
-    micros_interrupt_1a(0xB1, symbols_array);
+    micros_interrupt_1a(0xB1, (uint32_t)symbols_array);
 }

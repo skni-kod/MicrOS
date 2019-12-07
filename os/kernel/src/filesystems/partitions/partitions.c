@@ -44,16 +44,16 @@ void partitions_init_harddisks(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_
     if(state == HARDDISK_ATA_PRESENT)
     {
         mbr mbr_data;
-        harddisk_read_sector(type, bus, 0, 0, (uint8_t *)&mbr_data);
+        harddisk_read_sector(type, bus, 0, 0, (uint16_t *)&mbr_data);
         
         for(int i = 0; i < 4; i++)
         {
             if (mbr_data.partitions[i].type != 0)
             {
-                uint8_t buffer[512];
+                char buffer[512];
                 uint32_t fat_header_sector = mbr_data.partitions[i].first_sector_lba;
                 
-                harddisk_read_sector(type, bus, 0, fat_header_sector, buffer);
+                harddisk_read_sector(type, bus, 0, fat_header_sector, (uint16_t *)buffer);
                 
                 partition *hdd_partition = (partition*)heap_kernel_alloc(sizeof(partition), 0);
                 hdd_partition->header = heap_kernel_alloc(512, 0);
@@ -79,7 +79,7 @@ void partitions_init_harddisks(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_
 partition *partitions_get_by_path(char *path)
 {
     char partition_symbol = path[0];
-    for (int i = 0; i < partitions.count; i++)
+    for (uint32_t i = 0; i < partitions.count; i++)
     {
         partition *partition_to_check = partitions.data[i];
         if(partition_to_check->symbol == partition_symbol)
@@ -93,7 +93,7 @@ partition *partitions_get_by_path(char *path)
 
 partition *partitions_get_by_symbol(char symbol)
 {
-    for (int i = 0; i < partitions.count; i++)
+    for (uint32_t i = 0; i < partitions.count; i++)
     {
         partition *partition_to_check = partitions.data[i];
         if(partition_to_check->symbol == symbol)
@@ -112,7 +112,7 @@ int partitions_get_count()
 
 void partitions_get_symbols(char *symbol_array)
 {
-    for (int i = 0; i < partitions.count; i++)
+    for (uint32_t i = 0; i < partitions.count; i++)
     {
         partition *partition_to_check = partitions.data[i];
         symbol_array[i] = partition_to_check->symbol;

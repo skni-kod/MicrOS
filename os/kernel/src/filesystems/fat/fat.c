@@ -19,6 +19,11 @@ void fat_init()
             current_partition->end_cluster_mark = 0xFFFF;
             break;
         }
+        
+        case filesystem_unknown:
+        {
+            break;
+        }
     }
     
     current_partition->fat_length = current_partition->header->bytes_per_sector * current_partition->header->sectors_per_fat;
@@ -49,7 +54,7 @@ void fat_save_fat()
         uint16_t cluster_number = i + current_partition->first_sector;
         uint32_t fat_offset = ((uint32_t)current_partition->fat + (i - current_partition->header->reserved_sectors) * current_partition->header->bytes_per_sector);
         
-        current_partition->write_on_device(current_partition->device_number, cluster_number, (char *)fat_offset);
+        current_partition->write_on_device(current_partition->device_number, cluster_number, (uint8_t *)fat_offset);
     }
 }
 
@@ -114,7 +119,14 @@ uint16_t fat_read_cluster_value(uint32_t cluster_number)
             
             return high_byte << 8 | low_byte;
         }
+        
+        case filesystem_unknown:
+        {
+            return -1;
+        }
     }
+    
+    return -1;
 }
 
 void fat_save_cluster_value(uint32_t cluster_number, uint16_t value)
@@ -156,6 +168,11 @@ void fat_save_cluster_value(uint32_t cluster_number, uint16_t value)
             *(current_partition->fat + (uint32_t)(cluster_number * 2 + 1)) = high_byte;
             *(current_partition->fat + (uint32_t)(cluster_number * 2)) = low_byte;
             
+            break;
+        }
+        
+        case filesystem_unknown:
+        {
             break;
         }
     }
@@ -275,9 +292,9 @@ uint16_t fat_save_file_to_cluster(uint16_t initial_cluster, uint16_t clusters_co
                                current_partition->header->reserved_sectors +
                                current_partition->first_sector;
         
-        for (int p = 0; p < current_partition->header->sectors_per_cluster; p++)
+        for (uint32_t p = 0; p < current_partition->header->sectors_per_cluster; p++)
         {
-            uint32_t cluster_offset = (uint8_t *)(buffer + ((i + p) * current_partition->header->bytes_per_sector));
+            uint8_t *cluster_offset = (uint8_t *)(buffer + ((i + p) * current_partition->header->bytes_per_sector));
             current_partition->write_on_device(current_partition->device_number, cluster_to_write + p, cluster_offset);
         }
         

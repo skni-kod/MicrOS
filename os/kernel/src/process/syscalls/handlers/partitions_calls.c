@@ -7,5 +7,5 @@ void syscall_partitions_get_count(interrupt_state *state)
 
 void syscall_partitions_get_symbols(interrupt_state *state)
 {
-    partitions_get_symbols(state->registers.ebx);
+    partitions_get_symbols((char *)state->registers.ebx);
 }
