@@ -54,6 +54,14 @@ uint32_t process_manager_create_process(char *path, char *parameters, uint32_t p
     filesystem_read_file(path_in_kernel_heap, process_content, 0, process_file_info.size);
 
     elf_header *app_header = elf_get_header(process_content);
+    
+    bool error = false;
+    if(app_header->magic_number != 0x7F)
+    {
+        error = true;
+        goto release;
+    }
+    
     uint32_t initial_page = elf_loader_load(process_content);
     process->size_in_memory = elf_get_total_size_in_memory(process_content);
 
@@ -105,12 +113,19 @@ uint32_t process_manager_create_process(char *path, char *parameters, uint32_t p
     }
 
     kvector_add(&processes, process);
+  
+release:
     heap_kernel_dealloc(path_in_kernel_heap);
     heap_kernel_dealloc(parameters_in_kernel_heap);
     heap_kernel_dealloc(process_content);
 
     paging_set_page_directory(page_directory);
     heap_set_user_heap(old_heap);
+    
+    if(error)
+    {
+        return -1;
+    }
     
     if(active)
     {

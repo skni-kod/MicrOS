@@ -140,8 +140,13 @@ void execute_app(const char *str)
                 }
                 
                 uint32_t child_process_id = micros_process_start_process(path_variations[i], args_with_current_dir, true, true);
-                micros_process_wait_for_process(child_process_id);
+                if(child_process_id == -1)
+                {
+                    printf("Invalid ELF header\n");
+                    return;
+                }
                 
+                micros_process_wait_for_process(child_process_id);
                 return;
             }
         }
