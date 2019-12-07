@@ -5,7 +5,7 @@ point list_start_point;
 
 bool highscores_exit_to_menu;
 
-const char *highscores_filename = "/DATA/SN_HGHSC.SAV";
+const char *highscores_filename = "A:/DATA/SN_HGHSC.SAV";
 const char *highscores_screen =
 "\n"
 "\n"

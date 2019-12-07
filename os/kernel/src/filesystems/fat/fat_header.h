@@ -1,9 +1,9 @@
-#ifndef FLOPPY_HEADER
-#define FLOPPY_HEADER
+#ifndef FAT_HEADER
+#define FAT_HEADER
 
 #include <stdint.h>
 
-typedef struct floppy_header
+typedef struct fat_header
 {
     // Bios Parameter Block
     uint32_t jump_signature : 24;
@@ -28,6 +28,6 @@ typedef struct floppy_header
     uint32_t volume_id;
     char volume_label[11];
     char system_identifier[8];
-} __attribute__((packed)) floppy_header;
+} __attribute__((packed)) fat_header;
 
 #endif

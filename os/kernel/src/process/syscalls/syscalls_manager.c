@@ -82,6 +82,10 @@ void syscalls_manager_init()
 
     // 0xAX - Memory
     syscalls_manager_attach_handler(0xA0, syscall_memory_get_physical_memory_stats);
+    
+    // 0xBX - Partitions
+    syscalls_manager_attach_handler(0xB0, syscall_partitions_get_count);
+    syscalls_manager_attach_handler(0xB1, syscall_partitions_get_symbols);
 }
 
 void syscalls_manager_attach_handler(uint8_t function_number, void (*handler)(interrupt_state *state))

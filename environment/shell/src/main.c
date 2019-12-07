@@ -4,6 +4,9 @@
 #include <string.h>
 
 char current_dir[64];
+int partitions_count;
+char partition_symbols[16];
+char current_partition_symbol;
 
 void execute_cd(const char *str);
 void execute_app(const char *str);
@@ -17,6 +20,11 @@ int main(int argc, char *argv[])
     micros_process_set_current_process_name("SHELL");
     current_dir[0] = '/';
     current_dir[1] = 0;
+    
+    partitions_count = micros_partitions_get_count();
+    micros_partitions_get_symbols(partition_symbols);
+    
+    current_partition_symbol = argv[0][0];
     
     while(1)
     {
@@ -32,7 +40,7 @@ int main(int argc, char *argv[])
             printf("Type path to execute an application\n");
         }
         
-        printf(" %s> ", current_dir);
+        printf(" %c:%s> ", current_partition_symbol, current_dir);
         gets(path);
         
         path[strlen(path) - 1] = 0;
@@ -59,10 +67,20 @@ void execute_cd(const char *str)
     
     char *parameter = (char *)str + 3;
     char path_to_switch[64];
+    char path_to_switch_with_partition_symbol[64];
+    char last_partition_symbol = current_partition_symbol;
     
+    if(parameter[1] == ':')
+    {
+        current_partition_symbol = parameter[0];
+        memmove(parameter, parameter + 2, strlen(parameter) - 2); 
+        parameter[strlen(parameter) - 2] = 0;
+    }
+        
     if(parameter[0] == '/')
     {
         memcpy(path_to_switch, parameter, strlen(parameter) + 1);
+        sprintf(path_to_switch_with_partition_symbol, "%c:%s", current_partition_symbol, parameter);
     }
     else if(parameter[0] == '.' && parameter[1] == '.')
     {
@@ -70,18 +88,21 @@ void execute_cd(const char *str)
         return;
     }
     else
-    {
+    { 
         sprintf(path_to_switch, "%s/%s", current_dir, parameter);
+        sprintf(path_to_switch_with_partition_symbol, "%c:%s/%s", current_partition_symbol, current_dir, parameter);
     }
     reduce_slashes(path_to_switch);
+    reduce_slashes(path_to_switch_with_partition_symbol);
     
-    if((path_to_switch[0] == '/' && path_to_switch[1] == 0) || micros_filesystem_directory_exists(path_to_switch))
+    if((path_to_switch[0] == '/' && path_to_switch[1] == 0) || micros_filesystem_directory_exists(path_to_switch_with_partition_symbol))
     {
         memcpy(current_dir, path_to_switch, sizeof(path_to_switch));
     }
     else
     {
         printf("Invalid path\n");
+        current_partition_symbol = last_partition_symbol;
     }
 }
 
@@ -91,34 +112,41 @@ void execute_app(const char *str)
     char args[64];
     
     split_to_path_and_args(str, path, args);
-    int path_length = strlen(path);
-    
     capitalize_string(path);
     
-    char path_variations[5][64];
-    memcpy(path_variations[0], path, path_length);
-    sprintf(path_variations[1], "%s/%s", current_dir, path);
-    sprintf(path_variations[2], "%s/%s.ELF", current_dir, path);
-    sprintf(path_variations[3], "/ENV/%s", path);
-    sprintf(path_variations[4], "/ENV/%s.ELF", path);
-   
-    for (int i = 0; i < 5; i++)
+    for (int p = 0; p < partitions_count; p++)
     {
-        reduce_slashes(path_variations[i]);
-        if(micros_filesystem_file_exists(path_variations[i]))
+        char path_variations[6][64];
+        sprintf(path_variations[0], "%s", path);
+        sprintf(path_variations[1], "%c:%s", partition_symbols[p], path);
+        sprintf(path_variations[2], "%c:%s/%s", partition_symbols[p], current_dir, path);
+        sprintf(path_variations[3], "%c:%s/%s.ELF", partition_symbols[p], current_dir, path);
+        sprintf(path_variations[4], "%c:/ENV/%s", partition_symbols[p], path);
+        sprintf(path_variations[5], "%c:/ENV/%s.ELF", partition_symbols[p], path);
+    
+        for (int i = 0; i < 6; i++)
         {
-            char args_with_current_dir[64];
-            sprintf(args_with_current_dir, "%s %s", current_dir, args);
-            
-            if(args_with_current_dir[strlen(args_with_current_dir) - 1] == ' ')
+            reduce_slashes(path_variations[i]);
+            if(micros_filesystem_file_exists(path_variations[i]))
             {
-                args_with_current_dir[strlen(args_with_current_dir) - 1] = 0;
+                char args_with_current_dir[64];
+                sprintf(args_with_current_dir, "%c:%s %s", current_partition_symbol, current_dir, args);
+                
+                if(args_with_current_dir[strlen(args_with_current_dir) - 1] == ' ')
+                {
+                    args_with_current_dir[strlen(args_with_current_dir) - 1] = 0;
+                }
+                
+                uint32_t child_process_id = micros_process_start_process(path_variations[i], args_with_current_dir, true, true);
+                if((int32_t)child_process_id == -1)
+                {
+                    printf("Invalid ELF header\n");
+                    return;
+                }
+                
+                micros_process_wait_for_process(child_process_id);
+                return;
             }
-            
-            uint32_t child_process_id = micros_process_start_process(path_variations[i], args_with_current_dir, true, true);
-            micros_process_wait_for_process(child_process_id);
-            
-            return;
         }
     }
     
