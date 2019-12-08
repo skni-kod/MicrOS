@@ -1,10 +1,12 @@
 # MicrOS
 [![Build Status](https://i.imgur.com/lNuuSvc.png)](https://travis-ci.org/Tearth/MicrOS)
 
-[![Build Status](https://travis-ci.org/Tearth/MicrOS.svg?branch=develop)](https://travis-ci.org/Tearth/MicrOS)
-[![Closed pull requests](https://img.shields.io/github/issues-pr-closed-raw/Tearth/MicrOS)](https://github.com/Tearth/MicrOS/pulls?q=is%3Apr+is%3Aclosed)
-[![License](https://img.shields.io/github/license/Tearth/MicrOS)](https://github.com/Tearth/MicrOS/blob/master/LICENSE)
-[![Documentation](https://img.shields.io/badge/Doxygen-gh--pages-blue)](https://tearth.github.io/MicrOS/)
+<p align="center">
+<a href="https://travis-ci.org/Tearth/MicrOS"><img src="https://travis-ci.org/Tearth/MicrOS.svg?branch=develop" alt="Build status"></img></a>
+<a href="https://github.com/Tearth/MicrOS/pulls?q=is%3Apr+is%3Aclosed"><img src="https://img.shields.io/github/issues-pr-closed-raw/Tearth/MicrOS" alt="Closed pull requests"></img></a>
+<a href="https://github.com/Tearth/MicrOS/blob/master/LICENSE"><img src="https://img.shields.io/github/license/Tearth/MicrOS" alt="License"></img></a>
+<a href="https://tearth.github.io/MicrOS/"><img src="https://img.shields.io/badge/Doxygen-gh--pages-blue" alt="Documentation"></img></a>
+</p>
 
 This is the simple 32-bit operating system developed by the SKNI KOD (Studenckie Koło Naukowe Informatyków KOD). Our main goal is to create the OS which will have functionality similar to the famous MS-DOS and be able to run on every modern computer.
 
