@@ -1,5 +1,5 @@
 # MicrOS
-[![Build Status](https://i.imgur.com/lNuuSvc.png)](https://travis-ci.org/Tearth/MicrOS)
+![Logo](https://i.imgur.com/lNuuSvc.png)
 
 <p align="center">
 <a href="https://travis-ci.org/Tearth/MicrOS"><img src="https://travis-ci.org/Tearth/MicrOS.svg?branch=develop" alt="Build status"></img></a>
