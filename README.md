@@ -1,5 +1,5 @@
 # MicrOS
-![Logo](https://i.imgur.com/lNuuSvc.png)
+[![Build Status](https://i.imgur.com/lNuuSvc.png)](https://travis-ci.org/Tearth/MicrOS)
 
 [![Build Status](https://travis-ci.org/Tearth/MicrOS.svg?branch=develop)](https://travis-ci.org/Tearth/MicrOS)
 [![Closed pull requests](https://img.shields.io/github/issues-pr-closed-raw/Tearth/MicrOS)](https://github.com/Tearth/MicrOS/pulls?q=is%3Apr+is%3Aclosed)
