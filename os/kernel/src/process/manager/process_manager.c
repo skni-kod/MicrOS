@@ -28,6 +28,7 @@ uint32_t process_manager_create_process(char *path, char *parameters, uint32_t p
 
     void *path_in_kernel_heap = heap_kernel_alloc(path_length, 0);
     void *parameters_in_kernel_heap = heap_kernel_alloc(parameters_length, 0);
+    heap_entry *old_heap = heap_get_user_heap();
 
     memcpy(path_in_kernel_heap, path, path_length);
     memcpy(parameters_in_kernel_heap, parameters, parameters_length);
@@ -69,7 +70,6 @@ uint32_t process_manager_create_process(char *path, char *parameters, uint32_t p
     process->user_stack = (void *)(initial_page * 1024 * 1024 * 4 + process->size_in_memory + stack_align) + 1024 * 1024;
     process->heap = (void *)((uint32_t)process->user_stack) + 4;
 
-    heap_entry *old_heap = heap_get_user_heap();
     heap_set_user_heap((void *)(process->heap));
     heap_init_user_heap();
 
