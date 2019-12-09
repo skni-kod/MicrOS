@@ -1,4 +1,3 @@
-# MicrOS
 ![Logo](https://i.imgur.com/lNuuSvc.png)
 
 <p align="center">
