@@ -10,19 +10,18 @@ script:
   - ./scripts/build.sh
   - doxygen Doxyfile
 deploy:
-  provider: pages
-  skip_cleanup: true
-  local_dir: docs/html
-  github_token: $GH_REPO_TOKEN
-  on:
-    branch: develop
-deploy:
-  provider: releases
-  skip_cleanup: true
-  api_key: $GH_REPO_TOKEN
-  file_glob: true
-  file:
-    - "build/floppy.img"
-  on:
-    tags: true
-    branch: master
+  - provider: pages
+    skip_cleanup: true
+    local_dir: docs/html
+    github_token: $GH_REPO_TOKEN
+    on:
+      branch: develop
+  - provider: releases
+    skip_cleanup: true
+    api_key: $GH_REPO_TOKEN
+    file_glob: true
+    file:
+      - "build/floppy.img"
+    on:
+      tags: true
+      branch: master
