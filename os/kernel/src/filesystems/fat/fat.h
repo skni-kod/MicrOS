@@ -7,25 +7,26 @@
 #include <kvector.h>
 #include "fat_directory_entry.h"
 #include "drivers/rtc/rtc.h"
-#include "Drivers/Floppy/floppy_header.h"
-#include "Drivers/Floppy/floppy.h"
-#include "FileSystems/generic/filesystem_file_info.h"
-#include "FileSystems/generic/filesystem_directory_info.h"
+#include "drivers/floppy/floppy.h"
+#include "filesystems/fat/fat_header.h"
+#include "filesystems/generic/filesystem_file_info.h"
+#include "filesystems/generic/filesystem_directory_info.h"
+#include "filesystems/partitions/partition.h"
 
 void fat_init();
 void fat_load_fat();
 void fat_save_fat();
 void fat_load_root();
 void fat_save_root();
-uint16_t fat_read_sector_value(uint32_t sector_number);
-void fat_save_sector_value(uint32_t sector_number, uint16_t value);
+uint16_t fat_read_cluster_value(uint32_t cluster_number);
+void fat_save_cluster_value(uint32_t cluster_number, uint16_t value);
 void fat_normalise_filename(char *filename, bool with_dot);
 void fat_denormalise_filename(char *filename);
 
-uint16_t fat_save_file_to_sector(uint16_t initial_sector, uint16_t sectors_count, char* buffer);
+uint16_t fat_save_file_to_cluster(uint16_t initial_cluster, uint16_t clusters_count, char* buffer);
 
 bool fat_read_file_from_path(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length);
-uint8_t *fat_read_file_from_sector(uint16_t initial_sector, uint16_t sector_offset, uint16_t sectors_count, uint32_t *read_sectors);
+uint8_t *fat_read_file_from_cluster(uint16_t initial_cluster, uint16_t cluster_offset, uint16_t clusters_count, uint32_t *read_clusters);
 
 bool fat_delete_file_from_path(char* path, bool is_directory);
 bool fat_rename_file_from_path(char* path, char* new_name, bool is_directory);
@@ -33,12 +34,12 @@ bool fat_save_file_from_path(char* path, char* buffer, uint32_t size);
 bool fat_append_file_from_path(char* path, char* buffer, uint32_t size);
 bool fat_create_file_from_path(char* path, bool directory);
 
-fat_directory_entry *fat_get_directory_from_path(char *path, uint32_t *read_sectors);
-fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks, uint32_t *read_sectors, bool *root_dir);
+fat_directory_entry *fat_get_directory_from_path(char *path, uint32_t *read_clusters);
+fat_directory_entry *fat_get_directory_from_chunks(kvector *chunks, uint32_t *read_clusters, bool *root_dir);
 fat_directory_entry *fat_get_info_from_path(char *path, bool is_directory);
 fat_directory_entry *fat_get_info_from_chunks(kvector *chunks, bool is_directory);
-void fat_clear_file_sectors(uint32_t initial_sector);
-uint32_t fat_get_last_file_sector(uint32_t initial_sector);
+void fat_clear_file_clusters(uint32_t initial_cluster);
+uint32_t fat_get_last_file_cluster(uint32_t initial_cluster);
 
 uint32_t fat_get_entries_count_in_directory(char *path);
 uint32_t fat_get_entries_in_directory(char *path, char **entries);
@@ -49,9 +50,10 @@ void fat_update_time(fat_directory_entry_time *fat_time, int hours, int minutes,
 kvector *fat_parse_path(char *path);
 bool fat_is_entry_valid(fat_directory_entry *entry);
 void fat_merge_filename_and_extension(fat_directory_entry *entry, char *buffer);
-uint32_t fat_get_free_sector_index();
+uint32_t fat_get_free_cluster_index();
 
 // Generic filesystem functions
+void fat_generic_set_current_partition(partition *partition);
 bool fat_generic_get_file_info(char *path, filesystem_file_info *generic_file_info);
 bool fat_generic_get_file_info(char *path, filesystem_file_info *generic_file_info);
 bool fat_generic_get_directory_info(char *path, filesystem_directory_info *generic_directory_info);

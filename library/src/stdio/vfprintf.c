@@ -35,7 +35,7 @@ unsigned int _unsigned_number_len(u64 n, int base)
 {
     unsigned int res = 1;
 
-    while (n >= base)
+    while (n >= (unsigned int)base)
     {
         res++;
         n /= base;
@@ -113,7 +113,7 @@ char *_ftoa(long double number, char *buffer, unsigned short flags, int precisio
     }
 
     idx = whole_size + 1;
-    for (size_t i = 0; i < num_zeros; i++)
+    for (int i = 0; i < num_zeros; i++)
     {
         buffer[idx++] = '0';
     }

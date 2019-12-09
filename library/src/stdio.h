@@ -343,7 +343,7 @@ void clearerr(FILE *stream);
 //! Check end-of-file indicator.
 /*!
     Checks whether the end-of-File indicator associated with stream is set, returning a value different from zero if it is.
-    \param stream Pointer to a FILE object that identifies the stream to be closed.
+    \param stream stream Pointer to a FILE object that identifies the stream to be closed.
     \return A non-zero value is returned in the case that the end-of-file indicator associated with the stream is set. Otherwise, zero is returned.
 */
 int feof(FILE *stream);
@@ -351,7 +351,7 @@ int feof(FILE *stream);
 //! Check error indicator.
 /*!
     Checks if the error indicator associated with stream is set, returning a value different from zero if it is.
-    \param stream Pointer to a FILE object that identifies the stream to be closed.
+    \param sstream tream Pointer to a FILE object that identifies the stream to be closed.
     \return A non-zero value is returned in the case that the error indicator associated with the stream is set. Otherwise, zero is returned.
 */
 int ferror(FILE *stream);
@@ -359,9 +359,9 @@ int ferror(FILE *stream);
 //! Write formatted data to string
 /*!
     Composes a string with the same text that would be printed if format was used on printf, but instead of being printed, the content is stored as a C string in the buffer pointed by str.
-    \param Pointer to a buffer where the resulting C-string is stored. The buffer should be large enough to contain the resulting string.
-    \param String that contains text to be written to buffer. Can contain embedded format specifiers.
-    \param Additional arguments
+    \param str Pointer to a buffer where the resulting C-string is stored. The buffer should be large enough to contain the resulting string.
+    \param format String that contains text to be written to buffer. Can contain embedded format specifiers.
+    \param ... Additional arguments
     \return Total number of characters written to buffer
 */
 int sprintf(char *str, const char *format, ...);
@@ -369,8 +369,8 @@ int sprintf(char *str, const char *format, ...);
 //! Print formatted data to stdout
 /*!
     Writes the C string pointed by format to the standard output (stdout). If format includes format specifiers (subsequences beginning with %), the additional arguments following format are formatted and inserted in the resulting string replacing their respective specifiers.
-    \param String that contains text to be written to stdout. Can contain embedded format specifiers.
-    \param Additional arguments
+    \param format String that contains text to be written to stdout. Can contain embedded format specifiers.
+    \param ... Additional arguments
     \return Total number of characters written to stdout
 */
 int printf(const char *format, ...);
@@ -378,9 +378,9 @@ int printf(const char *format, ...);
 //! Print formatted data to stdoutWrite formatted data to stream
 /*!
     Writes the C string pointed by format to the stream. If format includes format specifiers (subsequences beginning with %), the additional arguments following format are formatted and inserted in the resulting string replacing their respective specifiers.
-    \param Pointer to a FILE object that identifies an output stream.
-    \param C string that contains the text to be written to the stream.Can contain embedded format specifiers.
-    \param Additional arguments
+    \param file Pointer to a FILE object that identifies an output stream.
+    \param format C string that contains the text to be written to the stream.Can contain embedded format specifiers.
+    \param ... Additional arguments
     \return Total number of characters written to stream.
 */
 int fprintf(FILE *file, const char *format, ...);
@@ -388,9 +388,9 @@ int fprintf(FILE *file, const char *format, ...);
 //! Print formatted data from variable argument list to stream
 /*!
     Writes the C string pointed by format to the stream. If format includes format specifiers (subsequences beginning with %), the additional arguments stored in arg list are formatted and inserted in the resulting string replacing their respective specifiers.
-    \param Pointer to a FILE object that identifies an output stream.
-    \param C string that contains the text to be written to the stream.Can contain embedded format specifiers.
-    \param A value identifying a variable arguments list initialized with va_start.
+    \param stream Pointer to a FILE object that identifies an output stream.
+    \param format C string that contains the text to be written to the stream.Can contain embedded format specifiers.
+    \param arg A value identifying a variable arguments list initialized with va_start.
     \return Total number of characters written to stream.
 */
 int vfprintf(FILE *stream, const char *format, va_list arg);
@@ -398,8 +398,8 @@ int vfprintf(FILE *stream, const char *format, va_list arg);
 //! Print formatted data from variable argument list to stdout
 /*!
     Writes the C string pointed by format to the stream. If format includes format specifiers (subsequences beginning with %), the additional arguments stored in arg list are formatted and inserted in the resulting string replacing their respective specifiers.
-    \param C string that contains the text to be written to the stream.Can contain embedded format specifiers.
-    \param A value identifying a variable arguments list initialized with va_start.
+    \param format C string that contains the text to be written to the stream.Can contain embedded format specifiers.
+    \param arg A value identifying a variable arguments list initialized with va_start.
     \return Total number of characters written to stream.
 */
 int vprintf(const char *format, va_list arg);
@@ -407,24 +407,44 @@ int vprintf(const char *format, va_list arg);
 //! Print formatted data from variable argument list to string
 /*!
     Composes a string with the same text that would be printed if format was used on printf, but using the elements in the variable argument list identified by arg instead of additional function arguments and storing the resulting content as a C string in the buffer pointed by str.
-    \param Pointer to a buffer where the resulting C-string is stored. The buffer should be large enough to contain the resulting string.
-    \param C string that contains the text to be written to the stream.Can contain embedded format specifiers.
-    \param A value identifying a variable arguments list initialized with va_start.
+    \param str Pointer to a buffer where the resulting C-string is stored. The buffer should be large enough to contain the resulting string.
+    \param format C string that contains the text to be written to the stream.Can contain embedded format specifiers.
+    \param arg A value identifying a variable arguments list initialized with va_start.
     \return Total number of characters written to stream.
 */
 int vsprintf(char *str, const char *format, va_list arg);
 
+//! Read formatted data from stream into variable argument list
+/*!
+    Reads data from the stream and stores them according to parameter format into the locations pointed by the elements in the variable argument list identified by arg.
+    \param stream Pointer to a FILE object that identifies an input stream.
+    \param format C string that contains the text to be written to the stream.Can contain embedded format specifiers.
+    \param arg A value identifying a variable arguments list initialized with va_start.
+    \return On success, the function returns the number of items of the argument list successfully filled. Otherwise, EOF.
+*/
 int vfscanf(FILE *stream, const char *format, va_list arg);
 
+//! Read formatted data from stdin
+/*!
+    Reads data from stdin and stores them according to the parameter format into the locations pointed by the additional arguments.
+    \param format C string that contains the text to be written to the stream.Can contain embedded format specifiers.
+    \param ... Depending on the format string, the function may expect a sequence of additional arguments, each containing a pointer to allocated storage where the interpretation of the extracted characters is stored with the appropriate type.
+    \return On success, the function returns the number of items of the argument list successfully filled. Otherwise, EOF.
+*/
 int scanf(const char *format, ...);
 
-//! Creates new stream.
+//! Creates new stream
 /*!
     Creates new stream (not assigned to any file or device) and returns it.
     \return A newly created stream.
 */
 FILE *__stdio_create_stream();
 
+//! Parses file mode
+/*!
+    Parses file mode in string format (eg. r+) and returns corresponding enum.
+    \return File mode in enum representation.
+*/
 file_mode __stdio_get_file_mode(const char *str_mode);
 
 #ifdef __cplusplus

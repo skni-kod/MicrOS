@@ -15,6 +15,7 @@ int main(int argc, char *argv[])
     char *current_dir = argv[1];
     char *path = argv[2];
     char *new_name = argv[3];
+    char current_partition_symbol = current_dir[0];
     
     if(strlen(new_name) > 12)
     {
@@ -22,11 +23,12 @@ int main(int argc, char *argv[])
         return -1;
     }
     
-    char path_variations[2][64];
-    sprintf(path_variations[0], "%s", path);
-    sprintf(path_variations[1], "%s/%s", current_dir, path);
+    char path_variations[3][64];
+    sprintf(path_variations[0], "%s", path); // A:/ENV
+    sprintf(path_variations[1], "%c:/%s", current_partition_symbol, path); // /ENV -> A:/ENV
+    sprintf(path_variations[2], "%s/%s", current_dir, path); // DATA -> A:/ENV/DATA
     
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < 3; i++)
     {
         reduce_slashes(path_variations[i]);
         if(micros_filesystem_file_exists(path_variations[i]))

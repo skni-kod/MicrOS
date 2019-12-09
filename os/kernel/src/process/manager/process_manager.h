@@ -7,13 +7,14 @@
 #include "process_user_info.h"
 #include "cpu/paging/paging.h"
 #include "process/elf/parser/elf_header.h"
-#include "process/elf/Loader/elf_loader.h"
+#include "process/elf/loader/elf_loader.h"
 #include "filesystems/fat/fat.h"
 #include "assembly/io.h"
 #include "cpu/idt/idt.h"
 #include "process/signals/signals_manager.h"
 #include "process/signals/signal_params.h"
 #include "memory/heap/heap.h"
+#include "filesystems/filesystem.h"
 
 void process_manager_init();
 uint32_t process_manager_create_process(char *path, char *parameters, uint32_t parent_id, bool active);
@@ -38,7 +39,7 @@ bool process_manager_set_current_process_signal_handler(void (*signal_handler)(i
 void process_manager_finish_signal_handler(signal_params *old_state);
 
 void process_manager_set_active_process_id(uint32_t process_id);
-void process_manager_get_active_process_id(uint32_t process_id);
+uint32_t process_manager_get_active_process_id(uint32_t process_id);
 bool process_manager_is_current_process_active();
 
 void process_manager_current_process_sleep(uint32_t milliseconds);

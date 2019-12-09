@@ -57,6 +57,7 @@ tools
 build
 scripts
 .vscode
+docs
 
 cloc.exe
 cloc.bat

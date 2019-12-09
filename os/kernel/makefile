@@ -1,6 +1,6 @@
 GCC := /opt/cross/bin/i386-elf-gcc
 OBJCOPY := /opt/cross/i386-elf/bin/objcopy
-NASM := "../../Tools/nasm"
+NASM := "../../tools/nasm"
 
 SRC_DIR := src
 OBJ_DIR := obj
@@ -16,7 +16,7 @@ ASM_OBJECTS := $(patsubst $(SRC_DIR)/%.asm,$(OBJ_DIR)/%.o,$(ASM_SOUCES))
 
 DEPS := $(C_OBJECTS:.o=.d)
 
-GCC_COMPILE_FLAGS := -I$(SRC_DIR) -I../../library/src -I$(SRC_DIR)/klibrary -ggdb3 -O0 -ffreestanding -Wall -Wextra -Wno-unused-parameter -fshort-enums
+GCC_COMPILE_FLAGS := -I$(SRC_DIR) -I../../library/src -I$(SRC_DIR)/klibrary -ggdb3 -O0 -ffreestanding -Wall -Wextra -Wno-unused-parameter -Wno-packed-bitfield-compat -fshort-enums
 GCC_LINK_FLAGS := -T ../linker.ld -L../../library/bin -lc -lgcc -nostdlib
 
 ifeq ($(MODE),release)
@@ -38,12 +38,12 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@echo "=== Compiling C file $< into object $@ ==="
 	@mkdir -p '$(@D)'
 	@$(GCC) -c $(PWD)/$< -o $@ -MMD -MF $(@:.o=.d) $(GCC_COMPILE_FLAGS)
-	
+
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.asm
 	@echo "=== Compiling asm file $< into object $@ ==="
 	@mkdir -p '$(@D)'
 	@$(NASM) $(PWD)/$< -f elf32 -o $@
-	
+
 -include $(DEPS)
 
 clean:

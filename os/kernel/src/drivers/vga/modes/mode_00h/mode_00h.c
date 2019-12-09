@@ -1,5 +1,5 @@
 #include "mode_00h.h"
-#include "drivers/vga/modes/registerFunctions.h"
+#include "drivers/vga/modes/registerfunctions.h"
 #include "memory/heap/heap.h"
 #include "drivers/dal/videocard/videocard.h"
 #include "drivers/vga/vga.h"

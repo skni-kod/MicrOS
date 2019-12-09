@@ -5,7 +5,10 @@ point list_start_point;
 
 bool highscores_exit_to_menu;
 
-const char *highscores_filename = "/DATA/SN_HGHSC.SAV";
+extern char current_partition;
+char highscores_path_with_partition[64];
+
+const char *highscores_path= "/DATA/SNAKE.SAV";
 const char *highscores_screen =
 "\n"
 "\n"
@@ -34,6 +37,8 @@ const char *highscores_screen =
 void highscores_init()
 {
     micros_console_clear();
+    
+    sprintf(highscores_path_with_partition, "%c:%s", current_partition, highscores_path);
     
     list_start_point.x = 16;
     list_start_point.y = 12;
@@ -90,9 +95,9 @@ void highscores_delete()
 
 void highscores_load_from_file()
 {
-    if(micros_filesystem_file_exists((char *)highscores_filename))
+    if(micros_filesystem_file_exists(highscores_path_with_partition))
     {
-        FILE *file = fopen(highscores_filename, "r");
+        FILE *file = fopen(highscores_path_with_partition, "r");
         fread(&highscores_data, sizeof(highscores_container), 1, file);
         fclose(file);
     }
@@ -100,7 +105,7 @@ void highscores_load_from_file()
 
 void highscores_save_to_file()
 {
-    FILE *file = fopen(highscores_filename, "w");
+    FILE *file = fopen(highscores_path_with_partition, "w");
     fwrite(&highscores_data, sizeof(highscores_container), 1, file);
     fclose(file);
 }

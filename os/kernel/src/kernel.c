@@ -14,18 +14,21 @@
 #include "cpu/paging/paging.h"
 #include "memory/map/memory_map.h"
 #include "memory/physical/physical_memory_manager.h"
-#include "fileSystems/filesystem.h"
+#include "filesystems/filesystem.h"
 #include "cpu/panic/panic_screen.h"
 #include "process/elf/parser/elf_parser.h"
-#include "process/elf/Loader/elf_loader.h"
+#include "process/elf/loader/elf_loader.h"
 #include "process/manager/process_manager.h"
 #include "process/syscalls/syscalls_manager.h"
 #include "process/signals/signals_manager.h"
 #include "cpu/tss/tss.h"
 #include "drivers/dal/videocard/videocard.h"
 #include "drivers/vga/genericvga.h"
+#include "cpu/dma/dma.h"
 #include "drivers/harddisk/harddisk.h"
-#include "drivers/harddisk/harddisk_identify_devide_data.h"
+#include "drivers/harddisk/ata/harddisk_ata.h"
+#include "drivers/harddisk/harddisk_identify_device_data.h"
+#include "filesystems/partitions/partitions.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
@@ -48,30 +51,30 @@ linesStruct ssBuffer[64];
     \param bus Type of bus for hard disk.
     \param name Name for hard disk eg. "Primary Master", that is printed during boot to specify disk.
  */
-void print_harddisk_details(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, char* name)
+void print_harddisk_details(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, char* name)
 {
     char buff[50];
     char buff2[100];
     HARDDISK_STATE state = harddisk_get_state(type, bus);
 
-    if(state == HARDDISK_PRESENT)
+    if(state == HARDDISK_ATA_PRESENT)
     {
-        strcpy(buff2, name);        
-        strcat(buff2, ": present");
+        strcpy(buff2, name);
+        strcat(buff2, ": ATA device");
         logger_log_info(buff2);
 
         harddisk_get_disk_model_number_terminated(type, bus, buff);
-        strcpy(buff2, "Model name: ");        
+        strcpy(buff2, "Model name: ");
         strcat(buff2, buff);
         logger_log_info(buff2);
 
         harddisk_get_disk_firmware_version_terminated(type, bus, buff);
-        strcpy(buff2, "Firmware version: ");        
+        strcpy(buff2, "Firmware version: ");
         strcat(buff2, buff);
         logger_log_info(buff2);
 
         harddisk_get_disk_serial_number_terminated(type, bus, buff);
-        strcpy(buff2, "Serial number: ");        
+        strcpy(buff2, "Serial number: ");
         strcat(buff2, buff);
         logger_log_info(buff2);
 
@@ -85,30 +88,69 @@ void print_harddisk_details(HARDDISK_MASTER_SLAVE type, HARDDISK_BUS_TYPE bus, c
         strcat(buff2, buff);
         strcat(buff2, " MB");
         logger_log_info(buff2);
+
+        if(harddisk_get_is_removable_media_device(type, bus) == true)
+        {
+            logger_log_info("Removable media: true");
+        }
+        else
+        {
+            logger_log_info("Removable media: false");
+        }
+    }
+    else if(state == HARDDISK_ATAPI_PRESENT)
+    {
+        strcpy(buff2, name);
+        strcat(buff2, ": ATAPI device");
+        logger_log_info(buff2);
+
+        harddisk_get_disk_model_number_terminated(type, bus, buff);
+        strcpy(buff2, "Model name: ");
+        strcat(buff2, buff);
+        logger_log_info(buff2);
+
+        harddisk_get_disk_firmware_version_terminated(type, bus, buff);
+        strcpy(buff2, "Firmware version: ");
+        strcat(buff2, buff);
+        logger_log_info(buff2);
+
+        harddisk_get_disk_serial_number_terminated(type, bus, buff);
+        strcpy(buff2, "Serial number: ");
+        strcat(buff2, buff);
+        logger_log_info(buff2);
+
+        if(harddisk_get_is_removable_media_device(type, bus) == true)
+        {
+            logger_log_info("Removable media: true");
+        }
+        else
+        {
+            logger_log_info("Removable media: false");
+        }
     }
     else if(state == HARDDISK_NOT_PRESENT)
     {
-        strcpy(buff2, name);        
-        strcat(buff2, ": not present");
+        strcpy(buff2, name);
+        strcat(buff2, ": not detected");
         logger_log_info(buff2);
     }
     else
     {
-        strcpy(buff2, name);        
-        strcat(buff2, ": error");
+        strcpy(buff2, name);
+        strcat(buff2, ": error or not supported device");
         logger_log_info(buff2);
-    }    
+    }
 }
 
-//! Prints hard diskd details.
+//! Prints hard disks details.
 /*! Used during boot to print informations about all hard disks.
  */
 void print_harddisks_status()
 {
-    print_harddisk_details(HARDDISK_MASTER, HARDDISK_PRIMARY_BUS, "Primary Master");
-    print_harddisk_details(HARDDISK_SLAVE, HARDDISK_PRIMARY_BUS, "Primary Slave");
-    print_harddisk_details(HARDDISK_MASTER, HARDDISK_SECONDARY_BUS, "Secondary Master");
-    print_harddisk_details(HARDDISK_SLAVE, HARDDISK_SECONDARY_BUS, "Secondary Slave");
+    print_harddisk_details(HARDDISK_ATA_MASTER, HARDDISK_ATA_PRIMARY_BUS, "Primary Master");
+    print_harddisk_details(HARDDISK_ATA_SLAVE, HARDDISK_ATA_PRIMARY_BUS, "Primary Slave");
+    print_harddisk_details(HARDDISK_ATA_MASTER, HARDDISK_ATA_SECONDARY_BUS, "Secondary Master");
+    print_harddisk_details(HARDDISK_ATA_SLAVE, HARDDISK_ATA_SECONDARY_BUS, "Secondary Slave");
 }
 
 void startup()
@@ -142,12 +184,21 @@ void startup()
     timer_init();
     logger_log_ok("Timer");
 
-    floppy_init();
-    logger_log_ok("Floppy");
+    dma_init(0xc0000500);
+    logger_log_ok("DMA");
+
+    if(fdc_is_present())
+    {
+        fdc_init();
+        logger_log_ok("Floppy Disc Controller");
+    }
     
     harddisk_init();
     logger_log_ok("Hard Disks");
     print_harddisks_status();
+    
+    partitions_init();
+    logger_log_ok("Partitions");
 
     keyboard_init();
     logger_log_ok("Keyboard");
@@ -212,8 +263,8 @@ void startup()
     log_info(itoa(dev->class_code, buff, 16));
     log_info(itoa(dev->subclass, buff, 16));
     log_info(itoa(dev->prog_if, buff, 16));*/
-    fat_init();
-    logger_log_ok("FAT12");
+    //fat_init();
+    //logger_log_ok("FAT12");
 
     process_manager_init();
     logger_log_ok("Process manager");
@@ -243,16 +294,18 @@ int kmain()
     logger_log_info("Hello, World!");
     //startup_music_play();
     logger_log_ok("READY.");
-    /*
+    
+    //while (1);
+    
     logger_log_ok("Loading tasks...");
     vga_clear_screen();
-    process_manager_create_process("/ENV/SHELL.ELF", "", 1000, false);
+    process_manager_create_process("A:/ENV/SHELL.ELF", "", 1000, false);
 
     process_manager_run();
 
     while (1);
     //    ;
-    char buff[50];
+    /*char buff[50];
     video_mode *currentMode;
     srand(clock());
     char shouldDrawLines = 0;

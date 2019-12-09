@@ -87,12 +87,12 @@ bool micros_filesystem_directory_exists(char *path)
     return micros_filesystem_get_directory_info(path, &info);
 }
 
-int micros_filesystem_get_free_space()
+int micros_filesystem_get_free_space(char partition_symbol)
 {
-    return micros_interrupt_0a(0x70);
+    return micros_interrupt_1a(0x70, (uint32_t)partition_symbol);
 }
 
-int micros_filesystem_get_total_space()
+int micros_filesystem_get_total_space(char partition_symbol)
 {
-    return micros_interrupt_0a(0x71);
+    return micros_interrupt_1a(0x71, (uint32_t)partition_symbol);
 }
