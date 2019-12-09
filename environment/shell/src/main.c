@@ -36,8 +36,8 @@ int main(int argc, char *argv[])
         
         if(cursor_position.x == 0 && cursor_position.y == 0)
         {
-            printf("MicrOS Shell v1.0\n");
-            printf("Type path to execute an application\n");
+            printf("MicrOS Shell v1.1\n");
+            printf("Type \"help\" to list available applications\n\n");
         }
         
         printf(" %c:%s> ", current_partition_symbol, current_dir);
