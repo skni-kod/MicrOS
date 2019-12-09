@@ -7,9 +7,7 @@
 <a href="https://tearth.github.io/MicrOS/"><img src="https://img.shields.io/badge/Doxygen-gh--pages-blue" alt="Documentation"></img></a>
 </p>
 
-This is the simple 32-bit operating system developed by the SKNI KOD (Studenckie Koło Naukowe Informatyków KOD). Our main goal is to create the OS which will have functionality similar to the famous MS-DOS and be able to run on every modern computer.
-
-The repository doesn't contain all files necessary to successful compilation - we use our internal build scripts which aren't present here. We will release complete image files when the OS will be ready for basic usage. Feel free to analyze and use any part of this project (but remember about GPL-3 license restrictions).
+This is the simple 32-bit operating system developed by the SKNI KOD (Studenckie Koło Naukowe Informatyków KOD). Our main goal is to create the OS which will have functionality similar to the famous MS-DOS and be able to run on every modern computer. Feel free to analyze and use any part of this project (but remember about GPL-3 license restrictions).
 
 Full description about how to build MicrOS (on Linux or Windows 10 WSL) can be read here: https://github.com/jaenek/MicrOS-DevTools.
 
@@ -24,6 +22,7 @@ Documentation: https://tearth.github.io/MicrOS/
   * PC Speaker
   * RTC (Real-Time Clock)
   * PIT (Programmable Interval Timer)
+  * ATA
 * Interrupts (software, hardware, exceptions) manager
 * Paging
 * Physical/Virtual memory manager
