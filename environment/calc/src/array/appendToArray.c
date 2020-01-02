@@ -18,7 +18,7 @@ void** appendToArray(void** array, const void* value, size_t* sizeOfArray, Type 
 
 	//Initialize new array
 	if(array == 0){
-		array = malloc(sizeof(void*));		
+		array = malloc(sizeof(void*));
 		*sizeOfArray += 1;
 		return array;
 	}else{
@@ -35,13 +35,13 @@ void** appendToArray(void** array, const void* value, size_t* sizeOfArray, Type 
 	//Allocate memory for value
 	switch (type) {
 	case tString:
-		array[*sizeOfArray] = malloc((strlen((char*)value) + 1) * sizeof(char));
+		*(array + sizeof(void*) * *sizeOfArray) = malloc((strlen((char*)value) + 1) * sizeof(char));
 		break;
 	case tInt:
-		array[*sizeOfArray] = malloc(sizeof(int));
+		*(array + sizeof(void*) * *sizeOfArray) = malloc(sizeof(int));
 		break;
 	case tDouble:
-		array[*sizeOfArray] = malloc(sizeof(double));
+		*(array + sizeof(void*) * *sizeOfArray) = malloc(sizeof(double));
 		break;
 	};
 
@@ -54,13 +54,13 @@ void** appendToArray(void** array, const void* value, size_t* sizeOfArray, Type 
 	//Copy value to array
 	switch (type) {
 	case tString:
-		strcpy(array[*sizeOfArray], value);
+		strcpy(*(array + sizeof(void*) * *sizeOfArray), value);
 		break;
 	case tInt:
-		memcpy(array[*sizeOfArray], value, sizeof(int));
+		memcpy(*(array + sizeof(void*) * *sizeOfArray), value, sizeof(int));
 		break;
 	case tDouble:
-		memcpy(array[*sizeOfArray], value, sizeof(double));
+		memcpy(*(array + sizeof(void*) * *sizeOfArray), value, sizeof(double));
 		break;
 	};
 
