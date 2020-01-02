@@ -15,25 +15,22 @@ void printArray(void** array, size_t* sizeOfArray, Type type) {
 	switch (type) {
 	case tString:
 		{
-			char** Array = (char**)array;
 			for (size_t i = 0; i < *sizeOfArray; i++) {
-				printf("[%zu]->{%s}\n", i, Array[i]);
+				printf("[%zu]->{%s}\n", i, *(array + i));
 			}
 		}
 		break;
 	case tInt:
 		{
-			int** Array = (int**)array;
 			for (size_t i = 0; i < *sizeOfArray; i++) {
-				printf("[%zu]->{%i}\n", i, *Array[i]);
+				printf("[%zu]->{%i}\n", i, *(array + i));
 			}
 		}
 		break;
 	case tDouble:
 		{
-			double** Array = (double**)array;
 			for (size_t i = 0; i < *sizeOfArray; i++) {
-				printf("[%zu]->{%lf}\n", i, *Array[i]);
+				printf("[%zu]->{%lf}\n", i, *(array + i));
 			}
 		}
 		break;

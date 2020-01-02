@@ -29,8 +29,6 @@ char** splitString(char* string, const char delimiter, size_t* sizeOfArray) {
 		value[0] = string[i];
 		if (value[0] == delimiter || value[0] == '\0') {
 			array = appendToArray(array,tmp,sizeOfArray,tString);
-			printf("tmp:%s\n",tmp);	
-			printf("array[]:%s\n",array[((*sizeOfArray)-1)]);
 			tmp = emptyString(tmp);
 		}else{
 			tmp = appendToString(tmp, value);

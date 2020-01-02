@@ -14,10 +14,11 @@ int main(int argc, char** argv)
 	size_t size = 0;
 	char** array = 0;
 
-	string = appendToString(string,"Hello");
+	string = appendToString(string,"Hello;World;123123");
 
 	array = splitString(string,';',&size);
-
+	
+	//*(array + (*sizeOfArray - 1))
 	printArray(array,&size,tString);
 
 	return 0;
