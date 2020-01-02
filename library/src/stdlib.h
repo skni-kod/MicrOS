@@ -22,6 +22,14 @@ extern "C" {
  */
 int32_t atoi(const char *string);
 
+//! Convert string to floating point
+/*
+    Parses the C-string str interpreting its content as an integral number, which is returned as a value of type int.
+    \param string C-string beginning with the representation of an integral number.
+    \return On success, the function returns the converted integral number as an int value.
+ */
+float atof(const char *string);
+
 //! Convert integer to string (non-standard function)
 /*
     Converts an integer value to a null-terminated string using the specified base and stores the result in the array given by str parameter.
@@ -40,6 +48,7 @@ char *itoa(int input, char *buffer, int base);
     \param endptr Reference to an already allocated object of type char*, whose value is set by the function to the next character in str after the numerical value. This parameter can also be a null pointer, in which case it is not used.
     \return On success, the function returns the converted floating point number as a value of type double. If no valid conversion could be performed, the function returns zero (0.0).
  */
+
 double strtod(const char* str, char** endptr);
 
 //! Allocate memory block
