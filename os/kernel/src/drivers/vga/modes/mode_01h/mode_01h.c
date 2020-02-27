@@ -491,7 +491,7 @@ int8_t mode01h_draw_pixel_buffered(uint8_t color, uint16_t x, uint16_t y)
 	s.character.ascii_code = ' ';
 	s.character.color.color_without_blink.background = color & 0x0F;
 	s.character.color.color_without_blink.letter = color & 0x0F;
-	mode01h_buffer[vga_calcualte_position_without_offset(x, y)] = s;
+	mode01h_buffer[__vga_calcualte_position_without_offset(x, y)] = s;
 	return 0;
 }
 int8_t mode01h_draw_line_buffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
@@ -541,7 +541,7 @@ int8_t mode01h_clear_screen_buffered()
         // Clear all lines
         for (uint16_t j = 0; j < VGA_MODE_01H_SCREEN_COLUMNS; ++j)
         {
-            uint16_t pos = vga_calcualte_position_without_offset(j, i);
+            uint16_t pos = __vga_calcualte_position_without_offset(j, i);
             // Clear
             mode01h_buffer[pos].character.ascii_code = 0;
             mode01h_buffer[pos].character.color.color_without_blink = col;
@@ -556,7 +556,7 @@ int8_t mode01h_draw_pixel_external_buffer(uint8_t* buffer, uint16_t mode, int8_t
 	s.character.ascii_code = ' ';
 	s.character.color.color_without_blink.background = color & 0x0F;
 	s.character.color.color_without_blink.letter = color & 0x0F;
-	((screen*) buffer)[vga_calcualte_position_without_offset(x, y)] = s;
+	((screen*) buffer)[__vga_calcualte_position_without_offset(x, y)] = s;
 	return 0;
 }
 int8_t mode01h_draw_line_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
@@ -602,7 +602,7 @@ int8_t mode01h_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode)
         // Clear all lines
         for (uint16_t j = 0; j < VGA_MODE_01H_SCREEN_COLUMNS; ++j)
         {
-            uint16_t pos = vga_calcualte_position_without_offset(j, i);
+            uint16_t pos = __vga_calcualte_position_without_offset(j, i);
             // Clear
             ((screen*)buffer)[pos].character.ascii_code = 0;
             ((screen*)buffer)[pos].character.color.color_without_blink = col;
