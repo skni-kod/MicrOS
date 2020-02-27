@@ -2,13 +2,35 @@
 
 // Position on screen
 vga_screen_pos vga_cursor_pos;
+
+//! Pointer to current screen
+/*!
+    Points to array of characters
+*/ 
 volatile screen *vga_video;
+
+//! Current video screen.
 uint8_t vga_current_printing_screen = 0;
+
+//! Current offset for screen.
+/*!
+    When we add this to `vga_video` we wil get address of screen we should work on.
+*/
 uint16_t vga_screen_offset = 0;
+
+//! Current text mode.
 uint8_t vga_current_mode = 0;
+
+//! Number of columns screens for current text mode.
 uint16_t vga_current_columns = 0;
+
+//! Number of rows screens for current text mode.
 uint16_t vga_current_rows = 0;
+
+//! Number of max screens for current text mode.
 uint16_t vga_current_max_screens = 0;
+
+//! Offset between screens for current text mode.
 uint16_t vga_current_screen_offset = 0;
 
 uint8_t vga_init(uint8_t mode)
