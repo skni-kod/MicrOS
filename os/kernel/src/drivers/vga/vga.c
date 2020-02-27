@@ -210,15 +210,14 @@ void vga_set_cursor_pos(uint16_t x, uint16_t y)
 {
     vga_cursor_pos.x = x;
     vga_cursor_pos.y = y;
-    vga_update_cursor_struct(vga_cursor_pos);
 }
 
 void vga_set_cursor_pos_struct(vga_screen_pos spos)
 {
     vga_cursor_pos = spos;
-    vga_update_cursor_struct(vga_cursor_pos);
 }
 
+// TODO: Returned position is not valid after printing some string.
 vga_screen_pos vga_get_cursor_pos()
 {
     return vga_cursor_pos;

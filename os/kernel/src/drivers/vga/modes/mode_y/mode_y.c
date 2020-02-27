@@ -271,3 +271,63 @@ int8_t modey_clear_screen_buffered()
         memset(modey_buffer[p], 0, 64*1024);
     return 0;
 }
+
+int8_t modey_draw_pixel_external_buffer(uint8_t* buffer, uint16_t mode, int8_t color, uint16_t x, uint16_t y){
+    if((x>=MODEY_WIDTH) || (y >=MODEY_HEIGHT))
+        return -1;
+    unsigned int offset = (y * MODEY_WIDTH + x);
+	buffer[(offset%4) * MODEY_HEIGHT * MODEY_WIDTH / 4 + offset/4] = color;
+    return 0;
+}
+int8_t modey_draw_line_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
+{
+    if(ax == bx) return -1;
+    int32_t dx = (int32_t)bx - ax;
+    int32_t dy = (int32_t)by - ay;
+    if(_abs(dx) >= _abs(dy))
+    {
+        float a = dy/(float)(dx);
+        float b = ay - a * ax;
+        if(ax > bx)
+            for(int x = bx; x <= ax; ++x)
+                modey_draw_pixel_external_buffer(buffer, mode, color, x, a * x + b);
+        else
+            for(int x = ax; x <= bx; ++x)
+                modey_draw_pixel_external_buffer(buffer, mode, color, x, a * x + b);
+    }
+    else
+    {
+        float a = dx/(float)(dy);
+        float b = ax - a * ay;
+        if(ay > by)
+            for(int y = by; y <= ay; ++ y)
+                modey_draw_pixel_external_buffer(buffer, mode, color, a * y + b, y);
+        else
+            for(int y = ay; y <= by; ++ y)
+                modey_draw_pixel_external_buffer(buffer, mode, color, a * y + b, y);
+    }
+    return 0;
+}
+int8_t modey_draw_circle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t x, uint16_t y, uint16_t radius){
+	return -1;
+}
+int8_t modey_draw_rectangle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by){
+	return -1;
+}
+int8_t modey_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode){
+    memset(buffer, 0, 4*MODEY_HEIGHT * MODEY_WIDTH / 4);
+    return 0;
+}
+
+int8_t modey_swap_external_buffer(uint8_t* buffer, uint16_t mode){
+        for(uint8_t p = 3; p < 4; p--)
+    {
+        set_plane(p);
+        memcpy(VGA_VRAM, buffer + p * MODEY_WIDTH * MODEY_HEIGHT / 4, MODEY_WIDTH * MODEY_HEIGHT / 4);
+    }
+    //memcpy(VGA_VRAM, mode13h_buffer, MODE13H_HEIGHT * MODE13H_WIDTH);
+    return 0;
+}
+uint8_t* modey_create_external_buffer(uint16_t mode){
+    return heap_kernel_alloc(4*MODEY_HEIGHT * MODEY_WIDTH / 4, 0);
+}

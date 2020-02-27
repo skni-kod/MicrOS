@@ -244,3 +244,60 @@ int8_t mode13h_clear_screen_buffered()
     memset(mode13h_buffer, 0, 256 * 1024);
     return 0;
 }
+
+int8_t mode13h_draw_pixel_external_buffer(uint8_t* buffer, uint16_t mode, int8_t color, uint16_t x, uint16_t y){
+    if((x>=MODE13H_WIDTH) || (y >=MODE13H_HEIGHT)){
+        return -1;
+    }
+	buffer[y * MODE13H_WIDTH + x] = color;
+    return 0;
+}
+int8_t mode13h_draw_line_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by){
+    if(ax == bx) return -1;
+    int32_t dx = (int32_t)bx - ax;
+    int32_t dy = (int32_t)by - ay;
+    if(_abs(dx) >= _abs(dy))
+    {
+        float a = dy/(float)(dx);
+        float b = ay - a * ax;
+        if(ax > bx)
+            for(int x = bx; x <= ax; ++x)
+                mode13h_draw_pixel_external_buffer(buffer, mode, color, x, a * x + b);
+        else
+            for(int x = ax; x <= bx; ++x)
+                mode13h_draw_pixel_external_buffer(buffer, mode, color, x, a * x + b);
+    }
+    else
+    {
+        float a = dx/(float)(dy);
+        float b = ax - a * ay;
+        if(ay > by)
+            for(int y = by; y <= ay; ++ y)
+                mode13h_draw_pixel_external_buffer(buffer, mode, color, a * y + b, y);
+        else
+            for(int y = ay; y <= by; ++ y)
+                mode13h_draw_pixel_external_buffer(buffer, mode, color, a * y + b, y);
+    }
+    return 0;
+}
+int8_t mode13h_draw_circle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t x, uint16_t y, uint16_t radius){
+    return -1;
+}
+int8_t mode13h_draw_rectangle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by){
+    return -1;
+}
+int8_t mode13h_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode)
+{
+    memset(buffer, 0, MODE13H_WIDTH * MODE13H_HEIGHT);
+    return 0;
+}
+
+int8_t mode13h_swap_external_buffer(uint8_t* buffer, uint16_t mode)
+{
+    memcpy(VGA_VRAM, buffer, MODE13H_WIDTH * MODE13H_HEIGHT);
+    return 0;
+}
+uint8_t* mode13h_create_external_buffer(uint16_t mode)
+{
+    return heap_kernel_alloc(MODE13H_HEIGHT * MODE13H_WIDTH, 0);
+}

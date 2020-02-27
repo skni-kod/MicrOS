@@ -16,6 +16,7 @@
 #include "modes/mode_12h/mode_12h.h"
 #include "modes/mode_13h/mode_13h.h"
 #include "modes/mode_y/mode_y.h"
+#include "memory/heap/heap.h"
 
 video_mode current_video_mode;
 uint8_t text_mode;
@@ -238,4 +239,164 @@ uint8_t generic_vga_is_text_mode()
 video_mode *generic_vga_get_current_video_mode()
 {
     return &current_video_mode;
+}
+
+int8_t generic_vga_draw_pixel_external_buffer(uint8_t* buffer, uint16_t mode, int8_t color, uint16_t x, uint16_t y){
+    switch(mode)
+    {
+        case 0x00:
+        case 0x01:
+        case 0x02:
+        case 0x03:
+        case 0x04:
+        case 0x05:
+        case 0x06:
+        case 0x07:
+        case 0x0D:
+        case 0x0E:
+        case 0x0F:
+        case 0x10:
+        case 0x11:
+        case 0x12:
+        case 0x13:
+        case 0x69:
+        default: return -1;
+    }
+}
+
+int8_t generic_vga_draw_line_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by){
+    switch(mode)
+    {
+        case 0x00:
+        case 0x01:
+        case 0x02:
+        case 0x03:
+        case 0x04:
+        case 0x05:
+        case 0x06:
+        case 0x07:
+        case 0x0D:
+        case 0x0E:
+        case 0x0F:
+        case 0x10:
+        case 0x11:
+        case 0x12:
+        case 0x13:
+        case 0x69:
+        default: return -1;
+    }
+}
+int8_t generic_vga_draw_circle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t x, uint16_t y, uint16_t radius){
+    switch(mode)
+    {
+        case 0x00:
+        case 0x01:
+        case 0x02:
+        case 0x03:
+        case 0x04:
+        case 0x05:
+        case 0x06:
+        case 0x07:
+        case 0x0D:
+        case 0x0E:
+        case 0x0F:
+        case 0x10:
+        case 0x11:
+        case 0x12:
+        case 0x13:
+        case 0x69:
+        default: return -1;
+    }
+}
+int8_t generic_vga_draw_rectangle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by){
+    switch(mode)
+    {
+        case 0x00:
+        case 0x01:
+        case 0x02:
+        case 0x03:
+        case 0x04:
+        case 0x05:
+        case 0x06:
+        case 0x07:
+        case 0x0D:
+        case 0x0E:
+        case 0x0F:
+        case 0x10:
+        case 0x11:
+        case 0x12:
+        case 0x13:
+        case 0x69:
+        default: return -1;
+    }
+}
+int8_t generic_vga_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode){
+    switch(mode)
+    {
+        case 0x00:
+        case 0x01:
+        case 0x02:
+        case 0x03:
+        case 0x04:
+        case 0x05:
+        case 0x06:
+        case 0x07:
+        case 0x0D:
+        case 0x0E:
+        case 0x0F:
+        case 0x10:
+        case 0x11:
+        case 0x12:
+        case 0x13:
+        case 0x69:
+        default: return -1;
+    }
+}
+
+int8_t generic_vga_swap_external_buffer(uint8_t buffer, uint16_t mode){
+    switch(mode)
+    {
+        case 0x00:
+        case 0x01:
+        case 0x02:
+        case 0x03:
+        case 0x04:
+        case 0x05:
+        case 0x06:
+        case 0x07:
+        case 0x0D:
+        case 0x0E:
+        case 0x0F:
+        case 0x10:
+        case 0x11:
+        case 0x12:
+        case 0x13:
+        case 0x69:
+        default: return -1;
+    }
+}
+uint8_t* generic_vga_create_external_buffer(uint16_t mode){
+    switch(mode)
+    {
+        case 0x00:
+        case 0x01:
+        case 0x02:
+        case 0x03:
+        case 0x04:
+        case 0x05:
+        case 0x06:
+        case 0x07:
+        case 0x0D:
+        case 0x0E:
+        case 0x0F:
+        case 0x10:
+        case 0x11:
+        case 0x12:
+        case 0x13:
+        case 0x69:
+        default: return NULL;
+    }
+}
+void generic_vga_destroy_external_buffer(uint8_t* buffer){
+
 }

@@ -268,3 +268,61 @@ int8_t mode04h_clear_screen_buffered()
     memset(mode04h_buffer[1], 0, 8000);
     return 0;
 }
+
+int8_t mode04h_draw_pixel_external_buffer(uint8_t* buffer, uint16_t mode, int8_t color, uint16_t x, uint16_t y){
+    if((x>=MODE04H_WIDTH) || (y >=MODE04H_HEIGHT))
+        return -1;
+    unsigned int offset = (y/2 * MODE04H_WIDTH + x)/4;
+	unsigned bit_no = x % 4;
+    bit_write(*(buffer + (y%2) * MODE04H_HEIGHT * MODE04H_WIDTH / 8 + offset), (1<<(7 - (2 * bit_no))), (color & 0x2));
+    bit_write(*(buffer + (y%2) * MODE04H_HEIGHT * MODE04H_WIDTH / 8 + offset), (1<<(7 - (2 * bit_no+1))), (color & 0x1));
+    return 0;
+}
+int8_t mode04h_draw_line_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by){
+        if(ax == bx) return -1;
+        int32_t dx = (int32_t)bx - ax;
+        int32_t dy = (int32_t)by - ay;
+        if(_abs(dx) >= _abs(dy))
+        {
+            float a = dy/(float)(dx);
+            float b = ay - a * ax;
+            if(ax > bx)
+                for(int x = bx; x <= ax; ++x)
+                    mode04h_draw_pixel_external_buffer(buffer, mode, color, x, a * x + b);
+            else
+                for(int x = ax; x <= bx; ++x)
+                    mode04h_draw_pixel_external_buffer(buffer, mode, color, x, a * x + b);
+        }
+        else
+        {
+            float a = dx/(float)(dy);
+            float b = ax - a * ay;
+            if(ay > by)
+                for(int y = by; y <= ay; ++ y)
+                    mode04h_draw_pixel_external_buffer(buffer, mode, color, a * y + b, y);
+            else
+                for(int y = ay; y <= by; ++ y)
+                    mode04h_draw_pixel_external_buffer(buffer, mode, color, a * y + b, y);
+        }
+        return 0;
+}
+int8_t mode04h_draw_circle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t x, uint16_t y, uint16_t radius){
+    return 0;
+}
+int8_t mode04h_draw_rectangle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by){
+    return 0;
+}
+int8_t mode04h_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode){
+    memset(buffer, 0, 2 * MODE04H_HEIGHT * MODE04H_WIDTH / 8);
+    return 0;
+}
+
+int8_t mode04h_swap_external_buffer(uint8_t* buffer, uint16_t mode){
+    memcpy(VGA_VRAM_2, buffer, MODE04H_WIDTH * MODE04H_HEIGHT / 8);
+    memcpy(VGA_VRAM_2 + 0x2000, buffer + MODE04H_WIDTH * MODE04H_HEIGHT / 8, MODE04H_WIDTH * MODE04H_HEIGHT / 8);
+    //memcpy(VGA_VRAM, mode13h_buffer, MODE13H_HEIGHT * MODE13H_WIDTH);
+    return 0;
+}
+uint8_t* mode04h_create_external_buffer(uint16_t mode){
+    return heap_kernel_alloc(2 * MODE04H_HEIGHT * MODE04H_WIDTH / 8, 0);
+}

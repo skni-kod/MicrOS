@@ -20,6 +20,16 @@ int8_t (*_draw_circle)(uint8_t, uint16_t, uint16_t, uint16_t) = NULL;
 int8_t (*_draw_rectangle)(uint8_t, uint16_t, uint16_t, uint16_t, uint16_t) = NULL;
 int8_t (*_clear_screen)() = NULL;
 
+int8_t (*_draw_pixel_external_buffer)(uint8_t*, uint16_t, int8_t, uint16_t, uint16_t) = NULL;
+int8_t (*_draw_line_external_buffer)(uint8_t*, uint16_t, uint8_t, uint16_t, uint16_t, uint16_t, uint16_t) = NULL;
+int8_t (*_draw_circle_external_buffer)(uint8_t*, uint16_t, uint8_t, uint16_t, uint16_t, uint16_t) = NULL;
+int8_t (*_draw_rectangle_external_buffer)(uint8_t*, uint16_t, uint8_t, uint16_t, uint16_t, uint16_t, uint16_t) = NULL;
+int8_t (*_clear_screen_external_buffer)(uint8_t*, uint16_t) = NULL;
+
+int8_t (*_swap_external_buffer)(uint8_t, uint16_t) = NULL;
+uint8_t* (*_create_external_buffer)(uint16_t) = NULL;
+void (*_destroy_external_buffer)(uint8_t*) = NULL;
+
 void video_card_init_with_driver(driver_init_struct* init_struct){
     _get_available_graphic_video_modes = init_struct->get_available_graphic_video_modes;
     _get_available_text_video_modes = init_struct->get_available_text_video_modes;
@@ -35,6 +45,16 @@ void video_card_init_with_driver(driver_init_struct* init_struct){
     _draw_circle = init_struct->draw_circle;
     _draw_rectangle = init_struct->draw_rectangle;
     _clear_screen = init_struct->clear_screen;
+
+    _draw_pixel_external_buffer = init_struct->draw_pixel_external_buffer;
+    _draw_line_external_buffer = init_struct->draw_line_external_buffer;
+    _draw_circle_external_buffer = init_struct->draw_circle_external_buffer;
+    _draw_rectangle_external_buffer = init_struct->draw_rectangle_external_buffer;
+    _clear_screen_external_buffer = init_struct->clear_screen_external_buffer;
+    _swap_external_buffer = init_struct->swap_external_buffer;
+    _create_external_buffer = init_struct->create_external_buffer;
+    _destroy_external_buffer = init_struct->destroy_external_buffer;
+
 }
 
 void video_card_set_get_available_graphic_video_modes_func(video_mode* (*get_available_graphic_video_modes)(uint32_t*))
@@ -159,4 +179,30 @@ int8_t video_card_draw_rectangle(uint8_t color, uint16_t ax, uint16_t ay, uint16
 }
 int8_t video_card_clear_screen(){
     return (*_clear_screen)();
+}
+
+int8_t video_card_draw_pixel_external_buffer(uint8_t* buffer, uint16_t mode, int8_t color, uint16_t x, uint16_t y){
+    return (*_draw_pixel_external_buffer)(buffer, mode, color, x, y);
+}
+int8_t video_card_draw_line_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by){
+    return (*_draw_line_external_buffer)(buffer, mode, color, ax, ay, bx, by);
+}
+int8_t video_card_draw_circle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t x, uint16_t y, uint16_t radius){
+    return (*_draw_circle_external_buffer)(buffer, mode, color, x, y, radius);
+}
+int8_t video_card_draw_rectangle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by){
+    return (*_draw_rectangle_external_buffer)(buffer, mode, color, ax, ay, bx, by);
+}
+int8_t video_card_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode){
+    return (*_clear_screen_external_buffer)(buffer, mode);
+}
+
+int8_t video_card_swap_external_buffer(uint8_t buffer, uint16_t mode){
+    return (*_swap_external_buffer)(buffer, mode);
+}
+uint8_t* video_card_create_external_buffer(uint16_t mode){
+    return (*_create_external_buffer)(mode);
+}
+void video_card_destroy_external_buffer(uint8_t* buffer){
+    return (*_destroy_external_buffer)(buffer);
 }
