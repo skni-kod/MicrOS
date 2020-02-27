@@ -238,6 +238,14 @@ typedef union vga_color {
     vga_color_without_blink color_without_blink;
 } vga_color;
 
+//! Color of one character as `vga_color` or value.
+typedef union vga_color_value {
+    //! Uses to define color as color union.
+    vga_color color;
+    //! Usese to define color as value.
+    uint8_t value;
+} vga_color_value;
+
 //! Struct that define one character.
 /*! Contains code of letter and it's color.*/
 typedef struct vga_character
@@ -459,7 +467,6 @@ void vga_copy_screen(uint8_t from, uint8_t to);
 //! Turn on cursor.
 /*!
     Turn on cursor with default size and position.
-    Copy screen from one to another.
 */
 void vga_cursor_on();
 
