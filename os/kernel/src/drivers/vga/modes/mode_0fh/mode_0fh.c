@@ -324,6 +324,7 @@ int8_t mode0fh_draw_rectangle_external_buffer(uint8_t* buffer, uint16_t mode, ui
 }
 int8_t mode0fh_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode){
     memset(buffer, 0, 2*MODE0FH_WIDTH*MODE0FH_HEIGHT / 8);
+    return 0;
 }
 
 int8_t mode0fh_swap_external_buffer(uint8_t* buffer, uint16_t mode){
