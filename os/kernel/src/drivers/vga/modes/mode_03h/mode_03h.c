@@ -428,6 +428,111 @@ int8_t mode03h_swap_buffers()
     return 0;
 }
 
+int8_t mode03h_print_char(char character)
+{
+	vga_printchar(character);
+	return 0;
+}
+
+int8_t mode03h_print_char_color(char character, uint8_t color)
+{
+	vga_color_value col;
+	col.value = color;
+	vga_printchar_color(character, &col.color);
+	return 0;
+}
+
+int8_t mode03h_print_string(const char* string)
+{
+	vga_printstring(string);
+	return 0;
+}
+
+int8_t mode03h_print_string_color(const char* string, uint8_t color)
+{
+	vga_color_value col;
+	col.value = color;
+	vga_printstring_color(string, &col.color);
+	return 0;
+}
+
+int8_t mode03h_set_char(uint16_t x, uint16_t y, char character)
+{
+	vga_set_char(x, y, character);
+	return 0;
+}
+
+int8_t mode03h_get_char(uint16_t x, uint16_t y, char* character)
+{
+	*character = vga_get_char(x, y);
+	return 0;
+}
+
+int8_t mode03h_set_color(uint16_t x, uint16_t y, uint8_t color)
+{
+	vga_color_value col;
+	col.value = color;
+	vga_set_color(x, y, col.color);
+	return 0;
+}
+
+int8_t mode03h_get_color(uint16_t x, uint16_t y, uint8_t* color)
+{
+	vga_color_value col;
+	col.color = vga_get_color(x, y);
+	*color = col.value;
+	return 0;
+}
+
+int8_t mode03h_set_char_and_color(uint16_t x, uint16_t y, char character, uint8_t color)
+{
+	vga_character c;
+	vga_color_value col;
+	c.ascii_code = character;
+	col.value = color;
+	c.color = col.color;
+	vga_set_character(x, y, c);
+	return 0;
+}
+
+int8_t mode03h_get_char_and_color(uint16_t x, uint16_t y, char* character, uint8_t* color)
+{
+	vga_character c;
+	vga_color_value col;
+	c = vga_get_character(x, y);
+	*character = c.ascii_code;
+	col.color = c.color;
+	*color = col.value;
+	return 0;
+}
+
+int8_t mode03h_set_cursor_pos(uint16_t x, uint16_t y)
+{
+	vga_set_cursor_pos(x, y);
+	return 0;
+}
+
+int8_t mode03h_get_cursor_pos(uint16_t* x, uint16_t* y)
+{
+	vga_screen_pos pos;
+	pos = vga_get_cursor_pos();
+	*x = pos.x;
+	*y = pos.y;
+	return 0;
+}
+
+int8_t mode03h_turn_cursor_on()
+{
+	vga_cursor_on();
+	return 0;
+}
+
+int8_t mode03h_turn_cursor_off()
+{
+	vga_cursor_off();
+	return 0;
+}
+
 int8_t mode03h_draw_pixel(uint8_t color, uint16_t x, uint16_t y)
 {
     if((x>=MODE03H_WIDTH) || (y >=MODE03H_HEIGHT)) return -1;

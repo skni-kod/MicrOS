@@ -14,6 +14,133 @@ uint8_t mode03h_is_buffer_on();
 
 int8_t mode03h_swap_buffers();
 
+//! Print character on screen for mode 03h.
+/*!
+    Print character on screen without changing color of character and background.
+    \param character Character.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_print_char(char character);
+
+//! Print character on screen for mode 03h.
+/*!
+    Print character on screen with given color of character and background.
+    \param character Character.
+    \param color Color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_print_char_color(char character, uint8_t color);
+
+//! Print string on screen for mode 03h.
+/*!
+    Print string on screen without changing color of characters and background.
+    \param string String.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_print_string(const char* string);
+
+//! Print string on screen for mode 03h.
+/*!
+    Print string on screen with given color of characters and background.
+    \param string String.
+    \param color Color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_print_string_color(const char* string, uint8_t color);
+
+//! Set character on given point on screen for mode 03h.
+/*!
+    Set character on given point on screen without changing color of character and background.
+    \param x x coordinate.
+    \param y y coordinate.
+    \param character Character.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_set_char(uint16_t x, uint16_t y, char character);
+
+//! Get character from given point on screen for mode 03h.
+/*!
+    Get character on given point on screen.
+    \param x x coordinate.
+    \param y y coordinate.
+    \param character Return character.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_get_char(uint16_t x, uint16_t y, char* character);
+
+//! Set character color on given point on screen for mode 03h.
+/*!
+    Set character color on given point on screen without changing letter.
+    \param x x coordinate.
+    \param y y coordinate.
+    \param color Color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_set_color(uint16_t x, uint16_t y, uint8_t color);
+
+//! Get character color from given point on screen for mode 03h.
+/*!
+    Get character color on given point on screen.
+    \param x x coordinate.
+    \param y y coordinate.
+    \param color Return color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_get_color(uint16_t x, uint16_t y, uint8_t* color);
+
+//! Set character and character color on given point on screen for mode 03h.
+/*!
+    Set character and character color on given point on screen.
+    \param x x coordinate.
+    \param y y coordinate.
+    \param character Character.
+    \param color Character color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_set_char_and_color(uint16_t x, uint16_t y, char character, uint8_t color);
+
+//! Get character and character color color from given point on screen for mode 03h.
+/*!
+    Get character and character color color on given point on screen.
+    \param x x coordinate.
+    \param character Return haracter.
+    \param color Return character color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_get_char_and_color(uint16_t x, uint16_t y, char* character, uint8_t* color);
+
+//! Set cursor position for mode 03h.
+/*!
+    Set cursor position on screen.
+    \param x x coordinate.
+    \param y y coordinate.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_set_cursor_pos(uint16_t x, uint16_t y);
+
+//! Get cursor position for mode 03h.
+/*!
+    Get cursor position on screen.
+    \param x Return x coordinate.
+    \param y Return y coordinate.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_get_cursor_pos(uint16_t* x, uint16_t* y);
+
+//! Turn on cursor for mode 03h.
+/*!
+    Turn on cursor with default size and position.
+    Copy screen from one to another.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_turn_cursor_on();
+
+//! Turn off cursor for mode 03h.
+/*!
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_turn_cursor_off();
+
 int8_t mode03h_draw_pixel(uint8_t color, uint16_t x, uint16_t y);
 int8_t mode03h_draw_line(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
 int8_t mode03h_draw_circle(uint8_t color, uint16_t x, uint16_t y, uint16_t radius);
