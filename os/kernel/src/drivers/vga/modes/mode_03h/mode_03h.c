@@ -411,7 +411,14 @@ int8_t mode03h_turn_off_buffer()
 
 uint8_t mode03h_is_buffer_on()
 {
-    return -1;
+	if(mode03h_buffer == NULL)
+	{
+    	return -1;
+	}
+	else
+	{
+		return 1;
+	}
 }
 
 int8_t mode03h_swap_buffers()

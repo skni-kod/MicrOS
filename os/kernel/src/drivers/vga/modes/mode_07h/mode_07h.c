@@ -409,7 +409,14 @@ int8_t mode07h_turn_off_buffer()
 }
 uint8_t mode07h_is_buffer_on()
 {
-    return -1;
+    if(mode07h_buffer == NULL)
+	{
+    	return -1;
+	}
+	else
+	{
+		return 1;
+	}
 }
 
 int8_t mode07h_swap_buffers()
