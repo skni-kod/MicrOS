@@ -9,15 +9,18 @@ void partitions_init()
     partitions_init_harddisks(HARDDISK_ATA_MASTER, HARDDISK_ATA_PRIMARY_BUS);
     partitions_init_harddisks(HARDDISK_ATA_SLAVE, HARDDISK_ATA_PRIMARY_BUS);
     partitions_init_harddisks(HARDDISK_ATA_MASTER, HARDDISK_ATA_SECONDARY_BUS);
-    partitions_init_harddisks(HARDDISK_ATA_SLAVE, HARDDISK_ATA_SECONDARY_BUS);
+    // partitions_init_harddisks(HARDDISK_ATA_SLAVE, HARDDISK_ATA_SECONDARY_BUS);
 }
 
 void partitions_init_floppy()
 {
-    if(fdc_is_present())
+    // NOTE: it doesn't work well, so assume for now that floppy controller is always present
+    // if(fdc_is_present())
     {
         floppy_init(18);
-        if(floppy_is_inserted())
+        
+        // NOTE: it doesn't work well, so assume for now that floppy is always inserted
+        // if(floppy_is_inserted())
         {
             partition *floppy_partition = (partition*)heap_kernel_alloc(sizeof(partition), 0);
             floppy_partition->type = filesystem_fat12;
