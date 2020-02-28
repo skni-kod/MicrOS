@@ -149,6 +149,119 @@ int8_t mode07h_draw_circle(uint8_t color, uint16_t x, uint16_t y, uint16_t radiu
 int8_t mode07h_draw_rectangle(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
 int8_t mode07h_clear_screen();
 
+//! Print character on screen for mode 07h to internal buffer.
+/*!
+    Print character on screen without changing color of character and background. This function works on internal buffer.
+    \param character Character.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode07h_print_char_buffered(char character);
+
+//! Print character on screen for mode 07h to internal buffer.
+/*!
+    Print character on screen with given color of character and background. This function works on internal buffer.
+    \param character Character.
+    \param color Color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode07h_print_char_color_buffered(char character, uint8_t color);
+
+//! Print string on screen for mode 07h to internal buffer.
+/*!
+    Print string on screen without changing color of characters and background. This function works on internal buffer.
+    \param string String.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode07h_print_string_buffered(const char* string);
+
+//! Print string on screen for mode 07h to internal buffer.
+/*!
+    Print string on screen with given color of characters and background. This function works on internal buffer.
+    \param string String.
+    \param color Color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode07h_print_string_color_buffered(const char* string, uint8_t color);
+
+//! Set character on given point on screen for mode 07h to internal buffer.
+/*!
+    Set character on given point on screen without changing color of character and background. This function works on internal buffer.
+    \param x x coordinate.
+    \param y y coordinate.
+    \param character Character.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode07h_set_char_buffered(uint16_t x, uint16_t y, char character);
+
+//! Get character from given point on screen for mode 07h to internal buffer.
+/*!
+    Get character on given point on screen. This function works on internal buffer.
+    \param x x coordinate.
+    \param y y coordinate.
+    \param character Return character.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode07h_get_char_buffered(uint16_t x, uint16_t y, char* character);
+
+//! Set character color on given point on screen for mode 07h to internal buffer.
+/*!
+    Set character color on given point on screen without changing letter. This function works on internal buffer.
+    \param x x coordinate.
+    \param y y coordinate.
+    \param color Color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode07h_set_color_buffered(uint16_t x, uint16_t y, uint8_t color);
+
+//! Get character color from given point on screen for mode 07h to internal buffer.
+/*!
+    Get character color on given point on screen. This function works on internal buffer.
+    \param x x coordinate.
+    \param y y coordinate.
+    \param color Return color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode07h_get_color_buffered(uint16_t x, uint16_t y, uint8_t* color);
+
+//! Set character and character color on given point on screen for mode 07h to internal buffer.
+/*!
+    Set character and character color on given point on screen. This function works on internal buffer.
+    \param x x coordinate.
+    \param y y coordinate.
+    \param character Character.
+    \param color Character color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode07h_set_char_and_color_buffered(uint16_t x, uint16_t y, char character, uint8_t color);
+
+//! Get character and character color color from given point on screen for mode 07h to internal buffer.
+/*!
+    Get character and character color color on given point on screen. This function works on internal buffer.
+    \param x x coordinate.
+    \param character Return haracter.
+    \param color Return character color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode07h_get_char_and_color_buffered(uint16_t x, uint16_t y, char* character, uint8_t* color);
+
+//! Set cursor position for mode 07h to internal buffer.
+/*!
+    Set cursor position on screen. This function works on internal buffer.
+    \param x x coordinate.
+    \param y y coordinate.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode07h_set_cursor_pos_buffered(uint16_t x, uint16_t y);
+
+//! Get cursor position for mode 07h to internal buffer.
+/*!
+    Get cursor position on screen. This function works on internal buffer.
+    \param x Return x coordinate.
+    \param y Return y coordinate.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode07h_get_cursor_pos_buffered(uint16_t* x, uint16_t* y);
+
 int8_t mode07h_draw_pixel_buffered(uint8_t color, uint16_t x, uint16_t y);
 int8_t mode07h_draw_line_buffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
 int8_t mode07h_draw_circle_buffered(uint8_t color, uint16_t x, uint16_t y, uint16_t radius);
