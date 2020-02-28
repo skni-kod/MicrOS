@@ -7,7 +7,7 @@ vga_screen_pos vga_cursor_pos;
 /*!
     Points to array of characters
 */ 
-volatile screen *vga_video;
+volatile screen_char *vga_video;
 
 //! Current video screen.
 uint8_t vga_current_printing_screen = 0;
@@ -47,7 +47,7 @@ uint8_t vga_init(uint8_t mode)
             vga_cursor_pos.y = 0;
             vga_current_printing_screen = 0;
             vga_screen_offset = 0;
-            vga_video = (volatile screen *)(VGA_MODE_00H_BASE_ADDR);
+            vga_video = (volatile screen_char *)(VGA_MODE_00H_BASE_ADDR);
             vga_clear_all_screens();
             __vga_update_cursor_struct(vga_cursor_pos);
             return 1;
@@ -61,7 +61,7 @@ uint8_t vga_init(uint8_t mode)
             vga_cursor_pos.y = 0;
             vga_current_printing_screen = 0;
             vga_screen_offset = 0;
-            vga_video = (volatile screen *)(VGA_MODE_01H_BASE_ADDR);
+            vga_video = (volatile screen_char *)(VGA_MODE_01H_BASE_ADDR);
             vga_clear_all_screens();
             __vga_update_cursor_struct(vga_cursor_pos);
             return 1;
@@ -75,7 +75,7 @@ uint8_t vga_init(uint8_t mode)
             vga_cursor_pos.y = 0;
             vga_current_printing_screen = 0;
             vga_screen_offset = 0;
-            vga_video = (volatile screen *)(VGA_MODE_02H_BASE_ADDR);
+            vga_video = (volatile screen_char *)(VGA_MODE_02H_BASE_ADDR);
             vga_clear_all_screens();
             __vga_update_cursor_struct(vga_cursor_pos);
             return 1;
@@ -89,7 +89,7 @@ uint8_t vga_init(uint8_t mode)
             vga_cursor_pos.y = 0;
             vga_current_printing_screen = 0;
             vga_screen_offset = 0;
-            vga_video = (volatile screen *)(VGA_MODE_03H_BASE_ADDR);
+            vga_video = (volatile screen_char *)(VGA_MODE_03H_BASE_ADDR);
             vga_clear_all_screens();
             __vga_update_cursor_struct(vga_cursor_pos);
             return 1;
@@ -103,7 +103,7 @@ uint8_t vga_init(uint8_t mode)
             vga_cursor_pos.y = 0;
             vga_current_printing_screen = 0;
             vga_screen_offset = 0;
-            vga_video = (volatile screen *)(VGA_MODE_07H_BASE_ADDR);
+            vga_video = (volatile screen_char *)(VGA_MODE_07H_BASE_ADDR);
             vga_clear_all_screens();
             __vga_update_cursor_struct(vga_cursor_pos);
             return 1;

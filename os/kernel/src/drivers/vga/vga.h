@@ -259,12 +259,12 @@ typedef struct vga_character
 //! Define one character on screen.
 /*! Union contains 16 bit value of field (which include ASCII letter and color data) and vga_character strunc that allow to
 access letter and color separately. Table of then can define whole screen.*/
-typedef union screen {
+typedef union screen_char {
     //! 16 bit value of field.
     uint16_t value;
     //! Struct contains ASCII code and color data.
     vga_character character;
-} screen;
+} screen_char;
 
 // Functions for users
 
