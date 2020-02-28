@@ -385,8 +385,8 @@ int8_t video_card_clear_screen();
     Print character on screen without changing color of character and background. This function works on external buffer.
     \param buffer Screen buffer.
     \param mode Mode.
-    \param x X coordinate of screen cursor.
-    \param y Y coordinate of screen cursor.
+    \param x X coordinate of screen cursor also returns new position of cursor.
+    \param y Y coordinate of screen cursor also returns new position of cursor.
     \param character Character.
     \return 0 if success, -1 if not implemented.
 */
@@ -397,8 +397,8 @@ int8_t video_card_print_char_external_buffer(uint8_t* buffer, uint16_t mode, uin
     Print character on screen with given color of character and background. This function works on external buffer.
     \param buffer Screen buffer.
     \param mode Mode.
-    \param x X coordinate of screen cursor.
-    \param y Y coordinate of screen cursor.
+    \param x X coordinate of screen cursor also returns new position of cursor.
+    \param y Y coordinate of screen cursor also returns new position of cursor.
     \param character Character.
     \param color Color.
     \return 0 if success, -1 if not implemented.
@@ -410,8 +410,8 @@ int8_t video_card_print_char_color_external_buffer(uint8_t* buffer, uint16_t mod
     Print string on screen without changing color of characters and background. This function works on external buffer.
     \param buffer Screen buffer.
     \param mode Mode.
-    \param x X coordinate of screen cursor.
-    \param y Y coordinate of screen cursor.
+    \param x X coordinate of screen cursor also returns new position of cursor.
+    \param y Y coordinate of screen cursor also returns new position of cursor.
     \param string String.
     \return 0 if success, -1 if not implemented.
 */
@@ -422,8 +422,8 @@ int8_t video_card_print_string_external_buffer(uint8_t* buffer, uint16_t mode, u
     Print string on screen with given color of characters and background. This function works on external buffer.
     \param buffer Screen buffer.
     \param mode Mode.
-    \param x X coordinate of screen cursor.
-    \param y Y coordinate of screen cursor.
+    \param x X coordinate of screen cursor also returns new position of cursor.
+    \param y Y coordinate of screen cursor also returns new position of cursor.
     \param string String.
     \param color Color.
     \return 0 if success, -1 if not implemented.

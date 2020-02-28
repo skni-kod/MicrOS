@@ -273,8 +273,8 @@ int8_t mode01h_clear_screen_buffered();
     Print character on screen without changing color of character and background. This function works on external buffer.
     \param buffer Screen buffer.
     \param mode Mode.
-    \param x X coordinate of screen cursor.
-    \param y Y coordinate of screen cursor.
+    \param x X coordinate of screen cursor also returns new position of cursor.
+    \param y Y coordinate of screen cursor also returns new position of cursor.
     \param character Character.
     \return 0 if success, -1 if not implemented.
 */
@@ -285,8 +285,8 @@ int8_t mode01h_print_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16
     Print character on screen with given color of character and background. This function works on external buffer.
     \param buffer Screen buffer.
     \param mode Mode.
-    \param x X coordinate of screen cursor.
-    \param y Y coordinate of screen cursor.
+    \param x X coordinate of screen cursor also returns new position of cursor.
+    \param y Y coordinate of screen cursor also returns new position of cursor.
     \param character Character.
     \param color Color.
     \return 0 if success, -1 if not implemented.
@@ -298,8 +298,8 @@ int8_t mode01h_print_char_color_external_buffer(uint8_t* buffer, uint16_t mode, 
     Print string on screen without changing color of characters and background. This function works on external buffer.
     \param buffer Screen buffer.
     \param mode Mode.
-    \param x X coordinate of screen cursor.
-    \param y Y coordinate of screen cursor.
+    \param x X coordinate of screen cursor also returns new position of cursor.
+    \param y Y coordinate of screen cursor also returns new position of cursor.
     \param string String.
     \return 0 if success, -1 if not implemented.
 */
@@ -310,8 +310,8 @@ int8_t mode01h_print_string_external_buffer(uint8_t* buffer, uint16_t mode, uint
     Print string on screen with given color of characters and background. This function works on external buffer.
     \param buffer Screen buffer.
     \param mode Mode.
-    \param x X coordinate of screen cursor.
-    \param y Y coordinate of screen cursor.
+    \param x X coordinate of screen cursor also returns new position of cursor.
+    \param y Y coordinate of screen cursor also returns new position of cursor.
     \param string String.
     \param color Color.
     \return 0 if success, -1 if not implemented.
@@ -400,15 +400,15 @@ int8_t mode01h_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode);
 int8_t mode01h_swap_external_buffer(uint8_t* buffer, uint16_t mode);
 uint8_t* mode01h_create_external_buffer(uint16_t mode);
 
-// Helpery
+// Helpers
 
 //! Helper function to print character on screen for mode 01h on given buffer.
 /*!
     Print character on screen without changing color of character and background. This function works on given buffer.
     \param buffer Screen buffer.
     \param mode Mode (only when writes to external buffer).
-    \param x X coordinate of screen cursor.
-    \param y Y coordinate of screen cursor.
+    \param x X coordinate of screen cursor also returns new position of cursor.
+    \param y Y coordinate of screen cursor also returns new position of cursor.
     \param character Character.
     \return 0 if success, -1 if not implemented.
 */
@@ -419,8 +419,8 @@ int8_t __mode01h_print_char_buffer(uint16_t* buffer, uint16_t mode, uint16_t* x,
     Print character on screen with given color of character and background. This function works on given buffer.
     \param buffer Screen buffer.
     \param mode Mode (only when writes to external buffer).
-    \param x X coordinate of screen cursor.
-    \param y Y coordinate of screen cursor.
+    \param x X coordinate of screen cursor also returns new position of cursor.
+    \param y Y coordinate of screen cursor also returns new position of cursor.
     \param character Character.
     \param color Color.
     \return 0 if success, -1 if not implemented.
@@ -432,8 +432,8 @@ int8_t __mode01h_print_char_color_buffer(uint16_t* buffer, uint16_t mode, uint16
     Print string on screen without changing color of characters and background. This function works on given buffer.
     \param buffer Screen buffer.
     \param mode Mode (only when writes to external buffer).
-    \param x X coordinate of screen cursor.
-    \param y Y coordinate of screen cursor.
+    \param x X coordinate of screen cursor also returns new position of cursor.
+    \param y Y coordinate of screen cursor also returns new position of cursor.
     \param string String.
     \return 0 if success, -1 if not implemented.
 */
@@ -444,8 +444,8 @@ int8_t __mode01h_print_string_buffer(uint16_t* buffer, uint16_t mode, uint16_t* 
     Print string on screen with given color of characters and background. This function works on given buffer.
     \param buffer Screen buffer.
     \param mode Mode (only when writes to external buffer).
-    \param x X coordinate of screen cursor.
-    \param y Y coordinate of screen cursor.
+    \param x X coordinate of screen cursor also returns new position of cursor.
+    \param y Y coordinate of screen cursor also returns new position of cursor.
     \param string String.
     \param color Color.
     \return 0 if success, -1 if not implemented.
