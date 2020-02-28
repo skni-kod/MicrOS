@@ -266,6 +266,129 @@ int8_t mode03h_draw_circle_buffered(uint8_t color, uint16_t x, uint16_t y, uint1
 int8_t mode03h_draw_rectangle_buffered(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
 int8_t mode03h_clear_screen_buffered();
 
+//! Print character on screen for mode 03h to external buffer.
+/*!
+    Print character on screen without changing color of character and background. This function works on external buffer.
+    \param buffer Screen buffer.
+    \param mode Mode.
+    \param x X coordinate of screen cursor.
+    \param y Y coordinate of screen cursor.
+    \param character Character.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_print_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character);
+
+//! Print character on screen for mode 03h to external buffer.
+/*!
+    Print character on screen with given color of character and background. This function works on external buffer.
+    \param buffer Screen buffer.
+    \param mode Mode.
+    \param x X coordinate of screen cursor.
+    \param y Y coordinate of screen cursor.
+    \param character Character.
+    \param color Color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_print_char_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character, uint8_t color);
+
+//! Print string on screen for mode 03h to external buffer.
+/*!
+    Print string on screen without changing color of characters and background. This function works on external buffer.
+    \param buffer Screen buffer.
+    \param mode Mode.
+    \param x X coordinate of screen cursor.
+    \param y Y coordinate of screen cursor.
+    \param string String.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_print_string_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* string);
+
+//! Print string on screen for mode 03h to external buffer.
+/*!
+    Print string on screen with given color of characters and background. This function works on external buffer.
+    \param buffer Screen buffer.
+    \param mode Mode.
+    \param x X coordinate of screen cursor.
+    \param y Y coordinate of screen cursor.
+    \param string String.
+    \param color Color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_print_string_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* string, uint8_t color);
+
+//! Set character on given point on screen for mode 03h to external buffer.
+/*!
+    Set character on given point on screen without changing color of character and background. This function works on external buffer.
+    \param buffer Screen buffer.
+    \param mode Mode.
+    \param x x coordinate.
+    \param y y coordinate.
+    \param character Character.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_set_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character);
+
+//! Get character from given point on screen for mode 03h to external buffer.
+/*!
+    Get character on given point on screen. This function works on external buffer.
+    \param buffer Screen buffer.
+    \param mode Mode.
+    \param x x coordinate.
+    \param y y coordinate.
+    \param character Return character.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_get_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character);
+
+//! Set character color on given point on screen for mode 03h to external buffer.
+/*!
+    Set character color on given point on screen without changing letter. This function works on external buffer.
+    \param buffer Screen buffer.
+    \param mode Mode.
+    \param x x coordinate.
+    \param y y coordinate.
+    \param color Color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_set_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t color);
+
+//! Get character color from given point on screen for mode 03h to external buffer.
+/*!
+    Get character color on given point on screen. This function works on external buffer.
+    \param buffer Screen buffer.
+    \param mode Mode.
+    \param x x coordinate.
+    \param y y coordinate.
+    \param color Return color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_get_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t* color);
+
+//! Set character and character color on given point on screen for mode 03h to external buffer.
+/*!
+    Set character and character color on given point on screen. This function works on external buffer.
+    \param buffer Screen buffer.
+    \param mode Mode.
+    \param x x coordinate.
+    \param y y coordinate.
+    \param character Character.
+    \param color Character color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_set_char_and_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character, uint8_t color);
+
+//! Get character and character color color from given point on screen for mode 03h to external buffer.
+/*!
+    Get character and character color color on given point on screen. This function works on external buffer.
+    \param buffer Screen buffer.
+    \param mode Mode.
+    \param x x coordinate.
+    \param character Return haracter.
+    \param color Return character color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t mode03h_get_char_and_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character, uint8_t* color);
+
 int8_t mode03h_draw_pixel_external_buffer(uint8_t* buffer, uint16_t mode, int8_t color, uint16_t x, uint16_t y);
 int8_t mode03h_draw_line_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
 int8_t mode03h_draw_circle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t x, uint16_t y, uint16_t radius);
@@ -274,5 +397,130 @@ int8_t mode03h_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode);
 
 int8_t mode03h_swap_external_buffer(uint8_t* buffer, uint16_t mode);
 uint8_t* mode03h_create_external_buffer(uint16_t mode);
+
+// Helpers
+
+//! Helper function to print character on screen for mode 03h on given buffer.
+/*!
+    Print character on screen without changing color of character and background. This function works on given buffer.
+    \param buffer Screen buffer.
+    \param mode Mode (only when writes to external buffer).
+    \param x X coordinate of screen cursor.
+    \param y Y coordinate of screen cursor.
+    \param character Character.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t __mode03h_print_char_buffer(uint16_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character);
+
+//! Helper function to print character on screen for mode 03h on given buffer.
+/*!
+    Print character on screen with given color of character and background. This function works on given buffer.
+    \param buffer Screen buffer.
+    \param mode Mode (only when writes to external buffer).
+    \param x X coordinate of screen cursor.
+    \param y Y coordinate of screen cursor.
+    \param character Character.
+    \param color Color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t __mode03h_print_char_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character, uint8_t color);
+
+//! Helper function to print string on screen for mode 03h on given buffer.
+/*!
+    Print string on screen without changing color of characters and background. This function works on given buffer.
+    \param buffer Screen buffer.
+    \param mode Mode (only when writes to external buffer).
+    \param x X coordinate of screen cursor.
+    \param y Y coordinate of screen cursor.
+    \param string String.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t __mode03h_print_string_buffer(uint16_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* string);
+
+//! Helper function to print string on screen for mode 03h on given buffer.
+/*!
+    Print string on screen with given color of characters and background. This function works on given buffer.
+    \param buffer Screen buffer.
+    \param mode Mode (only when writes to external buffer).
+    \param x X coordinate of screen cursor.
+    \param y Y coordinate of screen cursor.
+    \param string String.
+    \param color Color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t __mode03h_print_string_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* string, uint8_t color);
+
+//! Helper function to s character on given point on screen for mode 03h on given buffer.
+/*!
+    Set character on given point on screen without changing color of character and background. This function works on given buffer.
+    \param buffer Screen buffer.
+    \param mode Mode (only when writes to external buffer).
+    \param x x coordinate.
+    \param y y coordinate.
+    \param character Character.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t __mode03h_set_char_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character);
+
+//! Helper function to get character from given point on screen for mode 03h on given buffer.
+/*!
+    Get character on given point on screen. This function works on given buffer.
+    \param buffer Screen buffer.
+    \param mode Mode (only when writes to external buffer).
+    \param x x coordinate.
+    \param y y coordinate.
+    \param character Return character.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t __mode03h_get_char_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character);
+
+//! Helper function to set character color on given point on screen for mode 03h on given buffer.
+/*!
+    Set character color on given point on screen without changing letter. This function works on given buffer.
+    \param buffer Screen buffer.
+    \param mode Mode (only when writes to external buffer).
+    \param x x coordinate.
+    \param y y coordinate.
+    \param color Color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t __mode03h_set_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t color);
+
+//! Helper function to get character color from given point on screen for mode 03h on given buffer.
+/*!
+    Get character color on given point on screen. This function works on given buffer.
+    \param buffer Screen buffer.
+    \param mode Mode (only when writes to external buffer).
+    \param x x coordinate.
+    \param y y coordinate.
+    \param color Return color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t __mode03h_get_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t* color);
+
+//! Helper function to set character and character color on given point on screen for mode 03h on given buffer.
+/*!
+    Set character and character color on given point on screen. This function works on given buffer.
+    \param buffer Screen buffer.
+    \param mode Mode (only when writes to external buffer).
+    \param x x coordinate.
+    \param y y coordinate.
+    \param character Character.
+    \param color Character color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t __mode03h_set_char_and_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character, uint8_t color);
+
+//! Helper function to get character and character color color from given point on screen for mode 03h on given buffer.
+/*!
+    Get character and character color color on given point on screen. This function works on given buffer.
+    \param buffer Screen buffer.
+    \param mode Mode (only when writes to external buffer).
+    \param x x coordinate.
+    \param character Return haracter.
+    \param color Return character color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t __mode03h_get_char_and_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character, uint8_t* color);
 
 #endif

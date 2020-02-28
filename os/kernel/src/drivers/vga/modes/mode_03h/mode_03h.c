@@ -340,6 +340,8 @@ unsigned char g_8x16_font[4096] =
 
 //DOUBLE BUFFER POINTER;
 screen_char *mode03h_buffer = NULL;
+uint16_t mode03h_buffer_cursor_x = 0;
+uint16_t mode03h_buffer_cursor_y = 0;
 
 int8_t mode03h_set_mode()
 {
@@ -402,6 +404,8 @@ int8_t mode03h_turn_on_buffer()
     mode03h_buffer = heap_kernel_alloc(MODE03H_HEIGHT * MODE03H_WIDTH * sizeof(screen_char), 0);
     if(mode03h_buffer == NULL)
         return -1;
+	mode03h_buffer_cursor_x = 0;
+	mode03h_buffer_cursor_y = 0;
 	video_card_set_print_char_func(mode03h_print_char_buffered);
 	video_card_set_print_char_color_func(mode03h_print_char_color_buffered);
 	video_card_set_print_string_func(mode03h_print_string_buffered);
@@ -634,61 +638,123 @@ int8_t mode03h_clear_screen()
 
 int8_t mode03h_print_char_buffered(char character)
 {
-    return -1;
+    if(mode03h_buffer == NULL) return -1;
+	else
+	{
+		__mode03h_print_char_buffer(mode03h_buffer, 0, mode03h_buffer_cursor_x, mode03h_buffer_cursor_y, character);
+		return 0;
+	}
 }
 
 int8_t mode03h_print_char_color_buffered(char character, uint8_t color)
 {
-    return -1;
+    if(mode03h_buffer == NULL) return -1;
+	else
+	{
+		__mode03h_print_char_color_buffer(mode03h_buffer, 0, mode03h_buffer_cursor_x, mode03h_buffer_cursor_y, character, color);
+		return 0;
+	}
 }
 
 int8_t mode03h_print_string_buffered(const char* string)
 {
-    return -1;
+    if(mode03h_buffer == NULL) return -1;
+	else
+	{
+		__mode03h_print_string_buffer(mode03h_buffer, 0, mode03h_buffer_cursor_x, mode03h_buffer_cursor_y, string);
+		return 0;
+	}
 }
 
 int8_t mode03h_print_string_color_buffered(const char* string, uint8_t color)
 {
-    return -1;
+    if(mode03h_buffer == NULL) return -1;
+	else
+	{
+		__mode03h_print_string_color_buffer(mode03h_buffer, 0, mode03h_buffer_cursor_x, mode03h_buffer_cursor_y, string, color);
+		return 0;
+	}
 }
 int8_t mode03h_set_char_buffered(uint16_t x, uint16_t y, char character)
 {
-    return -1;
+    if(mode03h_buffer == NULL) return -1;
+	else
+	{
+		__mode03h_set_char_buffer(mode03h_buffer, 0, mode03h_buffer_cursor_x, mode03h_buffer_cursor_y, character);
+		return 0;
+	}
 }
 
 int8_t mode03h_get_char_buffered(uint16_t x, uint16_t y, char* character)
 {
-    return -1;
+    if(mode03h_buffer == NULL) return -1;
+	else
+	{
+		__mode03h_get_char_buffer(mode03h_buffer, 0, mode03h_buffer_cursor_x, mode03h_buffer_cursor_y, character);
+		return 0;
+	}
 }
 
 int8_t mode03h_set_color_buffered(uint16_t x, uint16_t y, uint8_t color)
 {
-    return -1;
+    if(mode03h_buffer == NULL) return -1;
+	else
+	{
+		__mode03h_set_color_buffer(mode03h_buffer, 0, mode03h_buffer_cursor_x, mode03h_buffer_cursor_y, color);
+		return 0;
+	}
 }
 
 int8_t mode03h_get_color_buffered(uint16_t x, uint16_t y, uint8_t* color)
 {
-    return -1;
+    if(mode03h_buffer == NULL) return -1;
+	else
+	{
+		__mode03h_get_color_buffer(mode03h_buffer, 0, mode03h_buffer_cursor_x, mode03h_buffer_cursor_y, color);
+		return 0;
+	}
 }
 
 int8_t mode03h_set_char_and_color_buffered(uint16_t x, uint16_t y, char character, uint8_t color)
 {
-    return -1;
+    if(mode03h_buffer == NULL) return -1;
+	else
+	{
+		__mode03h_set_char_and_color_buffer(mode03h_buffer, 0, mode03h_buffer_cursor_x, mode03h_buffer_cursor_y, character, color);
+		return 0;
+	}
 }
 
 int8_t mode03h_get_char_and_color_buffered(uint16_t x, uint16_t y, char* character, uint8_t* color)
 {
-    return -1;
+    if(mode03h_buffer == NULL) return -1;
+	else
+	{
+		__mode03h_get_char_and_color_buffer(mode03h_buffer, 0, mode03h_buffer_cursor_x, mode03h_buffer_cursor_y, character, color);
+		return 0;
+	}
 }
 
 int8_t mode03h_set_cursor_pos_buffered(uint16_t x, uint16_t y)
 {
-    return -1;
+    if(mode03h_buffer == NULL || x >= MODE03H_WIDTH || y >= MODE03H_HEIGHT) return -1;
+	else
+	{
+		mode03h_buffer_cursor_x = x;
+		mode03h_buffer_cursor_y = y;
+		return 0;
+	}
 }
 
 int8_t mode03h_get_cursor_pos_buffered(uint16_t* x, uint16_t* y)
 {
-    return -1;
+    if(mode03h_buffer == NULL) return -1;
+	else
+	{
+		*x = mode03h_buffer_cursor_x;
+		*y = mode03h_buffer_cursor_y;
+		return 0;
+	}
 }
 
 int8_t mode03h_draw_pixel_buffered(uint8_t color, uint16_t x, uint16_t y)
@@ -758,6 +824,56 @@ int8_t mode03h_clear_screen_buffered()
 	return 0;
 }
 
+int8_t mode03h_print_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character)
+{
+	return __mode03h_print_char_buffer((uint16_t)buffer, mode, x, y, character);
+}
+
+int8_t mode03h_print_char_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character, uint8_t color)
+{
+	return __mode03h_print_char_color_buffer((uint16_t)buffer, mode, x, y, character, color);
+}
+
+int8_t mode03h_print_string_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* string)
+{
+	return __mode03h_print_string_buffer((uint16_t)buffer, mode, x, y, string);
+}
+
+int8_t mode03h_print_string_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* string, uint8_t color)
+{
+	return __mode03h_print_string_color_buffer((uint16_t)buffer, mode, x, y, string, color);
+}
+
+int8_t mode03h_set_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character)
+{
+	return __mode03h_set_char_buffer((uint16_t)buffer, mode, x, y, character);
+}
+
+int8_t mode03h_get_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character)
+{
+	return __mode03h_get_char_buffer((uint16_t)buffer, mode, x, y, character);
+}
+
+int8_t mode03h_set_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t color)
+{
+	return __mode03h_set_color_buffer((uint16_t)buffer, mode, x, y, color);
+}
+
+int8_t mode03h_get_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t* color)
+{
+	return __mode03h_get_color_buffer((uint16_t)buffer, mode, x, y, color);
+}
+
+int8_t mode03h_set_char_and_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character, uint8_t color)
+{
+	return __mode03h_set_char_and_color_buffer((uint16_t)buffer, mode, x, y, character, color);
+}
+
+int8_t mode03h_get_char_and_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character, uint8_t* color)
+{
+	return __mode03h_get_char_and_color_buffer((uint16_t)buffer, mode, x, y, character, color);
+}
+
 int8_t mode03h_draw_pixel_external_buffer(uint8_t* buffer, uint16_t mode, int8_t color, uint16_t x, uint16_t y){
 	if((x>=MODE03H_WIDTH) || (y >=MODE03H_HEIGHT)) return -1;
 	screen_char s;
@@ -825,4 +941,56 @@ int8_t mode03h_swap_external_buffer(uint8_t* buffer, uint16_t mode){
 }
 uint8_t* mode03h_create_external_buffer(uint16_t mode){
 	return heap_kernel_alloc(MODE03H_HEIGHT * MODE03H_WIDTH * sizeof(screen_char), 0);
+}
+
+// Helpers
+
+int8_t __mode03h_print_char_buffer(uint16_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character)
+{
+    return -1;
+}
+
+int8_t __mode03h_print_char_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character, uint8_t color)
+{
+    return -1;
+}
+
+int8_t __mode03h_print_string_buffer(uint16_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* string)
+{
+    return -1;
+}
+
+int8_t __mode03h_print_string_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* string, uint8_t color)
+{
+    return -1;
+}
+
+int8_t __mode03h_set_char_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character)
+{
+    return -1;
+}
+
+int8_t __mode03h_get_char_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character)
+{
+    return -1;
+}
+
+int8_t __mode03h_set_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t color)
+{
+    return -1;
+}
+
+int8_t __mode03h_get_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t* color)
+{
+    return -1;
+}
+
+int8_t __mode03h_set_char_and_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character, uint8_t color)
+{
+    return -1;
+}
+
+int8_t __mode03h_get_char_and_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character, uint8_t* color)
+{
+    return -1;
 }
