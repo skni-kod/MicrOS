@@ -960,6 +960,7 @@ uint8_t* mode03h_create_external_buffer(uint16_t mode){
 int8_t __mode03h_print_char_buffer(uint16_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character)
 {
     __mode03h_print_char_color_buffer(buffer, mode, x, y, character, 0);
+	return 0;
 }
 
 int8_t __mode03h_print_char_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character, uint8_t color)
@@ -979,6 +980,7 @@ int8_t __mode03h_print_char_color_buffer(uint16_t* buffer, uint16_t mode, uint16
     {
         __mode03h_newline(buffer, x, y);
     }
+	return 0;
 }
 
 int8_t __mode03h_print_string_buffer(uint16_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* string)
@@ -989,6 +991,7 @@ int8_t __mode03h_print_string_buffer(uint16_t* buffer, uint16_t mode, uint16_t* 
         __mode03h_print_char_buffer(buffer, mode, x, y, *ptr);
         ptr++;
     }
+	return 0;
 }
 
 int8_t __mode03h_print_string_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* string, uint8_t color)
@@ -999,6 +1002,7 @@ int8_t __mode03h_print_string_color_buffer(uint16_t* buffer, uint16_t mode, uint
         __mode03h_print_char_color_buffer(buffer, mode, x, y, *ptr, color);
         ptr++;
     }
+	return 0;
 }
 
 int8_t __mode03h_set_char_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character)
