@@ -14,6 +14,21 @@ uint8_t (*_is_buffer_on)() = NULL;
 
 int8_t (*_swap_buffers)() = NULL;
 
+int8_t (*_print_char)(char) = NULL;
+int8_t (*_print_char_color)(char, uint8_t) = NULL;
+int8_t (*_print_string)(const char*) = NULL;
+int8_t (*_print_string_color)(const char*, uint8_t) = NULL;
+int8_t (*_set_char)(uint16_t, uint16_t, char) = NULL;
+int8_t (*_get_char)(uint16_t, uint16_t, char*) = NULL;
+int8_t (*_set_color)(uint16_t, uint16_t, uint8_t) = NULL;
+int8_t (*_get_color)(uint16_t, uint16_t, uint8_t*) = NULL;
+int8_t (*_set_char_and_color)(uint16_t, uint16_t, char, uint8_t) = NULL;
+int8_t (*_get_char_and_color)(uint16_t, uint16_t, char*, uint8_t*) = NULL;
+int8_t (*_set_cursor_pos)(uint16_t, uint16_t) = NULL;
+int8_t (*_get_cursor_pos)(uint16_t*, uint16_t*) = NULL;
+int8_t (*_turn_cursor_on)() = NULL;
+int8_t (*_turn_cursor_off)() = NULL;
+
 int8_t (*_draw_pixel)(uint8_t, uint16_t, uint16_t) = NULL;
 int8_t (*_draw_line)(uint8_t, uint16_t, uint16_t, uint16_t, uint16_t) = NULL;
 int8_t (*_draw_circle)(uint8_t, uint16_t, uint16_t, uint16_t) = NULL;
@@ -40,6 +55,20 @@ void video_card_init_with_driver(driver_init_struct* init_struct){
     _turn_off_buffer = init_struct->turn_off_buffer;
     _is_buffer_on = init_struct->is_buffer_on;
     _swap_buffers = init_struct->swap_buffers;
+    _print_char = init_struct->print_char;
+    _print_char_color = init_struct->print_char_color;
+    _print_string = init_struct->print_string;
+    _print_string_color = init_struct->print_string_color;
+    _set_char = init_struct->set_char;
+    _get_char = init_struct->get_char;
+    _set_color = init_struct->set_color;
+    _get_color = init_struct->get_color;
+    _set_char_and_color = init_struct->set_char_and_color;
+    _get_char_and_color = init_struct->get_char_and_color;
+    _set_cursor_pos = init_struct->set_cursor_pos;
+    _get_cursor_pos = init_struct->get_cursor_pos;
+    _turn_cursor_on = init_struct->turn_cursor_on;
+    _turn_cursor_off = init_struct->turn_cursor_off;
     _draw_pixel = init_struct->draw_pixel;
     _draw_line = init_struct->draw_line;
     _draw_circle = init_struct->draw_circle;
@@ -100,6 +129,76 @@ void video_card_set_is_buffer_on_func(uint8_t (*is_buffer_on)())
 void video_card_set_swap_buffers_func(int8_t (*swap_buffers)())
 {
     _swap_buffers = swap_buffers;
+}
+
+void video_card_set_print_char_func(int8_t (*print_char)(char))
+{
+    _print_char = print_char;
+}
+
+void video_card_set_print_char_color_func(int8_t (*print_char_color)(char, uint8_t))
+{
+    _print_char_color = print_char_color;
+}
+
+void video_card_set_print_string_func(int8_t (*print_string)(const char*))
+{
+    _print_string = print_string;
+}
+
+void video_card_set_print_string_color_func(int8_t (*print_string_color)(const char*, uint8_t))
+{
+    _print_string_color = print_string_color;
+}
+
+void video_card_set_set_char_func(int8_t (*set_char)(uint16_t, uint16_t, char))
+{
+    _set_char = set_char;
+}
+
+void video_card_set_get_char_func(int8_t (*get_char)(uint16_t, uint16_t, char*))
+{
+    _get_char = get_char;
+}
+
+void video_card_set_set_color_func(int8_t (*set_color)(uint16_t, uint16_t, uint8_t))
+{
+    _set_color = set_color;
+}
+
+void video_card_set_get_color_func(int8_t (*get_color)(uint16_t, uint16_t, uint8_t*))
+{
+    _get_color = get_color;
+}
+
+void video_card_set_set_char_and_color_func(int8_t (*set_char_and_color)(uint16_t, uint16_t, char, uint8_t))
+{
+    _set_char_and_color = set_char_and_color;
+}
+
+void video_card_set_get_char_and_color_func(int8_t (*get_char_and_color)(uint16_t, uint16_t, char*, uint8_t*))
+{
+    _get_char_and_color = get_char_and_color;
+}
+
+void video_card_set_set_cursor_pos_func(int8_t (*set_cursor_pos)(uint16_t, uint16_t))
+{
+    _set_cursor_pos = set_cursor_pos;
+}
+
+void video_card_set_get_cursor_pos_func(int8_t (*get_cursor_pos)(uint16_t*, uint16_t*))
+{
+    _get_cursor_pos = get_cursor_pos;
+}
+
+void video_card_set_turn_cursor_on_func(int8_t (*turn_cursor_on)())
+{
+    _turn_cursor_on = turn_cursor_on;
+}
+
+void video_card_set_turn_cursor_off_func(int8_t (*turn_cursor_off)())
+{
+    _turn_cursor_off = turn_cursor_off;
 }
 
 void video_card_set_draw_pixel_func(int8_t (*draw_pixel)(uint8_t, uint16_t, uint16_t))
@@ -163,6 +262,63 @@ uint8_t video_card_is_buffer_on(){
 
 int8_t video_card_swap_buffers(){
     return (*_swap_buffers)();
+}
+
+int8_t video_card_print_char(char character)
+{
+    return (*_print_char)(character);
+}
+int8_t video_card_print_char_color(char character, uint8_t color)
+{
+    return (*_print_char_color)(character, color);
+}
+int8_t video_card_print_string(const char* string)
+{
+    return (*_print_string)(string);
+}
+int8_t video_card_print_string_color(const char* string, uint8_t color)
+{
+    return (*_print_string_color)(string, color);
+}
+int8_t video_card_set_char(uint16_t x, uint16_t y, char character)
+{
+    return (*_set_char)(x, y, character);
+}
+int8_t video_card_get_char(uint16_t x, uint16_t y, char* character)
+{
+    return (*_get_char)(x, y, character);
+}
+int8_t video_card_set_color(uint16_t x, uint16_t y, uint8_t color)
+{
+    return (*_set_color)(x, y, color);
+}
+int8_t video_card_get_color(uint16_t x, uint16_t y, uint8_t* color)
+{
+    return (*_get_color)(x, y, color);
+}
+int8_t video_card_set_char_and_color(uint16_t x, uint16_t y, char character, uint8_t color)
+{
+    return (*_set_char_and_color)(x, y, character, color);
+}
+int8_t video_card_get_char_and_color(uint16_t x, uint16_t y, char* character, uint8_t* color)
+{
+    return (*_get_char_and_color)(x, y, character, color);
+}
+int8_t video_card_set_cursor_pos(uint16_t x, uint16_t y)
+{
+    return (*_set_cursor_pos)(x, y);
+}
+int8_t video_card_get_cursor_pos(uint16_t* x, uint16_t* y)
+{
+    return (*_get_cursor_pos)(x, y);
+}
+int8_t video_card_turn_cursor_on()
+{
+    return (*_turn_cursor_on)();
+}
+int8_t video_card_turn_cursor_off()
+{
+    return (*_turn_cursor_on)();
 }
 
 int8_t video_card_draw_pixel(uint8_t color, uint16_t x, uint16_t y){
