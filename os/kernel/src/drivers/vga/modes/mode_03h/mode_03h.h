@@ -523,4 +523,21 @@ int8_t __mode03h_set_char_and_color_buffer(uint16_t* buffer, uint16_t mode, uint
 */
 int8_t __mode03h_get_char_and_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character, uint8_t* color);
 
+//! Print new line.
+/*!
+    \param buffer Pointer to screen buffer.
+    \param x Pointer to x coordinate of screen cursor.
+    \param y Pointer to y coordinate of screen cursor.
+*/
+void __mode03h_newline(uint16_t* buffer, uint16_t* x, uint16_t* y);
+
+//! Calculate position.
+/*!
+    Calculate position on screen. Function return value that added to base address will give you position of current character on screen.
+    \param x x coordinate.
+    \param y y coordinate.
+    \return Calculated position on screen.
+*/
+uint16_t __mode03h_calcualte_position(uint16_t x, uint16_t y);
+
 #endif
