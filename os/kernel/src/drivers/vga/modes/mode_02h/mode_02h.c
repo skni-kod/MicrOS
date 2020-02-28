@@ -340,6 +340,8 @@ unsigned char g_8x16_font_02h[4096] =
         
 //DOUBLE BUFFER POINTER;
 screen_char *mode02h_buffer = NULL;
+uint16_t mode02h_buffer_cursor_x = 0;
+uint16_t mode02h_buffer_cursor_y = 0;
 
 int8_t mode02h_set_mode()
 {
@@ -461,6 +463,7 @@ int8_t mode02h_swap_buffers()
 {
     if(mode02h_buffer == NULL) return -1;
     memcpy((screen_char*)VGA_MODE_02H_BASE_ADDR, mode02h_buffer, MODE02H_HEIGHT * MODE02H_WIDTH * sizeof(screen_char));
+	__vga_update_cursor(mode02h_buffer_cursor_x, mode02h_buffer_cursor_y);
     return 0;
 }
 
@@ -629,61 +632,123 @@ int8_t mode02h_clear_screen()
 
 int8_t mode02h_print_char_buffered(char character)
 {
-    return -1;
+    if(mode02h_buffer == NULL) return -1;
+	else
+	{
+		__mode02h_print_char_buffer((uint16_t*)mode02h_buffer, 0, &mode02h_buffer_cursor_x, &mode02h_buffer_cursor_y, character);
+		return 0;
+	}
 }
 
 int8_t mode02h_print_char_color_buffered(char character, uint8_t color)
 {
-    return -1;
+    if(mode02h_buffer == NULL) return -1;
+	else
+	{
+		__mode02h_print_char_color_buffer((uint16_t*)mode02h_buffer, 0, &mode02h_buffer_cursor_x, &mode02h_buffer_cursor_y, character, color);
+		return 0;
+	}
 }
 
 int8_t mode02h_print_string_buffered(const char* string)
 {
-    return -1;
+    if(mode02h_buffer == NULL) return -1;
+	else
+	{
+		__mode02h_print_string_buffer((uint16_t*)mode02h_buffer, 0, &mode02h_buffer_cursor_x, &mode02h_buffer_cursor_y, string);
+		return 0;
+	}
 }
 
 int8_t mode02h_print_string_color_buffered(const char* string, uint8_t color)
 {
-    return -1;
+    if(mode02h_buffer == NULL) return -1;
+	else
+	{
+		__mode02h_print_string_color_buffer((uint16_t*)mode02h_buffer, 0, &mode02h_buffer_cursor_x, &mode02h_buffer_cursor_y, string, color);
+		return 0;
+	}
 }
 int8_t mode02h_set_char_buffered(uint16_t x, uint16_t y, char character)
 {
-    return -1;
+    if(mode02h_buffer == NULL) return -1;
+	else
+	{
+		__mode02h_set_char_buffer((uint16_t*)mode02h_buffer, 0, mode02h_buffer_cursor_x, mode02h_buffer_cursor_y, character);
+		return 0;
+	}
 }
 
 int8_t mode02h_get_char_buffered(uint16_t x, uint16_t y, char* character)
 {
-    return -1;
+    if(mode02h_buffer == NULL) return -1;
+	else
+	{
+		__mode02h_get_char_buffer((uint16_t*)mode02h_buffer, 0, mode02h_buffer_cursor_x, mode02h_buffer_cursor_y, character);
+		return 0;
+	}
 }
 
 int8_t mode02h_set_color_buffered(uint16_t x, uint16_t y, uint8_t color)
 {
-    return -1;
+    if(mode02h_buffer == NULL) return -1;
+	else
+	{
+		__mode02h_set_color_buffer((uint16_t*)mode02h_buffer, 0, mode02h_buffer_cursor_x, mode02h_buffer_cursor_y, color);
+		return 0;
+	}
 }
 
 int8_t mode02h_get_color_buffered(uint16_t x, uint16_t y, uint8_t* color)
 {
-    return -1;
+    if(mode02h_buffer == NULL) return -1;
+	else
+	{
+		__mode02h_get_color_buffer((uint16_t*)mode02h_buffer, 0, mode02h_buffer_cursor_x, mode02h_buffer_cursor_y, color);
+		return 0;
+	}
 }
 
 int8_t mode02h_set_char_and_color_buffered(uint16_t x, uint16_t y, char character, uint8_t color)
 {
-    return -1;
+    if(mode02h_buffer == NULL) return -1;
+	else
+	{
+		__mode02h_set_char_and_color_buffer((uint16_t*)mode02h_buffer, 0, mode02h_buffer_cursor_x, mode02h_buffer_cursor_y, character, color);
+		return 0;
+	}
 }
 
 int8_t mode02h_get_char_and_color_buffered(uint16_t x, uint16_t y, char* character, uint8_t* color)
 {
-    return -1;
+    if(mode02h_buffer == NULL) return -1;
+	else
+	{
+		__mode02h_get_char_and_color_buffer((uint16_t*)mode02h_buffer, 0, mode02h_buffer_cursor_x, mode02h_buffer_cursor_y, character, color);
+		return 0;
+	}
 }
 
 int8_t mode02h_set_cursor_pos_buffered(uint16_t x, uint16_t y)
 {
-    return -1;
+    if(mode02h_buffer == NULL || x >= MODE02H_WIDTH || y >= MODE02H_HEIGHT) return -1;
+	else
+	{
+		mode02h_buffer_cursor_x = x;
+		mode02h_buffer_cursor_y = y;
+		return 0;
+	}
 }
 
 int8_t mode02h_get_cursor_pos_buffered(uint16_t* x, uint16_t* y)
 {
-    return -1;
+    if(mode02h_buffer == NULL) return -1;
+	else
+	{
+		*x = mode02h_buffer_cursor_x;
+		*y = mode02h_buffer_cursor_y;
+		return 0;
+	}
 }
 
 int8_t mode02h_draw_pixel_buffered(uint8_t color, uint16_t x, uint16_t y)
@@ -750,6 +815,56 @@ int8_t mode02h_clear_screen_buffered()
         }
     }
 	return 0;
+}
+
+int8_t mode02h_print_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character)
+{
+	return __mode02h_print_char_buffer((uint16_t*)buffer, mode, x, y, character);
+}
+
+int8_t mode02h_print_char_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character, uint8_t color)
+{
+	return __mode02h_print_char_color_buffer((uint16_t*)buffer, mode, x, y, character, color);
+}
+
+int8_t mode02h_print_string_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* string)
+{
+	return __mode02h_print_string_buffer((uint16_t*)buffer, mode, x, y, string);
+}
+
+int8_t mode02h_print_string_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* string, uint8_t color)
+{
+	return __mode02h_print_string_color_buffer((uint16_t*)buffer, mode, x, y, string, color);
+}
+
+int8_t mode02h_set_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character)
+{
+	return __mode02h_set_char_buffer((uint16_t*)buffer, mode, x, y, character);
+}
+
+int8_t mode02h_get_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character)
+{
+	return __mode02h_get_char_buffer((uint16_t*)buffer, mode, x, y, character);
+}
+
+int8_t mode02h_set_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t color)
+{
+	return __mode02h_set_color_buffer((uint16_t*)buffer, mode, x, y, color);
+}
+
+int8_t mode02h_get_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t* color)
+{
+	return __mode02h_get_color_buffer((uint16_t*)buffer, mode, x, y, color);
+}
+
+int8_t mode02h_set_char_and_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character, uint8_t color)
+{
+	return __mode02h_set_char_and_color_buffer((uint16_t*)buffer, mode, x, y, character, color);
+}
+
+int8_t mode02h_get_char_and_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character, uint8_t* color)
+{
+	return __mode02h_get_char_and_color_buffer((uint16_t*)buffer, mode, x, y, character, color);
 }
 
 int8_t mode02h_draw_pixel_external_buffer(uint8_t* buffer, uint16_t mode, int8_t color, uint16_t x, uint16_t y){
@@ -819,4 +934,129 @@ int8_t mode02h_swap_external_buffer(uint8_t* buffer, uint16_t mode){
 }
 uint8_t* mode02h_create_external_buffer(uint16_t mode){
 	return heap_kernel_alloc(MODE02H_HEIGHT * MODE02H_WIDTH * sizeof(screen_char), 0);
+}
+
+int8_t __mode02h_print_char_buffer(uint16_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character)
+{
+    __mode02h_print_char_color_buffer(buffer, mode, x, y, character, 0);
+}
+
+int8_t __mode02h_print_char_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character, uint8_t color)
+{
+	uint16_t pos = __vga_calcualte_position_with_offset(*x, *y);
+
+    if (character != '\n')
+    {
+        buffer[pos] = (uint16_t)character << 8 | (uint16_t)color;
+        *x += 1;
+        if (*x == MODE02H_WIDTH)
+        {
+            __mode02h_newline(buffer, x, y);
+        }
+    }
+    else
+    {
+        __mode02h_newline(buffer, x, y);
+    }
+}
+
+int8_t __mode02h_print_string_buffer(uint16_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* string)
+{
+    const char *ptr = string;
+    while (*ptr != 0)
+    {
+        __mode02h_print_char_buffer(buffer, mode, x, y, *ptr);
+        ptr++;
+    }
+}
+
+int8_t __mode02h_print_string_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* string, uint8_t color)
+{
+    const char *ptr = string;
+    while (*ptr != 0)
+    {
+        __mode02h_print_char_color_buffer(buffer, mode, x, y, *ptr, color);
+        ptr++;
+    }
+}
+
+int8_t __mode02h_set_char_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character)
+{
+    uint16_t pos = __vga_calcualte_position_with_offset(x, y);
+	// value = (value & ~mask) | (newvalue & mask);
+	buffer[pos] = (buffer[pos] & ~0xFF00) | ((uint16_t)character << 8 & 0xFF00);
+	return 0;
+}
+
+int8_t __mode02h_get_char_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character)
+{
+    uint16_t pos = __vga_calcualte_position_with_offset(x, y);
+    *character = (char)(buffer[pos] >> 8);
+    return 0;
+}
+
+int8_t __mode02h_set_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t color)
+{
+    uint16_t pos = __vga_calcualte_position_with_offset(x, y);
+	// value = (value & ~mask) | (newvalue & mask);
+	buffer[pos] = (buffer[pos] & ~0x00FF) | ((uint16_t)color & 0x00FF);
+	return 0;
+}
+
+int8_t __mode02h_get_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t* color)
+{
+    uint16_t pos = __vga_calcualte_position_with_offset(x, y);
+	*color = (uint8_t)buffer[pos];
+    return 0;
+}
+
+int8_t __mode02h_set_char_and_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character, uint8_t color)
+{
+    uint16_t pos = __vga_calcualte_position_with_offset(x, y);
+	buffer[pos] = (uint16_t)character << 8 | (uint16_t)color;
+	return 0;
+}
+
+int8_t __mode02h_get_char_and_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character, uint8_t* color)
+{
+	uint16_t pos = __vga_calcualte_position_with_offset(x, y);
+    *character = (char)(buffer[pos] >> 8);
+	*color = (uint8_t)buffer[pos];
+    return 0;
+}
+
+void __mode02h_newline(uint16_t* buffer, uint16_t* x, uint16_t* y)
+{
+	*x = 0;
+    *y++;
+    // When we reach end of screen
+    if (*y == MODE02H_HEIGHT)
+    {
+        // To current line we copy next line
+        for (uint16_t i = 0; i < MODE02H_HEIGHT - 1; ++i)
+        {
+            for (uint16_t j = 0; j < MODE02H_WIDTH; ++j)
+            {
+                uint16_t pos = __mode02h_calcualte_position(j, i);
+                // Copy byte from next line
+                buffer[pos] = buffer[pos + MODE02H_WIDTH];
+            }
+        }
+        *y = MODE02H_HEIGHT - 1;
+
+        // Clear last line
+		vga_color_value col;
+        col.color = __vga_get_default_terminal_color(VGA_MODE_02H);
+        for (uint16_t i = 0; i < MODE02H_WIDTH; ++i)
+        {
+            uint16_t pos = __mode02h_calcualte_position(i, *y);
+            // Clear
+			buffer[pos] = (uint16_t)col.value;
+        }
+    }
+}
+
+uint16_t __mode02h_calcualte_position(uint16_t x, uint16_t y)
+{
+    return x + y * MODE02H_WIDTH;
 }
