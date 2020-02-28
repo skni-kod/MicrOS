@@ -957,7 +957,7 @@ int8_t __mode03h_print_char_color_buffer(uint16_t* buffer, uint16_t mode, uint16
 
     if (character != '\n')
     {
-        buffer[pos] = (uint16_t)character << 8 || (uint16_t)color;
+        buffer[pos] = (uint16_t)character << 8 | (uint16_t)color;
         *x += 1;
         if (*x == MODE03H_WIDTH)
         {
@@ -1023,7 +1023,7 @@ int8_t __mode03h_get_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, u
 int8_t __mode03h_set_char_and_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character, uint8_t color)
 {
     uint16_t pos = __vga_calcualte_position_with_offset(x, y);
-	buffer[pos] = (uint16_t)character << 8 || (uint16_t)color;
+	buffer[pos] = (uint16_t)character << 8 | (uint16_t)color;
 	return 0;
 }
 
