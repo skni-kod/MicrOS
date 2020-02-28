@@ -46,6 +46,17 @@ typedef struct _driver_init_struct
     int8_t (*draw_rectangle)(uint8_t, uint16_t, uint16_t, uint16_t, uint16_t);
     int8_t (*clear_screen)();
 
+    int8_t (*print_char_external_buffer)(uint8_t*, uint16_t, uint16_t*, uint16_t*, char);
+    int8_t (*print_char_color_external_buffer)(uint8_t*, uint16_t, uint16_t*, uint16_t*, char, uint8_t);
+    int8_t (*print_string_external_buffer)(uint8_t*, uint16_t, uint16_t*, uint16_t*, const char*);
+    int8_t (*print_string_color_external_buffer)(uint8_t*, uint16_t, uint16_t*, uint16_t*, const char*, uint8_t);
+    int8_t (*set_char_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, char);
+    int8_t (*get_char_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, char*);
+    int8_t (*set_color_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, uint8_t);
+    int8_t (*get_color_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, uint8_t*);
+    int8_t (*set_char_and_color_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, char, uint8_t);
+    int8_t (*get_char_and_color_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, char*, uint8_t*);
+
     int8_t (*draw_pixel_external_buffer)(uint8_t*, uint16_t, int8_t, uint16_t, uint16_t);
     int8_t (*draw_line_external_buffer)(uint8_t*, uint16_t, uint8_t, uint16_t, uint16_t, uint16_t, uint16_t);
     int8_t (*draw_circle_external_buffer)(uint8_t*, uint16_t, uint8_t, uint16_t, uint16_t, uint16_t);
@@ -160,6 +171,66 @@ void video_card_set_draw_line_func(int8_t (*draw_line)(uint8_t, uint16_t, uint16
 void video_card_set_draw_circle_func(int8_t (*draw_circle)(uint8_t, uint16_t, uint16_t, uint16_t));
 void video_card_set_draw_rectangle_func(int8_t (*draw_rectangle)(uint8_t, uint16_t, uint16_t, uint16_t, uint16_t));
 void video_card_set_clear_screen_func(int8_t (*clear_screen)());
+
+//! Setter to set print character on screen to external buffer.
+/*!
+    \param print_char_external_buffer Pointer to appropriate function.
+*/
+void video_card_set_print_char_external_buffer(int8_t (*print_char_external_buffer)(uint8_t*, uint16_t, uint16_t*, uint16_t*, char));
+
+//! Setter to set print character on screen to external buffer.
+/*!
+    \param print_char_color_external_buffer Pointer to appropriate function.
+*/
+void video_card_set_print_char_color_external_buffer(int8_t (*print_char_color_external_buffer)(uint8_t*, uint16_t, uint16_t*, uint16_t*, char, uint8_t));
+
+//! Setter to set print string on screen to external buffer.
+/*!
+    \param print_string_external_buffer Pointer to appropriate function.
+*/
+void video_card_set_print_string_external_buffer(int8_t (*print_string_external_buffer)(uint8_t*, uint16_t, uint16_t*, uint16_t*, const char*));
+
+//! Setter to set print string on screen to external buffer.
+/*!
+    \param print_string_color_external_buffer Pointer to appropriate function.
+*/
+void video_card_set_print_string_color_external_buffer(int8_t (*print_string_color_external_buffer)(uint8_t*, uint16_t, uint16_t*, uint16_t*, const char*, uint8_t));
+
+//! Setter to set pet character on given point on screen to external buffer.
+/*!
+    \param set_char_external_buffer Pointer to appropriate function.
+*/
+void video_card_set_set_char_external_buffer(int8_t (*set_char_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, char));
+
+//! Setter to set get character from given point on screen to external buffer.
+/*!
+    \param get_char_external_buffer Pointer to appropriate function.
+*/
+void video_card_set_get_char_external_buffer(int8_t (*get_char_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, char*));
+
+//! Setter to set set character color on given point on screen to external buffer.
+/*!
+    \param set_color_external_buffer Pointer to appropriate function.
+*/
+void video_card_set_set_color_external_buffer(int8_t (*set_color_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, uint8_t));
+
+//! Setter to set get character color from given point on screen to external buffer.
+/*!
+    \param get_color_external_buffer Pointer to appropriate function.
+*/
+void video_card_set_get_color_external_buffer(int8_t (*get_color_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, uint8_t*));
+
+//! Setter to set set character and character color on given point on screen to external buffer.
+/*!
+    \param set_char_and_color_external_buffer Pointer to appropriate function.
+*/
+void video_card_set_set_char_and_color_external_buffer(int8_t (*set_char_and_color_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, char, uint8_t));
+
+//! Setter to set get character and character color color from given point on screen to external buffer.
+/*!
+    \param get_char_and_color_external_buffer Pointer to appropriate function.
+*/
+void video_card_set_get_char_and_color_external_buffer(int8_t (*get_char_and_color_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, char*, uint8_t*));
 
 // Graphic functions
 
@@ -308,6 +379,129 @@ int8_t video_card_draw_line(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx
 int8_t video_card_draw_circle(uint8_t color, uint16_t x, uint16_t y, uint16_t radius);
 int8_t video_card_draw_rectangle(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
 int8_t video_card_clear_screen();
+
+//! Print character on screen to external buffer.
+/*!
+    Print character on screen without changing color of character and background. This function works on external buffer.
+    \param buffer Screen buffer.
+    \param mode Mode.
+    \param x X coordinate of screen cursor.
+    \param y Y coordinate of screen cursor.
+    \param character Character.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t video_card_print_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character);
+
+//! Print character on screen to external buffer.
+/*!
+    Print character on screen with given color of character and background. This function works on external buffer.
+    \param buffer Screen buffer.
+    \param mode Mode.
+    \param x X coordinate of screen cursor.
+    \param y Y coordinate of screen cursor.
+    \param character Character.
+    \param color Color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t video_card_print_char_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character, uint8_t color);
+
+//! Print string on screen to external buffer.
+/*!
+    Print string on screen without changing color of characters and background. This function works on external buffer.
+    \param buffer Screen buffer.
+    \param mode Mode.
+    \param x X coordinate of screen cursor.
+    \param y Y coordinate of screen cursor.
+    \param string String.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t video_card_print_string_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* string);
+
+//! Print string on screen to external buffer.
+/*!
+    Print string on screen with given color of characters and background. This function works on external buffer.
+    \param buffer Screen buffer.
+    \param mode Mode.
+    \param x X coordinate of screen cursor.
+    \param y Y coordinate of screen cursor.
+    \param string String.
+    \param color Color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t video_card_print_string_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* string, uint8_t color);
+
+//! Set character on given point on screen to external buffer.
+/*!
+    Set character on given point on screen without changing color of character and background. This function works on external buffer.
+    \param buffer Screen buffer.
+    \param mode Mode.
+    \param x x coordinate.
+    \param y y coordinate.
+    \param character Character.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t video_card_set_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character);
+
+//! Get character from given point on screen to external buffer.
+/*!
+    Get character on given point on screen. This function works on external buffer.
+    \param buffer Screen buffer.
+    \param mode Mode.
+    \param x x coordinate.
+    \param y y coordinate.
+    \param character Return character.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t video_card_get_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character);
+
+//! Set character color on given point on screen to external buffer.
+/*!
+    Set character color on given point on screen without changing letter. This function works on external buffer.
+    \param buffer Screen buffer.
+    \param mode Mode.
+    \param x x coordinate.
+    \param y y coordinate.
+    \param color Color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t video_card_set_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t color);
+
+//! Get character color from given point on screen to external buffer.
+/*!
+    Get character color on given point on screen. This function works on external buffer.
+    \param buffer Screen buffer.
+    \param mode Mode.
+    \param x x coordinate.
+    \param y y coordinate.
+    \param color Return color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t video_card_get_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t* color);
+
+//! Set character and character color on given point on screen to external buffer.
+/*!
+    Set character and character color on given point on screen. This function works on external buffer.
+    \param buffer Screen buffer.
+    \param mode Mode.
+    \param x x coordinate.
+    \param y y coordinate.
+    \param character Character.
+    \param color Character color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t video_card_set_char_and_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character, uint8_t color);
+
+//! Get character and character color color from given point on screen to external buffer.
+/*!
+    Get character and character color color on given point on screen. This function works on external buffer.
+    \param buffer Screen buffer.
+    \param mode Mode.
+    \param x x coordinate.
+    \param character Return haracter.
+    \param color Return character color.
+    \return 0 if success, -1 if not implemented.
+*/
+int8_t video_card_get_char_and_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character, uint8_t* color);
 
 int8_t video_card_draw_pixel_external_buffer(uint8_t* buffer, uint16_t mode, int8_t color, uint16_t x, uint16_t y);
 int8_t video_card_draw_line_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);

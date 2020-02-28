@@ -35,6 +35,17 @@ int8_t (*_draw_circle)(uint8_t, uint16_t, uint16_t, uint16_t) = NULL;
 int8_t (*_draw_rectangle)(uint8_t, uint16_t, uint16_t, uint16_t, uint16_t) = NULL;
 int8_t (*_clear_screen)() = NULL;
 
+int8_t (*_print_char_external_buffer)(uint8_t*, uint16_t, uint16_t*, uint16_t*, char) = NULL;
+int8_t (*_print_char_color_external_buffer)(uint8_t*, uint16_t, uint16_t*, uint16_t*, char, uint8_t) = NULL;
+int8_t (*_print_string_external_buffer)(uint8_t*, uint16_t, uint16_t*, uint16_t*, const char*) = NULL;
+int8_t (*_print_string_color_external_buffer)(uint8_t*, uint16_t, uint16_t*, uint16_t*, const char*, uint8_t) = NULL;
+int8_t (*_set_char_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, char) = NULL;
+int8_t (*_get_char_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, char*) = NULL;
+int8_t (*_set_color_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, uint8_t) = NULL;
+int8_t (*_get_color_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, uint8_t*) = NULL;
+int8_t (*_set_char_and_color_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, char, uint8_t) = NULL;
+int8_t (*_get_char_and_color_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, char*, uint8_t*) = NULL;
+
 int8_t (*_draw_pixel_external_buffer)(uint8_t*, uint16_t, int8_t, uint16_t, uint16_t) = NULL;
 int8_t (*_draw_line_external_buffer)(uint8_t*, uint16_t, uint8_t, uint16_t, uint16_t, uint16_t, uint16_t) = NULL;
 int8_t (*_draw_circle_external_buffer)(uint8_t*, uint16_t, uint8_t, uint16_t, uint16_t, uint16_t) = NULL;
@@ -75,6 +86,16 @@ void video_card_init_with_driver(driver_init_struct* init_struct){
     _draw_rectangle = init_struct->draw_rectangle;
     _clear_screen = init_struct->clear_screen;
 
+    _print_char_external_buffer = init_struct->print_char_external_buffer;
+    _print_char_color_external_buffer = init_struct->print_char_color_external_buffer;
+    _print_string_external_buffer = init_struct->print_string_external_buffer;
+    _print_string_color_external_buffer = init_struct->print_string_color_external_buffer;
+    _set_char_external_buffer = init_struct->set_char_external_buffer;
+    _get_char_external_buffer = init_struct->get_char_external_buffer;
+    _set_color_external_buffer = init_struct->set_color_external_buffer;
+    _get_color_external_buffer = init_struct->get_color_external_buffer;
+    _set_char_and_color_external_buffer = init_struct->set_char_and_color_external_buffer;
+    _get_char_and_color_external_buffer = init_struct->get_char_and_color_external_buffer;
     _draw_pixel_external_buffer = init_struct->draw_pixel_external_buffer;
     _draw_line_external_buffer = init_struct->draw_line_external_buffer;
     _draw_circle_external_buffer = init_struct->draw_circle_external_buffer;
@@ -85,6 +106,8 @@ void video_card_init_with_driver(driver_init_struct* init_struct){
     _destroy_external_buffer = init_struct->destroy_external_buffer;
 
 }
+
+// Setters
 
 void video_card_set_get_available_graphic_video_modes_func(video_mode* (*get_available_graphic_video_modes)(uint32_t*))
 {
@@ -226,6 +249,58 @@ void video_card_set_clear_screen_func(int8_t (*clear_screen)())
     _clear_screen = clear_screen;
 }
 
+void video_card_set_print_char_external_buffer(int8_t (*print_char_external_buffer)(uint8_t*, uint16_t, uint16_t*, uint16_t*, char))
+{
+    _print_char_external_buffer = print_char_external_buffer;
+}
+
+void video_card_set_print_char_color_external_buffer(int8_t (*print_char_color_external_buffer)(uint8_t*, uint16_t, uint16_t*, uint16_t*, char, uint8_t))
+{
+    _print_char_color_external_buffer = print_char_color_external_buffer;
+}
+
+void video_card_set_print_string_external_buffer(int8_t (*print_string_external_buffer)(uint8_t*, uint16_t, uint16_t*, uint16_t*, const char*))
+{
+    _print_string_external_buffer = print_string_external_buffer;
+}
+
+void video_card_set_print_string_color_external_buffer(int8_t (*print_string_color_external_buffer)(uint8_t*, uint16_t, uint16_t*, uint16_t*, const char*, uint8_t))
+{
+    _print_string_color_external_buffer = print_string_color_external_buffer;
+}
+
+void video_card_set_set_char_external_buffer(int8_t (*set_char_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, char))
+{
+    _set_char_external_buffer = set_char_external_buffer;
+}
+
+void video_card_set_get_char_external_buffer(int8_t (*get_char_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, char*))
+{
+    _get_char_external_buffer = get_char_external_buffer;
+}
+
+void video_card_set_set_color_external_buffer(int8_t (*set_color_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, uint8_t))
+{
+    _set_color_external_buffer = set_color_external_buffer;
+}
+
+void video_card_set_get_color_external_buffer(int8_t (*get_color_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, uint8_t*))
+{
+    _get_color_external_buffer = get_color_external_buffer;
+}
+
+void video_card_set_set_char_and_color_external_buffer(int8_t (*set_char_and_color_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, char, uint8_t))
+{
+    _set_char_and_color_external_buffer = set_char_and_color_external_buffer;
+}
+
+void video_card_set_get_char_and_color_external_buffer(int8_t (*get_char_and_color_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, char*, uint8_t*))
+{
+    _get_char_and_color_external_buffer = get_char_and_color_external_buffer;
+}
+
+// Graphic functions
+
 video_mode* video_card_get_available_graphic_modes(uint32_t *noOfModes)
 {
     return (*_get_available_graphic_video_modes)(noOfModes);
@@ -335,6 +410,48 @@ int8_t video_card_draw_rectangle(uint8_t color, uint16_t ax, uint16_t ay, uint16
 }
 int8_t video_card_clear_screen(){
     return (*_clear_screen)();
+}
+
+int8_t video_card_print_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character)
+{
+    return (*_print_char_external_buffer)(buffer, mode, x, y, character);
+}
+int8_t video_card_print_char_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character, uint8_t color)
+{
+    return (*_print_char_color_external_buffer)(buffer, mode, x, y, character, color);
+}
+int8_t video_card_print_string_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* string)
+{
+    return (*_print_string_external_buffer)(buffer, mode, x, y, string);
+}
+int8_t video_card_print_string_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* string, uint8_t color)
+{
+    return (*_print_string_color_external_buffer)(buffer, mode, x, y, string, color);
+}
+int8_t video_card_set_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character)
+{
+    return (*_set_char_external_buffer)(buffer, mode, x, y, character);
+}
+int8_t video_card_get_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character)
+{
+    return (*_get_char_external_buffer)(buffer, mode, x, y, character);
+}
+int8_t video_card_set_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t color)
+{
+    return (*_set_color_external_buffer)(buffer, mode, x, y, color);
+}
+int8_t video_card_get_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t* color)
+{
+    return (*_get_color_external_buffer)(buffer, mode, x, y, color);
+}
+
+int8_t video_card_set_char_and_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character, uint8_t color)
+{
+    return (*_set_char_and_color_external_buffer)(buffer, mode, x, y, character, color);
+}
+int8_t video_card_get_char_and_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character, uint8_t* color)
+{
+    return (*_get_char_and_color_external_buffer)(buffer, mode, x, y, character, color);
 }
 
 int8_t video_card_draw_pixel_external_buffer(uint8_t* buffer, uint16_t mode, int8_t color, uint16_t x, uint16_t y){
