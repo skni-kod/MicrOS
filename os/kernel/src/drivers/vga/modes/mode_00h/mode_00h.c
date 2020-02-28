@@ -374,6 +374,20 @@ int8_t mode00h_set_mode()
     video_card_set_turn_off_buffer_func(mode00h_turn_off_buffer);
     video_card_set_is_buffer_on_func(mode00h_is_buffer_on);
     video_card_set_swap_buffers_func(mode00h_swap_buffers);
+	video_card_set_print_char_func(mode00h_print_char);
+	video_card_set_print_char_color_func(mode00h_print_char_color);
+	video_card_set_print_string_func(mode00h_print_string);
+	video_card_set_print_string_color_func(mode00h_print_string_color);
+	video_card_set_set_char_func(mode00h_set_char);
+	video_card_set_get_char_func(mode00h_get_char);
+	video_card_set_set_color_func(mode00h_set_color);
+	video_card_set_get_color_func(mode00h_get_color);
+	video_card_set_set_char_and_color_func(mode00h_set_char_and_color);
+	video_card_set_get_char_and_color_func(mode00h_get_char_and_color);
+	video_card_set_set_cursor_pos_func(mode00h_set_cursor_pos);
+	video_card_set_get_cursor_pos_func(mode00h_get_cursor_pos);
+	video_card_set_turn_cursor_on_func(mode00h_turn_cursor_on);
+	video_card_set_turn_cursor_off_func(mode00h_turn_cursor_off);
     video_card_set_draw_pixel_func(mode00h_draw_pixel);
     video_card_set_draw_line_func(mode00h_draw_line);
     video_card_set_draw_circle_func(mode00h_draw_circle);
@@ -388,6 +402,18 @@ int8_t mode00h_turn_on_buffer()
     mode00h_buffer = heap_kernel_alloc(MODE00H_HEIGHT * MODE00H_WIDTH * sizeof(screen), 0);
     if(mode00h_buffer == NULL)
         return -1;
+	video_card_set_print_char_func(mode00h_print_char_buffered);
+	video_card_set_print_char_color_func(mode00h_print_char_color_buffered);
+	video_card_set_print_string_func(mode00h_print_string_buffered);
+	video_card_set_print_string_color_func(mode00h_print_string_color_buffered);
+	video_card_set_set_char_func(mode00h_set_char_buffered);
+	video_card_set_get_char_func(mode00h_get_char_buffered);
+	video_card_set_set_color_func(mode00h_set_color_buffered);
+	video_card_set_get_color_func(mode00h_get_color_buffered);
+	video_card_set_set_char_and_color_func(mode00h_set_char_and_color_buffered);
+	video_card_set_get_char_and_color_func(mode00h_get_char_and_color_buffered);
+	video_card_set_set_cursor_pos_func(mode00h_set_cursor_pos_buffered);
+	video_card_set_get_cursor_pos_func(mode00h_get_cursor_pos_buffered);
     video_card_set_draw_pixel_func(mode00h_draw_pixel_buffered);
     video_card_set_draw_line_func(mode00h_draw_line_buffered);
     video_card_set_draw_circle_func(mode00h_draw_circle_buffered);
@@ -400,6 +426,18 @@ int8_t mode00h_turn_off_buffer()
     if(mode00h_buffer == NULL) return -1;
     heap_kernel_dealloc(mode00h_buffer);
     mode00h_buffer = NULL;
+	video_card_set_print_char_func(mode00h_print_char);
+	video_card_set_print_char_color_func(mode00h_print_char_color);
+	video_card_set_print_string_func(mode00h_print_string);
+	video_card_set_print_string_color_func(mode00h_print_string_color);
+	video_card_set_set_char_func(mode00h_set_char);
+	video_card_set_get_char_func(mode00h_get_char);
+	video_card_set_set_color_func(mode00h_set_color);
+	video_card_set_get_color_func(mode00h_get_color);
+	video_card_set_set_char_and_color_func(mode00h_set_char_and_color);
+	video_card_set_get_char_and_color_func(mode00h_get_char_and_color);
+	video_card_set_set_cursor_pos_func(mode00h_set_cursor_pos);
+	video_card_set_get_cursor_pos_func(mode00h_get_cursor_pos);
     video_card_set_draw_pixel_func(mode00h_draw_pixel);
     video_card_set_draw_line_func(mode00h_draw_line);
     video_card_set_draw_circle_func(mode00h_draw_circle);
@@ -584,6 +622,65 @@ int8_t mode00h_draw_rectangle(uint8_t color, uint16_t ax, uint16_t ay, uint16_t 
     return -1;
 }
 int8_t mode00h_clear_screen()
+{
+    return -1;
+}
+
+int8_t mode00h_print_char_buffered(char character)
+{
+    return -1;
+}
+
+int8_t mode00h_print_char_color_buffered(char character, uint8_t color)
+{
+    return -1;
+}
+
+int8_t mode00h_print_string_buffered(const char* string)
+{
+    return -1;
+}
+
+int8_t mode00h_print_string_color_buffered(const char* string, uint8_t color)
+{
+    return -1;
+}
+int8_t mode00h_set_char_buffered(uint16_t x, uint16_t y, char character)
+{
+    return -1;
+}
+
+int8_t mode00h_get_char_buffered(uint16_t x, uint16_t y, char* character)
+{
+    return -1;
+}
+
+int8_t mode00h_set_color_buffered(uint16_t x, uint16_t y, uint8_t color)
+{
+    return -1;
+}
+
+int8_t mode00h_get_color_buffered(uint16_t x, uint16_t y, uint8_t* color)
+{
+    return -1;
+}
+
+int8_t mode00h_set_char_and_color_buffered(uint16_t x, uint16_t y, char character, uint8_t color)
+{
+    return -1;
+}
+
+int8_t mode00h_get_char_and_color_buffered(uint16_t x, uint16_t y, char* character, uint8_t* color)
+{
+    return -1;
+}
+
+int8_t mode00h_set_cursor_pos_buffered(uint16_t x, uint16_t y)
+{
+    return -1;
+}
+
+int8_t mode00h_get_cursor_pos_buffered(uint16_t* x, uint16_t* y)
 {
     return -1;
 }
