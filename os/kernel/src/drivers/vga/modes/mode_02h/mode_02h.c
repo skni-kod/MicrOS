@@ -413,8 +413,7 @@ int8_t mode02h_turn_on_buffer()
 {
     if(mode02h_buffer != NULL) return -1;
     mode02h_buffer = heap_kernel_alloc(MODE02H_HEIGHT * MODE02H_WIDTH * sizeof(screen_char), 0);
-    if(mode02h_buffer == NULL)
-        return -1;
+    if(mode02h_buffer == NULL) return -1;
 	video_card_set_print_char_func(mode02h_print_char_buffered);
 	video_card_set_print_char_color_func(mode02h_print_char_color_buffered);
 	video_card_set_print_string_func(mode02h_print_string_buffered);

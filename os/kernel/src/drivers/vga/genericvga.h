@@ -15,7 +15,7 @@ int8_t generic_vga_draw_circle_external_buffer(uint8_t* buffer, uint16_t mode, u
 int8_t generic_vga_draw_rectangle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
 int8_t generic_vga_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode);
 
-int8_t generic_vga_swap_external_buffer(uint8_t buffer, uint16_t mode);
+int8_t generic_vga_swap_external_buffer(uint8_t* buffer, uint16_t mode);
 uint8_t* generic_vga_create_external_buffer(uint16_t mode);
 void generic_vga_destroy_external_buffer(uint8_t* buffer);
 

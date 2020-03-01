@@ -52,7 +52,7 @@ int8_t (*_draw_circle_external_buffer)(uint8_t*, uint16_t, uint8_t, uint16_t, ui
 int8_t (*_draw_rectangle_external_buffer)(uint8_t*, uint16_t, uint8_t, uint16_t, uint16_t, uint16_t, uint16_t) = NULL;
 int8_t (*_clear_screen_external_buffer)(uint8_t*, uint16_t) = NULL;
 
-int8_t (*_swap_external_buffer)(uint8_t, uint16_t) = NULL;
+int8_t (*_swap_external_buffer)(uint8_t*, uint16_t) = NULL;
 uint8_t* (*_create_external_buffer)(uint16_t) = NULL;
 void (*_destroy_external_buffer)(uint8_t*) = NULL;
 
@@ -470,7 +470,7 @@ int8_t video_card_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode){
     return (*_clear_screen_external_buffer)(buffer, mode);
 }
 
-int8_t video_card_swap_external_buffer(uint8_t buffer, uint16_t mode){
+int8_t video_card_swap_external_buffer(uint8_t* buffer, uint16_t mode){
     return (*_swap_external_buffer)(buffer, mode);
 }
 uint8_t* video_card_create_external_buffer(uint16_t mode){

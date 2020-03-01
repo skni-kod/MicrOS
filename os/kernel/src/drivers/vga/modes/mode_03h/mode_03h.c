@@ -413,8 +413,7 @@ int8_t mode03h_turn_on_buffer()
 {
     if(mode03h_buffer != NULL) return -1;
     mode03h_buffer = heap_kernel_alloc(MODE03H_HEIGHT * MODE03H_WIDTH * sizeof(screen_char), 0);
-    if(mode03h_buffer == NULL)
-        return -1;
+    if(mode03h_buffer == NULL) return -1;
 	mode03h_buffer_cursor_x = 0;
 	mode03h_buffer_cursor_y = 0;
 	video_card_set_print_char_func(mode03h_print_char_buffered);

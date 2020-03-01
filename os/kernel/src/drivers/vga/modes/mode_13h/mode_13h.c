@@ -96,6 +96,32 @@ int8_t mode13h_set_mode()
     video_card_set_draw_circle_func(&mode13h_draw_circle);
     video_card_set_draw_rectangle_func(&mode13h_draw_rectangle);
     video_card_set_clear_screen_func(&mode13h_clear_screen);
+
+    video_card_set_print_char_func(NULL);
+	video_card_set_print_char_color_func(NULL);
+	video_card_set_print_string_func(NULL);
+	video_card_set_print_string_color_func(NULL);
+	video_card_set_set_char_func(NULL);
+	video_card_set_get_char_func(NULL);
+	video_card_set_set_color_func(NULL);
+	video_card_set_get_color_func(NULL);
+	video_card_set_set_char_and_color_func(NULL);
+	video_card_set_get_char_and_color_func(NULL);
+	video_card_set_set_cursor_pos_func(NULL);
+	video_card_set_get_cursor_pos_func(NULL);
+	video_card_set_turn_cursor_on_func(NULL);
+	video_card_set_turn_cursor_off_func(NULL);
+
+    video_card_set_print_char_external_buffer(NULL);
+	video_card_set_print_char_color_external_buffer(NULL);
+	video_card_set_print_string_external_buffer(NULL);
+	video_card_set_print_string_color_external_buffer(NULL);
+	video_card_set_set_char_external_buffer(NULL);
+	video_card_set_get_char_external_buffer(NULL);
+	video_card_set_set_color_external_buffer(NULL);
+	video_card_set_get_color_external_buffer(NULL);
+	video_card_set_set_char_and_color_external_buffer(NULL);
+	video_card_set_get_char_and_color_external_buffer(NULL);
     return 0x13;
 }
 

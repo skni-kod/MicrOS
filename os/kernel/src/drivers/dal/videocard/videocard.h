@@ -63,7 +63,7 @@ typedef struct _driver_init_struct
     int8_t (*draw_rectangle_external_buffer)(uint8_t*, uint16_t, uint8_t, uint16_t, uint16_t, uint16_t, uint16_t);
     int8_t (*clear_screen_external_buffer)(uint8_t*, uint16_t);
 
-    int8_t (*swap_external_buffer)(uint8_t, uint16_t);
+    int8_t (*swap_external_buffer)(uint8_t*, uint16_t);
     uint8_t* (*create_external_buffer)(uint16_t);
     void (*destroy_external_buffer)(uint8_t*);
 } driver_init_struct;
@@ -509,7 +509,7 @@ int8_t video_card_draw_circle_external_buffer(uint8_t* buffer, uint16_t mode, ui
 int8_t video_card_draw_rectangle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
 int8_t video_card_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode);
 
-int8_t video_card_swap_external_buffer(uint8_t buffer, uint16_t mode);
+int8_t video_card_swap_external_buffer(uint8_t* buffer, uint16_t mode);
 uint8_t* video_card_create_external_buffer(uint16_t mode);
 void video_card_destroy_external_buffer(uint8_t* buffer);
 
