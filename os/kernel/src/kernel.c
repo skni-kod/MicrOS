@@ -32,6 +32,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
+#include "terminal/terminal_manager.h"
 
 typedef struct _linesStruct
 {
@@ -299,9 +300,11 @@ int kmain()
     
     logger_log_ok("Loading tasks...");
     vga_clear_screen();
-    process_manager_create_process("A:/ENV/SHELL.ELF", "", 1000, false);
-
+    //process_manager_create_process("A:/ENV/SHELL.ELF", "", 1000, false);
+    uint32_t d = 0;
+    create_terminal(&d);
     process_manager_run();
+    //destroy_active_terminal();
 
     while (1);
     //    ;

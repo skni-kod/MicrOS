@@ -15,8 +15,32 @@ typedef struct terminal_struct
 
 } terminal_struct;
 
-int8_t create_terminal();
+int8_t create_terminal(uint32_t* terminal_id);
 int8_t destroy_terminal(uint32_t terminal_id);
 int8_t destroy_active_terminal();
+
+int8_t terminal_manager_set_mode(uint32_t terminal_id, int8_t mode);
+
+int8_t terminal_manager_print_char(uint32_t terminal_id, char character);
+int8_t terminal_manager_print_char_color(uint32_t terminal_id, char character, uint8_t color);
+int8_t terminal_manager_print_string(uint32_t terminal_id, const char* string);
+int8_t terminal_manager_print_string_color(uint32_t terminal_id, const char* string, uint8_t color);
+int8_t terminal_manager_set_char(uint32_t terminal_id, uint16_t x, uint16_t y, char character);
+int8_t terminal_manager_get_char(uint32_t terminal_id, uint16_t x, uint16_t y, char* character);
+int8_t terminal_manager_set_color(uint32_t terminal_id, uint16_t x, uint16_t y, uint8_t color);
+int8_t terminal_manager_get_color(uint32_t terminal_id, uint16_t x, uint16_t y, uint8_t* color);
+int8_t terminal_manager_set_char_and_color(uint32_t terminal_id, uint16_t x, uint16_t y, char character, uint8_t color);
+int8_t terminal_manager_get_char_and_color(uint32_t terminal_id, uint16_t x, uint16_t y, char* character, uint8_t* color);
+int8_t terminal_manager_set_cursor_pos(uint32_t terminal_id, uint16_t x, uint16_t y);
+int8_t terminal_manager_get_cursor_pos(uint32_t terminal_id, uint16_t* x, uint16_t* y);
+int8_t terminal_manager_turn_cursor_on(uint32_t terminal_id);
+int8_t terminal_manager_turn_cursor_off(uint32_t terminal_id);
+
+int8_t terminal_manager_draw_pixel(uint32_t terminal_id, uint8_t color, uint16_t x, uint16_t y);
+int8_t terminal_manager_draw_line(uint32_t terminal_id, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
+int8_t terminal_manager_draw_circle(uint32_t terminal_id, uint8_t color, uint16_t x, uint16_t y, uint16_t radius);
+int8_t terminal_manager_draw_rectangle(uint32_t terminal_id, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
+int8_t terminal_manager_clear_screen(uint32_t terminal_id);
+
 
 #endif

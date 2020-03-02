@@ -36,6 +36,43 @@ void generic_vga_driver_init()
     s.draw_circle = mode03h_draw_circle;
     s.draw_rectangle = mode03h_draw_rectangle;
     s.clear_screen = mode03h_clear_screen;
+
+    s.print_char = mode03h_print_char;
+    s.print_char_color = mode03h_print_char_color;
+    s.print_string = mode03h_print_string;
+    s.print_string_color = mode03h_print_string_color;
+    s.set_char = mode03h_set_char;
+    s.get_char = mode03h_get_char;
+    s.set_color = mode03h_set_color;
+    s.get_color = mode03h_get_color;
+    s.set_char_and_color = mode03h_set_char_and_color;
+    s.get_char_and_color = mode03h_get_char_and_color;
+    s.set_cursor_pos = mode03h_set_cursor_pos;
+    s.get_cursor_pos = mode03h_get_cursor_pos;
+    s.turn_cursor_on = mode03h_turn_cursor_on;
+    s.turn_cursor_off = mode03h_turn_cursor_off;
+
+    s.print_char_external_buffer = mode03h_print_char_external_buffer;
+    s.print_char_color_external_buffer = mode03h_print_char_color_external_buffer;
+    s.print_string_external_buffer = mode03h_print_string_external_buffer;
+    s.print_string_color_external_buffer = mode03h_print_string_color_external_buffer;
+    s.set_char_external_buffer = mode03h_set_char_external_buffer;
+    s.get_char_external_buffer = mode03h_get_char_external_buffer;
+    s.set_color_external_buffer = mode03h_set_color_external_buffer;
+    s.get_color_external_buffer = mode03h_get_color_external_buffer;
+    s.set_char_and_color_external_buffer = mode03h_set_char_and_color_external_buffer;
+    s.get_char_and_color_external_buffer = mode03h_get_char_and_color_external_buffer;
+
+    s.draw_pixel_external_buffer = mode03h_draw_pixel_external_buffer;
+    s.draw_line_external_buffer = mode03h_draw_line_external_buffer;
+    s.draw_circle_external_buffer = mode03h_draw_circle_external_buffer;
+    s.draw_rectangle_external_buffer = mode03h_draw_rectangle_external_buffer;
+    s.clear_screen_external_buffer = mode03h_clear_screen_external_buffer;
+
+    s.swap_external_buffer = mode03h_swap_external_buffer;
+    s.create_external_buffer = mode03h_create_external_buffer;
+    s.destroy_external_buffer = generic_vga_destroy_external_buffer;
+    
     video_card_init_with_driver(&s);
 
     current_video_mode.colors = 16;
