@@ -2,7 +2,7 @@
 
 volatile partition *current_partition;
 
-void fat_init()
+bool fat_init()
 {
     switch (current_partition->type)
     {
@@ -22,7 +22,7 @@ void fat_init()
         
         case filesystem_unknown:
         {
-            break;
+            return false;
         }
     }
     
@@ -33,6 +33,8 @@ void fat_init()
     current_partition->directory_length = current_partition->header->directory_entries * 32;
     current_partition->root = heap_kernel_alloc(current_partition->directory_length, 0);
     fat_load_root();
+    
+    return true;
 }
 
 void fat_load_fat()

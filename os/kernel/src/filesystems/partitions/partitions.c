@@ -33,10 +33,17 @@ void partitions_init_floppy()
             floppy_partition->first_sector = 0;
             
             memcpy(floppy_partition->header, floppy_do_operation_on_sector(0, 0, 1, true), 512);
-            kvector_add(&partitions, floppy_partition);
-            
             fat_generic_set_current_partition(floppy_partition);
-            fat_init();
+            
+            if (fat_init())
+            {
+                kvector_add(&partitions, floppy_partition);
+            }
+            else
+            {
+                heap_kernel_dealloc(floppy_partition->header);
+                heap_kernel_dealloc(floppy_partition);
+            }
         }
     }
 }
@@ -70,10 +77,16 @@ void partitions_init_harddisks(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_
                 hdd_partition->read_from_device = hdd_wrapper_read_sector;
                 hdd_partition->first_sector = fat_header_sector;
                 
-                kvector_add(&partitions, hdd_partition);
-                
                 fat_generic_set_current_partition(hdd_partition);
-                fat_init();
+                if (fat_init())
+                {
+                    kvector_add(&partitions, hdd_partition);
+                }
+                else
+                {
+                    heap_kernel_dealloc(hdd_partition->header);
+                    heap_kernel_dealloc(hdd_partition);
+                }
             }
         }
     }
