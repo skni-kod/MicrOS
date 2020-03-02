@@ -1052,7 +1052,7 @@ int8_t __mode03h_get_char_and_color_buffer(uint16_t* buffer, uint16_t mode, uint
 void __mode03h_newline(uint16_t* buffer, uint16_t* x, uint16_t* y)
 {
 	*x = 0;
-    *y++;
+    ++*y;
     // When we reach end of screen
     if (*y == MODE03H_HEIGHT)
     {
