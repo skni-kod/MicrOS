@@ -15,4 +15,8 @@ typedef struct terminal_struct
 
 } terminal_struct;
 
+int8_t create_terminal();
+int8_t destroy_terminal(uint32_t terminal_id);
+int8_t destroy_active_terminal();
+
 #endif
