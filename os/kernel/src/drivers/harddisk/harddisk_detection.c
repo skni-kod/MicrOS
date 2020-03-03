@@ -42,7 +42,7 @@ int8_t __harddisk_check_presence(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BU
     io_out_byte(io_port + HARDDISK_IO_DRIVE_HEAD_REGISTER_OFFSET, message_to_drive.value);
 
     // Make 400ns delay
-    __harddisk_400ns_delay(io_port);
+    __harddisk_400ns_delay(control_port);
 
     uint8_t cylinder_low = io_in_byte(io_port +  HARDDISK_IO_CYLINDER_LOW_REGISTER_OFFSET);
     uint8_t cylinder_high = io_in_byte(io_port +  HARDDISK_IO_CYLINDER_HIGH_REGISTER_OFFSET);
@@ -73,16 +73,19 @@ int8_t __harddisk_check_presence(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BU
 int8_t __harddisk_get_identify_data(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, harddisk_identify_device_data *data, uint8_t identify_command)
 {
     uint16_t io_port = 0;
+    uint16_t control_port = 0;
     harddisk_io_drive_head_register message_to_drive = {.value = 0};
 
     // Set port of drive
     if (bus == HARDDISK_ATA_PRIMARY_BUS)
     {
         io_port = HARDDISK_ATA_PRIMARY_BUS_IO_PORT;
+        control_port = HARDDISK_ATA_PRIMARY_BUS_CONTROL_PORT;
     }
     else if(bus == HARDDISK_ATA_SECONDARY_BUS)
     {
         io_port = HARDDISK_ATA_SECONDARY_BUS_IO_PORT;
+        control_port = HARDDISK_ATA_SECONDARY_BUS_CONTROL_PORT;
     }
     else 
     {
@@ -111,7 +114,7 @@ int8_t __harddisk_get_identify_data(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA
     io_out_byte(io_port + HARDDISK_IO_DRIVE_HEAD_REGISTER_OFFSET, message_to_drive.value);
 
     // Make 400ns delay
-    __harddisk_400ns_delay(io_port);
+    __harddisk_400ns_delay(control_port);
 
     // Set the Sectorcount, LBAlo, LBAmid, and LBAhi IO ports to 0
     io_out_word(io_port + HARDDISK_IO_SECTOR_COUNT_REGISTER_OFFSET, 0);
