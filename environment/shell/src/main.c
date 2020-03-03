@@ -72,7 +72,7 @@ void execute_cd(const char *str)
     
     if(parameter[1] == ':')
     {
-        current_partition_symbol = parameter[0];
+        current_partition_symbol = toupper(parameter[0]);
         memmove(parameter, parameter + 2, strlen(parameter) - 2); 
         parameter[strlen(parameter) - 2] = 0;
     }
