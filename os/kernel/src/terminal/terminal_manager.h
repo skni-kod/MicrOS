@@ -16,6 +16,7 @@ typedef struct terminal_struct
 
 } terminal_struct;
 
+void init_terminal_manager();
 
 terminal_struct* find_terminal_for_process(uint32_t process_id);
 const terminal_struct* get_terminals();
@@ -23,6 +24,9 @@ const terminal_struct* get_terminals();
 int8_t create_terminal(uint32_t* terminal_id);
 int8_t destroy_terminal(uint32_t terminal_id);
 int8_t destroy_active_terminal();
+
+int8_t switch_active_terminal(uint32_t terminal_id);
+int8_t next_terminal();
 
 int8_t terminal_manager_set_mode(uint32_t process_id, int8_t mode);
 int8_t terminal_manager_print_char(uint32_t process_id, char character);

@@ -26,6 +26,11 @@ const terminal_struct* get_terminals(uint32_t* terminal_number)
     return terminals_array;
 }
 
+void init_terminal_manager()
+{
+    
+}
+
 int8_t create_terminal(uint32_t* terminal_id)
 {
     void *ptr;

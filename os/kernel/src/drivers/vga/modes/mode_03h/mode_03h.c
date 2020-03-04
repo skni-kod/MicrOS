@@ -951,7 +951,9 @@ int8_t mode03h_swap_external_buffer(uint8_t* buffer, uint16_t mode){
     return 0;
 }
 uint8_t* mode03h_create_external_buffer(uint16_t mode){
-	return heap_kernel_alloc(MODE03H_HEIGHT * MODE03H_WIDTH * sizeof(screen_char), 0);
+	uint8_t* ptr =  heap_kernel_alloc(MODE03H_HEIGHT * MODE03H_WIDTH * sizeof(screen_char), 0);
+	memset(ptr, 0, MODE03H_HEIGHT * MODE03H_WIDTH * sizeof(screen_char));
+	return ptr;
 }
 
 // Helpers

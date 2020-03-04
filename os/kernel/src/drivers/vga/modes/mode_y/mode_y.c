@@ -355,5 +355,7 @@ int8_t modey_swap_external_buffer(uint8_t* buffer, uint16_t mode){
     return 0;
 }
 uint8_t* modey_create_external_buffer(uint16_t mode){
-    return heap_kernel_alloc(4*MODEY_HEIGHT * MODEY_WIDTH / 4, 0);
+    uint8_t* ptr = heap_kernel_alloc(4*MODEY_HEIGHT * MODEY_WIDTH / 4, 0);
+    memset(ptr, 0, 4*MODEY_HEIGHT * MODEY_WIDTH / 4);
+    return ptr;
 }
