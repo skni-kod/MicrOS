@@ -234,17 +234,11 @@ typedef struct vga_color_without_blink
 typedef union vga_color {
     //! Uses to define color in blinking mode.
     vga_color_with_blink color_with_blink;
-    //! Usese to define color in non blinking mode.
+    //! Uses to define color in non blinking mode.
     vga_color_without_blink color_without_blink;
-} vga_color;
-
-//! Color of one character as `vga_color` or value.
-typedef union vga_color_value {
-    //! Uses to define color as color union.
-    vga_color color;
-    //! Usese to define color as value.
+    //! Uses to define color as value.
     uint8_t value;
-} vga_color_value;
+} vga_color;
 
 //! Struct that define one character.
 /*! Contains code of letter and it's color.*/

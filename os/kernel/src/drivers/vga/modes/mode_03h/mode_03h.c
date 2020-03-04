@@ -489,9 +489,8 @@ int8_t mode03h_print_char(char character)
 
 int8_t mode03h_print_char_color(char character, uint8_t color)
 {
-	vga_color_value col;
-	col.value = color;
-	vga_printchar_color(character, &col.color);
+	vga_color col = {.value = color};
+	vga_printchar_color(character, &col);
 	return 0;
 }
 
@@ -503,9 +502,8 @@ int8_t mode03h_print_string(const char* string)
 
 int8_t mode03h_print_string_color(const char* string, uint8_t color)
 {
-	vga_color_value col;
-	col.value = color;
-	vga_printstring_color(string, &col.color);
+	vga_color col = {.value = color};
+	vga_printstring_color(string, &col);
 	return 0;
 }
 
@@ -523,16 +521,13 @@ int8_t mode03h_get_char(uint16_t x, uint16_t y, char* character)
 
 int8_t mode03h_set_color(uint16_t x, uint16_t y, uint8_t color)
 {
-	vga_color_value col;
-	col.value = color;
-	vga_set_color(x, y, col.color);
+	vga_set_color(x, y, (vga_color)color);
 	return 0;
 }
 
 int8_t mode03h_get_color(uint16_t x, uint16_t y, uint8_t* color)
 {
-	vga_color_value col;
-	col.color = vga_get_color(x, y);
+	vga_color col = vga_get_color(x, y);
 	*color = col.value;
 	return 0;
 }
@@ -540,10 +535,8 @@ int8_t mode03h_get_color(uint16_t x, uint16_t y, uint8_t* color)
 int8_t mode03h_set_char_and_color(uint16_t x, uint16_t y, char character, uint8_t color)
 {
 	vga_character c;
-	vga_color_value col;
 	c.ascii_code = character;
-	col.value = color;
-	c.color = col.color;
+	c.color.value = (uint8_t)color;
 	vga_set_character(x, y, c);
 	return 0;
 }
@@ -551,11 +544,9 @@ int8_t mode03h_set_char_and_color(uint16_t x, uint16_t y, char character, uint8_
 int8_t mode03h_get_char_and_color(uint16_t x, uint16_t y, char* character, uint8_t* color)
 {
 	vga_character c;
-	vga_color_value col;
 	c = vga_get_character(x, y);
 	*character = c.ascii_code;
-	col.color = c.color;
-	*color = col.value;
+	*color = c.color.value;
 	return 0;
 }
 
@@ -965,10 +956,11 @@ int8_t __mode03h_print_char_buffer(uint16_t* buffer, uint16_t mode, uint16_t* x,
 int8_t __mode03h_print_char_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character, uint8_t color)
 {
 	uint16_t pos = __vga_calcualte_position_with_offset(*x, *y);
-
+	screen_char* scr = (screen_char*) buffer;
     if (character != '\n')
     {
-        buffer[pos] = (uint16_t)character << 8 | (uint16_t)color;
+		scr[pos].character.ascii_code = character;
+		scr[pos].character.color = (vga_color)color;
         *x += 1;
         if (*x == MODE03H_WIDTH)
         {
@@ -1007,45 +999,50 @@ int8_t __mode03h_print_string_color_buffer(uint16_t* buffer, uint16_t mode, uint
 int8_t __mode03h_set_char_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character)
 {
     uint16_t pos = __vga_calcualte_position_with_offset(x, y);
-	// value = (value & ~mask) | (newvalue & mask);
-	buffer[pos] = (buffer[pos] & ~0xFF00) | ((uint16_t)character << 8 & 0xFF00);
+	screen_char* scr = (screen_char*) buffer;
+	scr[pos].character.ascii_code = character;
 	return 0;
 }
 
 int8_t __mode03h_get_char_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character)
 {
     uint16_t pos = __vga_calcualte_position_with_offset(x, y);
-    *character = (char)(buffer[pos] >> 8);
+	screen_char* scr = (screen_char*) buffer;
+	*character = scr[pos].character.ascii_code;
     return 0;
 }
 
 int8_t __mode03h_set_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t color)
 {
     uint16_t pos = __vga_calcualte_position_with_offset(x, y);
-	// value = (value & ~mask) | (newvalue & mask);
-	buffer[pos] = (buffer[pos] & ~0x00FF) | ((uint16_t)color & 0x00FF);
+	screen_char* scr = (screen_char*) buffer;
+	scr[pos].character.color.value = color;
 	return 0;
 }
 
 int8_t __mode03h_get_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t* color)
 {
     uint16_t pos = __vga_calcualte_position_with_offset(x, y);
-	*color = (uint8_t)buffer[pos];
+	screen_char* scr = (screen_char*) buffer;
+	*color = scr[pos].character.color.value;
     return 0;
 }
 
 int8_t __mode03h_set_char_and_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character, uint8_t color)
 {
     uint16_t pos = __vga_calcualte_position_with_offset(x, y);
-	buffer[pos] = (uint16_t)character << 8 | (uint16_t)color;
+	screen_char* scr = (screen_char*) buffer;
+	scr[pos].character.ascii_code = character;
+	scr[pos].character.color.value = color;
 	return 0;
 }
 
 int8_t __mode03h_get_char_and_color_buffer(uint16_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character, uint8_t* color)
 {
 	uint16_t pos = __vga_calcualte_position_with_offset(x, y);
-    *character = (char)(buffer[pos] >> 8);
-	*color = (uint8_t)buffer[pos];
+	screen_char* scr = (screen_char*) buffer;
+    *character = scr[pos].character.ascii_code;
+	*color = scr[pos].character.color.value;
     return 0;
 }
 
@@ -1069,8 +1066,8 @@ void __mode03h_newline(uint16_t* buffer, uint16_t* x, uint16_t* y)
         *y = MODE03H_HEIGHT - 1;
 
         // Clear last line
-		vga_color_value col;
-        col.color = __vga_get_default_terminal_color(VGA_MODE_03H);
+		vga_color col;
+        col = __vga_get_default_terminal_color(VGA_MODE_03H);
         for (uint16_t i = 0; i < MODE03H_WIDTH; ++i)
         {
             uint16_t pos = __mode03h_calcualte_position(i, *y);
