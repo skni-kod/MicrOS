@@ -365,5 +365,7 @@ int8_t mode12h_swap_external_buffer(uint8_t* buffer, uint16_t mode){
     return 0;
 }
 uint8_t* mode12h_create_external_buffer(uint16_t mode){
-    return heap_kernel_alloc(4*MODE12H_HEIGHT * MODE12H_WIDTH / 8, 0);
+    uint8_t* ptr = heap_kernel_alloc(4*MODE12H_HEIGHT * MODE12H_WIDTH / 8, 0);
+    memset(ptr, 0, 4*MODE12H_HEIGHT * MODE12H_WIDTH / 8);
+    return ptr;
 }

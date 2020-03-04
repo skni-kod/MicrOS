@@ -942,14 +942,16 @@ int8_t mode03h_swap_external_buffer(uint8_t* buffer, uint16_t mode){
     return 0;
 }
 uint8_t* mode03h_create_external_buffer(uint16_t mode){
-	return heap_kernel_alloc(MODE03H_HEIGHT * MODE03H_WIDTH * sizeof(screen_char), 0);
+	uint8_t* ptr =  heap_kernel_alloc(MODE03H_HEIGHT * MODE03H_WIDTH * sizeof(screen_char), 0);
+	memset(ptr, 0, MODE03H_HEIGHT * MODE03H_WIDTH * sizeof(screen_char));
+	return ptr;
 }
 
 // Helpers
 
 int8_t __mode03h_print_char_buffer(uint16_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character)
 {
-    __mode03h_print_char_color_buffer(buffer, mode, x, y, character, 0);
+    __mode03h_print_char_color_buffer(buffer, mode, x, y, character, 0x0F);
 	return 0;
 }
 
