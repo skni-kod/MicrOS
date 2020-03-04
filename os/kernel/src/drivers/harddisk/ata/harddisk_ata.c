@@ -181,7 +181,7 @@ int8_t __harddisk_ata_poll(uint16_t io_port)
                 {
                     return -1;
                 }
-                if(result.value = 0x50)
+                if(result.value == 0x50)
                 {
                     return 0;
                 }
