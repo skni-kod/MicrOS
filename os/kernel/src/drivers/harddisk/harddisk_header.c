@@ -7,7 +7,7 @@ void __harddisk_400ns_delay(uint16_t port)
 {
     for(int i = 0; i < 4; ++i)
     {
-        io_in_byte(port + HARDDISK_IO_STATUS_REGISTER_OFFSET);
+        io_in_byte(port + HARDDISK_CONTROL_ALTERNATE_STATUS_REGISTER_OFFSET);
     }
 }
 
