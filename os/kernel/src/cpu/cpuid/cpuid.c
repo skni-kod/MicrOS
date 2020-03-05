@@ -1,8 +1,12 @@
 #include "cpuid.h"
 #include "drivers/vga/vga.h"
 
-uint32_t values[4];
-unsigned char text[13];
+cpuid_version_information __cupid_version_information;
+cpuid_additional_information __cpuid_additional_information;
+cpuid_features_ecx_information __cpuid_features_ecx_information;
+cpuid_features_edx_information __cpuid_features_edx_information;
+
+unsigned char __cpuid_vendor_string[13];
 
 typedef union magic_union
 {
@@ -11,10 +15,29 @@ typedef union magic_union
 } magic_union;
 
 
-void printCpu()
+uint8_t cpuid_init()
 {
+    __cpuid_vendor();
+    cpuid_features(CPUID_GETFEATURES_AND_ADDITIONAL_INFORMATION, &__cupid_version_information.value, &__cpuid_additional_information.value,
+                    &__cpuid_features_ecx_information.value, &__cpuid_features_edx_information.value);
+    return 1;
+}
+
+char* cpuid_get_vendor_string(char* buffer)
+{
+    // Copy vendor string to buffer
+    for(int i = 0; i < sizeof(__cpuid_vendor_string); i++)
+    {
+        buffer[i] = __cpuid_vendor_string[i];
+    }
+    return buffer;
+}
+
+void __cpuid_vendor()
+{
+    uint32_t values[4];
     magic_union mu;
-    cpuid(0, values);
+    cpuid(CPUID_GETVENDORSTRING, values);
     uint32_t temp;
     temp = values[2];
     values[2] = values[3];
@@ -24,16 +47,15 @@ void printCpu()
         mu.value1 = values[i];
         for(int j = 0; j < 4; j++)
         {
-            text[j+4*(i-1)] = mu.value2[j];
+            __cpuid_vendor_string[j+4*(i-1)] = mu.value2[j];
         }
     }
-    text[12] = '\0';
-    vga_printstring((char* )text);
-    vga_newline();
+    __cpuid_vendor_string[12] = '\0';
 }
 
 void printBrand()
 {
+    uint32_t values[4];
     magic_union mu;
     cpuid(0x80000000U, values);
     if(values[0] < 0x80000004U)

@@ -32,6 +32,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
+#include "cpu/cpuid/cpuid.h"
 
 typedef struct _linesStruct
 {
@@ -164,6 +165,9 @@ void startup()
     logger_log_info("MicrOS is starting...");
     logger_log_ok("BASIC TEXT VGA Driver");
 
+    cpuid_init();
+    char vendor_string_buffer[13];
+    logger_log_info(cpuid_get_vendor_string(vendor_string_buffer));
     //Loading Generic VGA Driver
     generic_vga_driver_init();
     logger_log_ok("Loaded DAL, and Generic VGA Driver");
