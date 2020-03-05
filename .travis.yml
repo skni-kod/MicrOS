@@ -9,6 +9,7 @@ script:
   - ls
   - ./scripts/build.sh
   - doxygen Doxyfile
+  - touch docs/html/.nojekyll
 deploy:
   - provider: pages
     skip_cleanup: true
