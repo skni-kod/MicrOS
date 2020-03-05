@@ -33,6 +33,40 @@ char* cpuid_get_vendor_string(char* buffer)
     return buffer;
 }
 
+uint8_t cpuid_get_stepping_id()
+{
+    return __cupid_version_information.fields.stepping_id;
+}
+
+uint8_t cpuid_get_model_id()
+{
+    if(__cupid_version_information.fields.model == 0x6 || __cupid_version_information.fields.model == 0xF)
+    {
+        return __cupid_version_information.fields.extended_model_id << 4 | __cupid_version_information.fields.model;
+    }
+    else
+    {
+        return __cupid_version_information.fields.model;
+    }
+}
+
+uint8_t cpuid_get_family_id()
+{
+    if(__cupid_version_information.fields.family_id != 0xF)
+    {
+        return __cupid_version_information.fields.family_id;
+    }
+    else
+    {
+        return __cupid_version_information.fields.extended_family_id + __cupid_version_information.fields.family_id;
+    }
+}
+
+uint8_t cpuid_get_processor_type()
+{
+    return __cupid_version_information.fields.procesor_type;
+}
+
 void __cpuid_vendor()
 {
     uint32_t values[4];

@@ -271,6 +271,30 @@ uint8_t cpuid_init();
 */
 char* cpuid_get_vendor_string(char* buffer);
 
+//! Get stepping id.
+/*!
+    \return CPU stepping id.
+*/
+uint8_t cpuid_get_stepping_id();
+
+//! Get model id.
+/*!
+    \return CPU model id.
+*/
+uint8_t cpuid_get_model_id();
+
+//! Get family id.
+/*!
+    \return CPU family id.
+*/
+uint8_t cpuid_get_family_id();
+
+//! Get processor type.
+/*!
+    \return CPU processor type.
+*/
+uint8_t cpuid_get_processor_type();
+
 //! Helper function to get vendor string.
 /*!
     Put vendor string in __cpuid_vendor_string variable.
