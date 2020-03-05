@@ -66,7 +66,7 @@ int8_t __harddisk_ata_read_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_B
     __harddisk_400ns_delay(control_port);
 
     // For any other value: poll the Status port until bit 7 (BSY, value = 0x80) clears.
-    int8_t pooling_result = __harddisk_ata_poll(io_port);
+    int8_t pooling_result = __harddisk_ata_poll(control_port);
     if(pooling_result == 1)
     {
         for(int i = 0; i < 256; i++)
@@ -121,8 +121,14 @@ int8_t __harddisk_ata_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_
         return -2;
     }
 
+    __harddisk_400ns_delay(control_port);
+    if(__harddisk_ata_poll(control_port) != 1) return -1;
+
     // Send message to drive
     io_out_byte(io_port + HARDDISK_IO_DRIVE_HEAD_REGISTER_OFFSET, message_to_drive.value);
+
+    __harddisk_400ns_delay(control_port);
+    if(__harddisk_ata_poll(control_port) != 1) return -1;
 
     // Send what to write
     io_out_byte(io_port + HARDDISK_IO_SECTOR_COUNT_REGISTER_OFFSET, 0);
@@ -140,7 +146,7 @@ int8_t __harddisk_ata_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_
     __harddisk_400ns_delay(control_port);
 
     // For any other value: poll the Status port until bit 7 (BSY, value = 0x80) clears.
-    int8_t pooling_result = __harddisk_ata_poll(io_port);
+    int8_t pooling_result = __harddisk_ata_poll(control_port);
     if(pooling_result == 1)
     {
         for(int i = 0; i < 256; i++)
@@ -161,23 +167,23 @@ int8_t __harddisk_ata_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_
 
 }
 
-int8_t __harddisk_ata_poll(uint16_t io_port)
+int8_t __harddisk_ata_poll(uint16_t control_port)
 {
     harddisk_io_control_status_register result;
     for(;;)
     {
-        result.value = io_in_byte(io_port + HARDDISK_IO_STATUS_REGISTER_OFFSET);
+        result.value = io_in_byte(control_port + HARDDISK_CONTROL_ALTERNATE_STATUS_REGISTER_OFFSET);
         if(result.fields.busy == 0)
         {
             // Otherwise, continue polling one of the Status ports until bit 3 (DRQ, value = 8) sets, or until bit 0 (ERR, value = 1) sets.
             for(;;)
             {
-                result.value = io_in_byte(io_port + HARDDISK_IO_STATUS_REGISTER_OFFSET);
+                result.value = io_in_byte(control_port + HARDDISK_CONTROL_ALTERNATE_STATUS_REGISTER_OFFSET);
                 if(result.fields.has_pio_data_to_transfer_or_ready_to_accept_pio_data == 1)
                 {
                     return 1;
                 }
-                else if(result.fields.error_occurred == 1)
+                else if(result.fields.error_occurred == 1 || result.fields.drive_fault_error == 1)
                 {
                     return -1;
                 }
