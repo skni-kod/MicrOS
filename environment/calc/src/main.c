@@ -1,6 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define _USE_MATH_DEFINES
-#include "cstring.h"
 #include "array.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,17 +8,19 @@
 
 int main(int argc, char** argv)
 {
-	
-	char* string = 0;
-	size_t size = 0;
-	char** array = 0;
-
-	string = appendToString(string,"Hello;World;123123");
-
-	array = splitString(string,';',&size);
-	
-	//*(array + (*sizeOfArray - 1))
-	printArray(array,&size,tString);
-
+	Object* obj = initObject("HelloWorld!",String);
+	Array array;
+	initArray(&array);
+	appendToArray(&array,obj);
+	appendToArray(&array,obj);
+	appendToArray(&array,obj);
+	setData(obj,"Ocean ",String);
+	appendToArray(&array,obj);
+	appendToString(obj,"Drive");
+	appendToArray(&array,obj);
+	double x = 3.14;
+	setData(obj,&x,Double);
+	appendToArray(&array,obj);
+	printArray(&array);
 	return 0;
 }

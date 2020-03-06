@@ -1,67 +1,49 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "../array.h"
-#include "../cstring.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 /* Append value to array */
-void** appendToArray(void** array, const void* value, size_t* sizeOfArray, Type type) {
-
-	//There is nothing to do 
-	//!! Maybe throw error code? !!!
-	if (value == NULL) {
-		return array;
-	}
-	if((type == tString) && (strlen((char*)value) < 1)){
-		return array;
+void appendToArray(Array* array, const Object* data) {
+	
+	if (data == NULL) {
+		return;
 	}
 
-	//Initialize new array
-	if(array == NULL){
-		array = malloc(sizeof(void*));
-	}else{
-		void** tmp = array;
-		array = realloc(array,sizeof(void*) * ((*sizeOfArray)+1));
-		//Allocation fails
-		if(array == NULL){
-			array = tmp;
-			return array;
+	/* Copy data object to new instance */
+	Object* obj = 0;
+	obj = malloc(sizeof(Object));
+	if (obj != NULL) {
+		obj->Type = data->Type;
+		obj->Length = data->Length;
+
+		obj->Data = malloc(obj->Length);
+		if (obj->Data == NULL) {
+			exit(-1);
+		}
+		memcpy(obj->Data, data->Data, obj->Length);
+	}
+
+	/* Reallocate space for pointers */
+	void* tmp = array->Data;
+	array->Data = realloc(array->Data, sizeof(void*) * (array->Size + 1));
+	
+	if (array->Data != NULL) {
+		/* Allocate space for new data */
+		array->Data[array->Size] = malloc(sizeof(void*));
+		if (array->Data[array->Size] != 0) {
+			/* Copy pointer of new value stored in *obj */
+			array->Data[array->Size] = obj;
+			array->Size += 1;
+		}
+		else {
+			exit(-1);
 		}
 	}
-	
-	//Allocate memory for value
-	switch (type) {
-	case tString:
-		*(array + *sizeOfArray) = malloc((strlen((char*)value) + 1) * sizeof(char));
-		break;
-	case tInt:
-		*(array + *sizeOfArray) = malloc(sizeof(int));
-		break;
-	case tDouble:
-		*(array + *sizeOfArray) = malloc(sizeof(double));
-		break;
-	};
-
-	//Unable to allocate memory
-	if (*(array + *sizeOfArray) == NULL) {
-		freeArray(array, sizeOfArray, type);
-		return NULL;
+	else {
+		array->Data = tmp;
+		exit(-1);
 	}
 
-	//Copy value to array
-	switch (type) {
-	case tString:
-		strcpy(*(array + *sizeOfArray), value);
-		break;
-	case tInt:
-		memcpy(*(array + *sizeOfArray), value, sizeof(int));
-		break;
-	case tDouble:
-		memcpy(*(array + *sizeOfArray), value, sizeof(double));
-		break;
-	};
-
-	*sizeOfArray += 1;
-
-	return array;
 }
