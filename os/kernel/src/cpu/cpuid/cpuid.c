@@ -108,6 +108,21 @@ uint8_t cpuid_number_of_physical_processors_cores()
     return __cpuid_0x04h.fields.eax_fields.max_num_addressable_ids_physical + 1;
 }
 
+const cpuid_0x00h* cpuid_get_0x00h_fields()
+{
+    return &__cpuid_0x00h;
+}
+
+const cpuid_0x01h* cpuid_get_0x01h_fields()
+{
+    return &__cpuid_0x01h;
+}
+
+const cpuid_0x04h* cpuid_get_0x04h_fields()
+{
+    return &__cpuid_0x04h;
+}
+
 // Helpers
 
 void __cpuid_get_manufacturer_string()
@@ -140,8 +155,7 @@ char* __cpuid_get_processor_brand(char* buffer)
     __cpuid(0x80000000U, values);
     if(values[0] < 0x80000004U)
     {
-        vga_printstring("CANNOT DETERMINE BRAND\n");
-        return;
+        return buffer;
     }
     int position = 0;
     for(unsigned int code = 0x80000002U; code<=0x80000004U; code++)

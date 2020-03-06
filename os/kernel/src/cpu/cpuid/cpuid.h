@@ -7,25 +7,6 @@
 #include "headers/cpuid_0x04h.h"
 #include <stdint.h>
 
-//! Perform CPUID instruction.
-/*!
-    Returns processor identification and feature information to the EAX, EBX, ECX, and EDX registers, as determined by input entered in EAX (in some cases, ECX as well).
-    \param code initial EAX value. Code for EAX variant.
-    \param eax result from EAX.
-    \param ebx result from EAX.
-    \param ecx result from EAX.
-    \param edx result from EAX.
-*/
-static inline void __cpuid_features(int code, uint32_t *eax, uint32_t *ebx, uint32_t *ecx ,uint32_t *edx)
-{
-    asm volatile("cpuid":"=a"(*eax),"=b"(*ebx),"=c"(*ecx),"=d"(*edx):"a"(code));
-}
-
-static inline void __cpuid(unsigned int code, uint32_t where[4]) {
-     asm volatile("cpuid":"=a"(*where),"=b"(*(where+1)),
-               "=c"(*(where+2)),"=d"(*(where+3)):"a"(code));
-}
-
 //! Initialization of CPUID.
 /*!
     Sets internal variables.
@@ -82,6 +63,45 @@ uint8_t cpuid_number_of_logical_processors();
     \return Number of addressable physical processors cores.
 */
 uint8_t cpuid_number_of_physical_processors_cores();
+
+//! Get 0x00h fields.
+/*!
+    \return CPUID 0x00h fields.
+*/
+const cpuid_0x00h* cpuid_get_0x00h_fields();
+
+//! Get 0x01h fields.
+/*!
+    \return CPUID 0x01h fields.
+*/
+const cpuid_0x01h* cpuid_get_0x01h_fields();
+
+//! Get 0x04h fields.
+/*!
+    \return CPUID 0x04h fields.
+*/
+const cpuid_0x04h* cpuid_get_0x04h_fields();
+
+// Helpers
+
+//! Perform CPUID instruction.
+/*!
+    Returns processor identification and feature information to the EAX, EBX, ECX, and EDX registers, as determined by input entered in EAX (in some cases, ECX as well).
+    \param code initial EAX value. Code for EAX variant.
+    \param eax result from EAX.
+    \param ebx result from EAX.
+    \param ecx result from EAX.
+    \param edx result from EAX.
+*/
+static inline void __cpuid_features(int code, uint32_t *eax, uint32_t *ebx, uint32_t *ecx ,uint32_t *edx)
+{
+    asm volatile("cpuid":"=a"(*eax),"=b"(*ebx),"=c"(*ecx),"=d"(*edx):"a"(code));
+}
+
+static inline void __cpuid(unsigned int code, uint32_t where[4]) {
+     asm volatile("cpuid":"=a"(*where),"=b"(*(where+1)),
+               "=c"(*(where+2)),"=d"(*(where+3)):"a"(code));
+}
 
 //! Helper function to get manufacturer id.
 /*!

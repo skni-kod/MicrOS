@@ -197,7 +197,7 @@ void startup()
     //Loading Generic VGA Driver
     generic_vga_driver_init();
     logger_log_ok("Loaded DAL, and Generic VGA Driver");
-    while(1);
+    
     physical_memory_init();
     logger_log_ok("Physical Memory");
 
