@@ -7,6 +7,28 @@
 #include "headers/cpuid_0x04h.h"
 #include <stdint.h>
 
+//! Enum to represent cache type
+typedef enum cpuid_cache_type
+{
+    //! Data cache
+    DATA_CACHE = 0x01,
+    //! Instruction cache
+    INSTRUCTION_CACHE = 0x02,
+    //! Unified cache
+    UNIFIED_CACHE = 0x03   
+} cpuid_cache_type;
+
+//! Struct to represent cache.
+typedef struct cpuid_cache_struct
+{
+    //! Type of cache.
+    cpuid_cache_type type;
+    //! Level of cache.
+    uint8_t level;
+    //! Size of cache in bytes.
+    uint32_t size;
+} cpuid_cache_struct;
+
 //! Initialization of CPUID.
 /*!
     Sets internal variables.
@@ -75,12 +97,27 @@ uint8_t cpuid_number_of_logical_processors();
 */
 uint8_t cpuid_number_of_physical_processors_cores();
 
+//! Get number of valid cache entries.
+/*! Number that determines how much cache entries are stored. Used in function cpuid_get_cache_size_in_bytes(uint8_t cache_index),
+cpuid_get_cache_data(uint8_t cache_index).<br/>
+Result will be valid only if cpuid_get_highest_function_parameter() returns value 4 or higher.
+    \return Number of valid cache entries.
+*/
+uint8_t cpuid_get_valid_number_cache_entries();
+
 //! Get cache size in bytes.
 /*! Result will be valid only if cpuid_get_highest_function_parameter() returns value 4 or higher.
-    \param cache_index Index of cache to return. If invalid 0 will be returned. 
+    \param cache_index Index of cache to return. To get max number use cpuid_get_valid_number_cache_entries(). If invalid 0 will be returned. 
     \return Cache size in bytes.
 */
 uint32_t cpuid_get_cache_size_in_bytes(uint8_t cache_index);
+
+//! Get cache data.
+/*! Result will be valid only if cpuid_get_highest_function_parameter() returns value 4 or higher.
+    \param cache_index Index of cache to return. To get max number use cpuid_get_valid_number_cache_entries(). If invalid 0 will be returned. 
+    \return Cache data.
+*/
+cpuid_cache_struct cpuid_get_cache_data(uint8_t cache_index);
 
 //! Get 0x00h fields.
 /*!

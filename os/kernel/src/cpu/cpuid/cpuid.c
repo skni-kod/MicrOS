@@ -16,6 +16,7 @@ cpuid_0x01h __cpuid_0x01h;
 
 // EAX 0x4
 cpuid_0x04h __cpuid_0x04h[10];
+uint8_t __cpuid_0x04h_vaild_index = 0;
 
 uint8_t cpuid_init()
 {
@@ -35,6 +36,7 @@ uint8_t cpuid_init()
             {
                 break;
             }
+            __cpuid_0x04h_vaild_index++;
         }
     }
     return 1;
@@ -112,9 +114,14 @@ uint8_t cpuid_number_of_physical_processors_cores()
     return __cpuid_0x04h[0].fields.eax.max_num_addressable_ids_physical + 1;
 }
 
+uint8_t cpuid_get_valid_number_cache_entries()
+{
+    return __cpuid_0x04h_vaild_index;
+}
+
 uint32_t cpuid_get_cache_size_in_bytes(uint8_t cache_index)
 {
-    if(cache_index < 10)
+    if(cache_index < __cpuid_0x04h_vaild_index)
     {
         if(__cpuid_0x04h[cache_index].fields.eax.cache_type_field != 0)
         {
@@ -123,6 +130,22 @@ uint32_t cpuid_get_cache_size_in_bytes(uint8_t cache_index)
         }
     }
     return 0;
+}
+
+cpuid_cache_struct cpuid_get_cache_data(uint8_t cache_index)
+{
+    cpuid_cache_struct cache;
+    if(cache_index < __cpuid_0x04h_vaild_index)
+    {
+        if(__cpuid_0x04h[cache_index].fields.eax.cache_type_field != 0)
+        {
+            cache.size = (__cpuid_0x04h[cache_index].fields.ebx.w + 1) * (__cpuid_0x04h[cache_index].fields.ebx.p + 1) *
+                         (__cpuid_0x04h[cache_index].fields.ebx.l + 1) * (__cpuid_0x04h[cache_index].fields.ecx.s + 1);
+            cache.type = (cpuid_cache_type)__cpuid_0x04h[cache_index].fields.eax.cache_type_field;
+            cache.level = __cpuid_0x04h[cache_index].fields.eax.cache_level;
+        }
+    }
+    return cache;
 }
 
 const cpuid_0x00h* cpuid_get_0x00h_fields()

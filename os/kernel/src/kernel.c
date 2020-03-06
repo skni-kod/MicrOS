@@ -57,10 +57,10 @@ void print_processor_status()
     char processor_brand_buffer[48];
     logger_log_info(__cpuid_get_processor_brand(processor_brand_buffer));
 
-    char buff[10];
-    char buff2[50];
+    char buff[20];
+    char buff2[100];
     uint8_t cores = cpuid_number_of_physical_processors_cores();
-    itoa(cores, buff, 10);
+    itoa(cores, buff, 20);
     strcpy(buff2, "Number of physical cores: ");
     strcat(buff2, buff);
     logger_log_info(buff2);
@@ -71,15 +71,41 @@ void print_processor_status()
         logger_log_info("For future SKNI members: add support for more cores");
     }
 
-    for(int i = 0;; i++)
+    for(int i = 0; i < cpuid_get_valid_number_cache_entries(); i++)
     {
-        strcpy(buff2, "Cache size: ");
-        uint32_t cache_size = cpuid_get_cache_size_in_bytes(i);
-        if(cache_size == 0) break;
-        cache_size = cache_size / 1024;
-        itoa(cache_size, buff, 10);
+        cpuid_cache_struct cache = cpuid_get_cache_data(i);
+
+        strcpy(buff2, "Cache level: ");
+        itoa(cache.level, buff, 10);
         strcat(buff2, buff);
-        strcat(buff2, "kb");
+
+        switch(cache.type)
+        {
+            case DATA_CACHE:
+                strcat(buff2, ", type: data, size: ");
+                break;
+            case INSTRUCTION_CACHE:
+                strcat(buff2, ", type: instruction, size: ");
+                break;
+            case UNIFIED_CACHE:
+                strcat(buff2, ", type: unified, size: ");
+                break;
+        }
+
+        uint32_t size = cache.size / 1024;
+        if(size < 1024)
+        {
+            itoa(size, buff, 10);
+            strcat(buff2, buff);
+            strcat(buff2, " KiB");
+        }
+        else
+        {
+            itoa(size / 1024, buff, 10);
+            strcat(buff2, buff);
+            strcat(buff2, " MiB");
+        }
+
         logger_log_info(buff2);
     }
 }
