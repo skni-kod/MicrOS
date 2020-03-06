@@ -86,6 +86,10 @@ void syscalls_manager_init()
     // 0xBX - Partitions
     syscalls_manager_attach_handler(0xB0, syscall_partitions_get_count);
     syscalls_manager_attach_handler(0xB1, syscall_partitions_get_symbols);
+    
+    // 0xCX - Power
+    syscalls_manager_attach_handler(0xC0, syscall_power_reboot);
+    syscalls_manager_attach_handler(0xC1, syscall_power_shutdown);
 }
 
 void syscalls_manager_attach_handler(uint8_t function_number, void (*handler)(interrupt_state *state))
