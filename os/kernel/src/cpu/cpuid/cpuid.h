@@ -66,9 +66,10 @@ uint8_t cpuid_number_of_physical_processors_cores();
 
 //! Get cache size in bytes.
 /*!
+    \param cache_index Index of cache to return. If invalid 0 will be returned. 
     \return Cache size in bytes.
 */
-uint32_t cpuid_get_cache_size_in_bytes();
+uint32_t cpuid_get_cache_size_in_bytes(uint8_t cache_index);
 
 //! Get 0x00h fields.
 /*!
@@ -84,20 +85,21 @@ const cpuid_0x01h* cpuid_get_0x01h_fields();
 
 //! Get 0x04h fields.
 /*!
+    \param index Index of struct to return.
     \return CPUID 0x04h fields.
 */
-const cpuid_0x04h* cpuid_get_0x04h_fields();
+const cpuid_0x04h* cpuid_get_0x04h_fields(uint8_t index);
 
 // Helpers
 
 //! Perform CPUID instruction.
 /*!
     Returns processor identification and feature information to the EAX, EBX, ECX, and EDX registers, as determined by input entered in EAX (in some cases, ECX as well).
-    \param code initial EAX value. Code for EAX variant.
-    \param eax result from EAX.
-    \param ebx result from EAX.
-    \param ecx result from EAX.
-    \param edx result from EAX.
+    \param code Initial EAX value. Code for EAX variant.
+    \param eax Result from EAX.
+    \param ebx Result from EAX.
+    \param ecx Result from EAX.
+    \param edx Result from EAX.
 */
 static inline void __cpuid_features(int code, uint32_t *eax, uint32_t *ebx, uint32_t *ecx ,uint32_t *edx)
 {
@@ -107,6 +109,26 @@ static inline void __cpuid_features(int code, uint32_t *eax, uint32_t *ebx, uint
 static inline void __cpuid(unsigned int code, uint32_t where[4]) {
      asm volatile("cpuid":"=a"(*where),"=b"(*(where+1)),
                "=c"(*(where+2)),"=d"(*(where+3)):"a"(code));
+}
+
+//! Perform CPUID instruction.
+/*!
+    Returns processor identification and feature information to the EAX, EBX, ECX, and EDX registers, as determined by input entered in EAX (in some cases, ECX as well).
+    \param code Initial EAX value. Code for EAX variant.
+    \param count Number to put in ECX..
+    \param eax Result from EAX.
+    \param ebx Result from EAX.
+    \param ecx Result from EAX.
+    \param edx Result from EAX.
+*/
+static inline void __cpuid_features_count(int code, int count, uint32_t *eax, uint32_t *ebx, uint32_t *ecx ,uint32_t *edx)
+{
+    asm volatile("cpuid":"=a"(*eax),"=b"(*ebx),"=c"(*ecx),"=d"(*edx):"a"(code), "c"(count));
+}
+
+static inline void __cpuid_count(unsigned int code, int count, uint32_t where[4]) {
+     asm volatile("cpuid":"=a"(*where),"=b"(*(where+1)),
+               "=c"(*(where+2)),"=d"(*(where+3)):"a"(code), "c"(count));
 }
 
 //! Helper function to get manufacturer id.

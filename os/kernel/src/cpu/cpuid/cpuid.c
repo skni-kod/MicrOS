@@ -15,7 +15,7 @@ unsigned char __cpuid_vendor_string[13];
 cpuid_0x01h __cpuid_0x01h;
 
 // EAX 0x4
-cpuid_0x04h __cpuid_0x04h;
+cpuid_0x04h __cpuid_0x04h[10];
 
 uint8_t cpuid_init()
 {
@@ -28,11 +28,10 @@ uint8_t cpuid_init()
     if(__cpuid_0x00h.fields.highest_function_parameter >= 4)
     {
         // We must clear ECX registry as it's index value.
-        for(int i = 0;; i++)
+        for(int i = 0; i < 10; i++)
         {
-            __cpuid_0x04h.value[2] = i;
-            __cpuid(CPUID_GETTHREAD_CORE_CACHE_TOPOLOGY, __cpuid_0x04h.value);
-            if(__cpuid_0x04h.fields.eax.cache_type_field != 0)
+            __cpuid_count(CPUID_GETTHREAD_CORE_CACHE_TOPOLOGY, i, __cpuid_0x04h[i].value);
+            if(__cpuid_0x04h[i].fields.eax.cache_type_field == 0)
             {
                 break;
             }
@@ -105,12 +104,20 @@ uint8_t cpuid_number_of_logical_processors()
 
 uint8_t cpuid_number_of_physical_processors_cores()
 {
-    return __cpuid_0x04h.fields.eax.max_num_addressable_ids_physical + 1;
+    return __cpuid_0x04h[0].fields.eax.max_num_addressable_ids_physical + 1;
 }
 
-uint32_t cpuid_get_cache_size_in_bytes()
+uint32_t cpuid_get_cache_size_in_bytes(uint8_t cache_index)
 {
-    return (__cpuid_0x04h.fields.ebx.w + 1) * (__cpuid_0x04h.fields.ebx.p + 1) * (__cpuid_0x04h.fields.ebx.l + 1) * (__cpuid_0x04h.fields.ecx.s + 1);
+    if(cache_index < 10)
+    {
+        if(__cpuid_0x04h[cache_index].fields.eax.cache_type_field != 0)
+        {
+            return (__cpuid_0x04h[cache_index].fields.ebx.w + 1) * (__cpuid_0x04h[cache_index].fields.ebx.p + 1) *
+                   (__cpuid_0x04h[cache_index].fields.ebx.l + 1) * (__cpuid_0x04h[cache_index].fields.ecx.s + 1);
+        }
+    }
+    return 0;
 }
 
 const cpuid_0x00h* cpuid_get_0x00h_fields()
@@ -123,9 +130,9 @@ const cpuid_0x01h* cpuid_get_0x01h_fields()
     return &__cpuid_0x01h;
 }
 
-const cpuid_0x04h* cpuid_get_0x04h_fields()
+const cpuid_0x04h* cpuid_get_0x04h_fields(uint8_t index)
 {
-    return &__cpuid_0x04h;
+    return &__cpuid_0x04h[index];
 }
 
 // Helpers
