@@ -29,7 +29,7 @@ typedef struct cpuid_0x04h_eax_fields
     uint16_t max_num_addressable_ids_logical : 12;
     //! Maximum number of addressable IDs for processor cores in the physical package.
     /*! Add one to the return value to get the result.*/
-    uint8_t max_num_addressable_ids_psychical : 6;
+    uint8_t max_num_addressable_ids_physical : 6;
 } __attribute__((packed)) cpuid_0x04h_eax_fields;
 
 //! Intel thread/core and cache topology.
@@ -38,7 +38,7 @@ typedef struct cpuid_0x04h_fields
     //! EAX fields.
     cpuid_0x04h_eax_fields eax_fields;
     //! Dummy.
-    uint32_t value[3];
+    uint32_t dummy[3];
 } cpuid_0x04h_fields;
 
 //! Intel thread/core and cache topology.

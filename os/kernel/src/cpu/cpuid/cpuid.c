@@ -27,7 +27,16 @@ uint8_t cpuid_init()
     }
     if(__cpuid_0x00h.fields.highest_function_parameter >= 4)
     {
-        __cpuid(CPUID_GETTHREAD_CORE_CACHE_TOPOLOGY, __cpuid_0x04h.value);
+        // We must clear ECX registry as it's index value.
+        for(int i = 0;; i++)
+        {
+            __cpuid_0x04h.value[2] = i;
+            __cpuid(CPUID_GETTHREAD_CORE_CACHE_TOPOLOGY, __cpuid_0x04h.value);
+            if(__cpuid_0x04h.fields.eax_fields.cache_type_field != 0)
+            {
+                break;
+            }
+        }
     }
     return 1;
 }
@@ -89,10 +98,14 @@ uint8_t cpuid_number_of_logical_processors()
     }
     else
     {
-        // TODO: add code to return physical processors.
-        return 1;
+        return 0;
     }
     
+}
+
+uint8_t cpuid_number_of_physical_processors_cores()
+{
+    return __cpuid_0x04h.fields.eax_fields.max_num_addressable_ids_physical + 1;
 }
 
 // Helpers
@@ -120,7 +133,7 @@ void __cpuid_get_manufacturer_string()
     }
 }
 
-void printBrand()
+char* __cpuid_get_processor_brand(char* buffer)
 {
     uint32_t values[4];
     magic_union mu;
@@ -130,6 +143,7 @@ void printBrand()
         vga_printstring("CANNOT DETERMINE BRAND\n");
         return;
     }
+    int position = 0;
     for(unsigned int code = 0x80000002U; code<=0x80000004U; code++)
     {
         __cpuid(code, values);
@@ -137,7 +151,11 @@ void printBrand()
         {
             mu.value1 = values[i];
             for(int j = 0; j<4; j++)
-                vga_printchar(mu.value2[j]);
+            {
+                buffer[position] = mu.value2[j];
+                position++;
+            }
         }
     }
+    return buffer;
 }

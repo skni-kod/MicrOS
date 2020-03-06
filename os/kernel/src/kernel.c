@@ -46,6 +46,31 @@ typedef struct _linesStruct
 char buff[50];
 linesStruct ssBuffer[64];
 
+//! Prints processor details.
+/*! Used during boot to print informations about print processor.
+ */
+void print_processor_status()
+{
+    char vendor_string_buffer[13];
+    logger_log_info(cpuid_get_vendor_string(vendor_string_buffer));
+
+    char processor_brand_buffer[48];
+    logger_log_info(__cpuid_get_processor_brand(processor_brand_buffer));
+
+    char buff[10];
+    char buff2[50];
+    uint8_t cores = cpuid_number_of_physical_processors_cores();
+    itoa(cores, buff, 10);
+    strcpy(buff2, "Number of physical cores: ");
+    strcat(buff2, buff);
+    logger_log_info(buff2);
+    if(cores > 1)
+    {
+        logger_log_warning("But only one core is used :v");
+        logger_log_info("For future SKNI members: add support for more cores");
+    }
+}
+
 //! Prints hard disk detail.
 /*! Used during boot to print informations about hard disk.
     \param type Type of hard disk.
@@ -166,12 +191,13 @@ void startup()
     logger_log_ok("BASIC TEXT VGA Driver");
 
     cpuid_init();
-    char vendor_string_buffer[13];
-    logger_log_info(cpuid_get_vendor_string(vendor_string_buffer));
+    logger_log_ok("Procesor");
+    print_processor_status();
+    
     //Loading Generic VGA Driver
     generic_vga_driver_init();
     logger_log_ok("Loaded DAL, and Generic VGA Driver");
-
+    while(1);
     physical_memory_init();
     logger_log_ok("Physical Memory");
 

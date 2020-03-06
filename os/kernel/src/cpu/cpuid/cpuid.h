@@ -72,11 +72,16 @@ uint8_t cpuid_get_processor_type();
 uint8_t cpuid_is_hyperthreading_available();
 
 //! Get number of logical processors.
-/*! Addressable IDs for Logical processors in the same Package. Valid if Hyper-Threading is enabled.
-    When Hyper-Threading is not available this function returns number of processors cores.
+/*! Addressable IDs for logical processors in the same Package. Valid if Hyper-Threading is enabled.
     \return Number of addressable logical processors.
 */
 uint8_t cpuid_number_of_logical_processors();
+
+//! Get number of physical processors cores.
+/*! Addressable IDs for physical processors cores in a physical package.
+    \return Number of addressable physical processors cores.
+*/
+uint8_t cpuid_number_of_physical_processors_cores();
 
 //! Helper function to get manufacturer id.
 /*!
@@ -84,7 +89,12 @@ uint8_t cpuid_number_of_logical_processors();
 */
 void __cpuid_get_manufacturer_string();
 
-
-void printBrand();
+//! Get prcessor brand.
+/*!
+    Function copy procesor brand  to buffer and terminate string with /0.
+    \param buffer Buffer for vendor string with size at least 48.
+    \return Pointer to buffer where serial number is stored.
+*/
+char* __cpuid_get_processor_brand(char* buffer);
 
 #endif
