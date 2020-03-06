@@ -32,7 +32,7 @@ uint8_t cpuid_init()
         {
             __cpuid_0x04h.value[2] = i;
             __cpuid(CPUID_GETTHREAD_CORE_CACHE_TOPOLOGY, __cpuid_0x04h.value);
-            if(__cpuid_0x04h.fields.eax_fields.cache_type_field != 0)
+            if(__cpuid_0x04h.fields.eax.cache_type_field != 0)
             {
                 break;
             }
@@ -53,48 +53,48 @@ char* cpuid_get_vendor_string(char* buffer)
 
 uint8_t cpuid_get_stepping_id()
 {
-    return __cpuid_0x01h.fields.eax_fields.stepping_id;
+    return __cpuid_0x01h.fields.eax.stepping_id;
 }
 
 uint8_t cpuid_get_model_id()
 {
-    if(__cpuid_0x01h.fields.eax_fields.model == 0x6 || __cpuid_0x01h.fields.eax_fields.model == 0xF)
+    if(__cpuid_0x01h.fields.eax.model == 0x6 || __cpuid_0x01h.fields.eax.model == 0xF)
     {
-        return __cpuid_0x01h.fields.eax_fields.extended_model_id << 4 | __cpuid_0x01h.fields.eax_fields.model;
+        return __cpuid_0x01h.fields.eax.extended_model_id << 4 | __cpuid_0x01h.fields.eax.model;
     }
     else
     {
-        return __cpuid_0x01h.fields.eax_fields.model;
+        return __cpuid_0x01h.fields.eax.model;
     }
 }
 
 uint8_t cpuid_get_family_id()
 {
-    if(__cpuid_0x01h.fields.eax_fields.family_id != 0xF)
+    if(__cpuid_0x01h.fields.eax.family_id != 0xF)
     {
-        return __cpuid_0x01h.fields.eax_fields.family_id;
+        return __cpuid_0x01h.fields.eax.family_id;
     }
     else
     {
-        return __cpuid_0x01h.fields.eax_fields.extended_family_id + __cpuid_0x01h.fields.eax_fields.family_id;
+        return __cpuid_0x01h.fields.eax.extended_family_id + __cpuid_0x01h.fields.eax.family_id;
     }
 }
 
 uint8_t cpuid_get_processor_type()
 {
-    return __cpuid_0x01h.fields.eax_fields.procesor_type;
+    return __cpuid_0x01h.fields.eax.procesor_type;
 }
 
 uint8_t cpuid_is_hyperthreading_available()
 {
-    return __cpuid_0x01h.fields.edx_fields.htt;
+    return __cpuid_0x01h.fields.edx.htt;
 }
 
 uint8_t cpuid_number_of_logical_processors()
 {
     if(cpuid_is_hyperthreading_available() == 1)
     {
-        return __cpuid_0x01h.fields.ebx_fields.max_number_of_addressable_ids;
+        return __cpuid_0x01h.fields.ebx.max_number_of_addressable_ids;
     }
     else
     {
@@ -105,7 +105,12 @@ uint8_t cpuid_number_of_logical_processors()
 
 uint8_t cpuid_number_of_physical_processors_cores()
 {
-    return __cpuid_0x04h.fields.eax_fields.max_num_addressable_ids_physical + 1;
+    return __cpuid_0x04h.fields.eax.max_num_addressable_ids_physical + 1;
+}
+
+uint32_t cpuid_get_cache_size_in_bytes()
+{
+    return (__cpuid_0x04h.fields.ebx.w + 1) * (__cpuid_0x04h.fields.ebx.p + 1) * (__cpuid_0x04h.fields.ebx.l + 1) * (__cpuid_0x04h.fields.ecx.s + 1);
 }
 
 const cpuid_0x00h* cpuid_get_0x00h_fields()

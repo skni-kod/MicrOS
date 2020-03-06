@@ -64,6 +64,12 @@ uint8_t cpuid_number_of_logical_processors();
 */
 uint8_t cpuid_number_of_physical_processors_cores();
 
+//! Get cache size in bytes.
+/*!
+    \return Cache size in bytes.
+*/
+uint32_t cpuid_get_cache_size_in_bytes();
+
 //! Get 0x00h fields.
 /*!
     \return CPUID 0x00h fields.

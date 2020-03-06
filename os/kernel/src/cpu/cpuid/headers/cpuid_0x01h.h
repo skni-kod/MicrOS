@@ -204,16 +204,16 @@ typedef struct cpuid_0x01h_fields
 {
     //! EAX fields.
     /*!//! CPU's stepping, model, and family information*/
-    cpuid_0x01h_eax_fields eax_fields;
+    cpuid_0x01h_eax_fields eax;
     //! EBX fields.
     /*!//! CPU additional information.*/
-    cpuid_0x01h_ebx_fields ebx_fields;
+    cpuid_0x01h_ebx_fields ebx;
     //! ECX fields.
     /*!//! CPU features from ECX register.*/
-    cpuid_0x01h_ecx_fields ecx_fields;
+    cpuid_0x01h_ecx_fields ecx;
     //! EDX fields.
     /*!//! CPU features from EDX register.*/
-    cpuid_0x01h_edx_fields edx_fields;
+    cpuid_0x01h_edx_fields edx;
 } cpuid_0x01h_fields;
 
 //! Processor Info and Feature Bits.

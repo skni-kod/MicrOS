@@ -64,11 +64,20 @@ void print_processor_status()
     strcpy(buff2, "Number of physical cores: ");
     strcat(buff2, buff);
     logger_log_info(buff2);
+
     if(cores > 1)
     {
         logger_log_warning("But only one core is used :v");
         logger_log_info("For future SKNI members: add support for more cores");
     }
+
+    strcpy(buff2, "Cache size: ");
+    uint32_t cache_size = cpuid_get_cache_size_in_bytes();
+    cache_size = cache_size / 1024;
+    itoa(cache_size, buff, 10);
+    strcat(buff2, buff);
+    strcat(buff2, "kb");
+    logger_log_info(buff2);
 }
 
 //! Prints hard disk detail.
@@ -193,11 +202,11 @@ void startup()
     cpuid_init();
     logger_log_ok("Procesor");
     print_processor_status();
-    
+    while(1);
     //Loading Generic VGA Driver
     generic_vga_driver_init();
     logger_log_ok("Loaded DAL, and Generic VGA Driver");
-    
+
     physical_memory_init();
     logger_log_ok("Physical Memory");
 
