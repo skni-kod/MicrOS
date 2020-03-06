@@ -37,20 +37,20 @@ typedef struct cpuid_0x01h_ebx_fields
     //! Brand index.
     uint8_t brand_index;
     //! CLFLUSH line size
-    /*! Valid if CLFLUSH feature flag is set.</br>
+    /*! Valid if CLFLUSH feature flag is set.<br/>
     CPUID.01.EDX.CLFSH [bit 19]= 1*/
     uint8_t clflush_line_size;
     //! Maximum number of addressable IDs for logical processors in this physical package.
     /*!
     The nearest power-of-2 integer that is not smaller than this value is the number of unique initial APIC IDs reserved
-    for addressing different logical processors in a physical package. </br>
-    Former use: Number of logical processors per physical processor, two for the Pentium 4 processor with Hyper-Threading Technology.</br>
-    Valid if Hyper-threading feature flag is set.</br>
+    for addressing different logical processors in a physical package. <br/>
+    Former use: Number of logical processors per physical processor, two for the Pentium 4 processor with Hyper-Threading Technology.<br/>
+    Valid if Hyper-threading feature flag is set.<br/>
     CPUID.01.EDX.HTT [bit 28]= 1 */
     uint8_t max_number_of_addressable_ids;
     //! Local APIC ID
-    /*!Local APIC ID: The initial APIC-ID is used to identify the executing logical processor.</br>
-    It can also be identified via the cpuid 0BH leaf ( CPUID.0Bh.EDX[x2APIC-ID] ).</br>
+    /*!Local APIC ID: The initial APIC-ID is used to identify the executing logical processor.<br/>
+    It can also be identified via the cpuid 0BH leaf ( CPUID.0Bh.EDX[x2APIC-ID] ).<br/>
     Valid: Pentium 4 and subsequent processors.*/
     uint8_t local_apic_id;
 } __attribute__((packed)) cpuid_0x01h_ebx_fields;

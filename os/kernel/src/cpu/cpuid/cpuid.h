@@ -14,6 +14,14 @@
 */
 uint8_t cpuid_init();
 
+//! Get highest function parameter.
+/*!
+    Indicates how many function parameters CPUID supports.
+    You should use it to determine how much data you can aquire from CPUID functions.
+    \return Highest parameter function.
+*/
+uint32_t cpuid_get_highest_function_parameter();
+
 //! Get vendor string.
 /*!
     Function copy vendor string to buffer and terminate string with /0.
@@ -24,48 +32,51 @@ char* cpuid_get_vendor_string(char* buffer);
 
 //! Get stepping id.
 /*!
+    Result will be valid only if cpuid_get_highest_function_parameter() returns value 1 or higher.
     \return CPU stepping id.
 */
 uint8_t cpuid_get_stepping_id();
 
 //! Get model id.
-/*!
+/*! Result will be valid only if cpuid_get_highest_function_parameter() returns value 1 or higher.
     \return CPU model id.
 */
 uint8_t cpuid_get_model_id();
 
 //! Get family id.
-/*!
+/*! Result will be valid only if cpuid_get_highest_function_parameter() returns value 1 or higher.
     \return CPU family id.
 */
 uint8_t cpuid_get_family_id();
 
 //! Get processor type.
-/*!
+/*! Result will be valid only if cpuid_get_highest_function_parameter() returns value 1 or higher.
     \return CPU processor type.
 */
 uint8_t cpuid_get_processor_type();
 
 //! Check if Hyper-Threading is available.
-/*!
+/*! Result will be valid only if cpuid_get_highest_function_parameter() returns value 1 or higher.
     \return 1 if yes, 0 if no.
 */
 uint8_t cpuid_is_hyperthreading_available();
 
 //! Get number of logical processors.
-/*! Addressable IDs for logical processors in the same Package. Valid if Hyper-Threading is enabled.
+/*! Addressable IDs for logical processors in the same Package. Valid if Hyper-Threading is enabled.<br/>
+    Result will be valid only if cpuid_get_highest_function_parameter() returns value 1 or higher.
     \return Number of addressable logical processors.
 */
 uint8_t cpuid_number_of_logical_processors();
 
 //! Get number of physical processors cores.
 /*! Addressable IDs for physical processors cores in a physical package.
+    Result will be valid only if cpuid_get_highest_function_parameter() returns value 4 or higher.
     \return Number of addressable physical processors cores.
 */
 uint8_t cpuid_number_of_physical_processors_cores();
 
 //! Get cache size in bytes.
-/*!
+/*! Result will be valid only if cpuid_get_highest_function_parameter() returns value 4 or higher.
     \param cache_index Index of cache to return. If invalid 0 will be returned. 
     \return Cache size in bytes.
 */
@@ -78,13 +89,13 @@ uint32_t cpuid_get_cache_size_in_bytes(uint8_t cache_index);
 const cpuid_0x00h* cpuid_get_0x00h_fields();
 
 //! Get 0x01h fields.
-/*!
+/*! Result will be valid only if cpuid_get_highest_function_parameter() returns value 1 or higher.
     \return CPUID 0x01h fields.
 */
 const cpuid_0x01h* cpuid_get_0x01h_fields();
 
 //! Get 0x04h fields.
-/*!
+/*! Result will be valid only if cpuid_get_highest_function_parameter() returns value 4 or higher.
     \param index Index of struct to return.
     \return CPUID 0x04h fields.
 */

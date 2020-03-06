@@ -40,6 +40,11 @@ uint8_t cpuid_init()
     return 1;
 }
 
+uint32_t cpuid_get_highest_function_parameter()
+{
+    return __cpuid_0x00h.fields.highest_function_parameter;
+}
+
 char* cpuid_get_vendor_string(char* buffer)
 {
     // Copy vendor string to buffer

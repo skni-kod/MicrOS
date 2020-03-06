@@ -58,15 +58,15 @@ typedef struct cpuid_0x04h_ecx_fields
 typedef struct cpuid_0x04h_edx_fields
 {
     //! Write-Back Invalidate/Invalidate.
-    /*! 0 = WBINVD/INVD from threads sharing this cache acts upon lower level caches for threads sharing this cache.</br>
+    /*! 0 = WBINVD/INVD from threads sharing this cache acts upon lower level caches for threads sharing this cache.<br/>
     1 = WBINVD/INVD is not guaranteed to act upon lower level caches of non-originating threads sharing this cache.*/
     uint8_t write_back : 1;
     //! Cache Inclusiveness.
-    /*!0 = Cache is not inclusive of lower cache levels.</br>
+    /*!0 = Cache is not inclusive of lower cache levels.<br/>
     1 = Cache is inclusive of lower cache levels.*/
     uint8_t cache_inclusiveness : 1;
     //! Complex Cache Indexing.
-    /*!0 = Direct mapped cache.</br>
+    /*!0 = Direct mapped cache.<br/>
     1 = A complex function is used to index the cache, potentially using all address bits.*/
     uint8_t copmlex_cache_indexing : 1;
     // Reserved
