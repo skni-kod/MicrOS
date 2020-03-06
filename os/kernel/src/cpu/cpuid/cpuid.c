@@ -1,25 +1,34 @@
 #include "cpuid.h"
 #include "drivers/vga/vga.h"
 
-cpuid_version_information __cupid_version_information;
-cpuid_additional_information __cpuid_additional_information;
-cpuid_features_ecx_information __cpuid_features_ecx_information;
-cpuid_features_edx_information __cpuid_features_edx_information;
-
-unsigned char __cpuid_vendor_string[13];
-
 typedef union magic_union
 {
     uint32_t value1;
     unsigned char value2[4];
 } magic_union;
 
+// EAX 0x0
+cpuid_0x00h __cpuid_0x00h;
+unsigned char __cpuid_vendor_string[13];
+
+// EAX 0x1
+cpuid_0x01h __cpuid_0x01h;
+
+// EAX 0x4
+cpuid_0x04h __cpuid_0x04h;
 
 uint8_t cpuid_init()
 {
-    __cpuid_vendor();
-    cpuid_features(CPUID_GETFEATURES_AND_ADDITIONAL_INFORMATION, &__cupid_version_information.value, &__cpuid_additional_information.value,
-                    &__cpuid_features_ecx_information.value, &__cpuid_features_edx_information.value);
+    __cpuid(CPUID_GETVENDORSTRING, __cpuid_0x00h.value);
+    __cpuid_get_manufacturer_string();
+    if(__cpuid_0x00h.fields.highest_function_parameter >= 1)
+    {
+        __cpuid(CPUID_GETFEATURES_AND_ADDITIONAL_INFORMATION, __cpuid_0x01h.value);
+    }
+    if(__cpuid_0x00h.fields.highest_function_parameter >= 4)
+    {
+        __cpuid(CPUID_GETTHREAD_CORE_CACHE_TOPOLOGY, __cpuid_0x04h.value);
+    }
     return 1;
 }
 
@@ -35,63 +44,87 @@ char* cpuid_get_vendor_string(char* buffer)
 
 uint8_t cpuid_get_stepping_id()
 {
-    return __cupid_version_information.fields.stepping_id;
+    return __cpuid_0x01h.fields.eax_fields.stepping_id;
 }
 
 uint8_t cpuid_get_model_id()
 {
-    if(__cupid_version_information.fields.model == 0x6 || __cupid_version_information.fields.model == 0xF)
+    if(__cpuid_0x01h.fields.eax_fields.model == 0x6 || __cpuid_0x01h.fields.eax_fields.model == 0xF)
     {
-        return __cupid_version_information.fields.extended_model_id << 4 | __cupid_version_information.fields.model;
+        return __cpuid_0x01h.fields.eax_fields.extended_model_id << 4 | __cpuid_0x01h.fields.eax_fields.model;
     }
     else
     {
-        return __cupid_version_information.fields.model;
+        return __cpuid_0x01h.fields.eax_fields.model;
     }
 }
 
 uint8_t cpuid_get_family_id()
 {
-    if(__cupid_version_information.fields.family_id != 0xF)
+    if(__cpuid_0x01h.fields.eax_fields.family_id != 0xF)
     {
-        return __cupid_version_information.fields.family_id;
+        return __cpuid_0x01h.fields.eax_fields.family_id;
     }
     else
     {
-        return __cupid_version_information.fields.extended_family_id + __cupid_version_information.fields.family_id;
+        return __cpuid_0x01h.fields.eax_fields.extended_family_id + __cpuid_0x01h.fields.eax_fields.family_id;
     }
 }
 
 uint8_t cpuid_get_processor_type()
 {
-    return __cupid_version_information.fields.procesor_type;
+    return __cpuid_0x01h.fields.eax_fields.procesor_type;
 }
 
-void __cpuid_vendor()
+uint8_t cpuid_is_hyperthreading_available()
 {
-    uint32_t values[4];
-    magic_union mu;
-    cpuid(CPUID_GETVENDORSTRING, values);
-    uint32_t temp;
-    temp = values[2];
-    values[2] = values[3];
-    values[3] = temp;
-    for(int i = 1; i < 4; i++)
+    return __cpuid_0x01h.fields.edx_fields.htt;
+}
+
+uint8_t cpuid_number_of_logical_processors()
+{
+    if(cpuid_is_hyperthreading_available() == 1)
     {
-        mu.value1 = values[i];
-        for(int j = 0; j < 4; j++)
+        return __cpuid_0x01h.fields.ebx_fields.max_number_of_addressable_ids;
+    }
+    else
+    {
+        // TODO: add code to return physical processors.
+        return 1;
+    }
+    
+}
+
+// Helpers
+
+void __cpuid_get_manufacturer_string()
+{
+    for(int i = 0; i <= 12; i++)
+    {
+        if(i < 4)
         {
-            __cpuid_vendor_string[j+4*(i-1)] = mu.value2[j];
+            __cpuid_vendor_string[i] = __cpuid_0x00h.fields.manufacturer_id_1[i];
+        }
+        else if(i < 8)
+        {
+            __cpuid_vendor_string[i] = __cpuid_0x00h.fields.manufacturer_id_3[i % 4];
+        }
+        else if(i < 12)
+        {
+            __cpuid_vendor_string[i] = __cpuid_0x00h.fields.manufacturer_id_2[i % 4];
+        }
+        else
+        {
+            __cpuid_vendor_string[i] = '\0';
         }
     }
-    __cpuid_vendor_string[12] = '\0';
 }
 
 void printBrand()
 {
     uint32_t values[4];
     magic_union mu;
-    cpuid(0x80000000U, values);
+    __cpuid(0x80000000U, values);
     if(values[0] < 0x80000004U)
     {
         vga_printstring("CANNOT DETERMINE BRAND\n");
@@ -99,7 +132,7 @@ void printBrand()
     }
     for(unsigned int code = 0x80000002U; code<=0x80000004U; code++)
     {
-        cpuid(code, values);
+        __cpuid(code, values);
         for(int i = 0; i < 4; i++)
         {
             mu.value1 = values[i];
