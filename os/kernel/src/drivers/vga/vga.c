@@ -115,7 +115,23 @@ uint8_t vga_init(uint8_t mode)
 
 void vga_printchar(char character)
 {
-    vga_printchar_color(character, 0);
+        uint16_t pos = __vga_calcualte_position_with_offset(vga_cursor_pos.x, vga_cursor_pos.y);
+
+    if (character != '\n')
+    {
+        vga_video[pos].character.ascii_code = character;
+        vga_video[pos].character.color = __vga_get_default_terminal_color(vga_current_mode);
+        vga_cursor_pos.x += 1;
+        if (vga_cursor_pos.x == vga_current_columns)
+        {
+            vga_newline();
+        }
+    }
+    else
+    {
+        vga_newline();
+    }
+    __vga_update_cursor_struct(vga_cursor_pos);
 }
 
 void vga_printchar_color(char character, vga_color *color)
@@ -125,10 +141,7 @@ void vga_printchar_color(char character, vga_color *color)
     if (character != '\n')
     {
         vga_video[pos].character.ascii_code = character;
-        if (color != 0)
-        {
-            vga_video[pos].character.color = *color;
-        }
+        vga_video[pos].character.color = *color;
         vga_cursor_pos.x += 1;
         if (vga_cursor_pos.x == vga_current_columns)
         {

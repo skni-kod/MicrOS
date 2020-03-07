@@ -951,7 +951,22 @@ uint8_t* mode03h_create_external_buffer(uint16_t mode){
 
 int8_t __mode03h_print_char_buffer(uint16_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character)
 {
-    __mode03h_print_char_color_buffer(buffer, mode, x, y, character, 0x0F);
+	uint16_t pos = __vga_calcualte_position_with_offset(*x, *y);
+	screen_char* scr = (screen_char*) buffer;
+    if (character != '\n')
+    {
+		scr[pos].character.ascii_code = character;
+		scr[pos].character.color = __vga_get_default_terminal_color(0x03);
+        *x += 1;
+        if (*x == MODE03H_WIDTH)
+        {
+            __mode03h_newline(buffer, x, y);
+        }
+    }
+    else
+    {
+        __mode03h_newline(buffer, x, y);
+    }
 	return 0;
 }
 
