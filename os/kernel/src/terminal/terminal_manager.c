@@ -11,13 +11,64 @@ uint32_t _terminal_number = 0;
 terminal_struct* find_terminal_for_process(uint32_t process_id)
 {
     for(uint32_t i=0; i<_terminal_number; i++)
+        for(uint32_t j=0; j<terminals_array[i].process_number; j++)
+            if(terminals_array[i].attached_processes[j]->id == process_id) return terminals_array + i;
+    return NULL;
+}
+
+int8_t attach_process_to_terminal(uint32_t terminal_id, process_info* p_info)
+{
+    for(uint32_t i=0; i<_terminal_number; i++)
     {
-        if(terminals_array[i].active_process->id == process_id)
+        if(terminals_array[i].terminal_id == terminal_id)
         {
-            return terminals_array + i;
+            process_info** ptr; 
+            
+            if(terminals_array[i].attached_processes == NULL)
+                ptr = heap_kernel_alloc(sizeof(process_info*), 0);
+            else
+                ptr = heap_kernel_realloc(
+                    terminals_array[i].attached_processes, 
+                    sizeof(process_info*) * (terminals_array[i].process_number + 1), 0);
+            if(ptr == NULL) return -1;
+            terminals_array[i].attached_processes = ptr;
+            terminals_array[i].attached_processes[terminals_array[i].process_number] = p_info;
+            terminals_array[i].process_number += 1;
+            p_info->terminal_id = terminal_id;
+            return 0;
         }
     }
-    return NULL;
+    return -1;
+}
+
+int8_t dettached_process_from_terminal(process_info* p_info)
+{
+    bool move = false;
+    uint32_t terminal_index;
+    for(uint32_t i=0; i<_terminal_number; i++)
+        for(uint32_t j=0; j<terminals_array[i].process_number; j++)
+        {
+            if(terminals_array[i].attached_processes[j] == p_info)
+            {
+                terminal_index = i; 
+                move = true;
+                continue;
+            }
+            if(move)
+                terminals_array[i].attached_processes[j-1] = terminals_array[i].attached_processes[j];
+        }
+    if(terminals_array[terminal_index].active_process == p_info)
+    {
+        uint32_t x = terminals_array[terminal_index].process_number;
+        if(x > 1)
+            terminals_array[terminal_index].active_process = terminals_array[terminal_index].attached_processes[x-2];
+        else
+            terminals_array[terminal_index].active_process = NULL;
+    }
+    terminals_array[terminal_index].attached_processes = heap_kernel_realloc(terminals_array[terminal_index].attached_processes, 
+        terminals_array[terminal_index].process_number - 1, 0);
+    terminals_array[terminal_index].process_number -= 1;
+    return 0;
 }
 
 const terminal_struct* get_terminals(uint32_t* terminal_number)
@@ -45,9 +96,9 @@ int8_t create_terminal(uint32_t* terminal_id)
     terminals_array[_terminal_number].cursor_position_y = 0;
     terminals_array[_terminal_number].screen_mode = 0x03;
     terminals_array[_terminal_number].screen_buffer = video_card_create_external_buffer(0x03);
-    uint32_t process_id = process_manager_create_process("A:/ENV/SHELL.ELF", "", 1000, false);
-    terminals_array[_terminal_number].active_process = process_manager_get_process_info(process_id);
-    process_manager_set_active_process_id(process_id);
+    terminals_array[_terminal_number].active_process = NULL;
+    terminals_array[_terminal_number].process_number = 0;
+    terminals_array[_terminal_number].attached_processes = NULL;
     active_terminal_id = next_terminal_id;
     *terminal_id = active_terminal_id;
     _terminal_number++;
@@ -70,14 +121,12 @@ int8_t destroy_terminal(uint32_t terminal_id)
             terminals_array[i-1] = terminals_array[i];
     }
 
-    process_info* p = s.active_process;
-    process_info* parrent_p;
-    while(p->parent_id != 1000)
+    for(uint32_t i; i<s.process_number; i++)
     {
-        parrent_p = process_manager_get_process_info(p->parent_id);
-        process_manager_close_process(p->parent_id);
-        p = parrent_p;
+        process_manager_close_process(s.attached_processes[i]->id);
     }
+
+    heap_kernel_dealloc(s.attached_processes);
 
     if(_terminal_number == 1){
         heap_kernel_dealloc(terminals_array);
@@ -105,6 +154,10 @@ int8_t switch_active_terminal(uint32_t terminal_id)
             active_terminal_id = terminal_id;
             video_card_set_video_mode(terminals_array[i].screen_mode);
             video_card_swap_external_buffer(terminals_array[i].screen_buffer, terminals_array[i].screen_mode);
+            if(video_card_is_text_mode())
+            {
+                video_card_set_cursor_pos(terminals_array[i].cursor_position_x, terminals_array[i].cursor_position_y);
+            }
             return 0;
         }
     }
@@ -126,6 +179,10 @@ int8_t next_terminal()
                 active_terminal_id = terminals_array[i+1].terminal_id;
                 video_card_set_video_mode(terminals_array[i+1].screen_mode);
                 video_card_swap_external_buffer(terminals_array[i+1].screen_buffer, terminals_array[i].screen_mode);
+            }
+            if(video_card_is_text_mode())
+            {
+                video_card_set_cursor_pos(terminals_array[i].cursor_position_x, terminals_array[i].cursor_position_y);
             }
             return 0;
         }

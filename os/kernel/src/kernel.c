@@ -300,22 +300,29 @@ int kmain()
     
     logger_log_ok("Loading tasks...");
     vga_clear_screen();
-    //process_manager_create_process("A:/ENV/SHELL.ELF", "", 1000, false);
+    uint32_t p = process_manager_create_process("A:/ENV/SHELL.ELF", "", 1000, false);
     uint32_t d = 0;
     create_terminal(&d);
     create_terminal(&d);
     create_terminal(&d);
     uint32_t terminal_number = 0;
     terminal_struct* ts = get_terminals(&terminal_number);
-    terminal_manager_print_string(ts[0].active_process->id, "CIASTKO");
-    terminal_manager_print_string(ts[1].active_process->id, "KARMAEL");
-    terminal_manager_print_string(ts[2].active_process->id, "CZEKOLADA!");
+    attach_process_to_terminal(ts[2].terminal_id, process_manager_get_process(p));
+    terminal_manager_print_string(p, "CIASTKO");
+    p = process_manager_create_process("A:/ENV/SHELL.ELF", "", 1000, false);
+    attach_process_to_terminal(ts[0].terminal_id, process_manager_get_process(p));
+    terminal_manager_print_string(p, "KARMEL");
+    p = process_manager_create_process("A:/ENV/SHELL.ELF", "", 1000, false);
+    attach_process_to_terminal(ts[1].terminal_id, process_manager_get_process(p));
+    terminal_manager_print_string(p, "CZEKOLAAAAAAAAADA!");
+    //terminal_manager_print_string(ts[1].active_process->id, "KARMAEL");
+    //terminal_manager_print_string(ts[2].active_process->id, "CZEKOLADA!");
     //process_manager_run();
     //destroy_active_terminal();
 
     while (1)
     {
-        sleep(1000);
+        sleep(5000);
         next_terminal();
         
     }
