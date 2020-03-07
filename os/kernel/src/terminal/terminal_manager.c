@@ -173,16 +173,22 @@ int8_t next_terminal()
             {
                 active_terminal_id = terminals_array[0].terminal_id;
                 video_card_set_video_mode(terminals_array[0].screen_mode);
-                video_card_swap_external_buffer(terminals_array[0].screen_buffer, terminals_array[i].screen_mode);
+                video_card_swap_external_buffer(terminals_array[0].screen_buffer, terminals_array[0].screen_mode);
+                if(video_card_is_text_mode())
+                {
+                    video_card_set_cursor_pos(terminals_array[0].cursor_position_x, terminals_array[0].cursor_position_y);
+                    video_card_turn_cursor_on();
+                }
             }
             else{
                 active_terminal_id = terminals_array[i+1].terminal_id;
                 video_card_set_video_mode(terminals_array[i+1].screen_mode);
-                video_card_swap_external_buffer(terminals_array[i+1].screen_buffer, terminals_array[i].screen_mode);
-            }
-            if(video_card_is_text_mode())
-            {
-                video_card_set_cursor_pos(terminals_array[i].cursor_position_x, terminals_array[i].cursor_position_y);
+                video_card_swap_external_buffer(terminals_array[i+1].screen_buffer, terminals_array[i+1].screen_mode);
+                if(video_card_is_text_mode())
+                {
+                    video_card_set_cursor_pos(terminals_array[i+1].cursor_position_x, terminals_array[i+1].cursor_position_y);
+                    video_card_turn_cursor_on();
+                }  
             }
             return 0;
         }
