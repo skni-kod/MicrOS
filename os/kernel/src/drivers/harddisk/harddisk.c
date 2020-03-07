@@ -63,6 +63,11 @@ char* harddisk_get_disk_firmware_version_terminated(HARDDISK_ATA_MASTER_SLAVE ty
         buffer[i + 1] = data->fields.firmware_version[i];
     }
     buffer[HARDDISK_FIRMWARE_VERSION_LENGTH] = '\0';
+    // Remove additional spaces
+    for(int i = HARDDISK_FIRMWARE_VERSION_LENGTH; i >=0; i++)
+    {
+        if(buffer[i] = ' ') buffer[i] = '\0';
+    }
     return buffer;
 }
 
@@ -79,6 +84,12 @@ char* harddisk_get_disk_model_number_terminated(HARDDISK_ATA_MASTER_SLAVE type, 
         buffer[i + 1] = data->fields.model_number[i];
     }
     buffer[HARDDISK_MODEL_NUMBER_LENGTH] = '\0';
+    // Remove additional spaces
+    for(int i = HARDDISK_MODEL_NUMBER_LENGTH; i >=0; i++)
+    {
+        if(buffer[i] = ' ') buffer[i] = '\0';
+    }
+    
     return buffer;
 }
 
