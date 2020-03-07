@@ -232,6 +232,7 @@ void vga_set_cursor_pos(uint16_t x, uint16_t y)
 {
     vga_cursor_pos.x = x;
     vga_cursor_pos.y = y;
+    __vga_update_cursor(x, y);
 }
 
 void vga_set_cursor_pos_struct(vga_screen_pos spos)
