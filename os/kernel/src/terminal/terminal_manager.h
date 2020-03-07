@@ -13,10 +13,15 @@ typedef struct terminal_struct
     uint16_t cursor_position_y;
     uint8_t* screen_buffer;
     process_info* active_process;
+    process_info** attached_processes;
+    uint32_t process_number;
 
 } terminal_struct;
 
 void init_terminal_manager();
+
+int8_t attach_process_to_terminal(uint32_t terminal_id, process_info* p_info);
+int8_t dettached_process_from_terminal(process_info* p_info);
 
 terminal_struct* find_terminal_for_process(uint32_t process_id);
 const terminal_struct* get_terminals();
