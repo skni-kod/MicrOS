@@ -148,3 +148,35 @@ filesystem_type partitions_get_filesystem_type(char *name)
     
     return 0;
 }
+
+void partitions_get_info(char symbol, partition_info *info)
+{
+    partition *partition = partitions_get_by_symbol(symbol);
+    if (partition != 0)
+    {
+        switch (partition->device_type)
+        {
+            case device_type_floppy:
+            {
+                info->device_type = 0;
+                
+                char floppy_name[] = "SHUKA FLOPPY";
+                memcpy(info->device_name, floppy_name, sizeof(floppy_name));
+                
+                break;
+            }
+            
+            case device_type_harddisk:
+            {
+                int type = hdd_wrapper_get_type_by_device_number(partition->device_number);
+                int bus = hdd_wrapper_get_bus_by_device_number(partition->device_number);
+                
+                HARDDISK_STATE state = harddisk_get_state(type, bus);
+                info->device_type = 1 + partition->device_number;
+                harddisk_get_disk_model_number_terminated(type, bus, info->device_name);
+                
+                break;
+            }
+        }
+    }
+}
