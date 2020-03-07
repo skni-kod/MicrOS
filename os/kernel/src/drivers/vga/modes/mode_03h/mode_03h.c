@@ -812,10 +812,10 @@ int8_t mode03h_clear_screen_buffered()
 {
 	if(mode03h_buffer == NULL) return -1;
     vga_color_without_blink col = {.background = VGA_MODE_03H_COLOR_BLACK, .letter = VGA_MODE_03H_COLOR_LIGHT_GRAY};
-	for (uint16_t i = 0; i < VGA_MODE_02H_SCREEN_ROWS; ++i)
+	for (uint16_t i = 0; i < VGA_MODE_03H_SCREEN_ROWS; ++i)
     {
         // Clear all lines
-        for (uint16_t j = 0; j < VGA_MODE_02H_SCREEN_COLUMNS; ++j)
+        for (uint16_t j = 0; j < VGA_MODE_03H_SCREEN_COLUMNS; ++j)
         {
             uint16_t pos = __vga_calcualte_position_without_offset(j, i);
             // Clear
@@ -944,6 +944,7 @@ int8_t mode03h_swap_external_buffer(uint8_t* buffer, uint16_t mode){
 uint8_t* mode03h_create_external_buffer(uint16_t mode){
 	uint8_t* ptr =  heap_kernel_alloc(MODE03H_HEIGHT * MODE03H_WIDTH * sizeof(screen_char), 0);
 	memset(ptr, 0, MODE03H_HEIGHT * MODE03H_WIDTH * sizeof(screen_char));
+	mode03h_clear_screen_external_buffer(ptr, mode);
 	return ptr;
 }
 
