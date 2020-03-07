@@ -232,7 +232,7 @@ void startup()
     cpuid_init();
     logger_log_ok("Procesor");
     print_processor_status();
-    while(1);
+    
     //Loading Generic VGA Driver
     generic_vga_driver_init();
     logger_log_ok("Loaded DAL, and Generic VGA Driver");
