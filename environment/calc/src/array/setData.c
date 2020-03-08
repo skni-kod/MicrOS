@@ -1,22 +1,32 @@
 #define _CRT_SECURE_NO_WARNINGS
-#define _USE_MATH_DEFINES
 #include "../array.h"
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
+#include <stdio.h>
 
-/* Set new data for object instance */
-void setData(Object* object, const void* data, const Type type) {
+/* Set new value */
+void setData(Array* array, const Object* data, const unsigned int index) {
 
-	free(object->Data);
-	object->Type = type;
-	object->Length = getDataSize(data, type);
-	object->Data = malloc(object->Length);
-	if (object->Data != NULL) {
-		memcpy(object->Data, data,object->Length);
+	if (data == NULL || array == NULL || (index) > (array->Size - 1)) {
+		return;
 	}
-	else {
-		exit(-1);
+
+	/* Copy data object to new instance */
+	Object* obj = 0;
+	obj = malloc(sizeof(Object));
+	if (obj != NULL) {
+		obj->Type = data->Type;
+		obj->Length = data->Length;
+
+		obj->Data = malloc(obj->Length);
+		if (obj->Data == NULL) {
+			exit(-1);
+		}
+		memcpy(obj->Data, data->Data, obj->Length);
 	}
+
+	if (array->Data != NULL) {
+		array->Data[index] = obj;
+	}
+
 }

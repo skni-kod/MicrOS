@@ -6,9 +6,13 @@
 
 /* Append value to array */
 void appendToArray(Array* array, const Object* data) {
-	
+
 	if (data == NULL) {
 		return;
+	}
+
+	if (array == NULL) {
+		array = initArray();
 	}
 
 	/* Copy data object to new instance */

@@ -8,19 +8,10 @@
 
 int main(int argc, char** argv)
 {
-	Object* obj = initObject("HelloWorld!",String);
-	Array array;
-	initArray(&array);
-	appendToArray(&array,obj);
-	appendToArray(&array,obj);
-	appendToArray(&array,obj);
-	setData(obj,"Ocean ",String);
-	appendToArray(&array,obj);
-	appendToString(obj,"Drive");
-	appendToArray(&array,obj);
-	double x = 3.14;
-	setData(obj,&x,Double);
-	appendToArray(&array,obj);
-	printArray(&array);
+	Array* main = initArray();
+	Object* obj = initObject("69.34", String);
+	convertToInt(obj);
+	printObject(obj);
+
 	return 0;
 }

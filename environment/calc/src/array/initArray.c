@@ -7,7 +7,13 @@
 #include <math.h>
 
 /* Initialize empty array */
-void initArray(Array* array) {
-    array->Size = 0;
-    array->Data = malloc(sizeof(void*));
+Array* initArray(void) {
+    Array* array = 0;
+    array = malloc(sizeof(Array));
+
+    if (array != NULL) {
+        array->Size = 0;
+        array->Data = malloc(sizeof(void*));
+        return array;
+    }
 }

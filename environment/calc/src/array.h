@@ -25,20 +25,32 @@ typedef struct array {
 } Array;
 
 	/* Array */
-	void initArray(Array* array);
+	Array* initArray(void);
 	void appendToArray(Array* array, const Object* object);
 	void popArray(Array* array);
-	void setValue(Array* array, const Object* object, const unsigned int index);
+	void deleteData(Array* array, const unsigned int index);
+	void setData(Array* array, const Object* object, const unsigned int index);
 	void insertValue(Array* array, const Object* object, const unsigned int index);
 	void printArray(Array* array);
 	
 	/* Data object */
 	size_t getDataSize(const void* data, Type type);
 	Object* initObject(const void* data, const Type type);
-	void setData(Object* object, const void* data, const Type type);
+	void setObject(Object* object, const void* data, const Type type);
+	void printObject(Object* object);
 	void freeObject(Object* object);
 
+	/* String */
 	void appendToString(Object* object, const char* string);
+	void cutString(Object* object, const unsigned int index, const int count);
+	void splitString(Array* array, Object* object, const char* delimiter);
+	void trimString(Object* object, bool direction, const char data);
+	void reverseString(Object* object);
+	void convertToString(Object* object);
+	void convertToInt(Object* object);
+	void convertToDouble(Object* object);
+	bool isDigit(const char data);
+	bool isNumber(const char* data);
 
-
+	int abs(int x);
 #endif
