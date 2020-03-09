@@ -14,6 +14,13 @@ unsigned int seed;
 extern "C" {
 #endif
 
+
+//! Absolute value of integer
+/*
+    Returns the absolute value of parameter n
+ */
+int abs(int n);
+
 //! Convert string to integer
 /*
     Parses the C-string str interpreting its content as an integral number, which is returned as a value of type int.
@@ -24,11 +31,11 @@ int32_t atoi(const char *string);
 
 //! Convert string to floating point
 /*
-    Parses the C-string str interpreting its content as an integral number, which is returned as a value of type int.
-    \param string C-string beginning with the representation of an integral number.
-    \return On success, the function returns the converted integral number as an int value.
+    Parses the C-string str interpreting its content as an floating point number, which is returned as a value of type double.
+    \param string C-string beginning with the representation of an floating point or integral number.
+    \return On success, the function returns the converted number as an double value.
  */
-float atof(const char *string);
+double atof (const char* str);
 
 //! Convert integer to string (non-standard function)
 /*

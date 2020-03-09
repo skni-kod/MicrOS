@@ -52,5 +52,4 @@ typedef struct array {
 	bool isDigit(const char data);
 	bool isNumber(const char* data);
 
-	int abs(int x);
 #endif

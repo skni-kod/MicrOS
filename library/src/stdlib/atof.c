@@ -1,6 +1,6 @@
 #include "../stdlib.h"
 
-float atof(const char* string)
+double atof(const char* string)
 {
     size_t len = strlen(string);
     int intValue = 0;
@@ -14,7 +14,7 @@ float atof(const char* string)
     char lengthOffset = 0;
 
     char dot = 0;
-    float value = 1;
+    double value = 1;
 
     if (*string == '-')
     {

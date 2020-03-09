@@ -78,6 +78,7 @@ void convertToString(Object* object) {
 			appendToString(tmp, ((char*)fracPart->Data));
 
 			setObject(object, tmp->Data, String);
+			trimString(object,true,'0');
 			return;
 		}
 	}

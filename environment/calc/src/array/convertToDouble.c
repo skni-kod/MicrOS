@@ -18,7 +18,10 @@ void convertToDouble(Object* object) {
 		}
 
 		if (object->Type == Int) {
-			double tmpVar = (double)*((int*)object->Data);
+			int x = *((int*)object->Data);
+			double tmpVar = 0;
+			tmpVar = (double)x;
+						printf("%lf\n",tmpVar);
 			setObject(object, &tmpVar, Double);
 			return;
 		}

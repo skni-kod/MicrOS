@@ -9,8 +9,9 @@
 int main(int argc, char** argv)
 {
 	Array* main = initArray();
-	Object* obj = initObject("69.34", String);
-	convertToInt(obj);
+	int x = 343;
+	Object* obj = initObject(&x, Int);
+	convertToDouble(obj);
 	printObject(obj);
 
 	return 0;
