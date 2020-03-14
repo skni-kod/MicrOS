@@ -34,6 +34,7 @@ int8_t attach_process_to_terminal(uint32_t terminal_id, process_info* p_info)
             terminals_array[i].attached_processes = ptr;
             terminals_array[i].attached_processes[terminals_array[i].process_number] = p_info;
             terminals_array[i].process_number += 1;
+            terminals_array[i].active_process = p_info;
             p_info->terminal_id = terminal_id;
             return 0;
         }
@@ -66,7 +67,7 @@ int8_t dettached_process_from_terminal(process_info* p_info)
             terminals_array[terminal_index].active_process = NULL;
     }
     terminals_array[terminal_index].attached_processes = heap_kernel_realloc(terminals_array[terminal_index].attached_processes, 
-        terminals_array[terminal_index].process_number - 1, 0);
+        sizeof(process_info*) * (terminals_array[terminal_index].process_number - 1), 0);
     terminals_array[terminal_index].process_number -= 1;
     return 0;
 }

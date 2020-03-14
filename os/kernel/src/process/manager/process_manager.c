@@ -222,6 +222,7 @@ void process_manager_switch_to_next_process()
 void process_manager_close_current_process()
 {
     process_info *current_process = processes.data[current_process_id];
+    dettached_process_from_terminal(current_process);
     process_manager_close_process(current_process->id);
 }
 
