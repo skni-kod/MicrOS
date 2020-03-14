@@ -144,7 +144,7 @@ process_info *process_manager_get_process(uint32_t process_id)
 
 process_info *process_manager_get_current_process()
 {
-    return process_manager_get_process(current_process_id);
+    return processes.data[current_process_id];
 }
 
 void process_manager_set_root_process(uint32_t process_id)
