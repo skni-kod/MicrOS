@@ -7,6 +7,9 @@ typedef union magic_union
     unsigned char value2[4];
 } magic_union;
 
+//! 0 if CPUID is not available, abything otherwise
+uint32_t __cpuid_available;
+
 // EAX 0x0
 cpuid_0x00h __cpuid_0x00h;
 unsigned char __cpuid_vendor_string[13];
@@ -20,31 +23,41 @@ uint8_t __cpuid_0x04h_vaild_index = 0;
 
 uint8_t cpuid_init()
 {
-    __cpuid(CPUID_GETVENDORSTRING, __cpuid_0x00h.value);
-    __cpuid_get_manufacturer_string();
-    if(__cpuid_0x00h.fields.highest_function_parameter >= 1)
-    {
-        __cpuid(CPUID_GETFEATURES_AND_ADDITIONAL_INFORMATION, __cpuid_0x01h.value);
-    }
-    if(__cpuid_0x00h.fields.highest_function_parameter >= 4)
-    {
-        // We must clear ECX registry as it's index value.
-        for(int i = 0; i < 10; i++)
+    uint32_t __cpuid_available = __cpuid_check_cpuid_instruction_availability();
+    if(__cpuid_available != 0)
         {
-            __cpuid_count(CPUID_GETTHREAD_CORE_CACHE_TOPOLOGY, i, __cpuid_0x04h[i].value);
-            if(__cpuid_0x04h[i].fields.eax.cache_type_field == 0)
-            {
-                break;
-            }
-            __cpuid_0x04h_vaild_index++;
+        __cpuid(CPUID_GETVENDORSTRING, __cpuid_0x00h.value);
+        __cpuid_get_manufacturer_string();
+        if(__cpuid_0x00h.fields.highest_function_parameter >= 1)
+        {
+            __cpuid(CPUID_GETFEATURES_AND_ADDITIONAL_INFORMATION, __cpuid_0x01h.value);
         }
+        if(__cpuid_0x00h.fields.highest_function_parameter >= 4)
+        {
+            // We must clear ECX registry as it's index value.
+            for(int i = 0; i < 10; i++)
+            {
+                __cpuid_count(CPUID_GETTHREAD_CORE_CACHE_TOPOLOGY, i, __cpuid_0x04h[i].value);
+                if(__cpuid_0x04h[i].fields.eax.cache_type_field == 0)
+                {
+                    break;
+                }
+                __cpuid_0x04h_vaild_index++;
+            }
+        }
+        return 1;
     }
-    return 1;
+    return 0;
+}
+
+uint32_t cpuid_is_available()
+{
+    return __cpuid_available;
 }
 
 uint32_t cpuid_get_highest_function_parameter()
 {
-    return __cpuid_0x00h.fields.highest_function_parameter;
+    return __cpuid_available ? __cpuid_0x00h.fields.highest_function_parameter : 0;
 }
 
 char* cpuid_get_vendor_string(char* buffer)
@@ -164,6 +177,25 @@ const cpuid_0x04h* cpuid_get_0x04h_fields(uint8_t index)
 }
 
 // Helpers
+
+uint32_t __cpuid_check_cpuid_instruction_availability()
+{
+    uint32_t eax;
+    __asm__(
+        "pushfl \n" \
+        "pushfl \n" \
+        "xor $0x00200000,%%esp \n" \
+        "popfl \n" \
+        "pushfl \n" \
+        "pop %%eax \n" \
+        "xor %%esp,%%eax \n" \
+        "popfl \n" \
+        "and $0x00200000,%%eax" 
+    :"=g"(eax)
+    :
+    : "%eax", "%esp");
+    return eax;
+}
 
 void __cpuid_get_manufacturer_string()
 {

@@ -36,10 +36,18 @@ typedef struct cpuid_cache_struct
 */
 uint8_t cpuid_init();
 
+//! Check if CPUID is available.
+/*!
+    If CPUID is not available none of CPUID functions return valid data.
+    \return 0 if not available, anything otherwise.
+*/
+uint32_t cpuid_is_available();
+
 //! Get highest function parameter.
 /*!
     Indicates how many function parameters CPUID supports.
-    You should use it to determine how much data you can aquire from CPUID functions.
+    You should use it to determine how much data you can aquire from CPUID functions.<br/>
+    If CPUID is not available returns 0.
     \return Highest parameter function.
 */
 uint32_t cpuid_get_highest_function_parameter();
@@ -139,6 +147,11 @@ const cpuid_0x01h* cpuid_get_0x01h_fields();
 const cpuid_0x04h* cpuid_get_0x04h_fields(uint8_t index);
 
 // Helpers
+
+//! Check if CPUID instruction is available.
+/*! \return 0 if not available, anything else otherwise
+*/
+uint32_t __cpuid_check_cpuid_instruction_availability();
 
 //! Perform CPUID instruction.
 /*!
