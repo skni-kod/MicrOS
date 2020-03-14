@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 #include "cpu/idt/state/interrupt_state.h"
-#include "drivers/vga/vga.h"
+#include "terminal/terminal_manager.h"
 #include "process/manager/process_manager.h"
 
 void syscall_terminal_print_char(interrupt_state *state);
