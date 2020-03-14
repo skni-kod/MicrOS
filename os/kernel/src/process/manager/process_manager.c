@@ -473,7 +473,7 @@ void process_manager_interrupt_handler(interrupt_state *state)
     }
 }
 
-void process_manager_keyboard_interrupt_handler(interrupt_state *state)
+bool process_manager_keyboard_interrupt_handler(interrupt_state *state)
 {
     for (uint32_t i = 0; i < processes.count; i++)
     {
@@ -486,6 +486,8 @@ void process_manager_keyboard_interrupt_handler(interrupt_state *state)
             process->status = process_status_ready;
         }
     }
+    
+    return false;
 }
 
 void process_manager_run()

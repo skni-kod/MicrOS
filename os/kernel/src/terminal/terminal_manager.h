@@ -56,6 +56,6 @@ int8_t terminal_manager_draw_rectangle(uint32_t process_id, uint8_t color, uint1
 int8_t terminal_manager_clear_screen(uint32_t process_id);
 
 uint32_t terminal_manager_get_active_terminal_id();
-
+bool terminal_manager_keyboard_interrupt_handler(interrupt_state *state);
 
 #endif

@@ -80,7 +80,7 @@ const terminal_struct* get_terminals(uint32_t* terminal_number)
 
 void init_terminal_manager()
 {
-    
+    idt_attach_interrupt_handler(1, terminal_manager_keyboard_interrupt_handler);
 }
 
 int8_t create_terminal(uint32_t* terminal_id)
@@ -449,6 +449,11 @@ int8_t terminal_manager_clear_screen(uint32_t process_id)
 uint32_t terminal_manager_get_active_terminal_id()
 {
     return active_terminal_id;
+}
+
+bool terminal_manager_keyboard_interrupt_handler(interrupt_state *state)
+{
+    return true;
 }
 
 //TODO: Functions for writting to chars and pixels, changing modes, changing active terminal and get list of terminals

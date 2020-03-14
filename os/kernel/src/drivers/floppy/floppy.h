@@ -43,7 +43,7 @@ void floppy_disable_motor();
 bool floppy_seek(uint8_t cylinder, uint8_t head);
 
 bool floppy_wait_for_interrupt();
-void floppy_interrupt();
-void floppy_timer_interrupt();
+bool floppy_interrupt();
+bool floppy_timer_interrupt();
 
 #endif
