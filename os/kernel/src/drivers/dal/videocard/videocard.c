@@ -393,7 +393,7 @@ int8_t video_card_turn_cursor_on()
 }
 int8_t video_card_turn_cursor_off()
 {
-    return (*_turn_cursor_on)();
+    return (*_turn_cursor_off)();
 }
 
 int8_t video_card_draw_pixel(uint8_t color, uint16_t x, uint16_t y){

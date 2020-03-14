@@ -15,6 +15,7 @@
 #include "process/signals/signal_params.h"
 #include "memory/heap/heap.h"
 #include "filesystems/filesystem.h"
+#include "terminal/terminal_manager.h"
 
 void process_manager_init();
 uint32_t process_manager_create_process(char *path, char *parameters, uint32_t parent_id, bool active);

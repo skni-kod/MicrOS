@@ -6,7 +6,6 @@ volatile uint32_t next_process_id = 0;
 volatile uint32_t last_task_switch = 0;
 volatile uint32_t last_cpu_recalculation = 0;
 volatile uint32_t root_process_id = 0;
-volatile uint32_t active_process_id = 0;
 volatile bool run_scheduler_on_next_interrupt = false;
 
 extern void enter_user_space(interrupt_state *address);
@@ -125,11 +124,6 @@ release:
     if(error)
     {
         return -1;
-    }
-    
-    if(active)
-    {
-        active_process_id = processes.count - 1;
     }
 
     return process->id;
@@ -268,11 +262,6 @@ void process_manager_close_process(uint32_t process_id)
         }
     }
     
-    if(process_index == active_process_id)
-    {
-        active_process_id = process_manager_get_process_index(process->parent_id);
-    }
-    
     io_enable_interrupts();
 
     if (processes.count > 0)
@@ -393,21 +382,6 @@ void process_manager_finish_signal_handler(signal_params *old_state)
     enter_user_space(&state);
 }
 
-void process_manager_set_active_process_id(uint32_t process_id)
-{
-    active_process_id = process_id;    
-}
-
-uint32_t process_manager_get_active_process_id(uint32_t process_id)
-{
-    return active_process_id;
-}
-
-bool process_manager_is_current_process_active()
-{
-    return current_process_id == active_process_id;
-}
-
 void process_manager_current_process_sleep(uint32_t milliseconds)
 {
     process_info *current_process = processes.data[current_process_id];
@@ -503,7 +477,10 @@ void process_manager_keyboard_interrupt_handler(interrupt_state *state)
     for (uint32_t i = 0; i < processes.count; i++)
     {
         process_info *process = processes.data[i];
-        if (i == active_process_id && process->status == process_status_waiting_key_press)
+        terminal_struct* terminal = find_terminal_for_process(process->id);
+        uint32_t active_terminal_id = terminal_manager_get_active_terminal_id();
+        
+        if (terminal->terminal_id == active_terminal_id && process->status == process_status_waiting_key_press)
         {
             process->status = process_status_ready;
         }
