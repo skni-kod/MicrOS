@@ -453,7 +453,33 @@ uint32_t terminal_manager_get_active_terminal_id()
 
 bool terminal_manager_keyboard_interrupt_handler(interrupt_state *state)
 {
-    return true;
+    if (!keyboard_is_buffer_empty())
+    {
+        keyboard_scan_ascii_pair pair;
+        keyboard_get_key_from_buffer(&pair);
+        keyboard_state_flags *flags = keyboard_get_state_flags();
+        
+        switch (pair.scancode)
+        {
+            case 15:
+            {
+                // if (flags->left_alt_pressed)
+                if (flags->left_ctrl_pressed)
+                {
+                    next_terminal();
+                }
+                
+                return true;
+            }
+            
+            default:
+            {
+                keyboard_put_key_to_buffer(pair.scancode, pair.ascii);
+            }
+        }
+    }
+    
+    return false;
 }
 
 //TODO: Functions for writting to chars and pixels, changing modes, changing active terminal and get list of terminals

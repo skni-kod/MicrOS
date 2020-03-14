@@ -303,14 +303,21 @@ int kmain()
     
     logger_log_ok("Loading tasks...");
     vga_clear_screen();
-    uint32_t p = process_manager_create_process("A:/ENV/SHELL.ELF", "", 1000, false);
+    
+    // create_terminal(&d);
+    // create_terminal(&d);
+    
     uint32_t d = 0;
-    create_terminal(&d);
-    // create_terminal(&d);
-    // create_terminal(&d);
-    uint32_t terminal_number = 0;
-    terminal_struct* ts = get_terminals(&terminal_number);
-    attach_process_to_terminal(ts[0].terminal_id, process_manager_get_process(p));
+    for (int i = 0; i < 4; i++)
+    {
+        uint32_t p = process_manager_create_process("A:/ENV/SHELL.ELF", "", 0, false);
+        create_terminal(&d);
+    
+        uint32_t terminal_number = i;
+        terminal_struct* ts = get_terminals(&terminal_number);
+        attach_process_to_terminal(ts[i].terminal_id, process_manager_get_process(p));
+    }
+    
     // terminal_manager_print_string(p, "CIASTKO");
     // p = process_manager_create_process("A:/ENV/SHELL.ELF", "", 1000, false);
     // attach_process_to_terminal(ts[0].terminal_id, process_manager_get_process(p));

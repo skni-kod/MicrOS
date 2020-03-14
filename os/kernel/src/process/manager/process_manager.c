@@ -2,7 +2,7 @@
 
 kvector processes;
 volatile uint32_t current_process_id = 0;
-volatile uint32_t next_process_id = 0;
+volatile uint32_t next_process_id = 1;
 volatile uint32_t last_task_switch = 0;
 volatile uint32_t last_cpu_recalculation = 0;
 volatile uint32_t root_process_id = 0;

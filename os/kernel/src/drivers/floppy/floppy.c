@@ -465,6 +465,7 @@ bool floppy_wait_for_interrupt()
 bool floppy_interrupt()
 {
     floppy_interrupt_flag = true;
+    return false;
 }
 
 bool floppy_timer_interrupt()

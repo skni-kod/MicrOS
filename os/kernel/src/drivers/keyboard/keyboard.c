@@ -123,7 +123,7 @@ void keyboard_increment_buffer_pointer(volatile uint16_t *const ptr)
         *ptr = *ptr + 2;
 }
 
-void keyboard_put_key_to_buffor(unsigned char scancode, unsigned char ascii)
+void keyboard_put_key_to_buffer(unsigned char scancode, unsigned char ascii)
 {
     if (!keyboard_able_to_write())
     {
@@ -160,7 +160,7 @@ unsigned char keyboard_get_scancode()
     return io_in_byte(0x60);
 }
 
-void keyboard_handler()
+bool keyboard_handler()
 {
     unsigned char scancode;
     scancode = keyboard_get_scancode();
@@ -244,23 +244,23 @@ void keyboard_handler()
                 if ((scancode >= 71) && (scancode <= 83))
                 {
                     if (kb_state->num_lock_active)
-                        keyboard_put_key_to_buffor(scancode, kbdusB[scancode]);
+                        keyboard_put_key_to_buffer(scancode, kbdusB[scancode]);
                     else
-                        keyboard_put_key_to_buffor(scancode, kbdus[scancode]);
+                        keyboard_put_key_to_buffer(scancode, kbdus[scancode]);
                 }
                 else if (kb_state->caps_lock_active)
                 {
                     if ((kb_state->left_shift_pressed) || (kb_state->right_shift_pressed))
-                        keyboard_put_key_to_buffor(scancode, kbdus[scancode]);
+                        keyboard_put_key_to_buffer(scancode, kbdus[scancode]);
                     else
-                        keyboard_put_key_to_buffor(scancode, kbdusB[scancode]);
+                        keyboard_put_key_to_buffer(scancode, kbdusB[scancode]);
                 }
                 else
                 {
                     if ((kb_state->left_shift_pressed) || (kb_state->right_shift_pressed))
-                        keyboard_put_key_to_buffor(scancode, kbdusB[scancode]);
+                        keyboard_put_key_to_buffer(scancode, kbdusB[scancode]);
                     else
-                        keyboard_put_key_to_buffor(scancode, kbdus[scancode]);
+                        keyboard_put_key_to_buffer(scancode, kbdus[scancode]);
                 }
 
                 keyboard_keys_state[scancode] = true;
@@ -274,6 +274,8 @@ void keyboard_handler()
         kb_estate->last_E0h = 0;
         kb_estate->last_E1h = 0;
     }
+    
+    return false;
 
     // TODO: Check if these commented lines are necessary.
     /*if(scancode == 0xE0)
@@ -323,4 +325,9 @@ unsigned char keyboard_is_between(unsigned char number, unsigned char l, unsigne
 unsigned char keyboard_is_between_or_eq(unsigned char number, unsigned char l, unsigned char r)
 {
     return (number >= l) && (number <= r);
+}
+
+keyboard_state_flags *keyboard_get_state_flags()
+{
+    return kb_state;
 }

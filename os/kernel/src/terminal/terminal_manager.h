@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 #include "../process/manager/process_info.h"
+#include "../drivers/keyboard/keyboard.h"
+#include "../drivers/keyboard/keyboard_state_flags.h"
 
 typedef struct terminal_struct
 {
