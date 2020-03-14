@@ -6,7 +6,7 @@
 #include "cpu/idt/idt.h"
 #include "handlers/heap_calls.h"
 #include "handlers/time_calls.h"
-#include "handlers/vga_calls.h"
+#include "handlers/terminal_calls.h"
 #include "handlers/pc_speaker_calls.h"
 #include "handlers/rtc_calls.h"
 #include "handlers/filesystem_calls.h"
