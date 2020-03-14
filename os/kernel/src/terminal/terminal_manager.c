@@ -445,4 +445,9 @@ int8_t terminal_manager_clear_screen(uint32_t process_id)
     return 0;
 }
 
+uint32_t terminal_manager_get_active_terminal_id()
+{
+    return active_terminal_id;
+}
+
 //TODO: Functions for writting to chars and pixels, changing modes, changing active terminal and get list of terminals

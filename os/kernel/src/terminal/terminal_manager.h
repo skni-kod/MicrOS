@@ -55,5 +55,7 @@ int8_t terminal_manager_draw_circle(uint32_t process_id, uint8_t color, uint16_t
 int8_t terminal_manager_draw_rectangle(uint32_t process_id, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
 int8_t terminal_manager_clear_screen(uint32_t process_id);
 
+uint32_t terminal_manager_get_active_terminal_id();
+
 
 #endif
