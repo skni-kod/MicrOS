@@ -24,7 +24,7 @@ void _start(char *path, char *parameters)
 
 char **parse_parameters(char *path, char *parameters, int *count)
 {
-    char **argv = (char **)malloc(sizeof(char *) * 2);
+    char **argv = (char **)malloc(sizeof(char *));
     char *current_string = (char *)malloc(sizeof(char));
     char *parameteres_ptr = parameters;
     int current_string_length = 1;
@@ -33,7 +33,7 @@ char **parse_parameters(char *path, char *parameters, int *count)
     bool doubleQuotationMarks = false;
 
     argv[0] = path;
-    *count = 2;
+    *count = 1;
 
     while (true)
     {
@@ -44,9 +44,10 @@ char **parse_parameters(char *path, char *parameters, int *count)
         {
             current_string[current_string_length - 1] = 0;
 
-            argv = (char **)realloc(argv, sizeof(char *) * (*count));
-            argv[(*count) - 1] = current_string;
             (*count)++;
+            argv = (char **)realloc(argv, sizeof(char *) * (*count));
+            
+            argv[(*count) - 1] = current_string;
 
             if (*parameteres_ptr == 0)
             {
@@ -83,7 +84,10 @@ char **parse_parameters(char *path, char *parameters, int *count)
         parameteres_ptr++;
     }
 
+    (*count)++;
+    argv = (char **)realloc(argv, sizeof(char *) * (*count));
     argv[(*count) - 1] = 0;
+    
     return argv;
 }
 

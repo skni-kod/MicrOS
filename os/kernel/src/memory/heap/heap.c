@@ -164,14 +164,12 @@ uint32_t heap_get_object_size(void *ptr)
 
 void *heap_realloc(void *ptr, uint32_t size, uint32_t align, bool supervisor)
 {
-    heap_entry *old_entry = heap_dealloc(ptr, supervisor);
+    uint32_t old_entry_size = ((heap_entry *)((uint32_t)ptr - ENTRY_HEADER_SIZE))->size;
     void *new_ptr = heap_alloc(size, align, supervisor);
 
-    if (ptr != new_ptr)
-    {
-        memcpy(new_ptr, ptr, size < old_entry->size ? size : old_entry->size);
-    }
-
+    memmove(new_ptr, ptr, size < old_entry_size ? size : old_entry_size);
+    heap_dealloc(ptr, supervisor);
+    
     return new_ptr;
 }
 
@@ -302,5 +300,12 @@ bool heap_verify_integrity(bool supervisor)
         current_entry = current_entry->next;
     }
 
-    return total_size == allocated_pages * 1024 * 1024 * 4;
+    if (supervisor)
+    {
+        return total_size == allocated_pages * 1024 * 1024 * 4;
+    }
+    else
+    {
+        return true;
+    }
 }
