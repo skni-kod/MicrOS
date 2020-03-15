@@ -310,7 +310,10 @@ int kmain()
     uint32_t d = 0;
     for (int i = 0; i < 4; i++)
     {
-        uint32_t p = process_manager_create_process("A:/ENV/SHELL.ELF", "", 0, false);
+        char args[16];
+        itoa(i, args, 10);
+        
+        uint32_t p = process_manager_create_process("A:/ENV/SHELL.ELF", args, 0, false);
         create_terminal(&d);
     
         uint32_t terminal_number = i;

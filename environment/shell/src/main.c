@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
         
         if(cursor_position.x == 0 && cursor_position.y == 0)
         {
-            printf("MicrOS Shell v1.1\n");
+            printf("MicrOS Shell v1.1 (terminal %s)\n", argv[1]);
             printf("Type \"help\" to list all available applications\n\n");
         }
         
