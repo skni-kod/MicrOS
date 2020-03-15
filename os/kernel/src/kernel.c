@@ -318,6 +318,8 @@ int kmain()
         attach_process_to_terminal(ts[i].terminal_id, process_manager_get_process(p));
     }
     
+    switch_active_terminal(0);
+    
     // terminal_manager_print_string(p, "CIASTKO");
     // p = process_manager_create_process("A:/ENV/SHELL.ELF", "", 1000, false);
     // attach_process_to_terminal(ts[0].terminal_id, process_manager_get_process(p));
