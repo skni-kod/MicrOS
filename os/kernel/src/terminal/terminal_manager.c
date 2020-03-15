@@ -47,17 +47,23 @@ int8_t dettached_process_from_terminal(process_info* p_info)
     bool move = false;
     uint32_t terminal_index;
     for(uint32_t i=0; i<_terminal_number; i++)
-        for(uint32_t j=0; j<terminals_array[i].process_number; j++)
+    {
+        uint32_t ti = i;
+        for(uint32_t j=0; j<terminals_array[ti].process_number; j++)
         {
-            if(terminals_array[i].attached_processes[j] == p_info)
+            if(terminals_array[ti].attached_processes[j] == p_info)
             {
-                terminal_index = i; 
+                terminal_index = ti; 
                 move = true;
+                i = _terminal_number;
+                
                 continue;
             }
             if(move)
-                terminals_array[i].attached_processes[j-1] = terminals_array[i].attached_processes[j];
+                terminals_array[ti].attached_processes[j-1] = terminals_array[ti].attached_processes[j];
         }
+    }
+     
     if(terminals_array[terminal_index].active_process == p_info)
     {
         uint32_t x = terminals_array[terminal_index].process_number;
