@@ -301,8 +301,7 @@ int kmain()
     
     //while (1);
     
-    logger_log_ok("Loading tasks...");
-    vga_clear_screen();
+    logger_log_ok("Loading shells...");
     
     // create_terminal(&d);
     // create_terminal(&d);
@@ -321,6 +320,7 @@ int kmain()
         attach_process_to_terminal(ts[i].terminal_id, process_manager_get_process(p));
     }
     
+    vga_clear_screen();
     switch_active_terminal(0);
     
     // terminal_manager_print_string(p, "CIASTKO");

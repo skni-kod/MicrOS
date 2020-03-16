@@ -467,6 +467,7 @@ bool terminal_manager_keyboard_interrupt_handler(interrupt_state *state)
         
         switch (pair.scancode)
         {
+            // Tab
             case 15:
             {
                 // if (flags->left_alt_pressed)
@@ -476,6 +477,16 @@ bool terminal_manager_keyboard_interrupt_handler(interrupt_state *state)
                 }
                 
                 return true;
+            }
+            
+            // F1, F2, F3, F4
+            case 59:
+            case 60:
+            case 61:
+            case 62:
+            {
+                switch_active_terminal(pair.scancode - 59);
+                break;
             }
             
             default:
