@@ -28,7 +28,14 @@ uint8_t *hdd_wrapper_read_sector(int device_number, int sector)
 {
     HARDDISK_ATA_MASTER_SLAVE type = hdd_wrapper_get_type_by_device_number(device_number);
     HARDDISK_ATA_BUS_TYPE bus = hdd_wrapper_get_bus_by_device_number(device_number);
-    harddisk_read_sector(type, bus, 0, sector, (uint16_t *)read_content);
+    
+    int8_t result = harddisk_read_sector(type, bus, 0, sector, (uint16_t *)read_content);
+    switch (result)
+    {
+        case 0: logger_log_error("harddisk_read_sector returned 0 - non-present HDD"); break;
+        case -1: logger_log_error("harddisk_read_sector returned -1 - disk error"); break;
+        case -2: logger_log_error("harddisk_read_sector returned -2 - parameters error"); break;
+    }
     
     return read_content;
 }
@@ -37,7 +44,31 @@ void hdd_wrapper_write_sector(int device_number, int sector, uint8_t *content)
 {
     HARDDISK_ATA_MASTER_SLAVE type = hdd_wrapper_get_type_by_device_number(device_number);
     HARDDISK_ATA_BUS_TYPE bus = hdd_wrapper_get_bus_by_device_number(device_number);
-    harddisk_write_sector(type, bus, 0, sector, (uint16_t *)content);
+    
+    int8_t result = harddisk_write_sector(type, bus, 0, sector, (uint16_t *)content);
+    switch (result)
+    {
+        case 0: logger_log_error("harddisk_read_sector returned 0 - non-present HDD"); break;
+        case -1: logger_log_error("harddisk_read_sector returned -1 - disk error"); break;
+        case -2: logger_log_error("harddisk_read_sector returned -2 - parameters error"); break;
+    }
+    
+    // NOTE: this is only for debug purposes
+    hdd_wrapper_read_sector(device_number, sector);
+    if (memcmp(read_content, content, 512) != 0)
+    {
+        logger_log_error("hdd_wrapper_write_sector - failed to save content");
+        
+        logger_log_error("Requested content (512 bytes): ");
+        for (int i = 0; i < 512; i++) vga_printchar(content[i]);
+        vga_newline();
+        
+        logger_log_error("Read content (512 bytes): ");
+        for (int i = 0; i < 512; i++) vga_printchar(read_content[i]);
+        vga_newline();
+        
+        sleep(1000);
+    }
     
     uint32_t current_time = timer_get_system_clock();
     while(timer_get_system_clock() - current_time < 15);

@@ -13,7 +13,7 @@
 #include "filesystems/generic/filesystem_directory_info.h"
 #include "filesystems/partitions/partition.h"
 
-void fat_init();
+bool fat_init();
 void fat_load_fat();
 void fat_save_fat();
 void fat_load_root();

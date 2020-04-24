@@ -11,5 +11,6 @@
 #include "micros/micros_memory.h"
 #include "micros/micros_keyboard.h"
 #include "micros/micros_partitions.h"
+#include "micros/micros_power.h"
 
 #endif
