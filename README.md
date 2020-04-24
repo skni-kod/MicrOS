@@ -34,9 +34,11 @@ Documentation: https://tearth.github.io/MicrOS/
 * User space
 * ELF executing
 * Multitasking (with primitive round-rubin scheduler)
+* Multiterminals
 * Simple shell and basic applications
 * Standard library for C
 * ATA Hard disk drive support
+* CPUID
 
 ## TODO
 * Other standards of hard disk drive support
