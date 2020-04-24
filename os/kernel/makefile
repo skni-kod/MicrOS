@@ -19,12 +19,12 @@ DEPS := $(C_OBJECTS:.o=.d)
 GCC_COMPILE_FLAGS := -I$(SRC_DIR) -I../../library/src -I$(SRC_DIR)/klibrary -ggdb3 -O0 -ffreestanding -Wall -Wextra -Wno-unused-parameter -Wno-packed-bitfield-compat -fshort-enums
 GCC_LINK_FLAGS := -T ../linker.ld -L../../library/bin -lc -lgcc -nostdlib
 
-ifeq ($(MODE),release)
-GCC_COMPILE_FLAGS += -O2
-GCC_LINK_FLAGS += -s -DNDEBUG
-else
+# ifeq ($(MODE),release)
+# GCC_COMPILE_FLAGS += -O2
+# GCC_LINK_FLAGS += -s -DNDEBUG
+# else
 GCC_COMPILE_FLAGS += -O0 -ggdb3
-endif
+# endif
 
 $(OUTPUT_FILE): $(C_OBJECTS) $(ASM_OBJECTS)
 	@echo "=== Linking output file $(OUTPUT_FILE) ==="

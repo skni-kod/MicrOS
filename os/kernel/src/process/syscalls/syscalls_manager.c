@@ -15,13 +15,13 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0x05, syscall_heap_get_process_heap);
 
     // 0x1X - VGA and generic VGA
-    syscalls_manager_attach_handler(0x10, syscall_vga_print_char);
-    syscalls_manager_attach_handler(0x11, syscall_vga_print_string);
-    syscalls_manager_attach_handler(0x12, syscall_vga_get_char_at_position);
-    syscalls_manager_attach_handler(0x13, syscall_vga_set_cursor_position);
-    syscalls_manager_attach_handler(0x14, syscall_vga_get_cursor_position);
-    syscalls_manager_attach_handler(0x15, syscall_vga_clear);
-    syscalls_manager_attach_handler(0x16, syscall_vga_set_cursor_visibility);
+    syscalls_manager_attach_handler(0x10, syscall_terminal_print_char);
+    syscalls_manager_attach_handler(0x11, syscall_terminal_print_string);
+    syscalls_manager_attach_handler(0x12, syscall_terminal_get_char_at_position);
+    syscalls_manager_attach_handler(0x13, syscall_terminal_set_cursor_position);
+    syscalls_manager_attach_handler(0x14, syscall_terminal_get_cursor_position);
+    syscalls_manager_attach_handler(0x15, syscall_terminal_clear);
+    syscalls_manager_attach_handler(0x16, syscall_terminal_set_cursor_visibility);
     
     syscalls_manager_attach_handler(0x17, syscall_generic_vga_set_video_mode);
     syscalls_manager_attach_handler(0x18, syscall_generic_vga_is_text_mode);
@@ -86,6 +86,11 @@ void syscalls_manager_init()
     // 0xBX - Partitions
     syscalls_manager_attach_handler(0xB0, syscall_partitions_get_count);
     syscalls_manager_attach_handler(0xB1, syscall_partitions_get_symbols);
+    syscalls_manager_attach_handler(0xB2, syscall_partitions_get_info);
+    
+    // 0xCX - Power
+    syscalls_manager_attach_handler(0xC0, syscall_power_reboot);
+    syscalls_manager_attach_handler(0xC1, syscall_power_shutdown);
 }
 
 void syscalls_manager_attach_handler(uint8_t function_number, void (*handler)(interrupt_state *state))

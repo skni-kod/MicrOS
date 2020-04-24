@@ -33,6 +33,8 @@ typedef struct process_info
 
     interrupt_state state;
     void (*signal_handler)(int);
+
+    uint32_t terminal_id;
 } process_info;
 
 #endif

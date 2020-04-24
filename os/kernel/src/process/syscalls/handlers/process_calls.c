@@ -40,6 +40,10 @@ void syscall_process_start_process(interrupt_state *state)
     uint32_t parent_id = (bool)state->registers.edx ? process_manager_get_current_process()->id : process_manager_get_root_process();
     uint32_t process_id = process_manager_create_process((char *)state->registers.ebx, (char *)state->registers.ecx, parent_id, (bool)state->registers.edx);
     
+    uint32_t terminal_number = 0;
+    terminal_struct* current_terminal = find_terminal_for_process(parent_id);
+    attach_process_to_terminal(current_terminal->terminal_id, process_manager_get_process(process_id));
+    
     state->registers.eax = process_id;
 }
 

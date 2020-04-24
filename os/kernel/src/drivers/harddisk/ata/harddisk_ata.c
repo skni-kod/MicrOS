@@ -15,11 +15,20 @@ int8_t __harddisk_ata_read_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_B
 {
     if(buffer == NULL) return -2;
     uint16_t io_port = 0;
+    uint16_t control_port = 0;
     harddisk_io_drive_head_register message_to_drive = {.value = 0};
 
     // Set port of drive
-    if (bus == HARDDISK_ATA_PRIMARY_BUS) io_port = HARDDISK_ATA_PRIMARY_BUS_IO_PORT;
-    else if(bus == HARDDISK_ATA_SECONDARY_BUS) io_port = HARDDISK_ATA_SECONDARY_BUS_IO_PORT;
+    if (bus == HARDDISK_ATA_PRIMARY_BUS)
+    {
+        io_port = HARDDISK_ATA_PRIMARY_BUS_IO_PORT;
+        control_port = HARDDISK_ATA_PRIMARY_BUS_CONTROL_PORT;
+    }
+    else if(bus == HARDDISK_ATA_SECONDARY_BUS)
+    {
+        io_port = HARDDISK_ATA_SECONDARY_BUS_IO_PORT;
+        control_port = HARDDISK_ATA_SECONDARY_BUS_CONTROL_PORT;
+    }
     else return -2;
 
     // Set drive
@@ -54,10 +63,10 @@ int8_t __harddisk_ata_read_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_B
     // Send the READ SECTORS EXT command to command register of I/O port.
     io_out_byte(io_port + HARDDISK_IO_COMMAND_REGISTER_OFFSET, HARDDISK_READ_SECTORS_EXT_COMMAND);
 
-    __harddisk_400ns_delay(io_port);
+    __harddisk_400ns_delay(control_port);
 
     // For any other value: poll the Status port until bit 7 (BSY, value = 0x80) clears.
-    int8_t pooling_result = __harddisk_ata_poll(io_port);
+    int8_t pooling_result = __harddisk_ata_poll(control_port);
     if(pooling_result == 1)
     {
         for(int i = 0; i < 256; i++)
@@ -65,6 +74,7 @@ int8_t __harddisk_ata_read_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_B
             // Read 256 16-bit values, and store them.
             buffer[i] = io_in_word(io_port);
         }
+        __harddisk_400ns_delay(control_port);
         return 1;
     }
     else
@@ -79,11 +89,20 @@ int8_t __harddisk_ata_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_
 {
     if(buffer == NULL) return -2;
     uint16_t io_port = 0;
+    uint16_t control_port = 0;
     harddisk_io_drive_head_register message_to_drive = {.value = 0};
 
     // Set port of drive
-    if (bus == HARDDISK_ATA_PRIMARY_BUS) io_port = HARDDISK_ATA_PRIMARY_BUS_IO_PORT;
-    else if(bus == HARDDISK_ATA_SECONDARY_BUS) io_port = HARDDISK_ATA_SECONDARY_BUS_IO_PORT;
+    if (bus == HARDDISK_ATA_PRIMARY_BUS)
+    {
+        io_port = HARDDISK_ATA_PRIMARY_BUS_IO_PORT;
+        control_port = HARDDISK_ATA_PRIMARY_BUS_CONTROL_PORT;
+    }
+    else if(bus == HARDDISK_ATA_SECONDARY_BUS)
+    {
+        io_port = HARDDISK_ATA_SECONDARY_BUS_IO_PORT;
+        control_port = HARDDISK_ATA_SECONDARY_BUS_CONTROL_PORT;
+    }
     else return -2;
 
     // Set drive
@@ -102,8 +121,14 @@ int8_t __harddisk_ata_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_
         return -2;
     }
 
+    __harddisk_400ns_delay(control_port);
+    if(__harddisk_ata_poll(control_port) != 1) return -1;
+
     // Send message to drive
     io_out_byte(io_port + HARDDISK_IO_DRIVE_HEAD_REGISTER_OFFSET, message_to_drive.value);
+
+    __harddisk_400ns_delay(control_port);
+    if(__harddisk_ata_poll(control_port) != 1) return -1;
 
     // Send what to write
     io_out_byte(io_port + HARDDISK_IO_SECTOR_COUNT_REGISTER_OFFSET, 0);
@@ -118,10 +143,10 @@ int8_t __harddisk_ata_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_
     // Send the WRITE SECTORS EXT command to command register of I/O port.
     io_out_byte(io_port + HARDDISK_IO_COMMAND_REGISTER_OFFSET, HARDDISK_WRITE_SECTORS_EXT_COMMAND);
 
-    __harddisk_400ns_delay(io_port);
+    __harddisk_400ns_delay(control_port);
 
     // For any other value: poll the Status port until bit 7 (BSY, value = 0x80) clears.
-    int8_t pooling_result = __harddisk_ata_poll(io_port);
+    int8_t pooling_result = __harddisk_ata_poll(control_port);
     if(pooling_result == 1)
     {
         for(int i = 0; i < 256; i++)
@@ -131,6 +156,7 @@ int8_t __harddisk_ata_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_
             // Cache flush.
             io_out_byte(io_port + HARDDISK_IO_COMMAND_REGISTER_OFFSET, 0xE7);
         }
+        __harddisk_400ns_delay(control_port);
         return 1;
     }
     else
@@ -141,25 +167,29 @@ int8_t __harddisk_ata_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_
 
 }
 
-int8_t __harddisk_ata_poll(uint16_t io_port)
+int8_t __harddisk_ata_poll(uint16_t control_port)
 {
     harddisk_io_control_status_register result;
     for(;;)
     {
-        result.value = io_in_byte(io_port + HARDDISK_IO_STATUS_REGISTER_OFFSET);
+        result.value = io_in_byte(control_port + HARDDISK_CONTROL_ALTERNATE_STATUS_REGISTER_OFFSET);
         if(result.fields.busy == 0)
         {
             // Otherwise, continue polling one of the Status ports until bit 3 (DRQ, value = 8) sets, or until bit 0 (ERR, value = 1) sets.
             for(;;)
             {
-                result.value = io_in_byte(io_port + HARDDISK_IO_STATUS_REGISTER_OFFSET);
+                result.value = io_in_byte(control_port + HARDDISK_CONTROL_ALTERNATE_STATUS_REGISTER_OFFSET);
                 if(result.fields.has_pio_data_to_transfer_or_ready_to_accept_pio_data == 1)
                 {
                     return 1;
                 }
-                else if(result.fields.error_occurred == 1)
+                else if(result.fields.error_occurred == 1 || result.fields.drive_fault_error == 1)
                 {
                     return -1;
+                }
+                if(result.value == 0x50)
+                {
+                    return 0;
                 }
             }
         }

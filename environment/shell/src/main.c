@@ -2,10 +2,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 char current_dir[64];
 int partitions_count;
-char partition_symbols[16];
+char partition_symbols[20];
 char current_partition_symbol;
 
 void execute_cd(const char *str);
@@ -36,8 +37,9 @@ int main(int argc, char *argv[])
         
         if(cursor_position.x == 0 && cursor_position.y == 0)
         {
-            printf("MicrOS Shell v1.1\n");
-            printf("Type \"help\" to list all available applications\n\n");
+            printf("MicrOS Shell v1.1 (terminal %s)\n", argv[1]);
+            printf("Type \"help\" to list all available applications\n");
+            printf("Click Ctrl+[X] to switch terminal\n\n");
         }
         
         printf(" %c:%s> ", current_partition_symbol, current_dir);
@@ -72,9 +74,28 @@ void execute_cd(const char *str)
     
     if(parameter[1] == ':')
     {
-        current_partition_symbol = parameter[0];
-        memmove(parameter, parameter + 2, strlen(parameter) - 2); 
-        parameter[strlen(parameter) - 2] = 0;
+        char symbol = toupper(parameter[0]);
+        bool partition_found = false;
+        for (int p = 0; p < partitions_count; p++)
+        {
+            if (partition_symbols[p] == symbol)
+            {
+                partition_found = true;
+                break;
+            }
+        }
+        
+        if (partition_found)
+        {
+            current_partition_symbol = symbol;
+            memmove(parameter, parameter + 2, strlen(parameter) - 2); 
+            parameter[strlen(parameter) - 2] = 0;
+        }
+        else
+        {
+            printf("Partition not found!\n");
+            return;
+        }
     }
         
     if(parameter[0] == '/')
@@ -219,9 +240,6 @@ void capitalize_string(char *str)
 {
     for(size_t i = 0; i < strlen(str); i++)
     {
-        if(str[i] >= 'a' && str[i] <= 'z')
-        {
-            str[i] -= 'a' - 'A';
-        }
+        str[i] = toupper(str[i]);
     }
 }

@@ -32,6 +32,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
+#include "terminal/terminal_manager.h"
+#include "cpu/cpuid/cpuid.h"
 
 typedef struct _linesStruct
 {
@@ -44,6 +46,70 @@ typedef struct _linesStruct
 
 char buff[50];
 linesStruct ssBuffer[64];
+
+//! Prints processor details.
+/*! Used during boot to print informations about print processor.
+ */
+void print_processor_status()
+{
+    char vendor_string_buffer[13];
+    logger_log_info(cpuid_get_vendor_string(vendor_string_buffer));
+
+    char processor_brand_buffer[48];
+    logger_log_info(__cpuid_get_processor_brand(processor_brand_buffer));
+
+    char buff[20];
+    char buff2[100];
+    uint8_t cores = cpuid_number_of_physical_processors_cores();
+    itoa(cores, buff, 20);
+    strcpy(buff2, "Number of physical cores: ");
+    strcat(buff2, buff);
+    logger_log_info(buff2);
+
+    if(cores > 1)
+    {
+        logger_log_warning("But only one core is used :v");
+        logger_log_info("For future SKNI members: add support for more cores");
+    }
+
+    for(int i = 0; i < cpuid_get_valid_number_cache_entries(); i++)
+    {
+        cpuid_cache_struct cache = cpuid_get_cache_data(i);
+
+        strcpy(buff2, "Cache level: ");
+        itoa(cache.level, buff, 10);
+        strcat(buff2, buff);
+
+        switch(cache.type)
+        {
+            case DATA_CACHE:
+                strcat(buff2, ", type: data, size: ");
+                break;
+            case INSTRUCTION_CACHE:
+                strcat(buff2, ", type: instruction, size: ");
+                break;
+            case UNIFIED_CACHE:
+                strcat(buff2, ", type: unified, size: ");
+                break;
+        }
+
+        uint32_t size = cache.size / 1024;
+        if(size < 1024)
+        {
+            itoa(size, buff, 10);
+            strcat(buff2, buff);
+            strcat(buff2, " KiB");
+        }
+        else
+        {
+            itoa(size / 1024, buff, 10);
+            strcat(buff2, buff);
+            strcat(buff2, " MiB");
+        }
+
+        logger_log_info(buff2);
+    }
+}
 
 //! Prints hard disk detail.
 /*! Used during boot to print informations about hard disk.
@@ -164,6 +230,10 @@ void startup()
     logger_log_info("MicrOS is starting...");
     logger_log_ok("BASIC TEXT VGA Driver");
 
+    cpuid_init();
+    logger_log_ok("Procesor");
+    print_processor_status();
+    
     //Loading Generic VGA Driver
     generic_vga_driver_init();
     logger_log_ok("Loaded DAL, and Generic VGA Driver");
@@ -187,7 +257,8 @@ void startup()
     dma_init(0xc0000500);
     logger_log_ok("DMA");
 
-    if(fdc_is_present())
+    // NOTE: it doesn't work well, so assume for now that floppy controller is always present
+    // if(fdc_is_present())
     {
         fdc_init();
         logger_log_ok("Floppy Disc Controller");
@@ -265,6 +336,9 @@ void startup()
     log_info(itoa(dev->prog_if, buff, 16));*/
     //fat_init();
     //logger_log_ok("FAT12");
+    
+    init_terminal_manager();
+    logger_log_ok("Terminal manager");
 
     process_manager_init();
     logger_log_ok("Process manager");
@@ -297,13 +371,46 @@ int kmain()
     
     //while (1);
     
-    logger_log_ok("Loading tasks...");
+    logger_log_ok("Loading shells...");
+    
+    // create_terminal(&d);
+    // create_terminal(&d);
+    
+    uint32_t d = 0;
+    for (int i = 0; i < 4; i++)
+    {
+        char args[16];
+        itoa(i, args, 10);
+        
+        uint32_t p = process_manager_create_process("A:/ENV/SHELL.ELF", args, 0, false);
+        create_terminal(&d);
+    
+        uint32_t terminal_number = i;
+        terminal_struct* ts = get_terminals(&terminal_number);
+        attach_process_to_terminal(ts[i].terminal_id, process_manager_get_process(p));
+    }
+    
     vga_clear_screen();
-    process_manager_create_process("A:/ENV/SHELL.ELF", "", 1000, false);
-
+    switch_active_terminal(0);
+    
+    // terminal_manager_print_string(p, "CIASTKO");
+    // p = process_manager_create_process("A:/ENV/SHELL.ELF", "", 1000, false);
+    // attach_process_to_terminal(ts[0].terminal_id, process_manager_get_process(p));
+    // terminal_manager_print_string(p, "KARMEL");
+    // p = process_manager_create_process("A:/ENV/SHELL.ELF", "", 1000, false);
+    // attach_process_to_terminal(ts[1].terminal_id, process_manager_get_process(p));
+    // terminal_manager_print_string(p, "CZEKOLAAAAAAAAADA!");
+    //terminal_manager_print_string(ts[1].active_process->id, "KARMAEL");
+    //terminal_manager_print_string(ts[2].active_process->id, "CZEKOLADA!");
     process_manager_run();
+    //destroy_active_terminal();
 
     while (1);
+    // {
+    //     sleep(5000);
+    //     next_terminal();
+    //     
+    // }
     //    ;
     /*char buff[50];
     video_mode *currentMode;

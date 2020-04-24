@@ -22,7 +22,7 @@ uint32_t micros_heap_get_object_size(void *ptr)
 
 bool micros_heap_verify_integrity()
 {
-    return (bool *)micros_interrupt_0a(0x04);
+    return micros_interrupt_0a(0x04);
 }
 
 micros_heap_entry *micros_heap_get_process_heap()
