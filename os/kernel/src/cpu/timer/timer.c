@@ -56,7 +56,7 @@ uint32_t timer_get_system_clock()
     return system_clock;
 }
 
-void timer_interrupt()
+bool timer_interrupt()
 {
     system_clock++;
     system_clock_fractions += expected_clock_fraction;
@@ -66,4 +66,6 @@ void timer_interrupt()
         system_clock++;
         system_clock_fractions -= TARGET_FREQUENCY;
     }
+    
+    return false;
 }

@@ -45,7 +45,15 @@ int main(int argc, char *argv[])
 
         printf("\n");
 
-        draw_process_tree(processes, 0, 0, processes_count);
+        for (uint32_t i = 0; i < processes_count; i++)
+        {
+            micros_process_user_info *process = &processes[i];
+            if (process->parent_id == 0)
+            {
+                draw_process_tree(processes, process->id, 0, processes_count);
+            }
+        }
+        
         print_total_process_count(processes_count);
 
         printf("\n\n");

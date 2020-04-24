@@ -462,12 +462,13 @@ bool floppy_wait_for_interrupt()
     return false;
 }
 
-void floppy_interrupt()
+bool floppy_interrupt()
 {
     floppy_interrupt_flag = true;
+    return false;
 }
 
-void floppy_timer_interrupt()
+bool floppy_timer_interrupt()
 {
     if (motor_enabled)
     {
@@ -477,4 +478,6 @@ void floppy_timer_interrupt()
             floppy_disable_motor();
         }
     }
+    
+    return false;
 }

@@ -32,6 +32,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
+#include "terminal/terminal_manager.h"
 #include "cpu/cpuid/cpuid.h"
 
 typedef struct _linesStruct
@@ -335,6 +336,9 @@ void startup()
     log_info(itoa(dev->prog_if, buff, 16));*/
     //fat_init();
     //logger_log_ok("FAT12");
+    
+    init_terminal_manager();
+    logger_log_ok("Terminal manager");
 
     process_manager_init();
     logger_log_ok("Process manager");
@@ -367,13 +371,46 @@ int kmain()
     
     //while (1);
     
-    logger_log_ok("Loading tasks...");
+    logger_log_ok("Loading shells...");
+    
+    // create_terminal(&d);
+    // create_terminal(&d);
+    
+    uint32_t d = 0;
+    for (int i = 0; i < 4; i++)
+    {
+        char args[16];
+        itoa(i, args, 10);
+        
+        uint32_t p = process_manager_create_process("A:/ENV/SHELL.ELF", args, 0, false);
+        create_terminal(&d);
+    
+        uint32_t terminal_number = i;
+        terminal_struct* ts = get_terminals(&terminal_number);
+        attach_process_to_terminal(ts[i].terminal_id, process_manager_get_process(p));
+    }
+    
     vga_clear_screen();
-    process_manager_create_process("A:/ENV/SHELL.ELF", "", 1000, false);
-
+    switch_active_terminal(0);
+    
+    // terminal_manager_print_string(p, "CIASTKO");
+    // p = process_manager_create_process("A:/ENV/SHELL.ELF", "", 1000, false);
+    // attach_process_to_terminal(ts[0].terminal_id, process_manager_get_process(p));
+    // terminal_manager_print_string(p, "KARMEL");
+    // p = process_manager_create_process("A:/ENV/SHELL.ELF", "", 1000, false);
+    // attach_process_to_terminal(ts[1].terminal_id, process_manager_get_process(p));
+    // terminal_manager_print_string(p, "CZEKOLAAAAAAAAADA!");
+    //terminal_manager_print_string(ts[1].active_process->id, "KARMAEL");
+    //terminal_manager_print_string(ts[2].active_process->id, "CZEKOLADA!");
     process_manager_run();
+    //destroy_active_terminal();
 
     while (1);
+    // {
+    //     sleep(5000);
+    //     next_terminal();
+    //     
+    // }
     //    ;
     /*char buff[50];
     video_mode *currentMode;

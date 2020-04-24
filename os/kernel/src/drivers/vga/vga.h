@@ -234,8 +234,10 @@ typedef struct vga_color_without_blink
 typedef union vga_color {
     //! Uses to define color in blinking mode.
     vga_color_with_blink color_with_blink;
-    //! Usese to define color in non blinking mode.
+    //! Uses to define color in non blinking mode.
     vga_color_without_blink color_without_blink;
+    //! Uses to define color as value.
+    uint8_t value;
 } vga_color;
 
 //! Struct that define one character.
@@ -251,12 +253,12 @@ typedef struct vga_character
 //! Define one character on screen.
 /*! Union contains 16 bit value of field (which include ASCII letter and color data) and vga_character strunc that allow to
 access letter and color separately. Table of then can define whole screen.*/
-typedef union screen {
+typedef union screen_char {
     //! 16 bit value of field.
     uint16_t value;
     //! Struct contains ASCII code and color data.
     vga_character character;
-} screen;
+} screen_char;
 
 // Functions for users
 
@@ -459,7 +461,6 @@ void vga_copy_screen(uint8_t from, uint8_t to);
 //! Turn on cursor.
 /*!
     Turn on cursor with default size and position.
-    Copy screen from one to another.
 */
 void vga_cursor_on();
 
@@ -468,12 +469,12 @@ void vga_cursor_on();
 */
 void vga_cursor_off();
 
-// Helpers
-
 //! Print new line.
 /*!
 */
 void vga_newline();
+
+// Helpers
 
 //! Calculate position with offset.
 /*!
@@ -482,7 +483,7 @@ void vga_newline();
     \param y y coordinate.
     \return Calculated position on screen.
 */
-uint16_t vga_calcualte_position_with_offset(uint16_t x, uint16_t y);
+uint16_t __vga_calcualte_position_with_offset(uint16_t x, uint16_t y);
 
 //! Calculate position without offset.
 /*!
@@ -491,7 +492,7 @@ uint16_t vga_calcualte_position_with_offset(uint16_t x, uint16_t y);
     \param y y coordinate.
     \return Calculated position on screen.
 */
-uint16_t vga_calcualte_position_without_offset(uint16_t x, uint16_t y);
+uint16_t __vga_calcualte_position_without_offset(uint16_t x, uint16_t y);
 
 //! Turn on cursor.
 /*!
@@ -499,12 +500,12 @@ uint16_t vga_calcualte_position_without_offset(uint16_t x, uint16_t y);
     \param cursor_start Scanline where cursor should start.
     \param cursor_end Scanline where cursor should end.
 */
-void vga_enable_cursor(uint8_t cursor_start, uint8_t cursor_end);
+void __vga_enable_cursor(uint8_t cursor_start, uint8_t cursor_end);
 
 //! Disable cursor.
 /*!
 */
-void vga_disable_cursor();
+void __vga_disable_cursor();
 
 //! Update cursor.
 /*!
@@ -512,14 +513,14 @@ void vga_disable_cursor();
     \param x x coordinate.
     \param y y coordinate.
 */
-void vga_update_cursor(uint16_t x, uint16_t y);
+void __vga_update_cursor(uint16_t x, uint16_t y);
 
 //! Update cursor.
 /*!
     Move cursor to given position.
     \param pos Position on screen.
 */
-void vga_update_cursor_struct(vga_screen_pos pos);
+void __vga_update_cursor_struct(vga_screen_pos pos);
 
 //! Get default terminal color.
 /*!
@@ -527,6 +528,6 @@ void vga_update_cursor_struct(vga_screen_pos pos);
     \param vga_mode Current mode of graphic card.
     \return Default terminal letter and background color. When wrong mode given returns default color for mode 3h.
 */
-vga_color vga_get_default_terminal_color(uint8_t vga_current_mode);
+vga_color __vga_get_default_terminal_color(uint8_t vga_current_mode);
 
 #endif

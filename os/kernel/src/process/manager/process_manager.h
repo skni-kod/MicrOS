@@ -15,6 +15,7 @@
 #include "process/signals/signal_params.h"
 #include "memory/heap/heap.h"
 #include "filesystems/filesystem.h"
+#include "terminal/terminal_manager.h"
 
 void process_manager_init();
 uint32_t process_manager_create_process(char *path, char *parameters, uint32_t parent_id, bool active);
@@ -50,7 +51,7 @@ void process_manager_convert_process_info_to_user_info(process_info *process, pr
 uint32_t process_manager_get_process_memory_usage(process_info *process);
 
 void process_manager_interrupt_handler(interrupt_state *state);
-void process_manager_keyboard_interrupt_handler(interrupt_state *state);
+bool process_manager_keyboard_interrupt_handler(interrupt_state *state);
 void process_manager_run();
 
 #endif
