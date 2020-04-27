@@ -920,8 +920,10 @@ int8_t mode03h_draw_circle_external_buffer(uint8_t* buffer, uint16_t mode, uint8
 int8_t mode03h_draw_rectangle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by){
 	return -1;
 }
-int8_t mode03h_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode)
+int8_t mode03h_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y)
 {
+	if(x != NULL) *x = 0;
+	if(y != NULL) *y = 0;
     vga_color_without_blink col = {.background = VGA_MODE_03H_COLOR_BLACK, .letter = VGA_MODE_03H_COLOR_LIGHT_GRAY};
 	for (uint16_t i = 0; i < VGA_MODE_03H_SCREEN_ROWS; ++i)
     {
@@ -944,7 +946,7 @@ int8_t mode03h_swap_external_buffer(uint8_t* buffer, uint16_t mode){
 uint8_t* mode03h_create_external_buffer(uint16_t mode){
 	uint8_t* ptr =  heap_kernel_alloc(MODE03H_HEIGHT * MODE03H_WIDTH * sizeof(screen_char), 0);
 	memset(ptr, 0, MODE03H_HEIGHT * MODE03H_WIDTH * sizeof(screen_char));
-	mode03h_clear_screen_external_buffer(ptr, mode);
+	mode03h_clear_screen_external_buffer(ptr, mode, NULL, NULL);
 	return ptr;
 }
 

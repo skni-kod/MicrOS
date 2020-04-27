@@ -431,41 +431,41 @@ int8_t generic_vga_draw_rectangle_external_buffer(uint8_t* buffer, uint16_t mode
         default: return -1;
     }
 }
-int8_t generic_vga_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode){
+int8_t generic_vga_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y){
     switch(mode)
     {
         case 0x00:
-            return mode00h_clear_screen_external_buffer(buffer, mode);
+            return mode00h_clear_screen_external_buffer(buffer, mode, x, y);
         case 0x01:
-            return mode01h_clear_screen_external_buffer(buffer, mode);
+            return mode01h_clear_screen_external_buffer(buffer, mode, x, y);
         case 0x02:
-            return mode02h_clear_screen_external_buffer(buffer, mode);
+            return mode02h_clear_screen_external_buffer(buffer, mode, x, y);
         case 0x03:
-            return mode03h_clear_screen_external_buffer(buffer, mode);
+            return mode03h_clear_screen_external_buffer(buffer, mode, x, y);
         case 0x04:
-            return mode04h_clear_screen_external_buffer(buffer, mode);
+            return mode04h_clear_screen_external_buffer(buffer, mode, x, y);
         case 0x05:
-            return mode05h_clear_screen_external_buffer(buffer, mode);
+            return mode05h_clear_screen_external_buffer(buffer, mode, x, y);
         case 0x06: 
-            return mode06h_clear_screen_external_buffer(buffer, mode);
+            return mode06h_clear_screen_external_buffer(buffer, mode, x, y);
         case 0x07:
-            return mode07h_clear_screen_external_buffer(buffer, mode);
+            return mode07h_clear_screen_external_buffer(buffer, mode, x, y);
         case 0x0D:
-            return mode0dh_clear_screen_external_buffer(buffer, mode);
+            return mode0dh_clear_screen_external_buffer(buffer, mode, x, y);
         case 0x0E:
-            return mode0eh_clear_screen_external_buffer(buffer, mode);
+            return mode0eh_clear_screen_external_buffer(buffer, mode, x, y);
         case 0x0F:
-            return mode0fh_clear_screen_external_buffer(buffer, mode);
+            return mode0fh_clear_screen_external_buffer(buffer, mode, x, y);
         case 0x10:
-            return mode10h_clear_screen_external_buffer(buffer, mode);
+            return mode10h_clear_screen_external_buffer(buffer, mode, x, y);
         case 0x11:
-            return mode11h_clear_screen_external_buffer(buffer, mode);
+            return mode11h_clear_screen_external_buffer(buffer, mode, x, y);
         case 0x12:
-            return mode12h_clear_screen_external_buffer(buffer, mode);
+            return mode12h_clear_screen_external_buffer(buffer, mode, x, y);
         case 0x13:
-            return mode13h_clear_screen_external_buffer(buffer, mode);
+            return mode13h_clear_screen_external_buffer(buffer, mode, x, y);
         case 0x69:
-            return modey_clear_screen_external_buffer(buffer, mode);
+            return modey_clear_screen_external_buffer(buffer, mode, x, y);
         default: return -1;
     }
 }

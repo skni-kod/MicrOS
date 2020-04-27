@@ -318,7 +318,7 @@ int8_t mode11h_draw_circle_external_buffer(uint8_t* buffer, uint16_t mode, uint8
 int8_t mode11h_draw_rectangle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by){
     return -1;
 }
-int8_t mode11h_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode)
+int8_t mode11h_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y)
 {
     memset(buffer, 0, MODE11H_WIDTH * MODE11H_HEIGHT / 8);
     return 0;

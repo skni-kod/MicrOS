@@ -212,7 +212,7 @@ int8_t terminal_manager_set_mode(uint32_t process_id, int8_t mode)
     video_card_destroy_external_buffer(terminal->screen_buffer);
     terminal->screen_buffer = buffer;
     terminal->screen_mode = mode;
-    video_card_clear_screen_external_buffer(buffer, mode);
+    video_card_clear_screen_external_buffer(buffer, mode, &(terminal->cursor_position_x), &(terminal->cursor_position_y));
     if(terminal->terminal_id == active_terminal_id)
     {
         video_card_set_video_mode(mode);
@@ -447,7 +447,7 @@ int8_t terminal_manager_clear_screen(uint32_t process_id)
     terminal_struct* terminal = find_terminal_for_process(process_id);
     if(terminal == NULL) return -1;
     video_card_clear_screen_external_buffer(terminal->screen_buffer, 
-    terminal->screen_mode);
+    terminal->screen_mode, &(terminal->cursor_position_x), &(terminal->cursor_position_y));
     if(terminal->terminal_id == active_terminal_id) video_card_clear_screen();
     return 0;
 }
