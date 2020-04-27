@@ -99,6 +99,7 @@ int8_t create_terminal(uint32_t* terminal_id)
     if(ptr == NULL) return -1;
     terminals_array = ptr;
     terminals_array[_terminal_number].terminal_id = next_terminal_id;
+    terminals_array[_terminal_number].cursor = true;
     terminals_array[_terminal_number].cursor_position_x = 0;
     terminals_array[_terminal_number].cursor_position_y = 0;
     terminals_array[_terminal_number].screen_mode = 0x03;
@@ -164,6 +165,14 @@ int8_t switch_active_terminal(uint32_t terminal_id)
             if(video_card_is_text_mode())
             {
                 video_card_set_cursor_pos(terminals_array[i].cursor_position_x, terminals_array[i].cursor_position_y);
+                if(terminals_array[i].cursor)
+                {
+                    video_card_turn_cursor_on();
+                }
+                else
+                {
+                    video_card_turn_cursor_off();
+                }
             }
             return 0;
         }
@@ -184,7 +193,14 @@ int8_t next_terminal()
                 if(video_card_is_text_mode())
                 {
                     video_card_set_cursor_pos(terminals_array[0].cursor_position_x, terminals_array[0].cursor_position_y);
+                    if(terminals_array[i].cursor)
+                {
                     video_card_turn_cursor_on();
+                }
+                else
+                {
+                    video_card_turn_cursor_off();
+                }
                 }
             }
             else{
@@ -194,7 +210,14 @@ int8_t next_terminal()
                 if(video_card_is_text_mode())
                 {
                     video_card_set_cursor_pos(terminals_array[i+1].cursor_position_x, terminals_array[i+1].cursor_position_y);
+                    if(terminals_array[i].cursor)
+                {
                     video_card_turn_cursor_on();
+                }
+                else
+                {
+                    video_card_turn_cursor_off();
+                }
                 }  
             }
             return 0;
