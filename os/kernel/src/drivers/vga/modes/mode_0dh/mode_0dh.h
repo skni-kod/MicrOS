@@ -30,7 +30,7 @@ int8_t mode0dh_draw_pixel_external_buffer(uint8_t* buffer, uint16_t mode, int8_t
 int8_t mode0dh_draw_line_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
 int8_t mode0dh_draw_circle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t x, uint16_t y, uint16_t radius);
 int8_t mode0dh_draw_rectangle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
-int8_t mode0dh_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode);
+int8_t mode0dh_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y);
 
 int8_t mode0dh_swap_external_buffer(uint8_t* buffer, uint16_t mode);
 uint8_t* mode0dh_create_external_buffer(uint16_t mode);

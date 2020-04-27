@@ -50,7 +50,7 @@ int8_t (*_draw_pixel_external_buffer)(uint8_t*, uint16_t, int8_t, uint16_t, uint
 int8_t (*_draw_line_external_buffer)(uint8_t*, uint16_t, uint8_t, uint16_t, uint16_t, uint16_t, uint16_t) = NULL;
 int8_t (*_draw_circle_external_buffer)(uint8_t*, uint16_t, uint8_t, uint16_t, uint16_t, uint16_t) = NULL;
 int8_t (*_draw_rectangle_external_buffer)(uint8_t*, uint16_t, uint8_t, uint16_t, uint16_t, uint16_t, uint16_t) = NULL;
-int8_t (*_clear_screen_external_buffer)(uint8_t*, uint16_t) = NULL;
+int8_t (*_clear_screen_external_buffer)(uint8_t*, uint16_t, uint16_t*, uint16_t*) = NULL;
 
 int8_t (*_swap_external_buffer)(uint8_t*, uint16_t) = NULL;
 uint8_t* (*_create_external_buffer)(uint16_t) = NULL;
@@ -466,8 +466,8 @@ int8_t video_card_draw_circle_external_buffer(uint8_t* buffer, uint16_t mode, ui
 int8_t video_card_draw_rectangle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by){
     return (*_draw_rectangle_external_buffer)(buffer, mode, color, ax, ay, bx, by);
 }
-int8_t video_card_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode){
-    return (*_clear_screen_external_buffer)(buffer, mode);
+int8_t video_card_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y){
+    return (*_clear_screen_external_buffer)(buffer, mode, x, y);
 }
 
 int8_t video_card_swap_external_buffer(uint8_t* buffer, uint16_t mode){
