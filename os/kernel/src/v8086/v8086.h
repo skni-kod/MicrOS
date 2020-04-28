@@ -76,6 +76,6 @@ typedef struct _v8086
 
 
 v8086* v8086_create_machine();
-int16_t v8086_call_int(v8086* machine, int16_t num)
+int16_t v8086_call_int(v8086* machine, int16_t num);
 
 #endif
