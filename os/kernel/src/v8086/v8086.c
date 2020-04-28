@@ -117,7 +117,13 @@ static inline uint8_t* get_byte_register(v8086* machine, uint8_t reg_field)
 
 static inline uint8_t* get_byte_memory(v8086* machine, uint8_t mod_rm)
 {
-    
+    switch(mod_rm >> 6)
+    {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+    }
 }
 
 int16_t parse_and_execute_instruction(v8086* machine)
