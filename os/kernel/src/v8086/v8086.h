@@ -66,11 +66,17 @@ struct SREGS {
   unsigned short ss;
 };
 
+typedef struct _is{
+  uint32_t operand_32_bit;
+  uint16_t IPOffset;
+} _internal_state;
+
 typedef struct _v8086
 {
     union REGS regs;
     struct SREGS sregs;
     uint16_t IP;
+    _internal_state internal_state;
     uint8_t	Memory[0x100000];
 } v8086;
 
