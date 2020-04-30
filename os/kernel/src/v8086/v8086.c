@@ -204,6 +204,21 @@ uint32_t* get_dword_register(v8086* machine, uint8_t reg_field)
     return NULL;
 }
 
+void* get_variable_length_register(v8086* machine, uint8_t reg_field, uint8_t width)
+{
+    switch (width)
+    {
+    case 8:
+        return get_byte_register(machine, reg_field);
+    case 16:
+        return get_word_register(machine, reg_field);
+    case 32:
+        return get_dword_register(machine, reg_field);
+    default:
+        return NULL;
+    }
+}
+
 void* get_memory_from_mode(v8086* machine, uint8_t mod_rm, uint8_t width)
 {
     switch(mod_rm >> 6) //Parsing mod than parsing rm
@@ -295,6 +310,41 @@ void* get_memory_from_mode(v8086* machine, uint8_t mod_rm, uint8_t width)
     return NULL;
 }
 
+int16_t perform_adding(v8086* machine, void* dest, void* source, uint8_t width, uint32_t carry)
+{
+    uint64_t result = 0;
+    uint32_t dest_before; //for overflow flag checking
+    uint32_t source_before;
+    if(width == 8){
+        dest_before = *((uint8_t*)dest);
+        source_before = *((uint8_t*)source);
+    } else if(width == 16){
+        dest_before = *((uint16_t*)dest);
+        source_before = *((uint16_t*)source);
+    } else if(width == 32){
+        dest_before = *((uint32_t*)dest);
+        source_before = *((uint32_t*)source);
+    } else return -1;
+    result = dest_before + source_before + carry;
+    bit_write(machine->regs.d.eflags, 1<<CARRY_FLAG_BIT, (result >> width) ? 1 : 0); // CARRY FLAG
+    uint8_t parrity = result & 1;
+    for(int i = 1; i < 8; i++)
+    parrity ^= (result >> i) & 1;
+    bit_write(machine->regs.d.eflags, 1<<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
+    bit_write(machine->regs.d.eflags, 1<<AUX_CARRY_FLAG_BIT, (((dest_before & 0xf) + (source_before & 0xf)) >> 4) ? 1: 0); //AUX CARRY FLAG
+    bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
+    bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, result >> (width - 1)); //SIGN FLAG
+    bit_write(machine->regs.d.eflags, 1<<OVERFLOW_FLAG_BIT, ((result >> (width - 1)) != (dest_before >> (width - 1)))); //OVERFLOW FLAG
+    if(width == 8){
+        *((uint8_t*)dest) = result & 0xFF;
+    } else if(width == 16){
+        *((uint16_t*)dest) = result & 0xFFFF;
+    } else if(width == 32){
+        *((uint32_t*)dest) = result & 0xFFFFFFFF;
+    } else return -1;
+    return 0;
+}
+
 int16_t parse_and_execute_instruction(v8086* machine)
 {
     machine->internal_state.IPOffset = 0;
@@ -314,83 +364,35 @@ int16_t parse_and_execute_instruction(v8086* machine)
         
         if(opcode % 2) //Odd Opcode means 16 or 32 bit operands
         {
-            if(machine->internal_state.operand_32_bit)
+            uint8_t width = 16;
+            void* source = NULL;
+            void* dest = NULL;
+            if(machine->internal_state.operand_32_bit) width = 32;
+            switch(opcode)
             {
-                uint32_t* source = NULL;
-                uint32_t* dest = NULL;
-                uint64_t result = 0;
-                uint32_t dest_before; //for overflow flag checking
-                switch(opcode)
-                {
-                case 1: //ADD r/m32, r32
-                    source = get_dword_register(machine, (mod_rm_or_immediate >> 3) & 7);
-                    dest = get_memory_from_mode(machine, mod_rm_or_immediate, 32);
+                case 1: //ADD r/m32, r32 or ADD r/m16, r16
+                    source = get_variable_length_register(machine, (mod_rm_or_immediate >> 3) & 7, width);
+                    dest = get_memory_from_mode(machine, mod_rm_or_immediate, width);
                     break;
-                case 3: //ADD r32, r/m32
-                    dest = get_dword_register(machine, (mod_rm_or_immediate >> 3) & 7);
-                    source = get_memory_from_mode(machine, mod_rm_or_immediate, 32);
+                case 3: //ADD r32, r/m32 or ADD r16, r/m16
+                    dest = get_variable_length_register(machine, (mod_rm_or_immediate >> 3) & 7, width);
+                    source = get_memory_from_mode(machine, mod_rm_or_immediate, width);
                     break;
-                case 5: //ADD EAX, imm32
-                    dest = get_dword_register(machine, EAX);
-                    source = get_dword_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP - 1 + machine->internal_state.IPOffset));
-                    machine->internal_state.IPOffset += 3;
+                case 5: //ADD EAX, imm32 or ADD AX, imm16
+                    dest = get_variable_length_register(machine, AX, width);
+                    if(width == 32)
+                        source = get_dword_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP - 1 + machine->internal_state.IPOffset));
+                    else 
+                        source = get_word_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP - 1 + machine->internal_state.IPOffset));
+                    machine->internal_state.IPOffset += ((width / 8) - 1);
                     break;
-                }
-                dest_before = *dest;
-                result = *dest + *source;
-                *dest = result & 0xFFFFFFFF;
-                bit_write(machine->regs.d.eflags, 1<<CARRY_FLAG_BIT, (result >> 32) ? 1 : 0); // CARRY FLAG
-                uint8_t parrity = result & 1;
-                for(int i = 1; i < 8; i++)
-                    parrity ^= (result >> i) & 1;
-                bit_write(machine->regs.d.eflags, 1<<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
-                bit_write(machine->regs.d.eflags, 1<<AUX_CARRY_FLAG_BIT, (((dest_before & 0xf) + ((*source) & 0xf)) >> 4) ? 1: 0); //AUX CARRY FLAG
-                bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
-                bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, result >> 31); //SIGN FLAG
-                bit_write(machine->regs.d.eflags, 1<<OVERFLOW_FLAG_BIT, (result >> 31) != (dest_before >> 31)); //OVERFLOW FLAG
             }
-            else
-            {
-                uint16_t* source = NULL;
-                uint16_t* dest = NULL;
-                uint32_t result = 0;
-                uint16_t dest_before;
-                switch(opcode)
-                {
-                case 1: //ADD r/m16, r16
-                    source = get_word_register(machine, (mod_rm_or_immediate >> 3) & 7);
-                    dest = get_memory_from_mode(machine, mod_rm_or_immediate, 16);
-                    break;
-                case 3: //ADD r16, r/m16
-                    dest = get_word_register(machine, (mod_rm_or_immediate >> 3) & 7);
-                    source = get_memory_from_mode(machine, mod_rm_or_immediate, 16);
-                    break;
-                case 5: //ADD AX, imm16
-                    dest = get_word_register(machine, AX);
-                    source = get_word_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP - 1 + machine->internal_state.IPOffset));
-                    machine->internal_state.IPOffset += 1;
-                    break;
-                }
-                dest_before = *dest;
-                result = *dest + *source;
-                *dest = result & 0xFFFF;
-                bit_write(machine->regs.d.eflags, 1<<CARRY_FLAG_BIT, (result >> 16) ? 1 : 0); // CARRY FLAG
-                uint8_t parrity = result & 1;
-                for(int i = 1; i < 8; i++)
-                    parrity ^= (result >> i) & 1;
-                bit_write(machine->regs.d.eflags, 1<<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
-                bit_write(machine->regs.d.eflags, 1<<AUX_CARRY_FLAG_BIT, (((dest_before & 0xf) + ((*source) & 0xf)) >> 4) ? 1: 0); //AUX CARRY FLAG
-                bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
-                bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, result >> 15); //SIGN FLAG
-                bit_write(machine->regs.d.eflags, 1<<OVERFLOW_FLAG_BIT, (result >> 15) != (dest_before >> 15)); //OVERFLOW FLAG
-            }
+            perform_adding(machine, dest, source, width, 0);
         }
         else
         {
             uint8_t* source = NULL;
             uint8_t* dest = NULL;
-            uint16_t result = 0;
-            uint8_t dest_before;
             switch(opcode)
             {
             case 0: //ADD r/m8, r8
@@ -406,18 +408,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
                 source = &(mod_rm_or_immediate);
                 break;
             }
-            dest_before = *dest;
-            result = *dest + *source;
-            *dest = result & 0xFF;
-            bit_write(machine->regs.d.eflags, 1<<CARRY_FLAG_BIT, (result >> 8) ? 1 : 0); // CARRY FLAG
-            uint8_t parrity = result & 1;
-            for(int i = 1; i < 8; i++)
-                parrity ^= (result >> i) & 1;
-            bit_write(machine->regs.d.eflags, 1<<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
-            bit_write(machine->regs.d.eflags, 1<<AUX_CARRY_FLAG_BIT, (((dest_before & 0xf) + ((*source) & 0xf)) >> 4) ? 1: 0); //AUX CARRY FLAG
-            bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
-            bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, result >> 7); //SIGN FLAG
-            bit_write(machine->regs.d.eflags, 1<<OVERFLOW_FLAG_BIT, (result >> 7) != (dest_before >> 7)); //OVERFLOW FLAG
+            perform_adding(machine, dest, source, 8, 0);
         }
     }
     return 0;
