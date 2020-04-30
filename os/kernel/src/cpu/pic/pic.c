@@ -12,31 +12,23 @@ void pic_remap(uint32_t master_offset, uint32_t slave_offset)
 {
 	// Send initialization sequence to the master PIC and slave PIC
 	io_out_byte(MASTER_PIC_COMMAND, 0x11);
-	io_wait();
 	io_out_byte(SLAVE_PIC_COMMAND, 0x11);
-	io_wait();
 
 	// Set master PIC offset
 	io_out_byte(MASTER_PIC_DATA, master_offset);
-	io_wait();
 
 	// Set slave PIC offset
 	io_out_byte(SLAVE_PIC_DATA, slave_offset);
-	io_wait();
 
 	// Tell master PIC that there is a slave PIC on the IRQ2 (4 = 0100)
 	io_out_byte(MASTER_PIC_DATA, 4);
-	io_wait();
 
 	// Tell slave PIC about his role
 	io_out_byte(SLAVE_PIC_DATA, 2);
-	io_wait();
 
 	// We are in 8086 mode
 	io_out_byte(MASTER_PIC_DATA, 0x01);
-	io_wait();
 	io_out_byte(SLAVE_PIC_DATA, 0x01);
-	io_wait();
 
 	// Reset masks to the default values
 	io_out_byte(MASTER_PIC_DATA, 0xFF);
