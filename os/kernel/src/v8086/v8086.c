@@ -208,14 +208,14 @@ void* get_variable_length_register(v8086* machine, uint8_t reg_field, uint8_t wi
 {
     switch (width)
     {
-    case 8:
-        return get_byte_register(machine, reg_field);
-    case 16:
-        return get_word_register(machine, reg_field);
-    case 32:
-        return get_dword_register(machine, reg_field);
-    default:
-        return NULL;
+        case 8:
+            return get_byte_register(machine, reg_field);
+        case 16:
+            return get_word_register(machine, reg_field);
+        case 32:
+            return get_dword_register(machine, reg_field);
+        default:
+            return NULL;
     }
 }
 
@@ -328,20 +328,16 @@ int16_t perform_adding(v8086* machine, void* dest, void* source, uint8_t width, 
     result = dest_before + source_before + carry;
     bit_write(machine->regs.d.eflags, 1<<CARRY_FLAG_BIT, (result >> width) ? 1 : 0); // CARRY FLAG
     uint8_t parrity = result & 1;
-    for(int i = 1; i < 8; i++)
-    parrity ^= (result >> i) & 1;
+    for(int i = 1; i < 8; i++) parrity ^= (result >> i) & 1;
     bit_write(machine->regs.d.eflags, 1<<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
     bit_write(machine->regs.d.eflags, 1<<AUX_CARRY_FLAG_BIT, (((dest_before & 0xf) + (source_before & 0xf)) >> 4) ? 1: 0); //AUX CARRY FLAG
     bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
     bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, result >> (width - 1)); //SIGN FLAG
     bit_write(machine->regs.d.eflags, 1<<OVERFLOW_FLAG_BIT, ((result >> (width - 1)) != (dest_before >> (width - 1)))); //OVERFLOW FLAG
-    if(width == 8){
-        *((uint8_t*)dest) = result & 0xFF;
-    } else if(width == 16){
-        *((uint16_t*)dest) = result & 0xFFFF;
-    } else if(width == 32){
-        *((uint32_t*)dest) = result & 0xFFFFFFFF;
-    } else return -1;
+    if(width == 8) *((uint8_t*)dest) = result & 0xFF;
+    else if(width == 16) *((uint16_t*)dest) = result & 0xFFFF;
+    else if(width == 32) *((uint32_t*)dest) = result & 0xFFFFFFFF;
+    else return -1;
     return 0;
 }
 
