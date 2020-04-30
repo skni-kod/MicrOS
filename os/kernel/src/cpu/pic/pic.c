@@ -48,20 +48,22 @@ void pic_remap(uint32_t master_offset, uint32_t slave_offset)
 
 void pic_enable_irq(uint8_t interrupt_number)
 {
-	uint16_t current_mask = (io_in_byte(SLAVE_PIC_DATA) << 8) | io_in_byte(MASTER_PIC_DATA);
+	uint16_t current_mask = io_in_byte(SLAVE_PIC_DATA) << 8 |
+							io_in_byte(MASTER_PIC_DATA);
 	current_mask &= ~(1 << interrupt_number);
 
-	io_out_byte(MASTER_PIC_DATA, (uint8_t)current_mask & 0xFFFF);
-	io_out_byte(SLAVE_PIC_DATA, (current_mask >> 8) & 0xFFFF);
+	io_out_byte(MASTER_PIC_DATA, (uint8_t)current_mask);
+	io_out_byte(SLAVE_PIC_DATA, (uint8_t)(current_mask >> 8));
 }
 
 void pic_disable_irq(uint8_t interrupt_number)
 {
-	uint16_t current_mask = (io_in_byte(SLAVE_PIC_DATA) << 8) | io_in_byte(MASTER_PIC_DATA);
+	uint16_t current_mask = io_in_byte(SLAVE_PIC_DATA) << 8 |
+							io_in_byte(MASTER_PIC_DATA);
 	current_mask |= 1 << interrupt_number;
 
 	io_out_byte(MASTER_PIC_DATA, (uint8_t)current_mask);
-	io_out_byte(SLAVE_PIC_DATA, current_mask >> 8);
+	io_out_byte(SLAVE_PIC_DATA, (uint8_t)(current_mask >> 8));
 }
 
 void pic_confirm_master()
