@@ -426,6 +426,60 @@ int16_t perform_and(v8086* machine, void* dest, void* source, uint8_t width, uin
     else if(width == 32) *((uint32_t*)dest) = result & 0xFFFFFFFF;
 }
 
+int16_t perform_xor(v8086* machine, void* dest, void* source, uint8_t width, uint32_t carry)
+{
+    uint32_t result = 0;
+    if(width == 8)
+    {
+        result = *((uint8_t*)dest) ^ *((uint8_t*)source);
+    } else if(width == 16)
+    {
+        result = *((uint16_t*)dest) ^ *((uint16_t*)source);
+    } else if(width == 32)
+    {
+        result = *((uint32_t*)dest) ^ *((uint32_t*)source);
+    }
+    else return -1;
+    bit_write(machine->regs.d.eflags, 1<<CARRY_FLAG_BIT, 0); // CARRY FLAG
+    bit_write(machine->regs.d.eflags, 1<<OVERFLOW_FLAG_BIT, 0); // OVERFLOW FLAG
+    uint8_t parrity = result & 1;
+    for(int i = 1; i < 8; i++) parrity ^= (result >> i) & 1;
+    bit_write(machine->regs.d.eflags, 1<<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
+    bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
+    bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, result >> (width - 1)); //SIGN FLAG
+    //AUX MARKED AS UNDEFINED IN INTEL DOCUMENTATION
+    if(width == 8) *((uint8_t*)dest) = result & 0xFF;
+    else if(width == 16) *((uint16_t*)dest) = result & 0xFFFF;
+    else if(width == 32) *((uint32_t*)dest) = result & 0xFFFFFFFF;
+}
+
+int16_t perform_cmp(v8086* machine, void* dest, void* source, uint8_t width, uint32_t carry)
+{
+    uint64_t result = 0;
+    uint32_t dest_before; //for overflow flag checking
+    uint32_t source_before;
+    if(width == 8){
+        dest_before = *((uint8_t*)dest);
+        source_before = *((uint8_t*)source);
+    } else if(width == 16){
+        dest_before = *((uint16_t*)dest);
+        source_before = *((uint16_t*)source);
+    } else if(width == 32){
+        dest_before = *((uint32_t*)dest);
+        source_before = *((uint32_t*)source);
+    } else return -1;
+    result = dest_before - (source_before + carry);
+    bit_write(machine->regs.d.eflags, 1<<CARRY_FLAG_BIT, (result >> width) ? 1 : 0); // CARRY FLAG
+    bit_write(machine->regs.d.eflags, 1<<AUX_CARRY_FLAG_BIT, (((dest_before & 0xf) - (source_before & 0xf)) >> 4) ? 1: 0); //AUX CARRY FLAG
+    uint8_t parrity = result & 1;
+    for(int i = 1; i < 8; i++) parrity ^= (result >> i) & 1;
+    bit_write(machine->regs.d.eflags, 1<<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
+    bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
+    bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, result >> (width - 1)); //SIGN FLAG
+    bit_write(machine->regs.d.eflags, 1<<OVERFLOW_FLAG_BIT, ((result >> (width - 1)) != (dest_before >> (width - 1)))); //OVERFLOW FLAG
+    return 0;
+}
+
 int16_t perform_artihmetic_or_logical_instruction(v8086* machine, uint8_t recalculated_opcode, uint32_t carry, int16_t (*operation)(v8086*, void*, void*, uint8_t, uint32_t))
 {
     //Maybe Mod/RM, Can be Immediate
@@ -502,16 +556,32 @@ int16_t parse_and_execute_instruction(v8086* machine)
     {
         perform_artihmetic_or_logical_instruction(machine, opcode - 0x28, 0, perform_subtracting);
     }
+    //INC general registers 16 or 32-bit
+    else if(opcode >= 0x40 && opcode <= 0x47)
+    {
+        uint8_t width = 16;
+        if(machine->)
+    }
     //LOGICAL operations
     //OR
-    if(opcode >= 0x08 && opcode <= 0x0d)
+    else if(opcode >= 0x08 && opcode <= 0x0d)
     {
         perform_artihmetic_or_logical_instruction(machine, opcode - 0x08, 0, perform_or);
     }
     //AND
-    if(opcode >= 0x20 && opcode <= 0x25)
+    else if(opcode >= 0x20 && opcode <= 0x25)
     {
         perform_artihmetic_or_logical_instruction(machine, opcode - 0x20, 0, perform_and);
+    }
+    //XOR
+    else if(opcode >- 0x30 && opcode <= 0x35)
+    {
+        perform_artihmetic_or_logical_instruction(machine, opcode - 0x30, 0, perform_xor);
+    }
+    //CMP
+    else if(opcode >= 0x38 && opcode <= 0x3d)
+    {
+        perform_artihmetic_or_logical_instruction(machine, opcode - 0x30, 0, perform_cmp);
     }
     return 0;
 }
