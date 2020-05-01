@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 typedef enum _segment_register_select {
-  ES, CS, SS, DS, DEFAULT
+  ES, CS, SS, DS, FS, GS, DEFAULT
 } segment_register_select;
 
 struct DWORDREGS {

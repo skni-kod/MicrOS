@@ -238,13 +238,17 @@ uint16_t* select_segment_register(v8086* machine, segment_register_select select
     switch(select)
     {
         case CS:
-            return &(machine->sregs.cs)
+            return &(machine->sregs.cs);
         case DS:
-            return &(machine->sregs.cs)
+            return &(machine->sregs.ds);
         case SS:
-            return &(machine->sregs.cs)
+            return &(machine->sregs.ss);
         case ES:
-            return &(machine->sregs.cs)
+            return &(machine->sregs.es);
+        case FS:
+            return &(machine->sregs.fs);
+        case FS:
+            return &(machine->sregs.gs);
         default:
             return NULL;
     }
@@ -592,10 +596,22 @@ int16_t parse_and_execute_instruction(v8086* machine)
     machine->internal_state.IPOffset += 1;
     
     //PREFIXES
-    //Segment Prefix
-    if((opcode & 0x7) == 0x6 && ((opcode >> 5) & 0x7) == 0x1) //001XX110
+    //Segment Prefix CS DS ES SS
+    if((opcode & 0x7) == 0x6 && ((opcode >> 5) & 0x7) == 0x1) //001XX110 pattern where XX is number of segment
     {
         machine->internal_state.segment_reg_select = (opcode >> 3) & 0x3;
+        goto decode; //continue parsing opcode;
+    }
+    //Segment Prefix FS
+    else if(opcode == 0x64)
+    {
+        machine->internal_state.segment_reg_select = FS;
+        goto decode; //continue parsing opcode;
+    }
+    //Segment Prefix FS
+    else if(opcode == 0x64)
+    {
+        machine->internal_state.segment_reg_select = GS;
         goto decode; //continue parsing opcode;
     }
     //Aritmetic operations
