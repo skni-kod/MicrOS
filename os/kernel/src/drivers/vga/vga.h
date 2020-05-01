@@ -522,6 +522,13 @@ void __vga_update_cursor(uint16_t x, uint16_t y);
 */
 void __vga_update_cursor_struct(vga_screen_pos pos);
 
+//! Get cursor position.
+/*!
+    Get cursor position on screen.
+    \return Position on screen.
+*/
+vga_screen_pos __vga_get_cursor_pos();
+
 //! Get default terminal color.
 /*!
     Get default terminal color for mode. 

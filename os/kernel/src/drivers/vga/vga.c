@@ -421,6 +421,21 @@ void __vga_update_cursor_struct(vga_screen_pos pos)
     __vga_update_cursor(pos.x, pos.y);
 }
 
+vga_screen_pos __vga_get_cursor_pos()
+{
+    vga_screen_pos pos;
+    uint16_t temp_pos;
+
+    io_out_byte(0x3D4, 0x0F);
+    temp_pos |= io_in_byte(0x3D5);
+    io_out_byte(0x3D4, 0x0E);
+    temp_pos |= ((uint16_t)io_in_byte(0x3D5)) << 8;
+    
+    pos.x = temp_pos % vga_current_columns;
+    pos.y = temp_pos / vga_current_columns;
+    return pos;
+}
+
 vga_color __vga_get_default_terminal_color(uint8_t vga_current_mode)
 {
     vga_color col;
