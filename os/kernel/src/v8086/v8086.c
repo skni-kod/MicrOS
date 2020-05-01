@@ -686,5 +686,31 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //POP SS
     else if(opcode == 0x17)
         machine->sregs.ss = pop_word(machine);
+    //XCHG group
+    //XCHG GRP with AX or EAX
+    else if(opcode >= 90 && opcode <= 97)
+    {
+        uint8_t width = 16;
+        if(machine->internal_state.operand_32_bit) width = 32;
+        if(width == 16)
+        {
+            uint16_t temp;
+            uint16_t* regA = get_word_register(machine, AX); 
+            uint16_t* regB = get_word_register(machine, opcode & 7);
+            temp = *regA;
+            *regA = *regB;
+            *regB = temp;
+        }
+        else if(width == 32)
+        {
+            uint16_t temp;
+            uint16_t* regA = get_dword_register(machine, EAX); 
+            uint16_t* regB = get_dword_register(machine, opcode & 7);
+            temp = *regA;
+            *regA = *regB;
+            *regB = temp;
+        }
+        else return -1;
+    }
     return 0;
 }
