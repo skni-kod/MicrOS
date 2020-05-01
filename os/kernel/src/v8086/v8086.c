@@ -345,55 +345,45 @@ int16_t perform_artihmetic_or_logical_instruction(v8086* machine, uint8_t recalc
 {
     //Maybe Mod/RM, Can be Immediate
     uint8_t mod_rm_or_immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
-     machine->internal_state.IPOffset += 1;
-    if(recalculated_opcode % 2) //Odd Opcode means 16 or 32 bit operands
+    machine->internal_state.IPOffset += 1;
+        
+    uint8_t width = 16;
+    void* source = NULL;
+    void* dest = NULL;
+    if(!(recalculated_opcode % 2)) width = 8; //Odd Opcode means 16 or 32 bit operands
+    else if(machine->internal_state.operand_32_bit) width = 32;
+    switch(recalculated_opcode)
     {
-        uint8_t width = 16;
-        void* source = NULL;
-        void* dest = NULL;
-        if(machine->internal_state.operand_32_bit) width = 32;
-        switch(recalculated_opcode)
-        {
-            case 1: //OPERATION r/m32, r32 or OPERATION r/m16, r16
-                source = get_variable_length_register(machine, (mod_rm_or_immediate >> 3) & 7, width);
-                dest = get_memory_from_mode(machine, mod_rm_or_immediate, width);
-                break;
-            case 3: //OPERATION r32, r/m32 or OPERATION r16, r/m16
-                dest = get_variable_length_register(machine, (mod_rm_or_immediate >> 3) & 7, width);
-                source = get_memory_from_mode(machine, mod_rm_or_immediate, width);
-                break;
-            case 5: //OPERATION EAX, imm32 or OPERATION AX, imm16
-                dest = get_variable_length_register(machine, AX, width);
-                if(width == 32)
-                    source = get_dword_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP - 1 + machine->internal_state.IPOffset));
-                else 
-                    source = get_word_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP - 1 + machine->internal_state.IPOffset));
-                machine->internal_state.IPOffset += ((width / 8) - 1);
-                break;
-        }
-        perform_adding(machine, dest, source, width, carry);
+        case 0: //OPERATION r/m8, r8
+            source = get_byte_register(machine, (mod_rm_or_immediate >> 3) & 7);
+            dest = get_memory_from_mode(machine, mod_rm_or_immediate, 8);
+            break;
+        case 1: //OPERATION r/m32, r32 or OPERATION r/m16, r16
+            source = get_variable_length_register(machine, (mod_rm_or_immediate >> 3) & 7, width);
+            dest = get_memory_from_mode(machine, mod_rm_or_immediate, width);
+            break;
+        case 2: //OPERATION r8, r/m8
+            dest = get_byte_register(machine, (mod_rm_or_immediate >> 3) & 7);
+            source = get_memory_from_mode(machine, mod_rm_or_immediate, 8);
+            break;
+        case 3: //OPERATION r32, r/m32 or OPERATION r16, r/m16
+            dest = get_variable_length_register(machine, (mod_rm_or_immediate >> 3) & 7, width);
+            source = get_memory_from_mode(machine, mod_rm_or_immediate, width);
+            break;
+        case 4: //OPERATION AL, imm8
+            dest = get_byte_register(machine, AL);
+            source = &(mod_rm_or_immediate);
+            break;
+        case 5: //OPERATION EAX, imm32 or OPERATION AX, imm16
+            dest = get_variable_length_register(machine, AX, width);
+            if(width == 32)
+                source = get_dword_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP - 1 + machine->internal_state.IPOffset));
+            else 
+                source = get_word_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP - 1 + machine->internal_state.IPOffset));
+            machine->internal_state.IPOffset += ((width / 8) - 1);
+            break;
     }
-    else
-    {
-        uint8_t* source = NULL;
-        uint8_t* dest = NULL;
-        switch(recalculated_opcode)
-        {
-            case 0: //OPERATION r/m8, r8
-                source = get_byte_register(machine, (mod_rm_or_immediate >> 3) & 7);
-                dest = get_memory_from_mode(machine, mod_rm_or_immediate, 8);
-                break;
-            case 2: //OPERATION r8, r/m8
-                dest = get_byte_register(machine, (mod_rm_or_immediate >> 3) & 7);
-                source = get_memory_from_mode(machine, mod_rm_or_immediate, 8);
-                break;
-            case 4: //OPERATION AL, imm8
-                dest = get_byte_register(machine, AL);
-                source = &(mod_rm_or_immediate);
-                break;
-        }
-        operation(machine, dest, source, 8, carry);
-    }
+    perform_adding(machine, dest, source, width, carry);
     return 0;
 }
 
