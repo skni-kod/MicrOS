@@ -233,31 +233,71 @@ void* get_variable_length_register(v8086* machine, uint8_t reg_field, uint8_t wi
     }
 }
 
+uint16_t* select_segment_register(v8086* machine, segment_register_select select)
+{
+    switch(select)
+    {
+        case CS:
+            return &(machine->sregs.cs)
+        case DS:
+            return &(machine->sregs.cs)
+        case SS:
+            return &(machine->sregs.cs)
+        case ES:
+            return &(machine->sregs.cs)
+        default:
+            return NULL;
+    }
+}
+
 void* get_memory_from_mode(v8086* machine, uint8_t mod_rm, uint8_t width)
 {
+    uint16_t* segment_register = NULL;
+    if(machine->internal_state.segment_reg_select != DEFAULT)
+        segment_register = select_segment_register(machine, machine->internal_state.segment_reg_select);
+    else
+    {
+        switch (mod_rm & 7)
+        {
+        case 0:
+        case 1:
+        case 4:
+        case 5:
+        case 7:
+            segment_register = select_segment_register(machine, DS);
+            break;
+        case 6:
+            if((mod_rm >> 6) == 0) segment_register = select_segment_register(machine, DS);
+            else segment_register = select_segment_register(machine, SS);
+        default:
+            break;
+        }
+    }
+    
+
     switch(mod_rm >> 6) //Parsing mod than parsing rm
     {
         case 0:
             switch(mod_rm & 7){
                 case 0:
-                    return get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ds, machine->regs.x.bx + machine->regs.x.si), width);  
+                    return get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, machine->regs.x.bx + machine->regs.x.si), width);  
                 case 1:
-                    return get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ds, machine->regs.x.bx + machine->regs.x.di), width);
+                    return get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, machine->regs.x.bx + machine->regs.x.di), width);
                 case 2:
-                    return get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.x.bp + machine->regs.x.si), width);
+                    return get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, machine->regs.x.bp + machine->regs.x.si), width);
                 case 3:
-                    return get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.x.bp + machine->regs.x.di), width);
+                    return get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, machine->regs.x.bp + machine->regs.x.di), width);
                 case 4:
-                    return get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ds, machine->regs.x.si), width);
+                    return get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, machine->regs.x.si), width);
                 case 5:
-                    return get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ds, machine->regs.x.di), width);
+                    return get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, machine->regs.x.di), width);
                 case 6:{
-                    void* ptr = get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ds, read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + (machine->internal_state.IPOffset)))), width);
+                    void* ptr = get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + (machine->internal_state.IPOffset)))), width);
                     machine->internal_state.IPOffset += 1;
                     return ptr;
                 }
                 case 7:
-                    return get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ds, machine->regs.x.bx), width);
+                    return get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, machine->regs.x.bx), width);
                 default:
                     return NULL;
             }
@@ -266,21 +306,21 @@ void* get_memory_from_mode(v8086* machine, uint8_t mod_rm, uint8_t width)
             machine->internal_state.IPOffset += 1;
             switch(mod_rm & 7){
                 case 0:
-                    return get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ds, machine->regs.x.bx + machine->regs.x.si + disp), width);
+                    return get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, machine->regs.x.bx + machine->regs.x.si + disp), width);
                 case 1:
-                    return get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ds, machine->regs.x.bx + machine->regs.x.di + disp), width);
+                    return get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, machine->regs.x.bx + machine->regs.x.di + disp), width);
                 case 2:
-                    return get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.x.bp + machine->regs.x.si + disp), width);
+                    return get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, machine->regs.x.bp + machine->regs.x.si + disp), width);
                 case 3:
-                    return get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.x.bp + machine->regs.x.di + disp), width);
+                    return get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, machine->regs.x.bp + machine->regs.x.di + disp), width);
                 case 4:
-                    return get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ds, machine->regs.x.si + disp), width);
+                    return get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, machine->regs.x.si + disp), width);
                 case 5:
-                    return get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ds, machine->regs.x.di + disp), width);
+                    return get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, machine->regs.x.di + disp), width);
                 case 6:
-                    return get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.x.bp + disp), width);
+                    return get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, machine->regs.x.bp + disp), width);
                 case 7:
-                    return get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ds, machine->regs.x.bx + disp), width);
+                    return get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, machine->regs.x.bx + disp), width);
                 default:
                     return NULL;
             }
@@ -290,21 +330,21 @@ void* get_memory_from_mode(v8086* machine, uint8_t mod_rm, uint8_t width)
             machine->internal_state.IPOffset += 2;
             switch(mod_rm & 7){
                 case 0:
-                    return get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ds, machine->regs.x.bx + machine->regs.x.si + disp), width);
+                    return get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, machine->regs.x.bx + machine->regs.x.si + disp), width);
                 case 1:
-                    return get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ds, machine->regs.x.bx + machine->regs.x.di + disp), width);
+                    return get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, machine->regs.x.bx + machine->regs.x.di + disp), width);
                 case 2:
-                    return get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.x.bp + machine->regs.x.si + disp), width);
+                    return get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, machine->regs.x.bp + machine->regs.x.si + disp), width);
                 case 3:
-                    return get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.x.bp + machine->regs.x.di + disp), width);
+                    return get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, machine->regs.x.bp + machine->regs.x.di + disp), width);
                 case 4:
-                    return get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ds, machine->regs.x.si + disp), width);
+                    return get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, machine->regs.x.si + disp), width);
                 case 5:
-                    return get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ds, machine->regs.x.di + disp), width);
+                    return get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, machine->regs.x.di + disp), width);
                 case 6:
-                    return get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.x.bp + disp), width);
+                    return get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, machine->regs.x.bp + disp), width);
                 case 7:
-                    return get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.ds, machine->regs.x.bx + disp), width);
+                    return get_variable_length_pointer(machine->Memory, get_absolute_address(segment_register, machine->regs.x.bx + disp), width);
                 default:
                     return NULL;
             }
@@ -544,14 +584,23 @@ int16_t parse_and_execute_instruction(v8086* machine)
 {
     machine->internal_state.IPOffset = 0;
     machine->internal_state.operand_32_bit = 0;
+    machine->internal_state.segment_reg_select = DEFAULT;
 
     //Maybe opcode, an be also prefix
-    uint8_t opcode = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+    uint8_t opcode;
+    decode: opcode = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
     machine->internal_state.IPOffset += 1;
     
+    //PREFIXES
+    //Segment Prefix
+    if((opcode & 0x7) == 0x6 && ((opcode >> 5) & 0x7) == 0x1) //001XX110
+    {
+        machine->internal_state.segment_reg_select = (opcode >> 3) & 0x3;
+        goto decode; //continue parsing opcode;
+    }
     //Aritmetic operations
     //ADD
-    if(opcode <= 5)
+    else if(opcode <= 5)
     {
         perform_artihmetic_or_logical_instruction(machine, opcode, 0, perform_adding);
     }

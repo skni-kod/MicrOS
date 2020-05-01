@@ -3,6 +3,10 @@
 
 #include <stdint.h>
 
+typedef enum _segment_register_select {
+  ES, CS, SS, DS, DEFAULT
+} segment_register_select;
+
 struct DWORDREGS {
   uint32_t edi;
   uint32_t esi;
@@ -68,6 +72,7 @@ struct SREGS {
 
 typedef struct _is{
   uint32_t operand_32_bit;
+  segment_register_select segment_reg_select;
   uint16_t IPOffset;
 } _internal_state;
 
