@@ -91,9 +91,23 @@ static inline void push_word(v8086* machine, uint16_t value)
     write_word_to_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.w.sp -= 2), value);
 }
 
-static inline uint16_t pop_word(v8086* machine, uint16_t value)
+static inline void push_dword(v8086* machine, uint32_t value)
 {
-    return read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.w.sp += 2));
+    write_dword_to_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.w.sp -= 4), value);
+}
+
+static inline uint16_t pop_word(v8086* machine)
+{
+    uint16_t v = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.w.sp));
+    machine->regs.w.sp += 2;
+    return v;
+}
+
+static inline uint32_t pop_word(v8086* machine)
+{
+    uint16_t v = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.w.sp));
+    machine->regs.w.sp += 4;
+    return v;
 }
 
 v8086* v8086_create_machine()
@@ -599,7 +613,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
         uint8_t parrity = result & 1;
         for(int i = 1; i < 8; i++) parrity ^= (result >> i) & 1;
         bit_write(machine->regs.d.eflags, 1<<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
-        bit_write(machine->regs.d.eflags, 1<<AUX_CARRY_FLAG_BIT, (((dest_before & 0xf) + 1) >> 4) ? 1: 0); //AUX CARRY FLAG
+        bit_write(machine->regs.d.eflags, 1<<AUX_CARRY_FLAG_BIT, (((dest_before & 0xf) - 1) >> 4) ? 1: 0); //AUX CARRY FLAG
         bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
         bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, result >> (width - 1)); //SIGN FLAG
         bit_write(machine->regs.d.eflags, 1<<OVERFLOW_FLAG_BIT, ((result >> (width - 1)) != (dest_before >> (width - 1)))); //OVERFLOW FLAG
@@ -626,6 +640,30 @@ int16_t parse_and_execute_instruction(v8086* machine)
     else if(opcode >= 0x38 && opcode <= 0x3d)
     {
         perform_artihmetic_or_logical_instruction(machine, opcode - 0x30, 0, perform_cmp);
+    }
+    //PUSH Operations
+    //PUSH General purpose registers
+    else if(opcode >= 0x50 && opcode <= 0x57)
+    {
+        uint8_t width = 16;
+        void* reg = NULL;
+        if(machine->internal_state.operand_32_bit) width = 16;
+        reg = get_variable_length_register(machine, opcode & 7, width);
+        if(width==16) push_word(machine, *((uint16_t)reg));
+        else if(width==32) push_dword(machine, *((uint32_t)reg));
+        else return -1;
+    }
+    //POP Operations
+    //POP General purpose registers
+    else if(opcode >= 0x50 && opcode <= 0x57)
+    {
+        uint8_t width = 16;
+        void* reg = NULL;
+        if(machine->internal_state.operand_32_bit) width = 16;
+        reg = get_variable_length_register(machine, opcode & 7, width);
+        if(width==16) *((uint16_t)reg)) = pop_word(machine);
+        else if(width==32) *((uint32_t)reg)) pop_dword(machine);
+        else return -1;
     }
     return 0;
 }
