@@ -372,6 +372,60 @@ int16_t perform_subtracting(v8086* machine, void* dest, void* source, uint8_t wi
     return 0;
 }
 
+int16_t perform_or(v8086* machine, void* dest, void* source, uint8_t width, uint32_t carry)
+{
+    uint32_t result = 0;
+    if(width == 8)
+    {
+        result = *((uint8_t*)dest) | *((uint8_t*)source);
+    } else if(width == 16)
+    {
+        result = *((uint16_t*)dest) | *((uint16_t*)source);
+    } else if(width == 32)
+    {
+        result = *((uint32_t*)dest) | *((uint32_t*)source);
+    }
+    else return -1;
+    bit_write(machine->regs.d.eflags, 1<<CARRY_FLAG_BIT, 0); // CARRY FLAG
+    bit_write(machine->regs.d.eflags, 1<<OVERFLOW_FLAG_BIT, 0); // OVERFLOW FLAG
+    uint8_t parrity = result & 1;
+    for(int i = 1; i < 8; i++) parrity ^= (result >> i) & 1;
+    bit_write(machine->regs.d.eflags, 1<<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
+    bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
+    bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, result >> (width - 1)); //SIGN FLAG
+    //AUX MARKED AS UNDEFINED IN INTEL DOCUMENTATION
+    if(width == 8) *((uint8_t*)dest) = result & 0xFF;
+    else if(width == 16) *((uint16_t*)dest) = result & 0xFFFF;
+    else if(width == 32) *((uint32_t*)dest) = result & 0xFFFFFFFF;
+}
+
+int16_t perform_and(v8086* machine, void* dest, void* source, uint8_t width, uint32_t carry)
+{
+    uint32_t result = 0;
+    if(width == 8)
+    {
+        result = *((uint8_t*)dest) & *((uint8_t*)source);
+    } else if(width == 16)
+    {
+        result = *((uint16_t*)dest) & *((uint16_t*)source);
+    } else if(width == 32)
+    {
+        result = *((uint32_t*)dest) & *((uint32_t*)source);
+    }
+    else return -1;
+    bit_write(machine->regs.d.eflags, 1<<CARRY_FLAG_BIT, 0); // CARRY FLAG
+    bit_write(machine->regs.d.eflags, 1<<OVERFLOW_FLAG_BIT, 0); // OVERFLOW FLAG
+    uint8_t parrity = result & 1;
+    for(int i = 1; i < 8; i++) parrity ^= (result >> i) & 1;
+    bit_write(machine->regs.d.eflags, 1<<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
+    bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
+    bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, result >> (width - 1)); //SIGN FLAG
+    //AUX MARKED AS UNDEFINED IN INTEL DOCUMENTATION
+    if(width == 8) *((uint8_t*)dest) = result & 0xFF;
+    else if(width == 16) *((uint16_t*)dest) = result & 0xFFFF;
+    else if(width == 32) *((uint32_t*)dest) = result & 0xFFFFFFFF;
+}
+
 int16_t perform_artihmetic_or_logical_instruction(v8086* machine, uint8_t recalculated_opcode, uint32_t carry, int16_t (*operation)(v8086*, void*, void*, uint8_t, uint32_t))
 {
     //Maybe Mod/RM, Can be Immediate
@@ -447,6 +501,17 @@ int16_t parse_and_execute_instruction(v8086* machine)
     else if(opcode >= 0x28 && opcode <= 0x2d)
     {
         perform_artihmetic_or_logical_instruction(machine, opcode - 0x28, 0, perform_subtracting);
+    }
+    //LOGICAL operations
+    //OR
+    if(opcode >= 0x08 && opcode <= 0x0d)
+    {
+        perform_artihmetic_or_logical_instruction(machine, opcode - 0x08, 0, perform_or);
+    }
+    //AND
+    if(opcode >= 0x20 && opcode <= 0x25)
+    {
+        perform_artihmetic_or_logical_instruction(machine, opcode - 0x20, 0, perform_and);
     }
     return 0;
 }
