@@ -341,6 +341,37 @@ int16_t perform_adding(v8086* machine, void* dest, void* source, uint8_t width, 
     return 0;
 }
 
+int16_t perform_subtracting(v8086* machine, void* dest, void* source, uint8_t width, uint32_t carry)
+{
+    uint64_t result = 0;
+    uint32_t dest_before; //for overflow flag checking
+    uint32_t source_before;
+    if(width == 8){
+        dest_before = *((uint8_t*)dest);
+        source_before = *((uint8_t*)source);
+    } else if(width == 16){
+        dest_before = *((uint16_t*)dest);
+        source_before = *((uint16_t*)source);
+    } else if(width == 32){
+        dest_before = *((uint32_t*)dest);
+        source_before = *((uint32_t*)source);
+    } else return -1;
+    result = dest_before - (source_before + carry);
+    bit_write(machine->regs.d.eflags, 1<<CARRY_FLAG_BIT, (result >> width) ? 1 : 0); // CARRY FLAG
+    bit_write(machine->regs.d.eflags, 1<<AUX_CARRY_FLAG_BIT, (((dest_before & 0xf) - (source_before & 0xf)) >> 4) ? 1: 0); //AUX CARRY FLAG
+    uint8_t parrity = result & 1;
+    for(int i = 1; i < 8; i++) parrity ^= (result >> i) & 1;
+    bit_write(machine->regs.d.eflags, 1<<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
+    bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
+    bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, result >> (width - 1)); //SIGN FLAG
+    bit_write(machine->regs.d.eflags, 1<<OVERFLOW_FLAG_BIT, ((result >> (width - 1)) != (dest_before >> (width - 1)))); //OVERFLOW FLAG
+    if(width == 8) *((uint8_t*)dest) = result & 0xFF;
+    else if(width == 16) *((uint16_t*)dest) = result & 0xFFFF;
+    else if(width == 32) *((uint32_t*)dest) = result & 0xFFFFFFFF;
+    else return -1;
+    return 0;
+}
+
 int16_t perform_artihmetic_or_logical_instruction(v8086* machine, uint8_t recalculated_opcode, uint32_t carry, int16_t (*operation)(v8086*, void*, void*, uint8_t, uint32_t))
 {
     //Maybe Mod/RM, Can be Immediate
@@ -406,6 +437,16 @@ int16_t parse_and_execute_instruction(v8086* machine)
     else if(opcode >= 0x10 && opcode <= 0x15)
     {
         perform_artihmetic_or_logical_instruction(machine, opcode - 0x10, bit_get(machine->regs.d.eflags, 1<<CARRY_FLAG_BIT) >> CARRY_FLAG_BIT, perform_adding);
+    }
+    //SBB
+    else if(opcode >= 0x18 && opcode <= 0x1d)
+    {
+        perform_artihmetic_or_logical_instruction(machine, opcode - 0x18, bit_get(machine->regs.d.eflags, 1<<CARRY_FLAG_BIT) >> CARRY_FLAG_BIT, perform_subtracting);
+    }
+    //SUB
+    else if(opcode >= 0x28 && opcode <= 0x2d)
+    {
+        perform_artihmetic_or_logical_instruction(machine, opcode - 0x28, 0, perform_subtracting);
     }
     return 0;
 }
