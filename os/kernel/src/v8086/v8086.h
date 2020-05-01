@@ -58,12 +58,12 @@ union REGS {		/* Compatible with DPMI structure, except cflag */
 };
 
 struct SREGS {
-  unsigned short es;
-  unsigned short ds;
-  unsigned short fs;
-  unsigned short gs;
-  unsigned short cs;
-  unsigned short ss;
+  uint16_t es;
+  uint16_t ds;
+  uint16_t fs;
+  uint16_t gs;
+  uint16_t cs;
+  uint16_t ss;
 };
 
 typedef struct _is{

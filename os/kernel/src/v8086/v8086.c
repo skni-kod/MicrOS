@@ -653,6 +653,18 @@ int16_t parse_and_execute_instruction(v8086* machine)
         else if(width==32) push_dword(machine, *((uint32_t)reg));
         else return -1;
     }
+    //PUSH CS
+    else if(opcode == 0x0e)
+        push_word(machine, machine->sregs.cs);
+    //PUSH DS
+    else if(opcode == 0x1e)
+        push_word(machine, machine->sregs.ds);
+    //PUSH ES
+    else if(opcode == 0x06)
+        push_word(machine, machine->sregs.es);
+    //PUSH SS
+    else if(opcode == 0x16)
+        push_word(machine, machine->sregs.ss);
     //POP Operations
     //POP General purpose registers
     else if(opcode >= 0x50 && opcode <= 0x57)
@@ -665,5 +677,14 @@ int16_t parse_and_execute_instruction(v8086* machine)
         else if(width==32) *((uint32_t)reg)) pop_dword(machine);
         else return -1;
     }
+    //POP DS
+    else if(opcode == 0x1f)
+        machine->sregs.ds = pop_word(machine);
+    //POP ES
+    else if(opcode == 0x07)
+        machine->sregs.es = pop_word(machine);
+    //POP SS
+    else if(opcode == 0x17)
+        machine->sregs.ss = pop_word(machine);
     return 0;
 }
