@@ -560,7 +560,51 @@ int16_t parse_and_execute_instruction(v8086* machine)
     else if(opcode >= 0x40 && opcode <= 0x47)
     {
         uint8_t width = 16;
-        if(machine->)
+        void* dest = NULL
+        uint64_t result = 0;
+        uint32_t dest_before;
+        if(machine->internal_state.operand_32_bit) width=32;
+        dest = get_variable_length_register(machine, opcode & 7, width);
+        if(width == 16) dest_before = *((uint16_t*)dest);
+        else if(width == 32) dest_before = *((uint32_t*)dest);
+        else return -1;
+
+        result = dest_before + 1;
+
+        uint8_t parrity = result & 1;
+        for(int i = 1; i < 8; i++) parrity ^= (result >> i) & 1;
+        bit_write(machine->regs.d.eflags, 1<<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
+        bit_write(machine->regs.d.eflags, 1<<AUX_CARRY_FLAG_BIT, (((dest_before & 0xf) + 1) >> 4) ? 1: 0); //AUX CARRY FLAG
+        bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
+        bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, result >> (width - 1)); //SIGN FLAG
+        bit_write(machine->regs.d.eflags, 1<<OVERFLOW_FLAG_BIT, ((result >> (width - 1)) != (dest_before >> (width - 1)))); //OVERFLOW FLAG
+        else if(width == 16) *((uint16_t*)dest) = result & 0xFFFF;
+        else if(width == 32) *((uint32_t*)dest) = result & 0xFFFFFFFF;
+    }
+    //DEC general registers 16 or 32-bit
+    else if(opcode >= 0x48 && opcode <= 0x4f)
+    {
+        uint8_t width = 16;
+        void* dest = NULL
+        uint64_t result = 0;
+        uint32_t dest_before;
+        if(machine->internal_state.operand_32_bit) width=32;
+        dest = get_variable_length_register(machine, opcode & 7, width);
+        if(width == 16) dest_before = *((uint16_t*)dest);
+        else if(width == 32) dest_before = *((uint32_t*)dest);
+        else return -1;
+
+        result = dest_before - 1;
+
+        uint8_t parrity = result & 1;
+        for(int i = 1; i < 8; i++) parrity ^= (result >> i) & 1;
+        bit_write(machine->regs.d.eflags, 1<<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
+        bit_write(machine->regs.d.eflags, 1<<AUX_CARRY_FLAG_BIT, (((dest_before & 0xf) + 1) >> 4) ? 1: 0); //AUX CARRY FLAG
+        bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
+        bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, result >> (width - 1)); //SIGN FLAG
+        bit_write(machine->regs.d.eflags, 1<<OVERFLOW_FLAG_BIT, ((result >> (width - 1)) != (dest_before >> (width - 1)))); //OVERFLOW FLAG
+        else if(width == 16) *((uint16_t*)dest) = result & 0xFFFF;
+        else if(width == 32) *((uint32_t*)dest) = result & 0xFFFFFFFF;
     }
     //LOGICAL operations
     //OR
