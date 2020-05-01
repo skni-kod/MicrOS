@@ -609,10 +609,16 @@ int16_t parse_and_execute_instruction(v8086* machine)
         goto decode; //continue parsing opcode;
     }
     //Segment Prefix FS
-    else if(opcode == 0x64)
+    else if(opcode == 0x65)
     {
         machine->internal_state.segment_reg_select = GS;
         goto decode; //continue parsing opcode;
+    }
+    //Operand Size Prefix
+    else if(opcode == 0x66)
+    {
+        machine->internal_state.operand_32_bit = 1;
+        goto decode;
     }
     //Aritmetic operations
     //ADD
