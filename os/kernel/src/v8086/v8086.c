@@ -882,7 +882,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
             *reg = imm; 
         }
     }
-    //MOV AL/AX/EAX, moffs8/moffs16/moffs32
+    //MOV AL/AX/EAX, moffs8/moffs16/moffs32 or MOV moffs8/moffs16/moffs32, AL/AX/EAX
     else if(opcode >= 0xa0 &&& opcode <= 0xa3)
     {
         uint16_t offset = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
