@@ -71,9 +71,19 @@ static inline uint32_t read_dword_from_pointer(uint8_t* memory, uint16_t offset)
     return *get_dword_pointer(memory, offset);
 }
 
+static inline void write_byte_to_pointer(uint8_t* memory, uint16_t offset, uint8_t value)
+{
+    *(get_byte_pointer(memory, offset)) = value;
+}
+
 static inline void write_word_to_pointer(uint8_t* memory, uint16_t offset, uint16_t value)
 {
     *(get_word_pointer(memory, offset)) = value;
+}
+
+static inline void write_dword_to_pointer(uint8_t* memory, uint16_t offset, uint32_t value)
+{
+    *(get_dword_pointer(memory, offset)) = value;
 }
 
 static inline uint16_t read_word_from_double_pointer(uint8_t* memory, uint16_t offset)
@@ -870,6 +880,31 @@ int16_t parse_and_execute_instruction(v8086* machine)
             uint16_t imm = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
             machine->internal_state.IPOffset += 2;
             *reg = imm; 
+        }
+    }
+    //MOV AL/AX/EAX, moffs8/moffs16/moffs32
+    else if(opcode >= 0xa0 &&& opcode <= 0xa3)
+    {
+        uint16_t offset = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 2;
+        uint16_t segment = *select_segment_register(machine, DS) ? machine->internal_state.segment_reg_select == DEFAULT : *select_segment_register(machine, machine->internal_state.segment_reg_select);
+
+        switch (opcode)
+        {
+        case 0xa0:
+            machine->regs.h.al = read_byte_from_pointer(machine->Memory, get_absolute_address(segment, offset));
+            break;
+        case 0xa1:
+            if(machine->internal_state.operand_32_bit) machine->regs.d.eax = read_dword_from_pointer(machine->Memory, get_absolute_address(segment, offset));
+            else machine->regs.x.ax = read_word_from_pointer(machine->Memory, get_absolute_address(segment, offset));
+            break;
+        case 0xa2:
+            write_byte_to_pointer(machine->Memory, get_absolute_address(segment, offset), machine->regs.h.al);
+            break;
+        case 0xa3:
+            if(machine->internal_state.operand_32_bit) write_dword_to_pointer(machine->Memory, get_absolute_address(segment, offset), machine->regs.d.eax);
+            else write_word_to_pointer(machine->Memory, get_absolute_address(segment, offset), machine->regs.x.ax);
+            break;
         }
     }
     //TEST GROUP
