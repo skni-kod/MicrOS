@@ -845,5 +845,31 @@ int16_t parse_and_execute_instruction(v8086* machine)
         if(tempIP > 0xFFFF) return -1;
         machine->IP = tempIP;
     }
+    //MOV r8, imm8
+    else if(opcode >= 0xb0 && opcode <= 0xb7)
+    {
+        uint8_t* reg = get_byte_register(machine, opcode & 0x7);
+        uint8_t imm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+        *reg = imm;
+    }
+    //MOV r16, imm16 or r32, imm32
+    else if(opcode >= 0xb8 && opcode <= 0xbf)
+    {
+        if(machine->internal_state.operand_32_bit)
+        {
+            uint32_t* reg = get_dword_register(machine, (opcode - 0xb8) & 0x7);
+            uint32_t imm = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+            machine->internal_state.IPOffset += 4;
+            *reg = imm;
+        }
+        else
+        {
+            uint16_t* reg = get_word_register(machine, (opcode - 0xb8) & 0x7);
+            uint16_t imm = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+            machine->internal_state.IPOffset += 2;
+            *reg = imm; 
+        }
+    }
     return 0;
 }
