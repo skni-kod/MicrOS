@@ -247,7 +247,7 @@ uint16_t* select_segment_register(v8086* machine, segment_register_select select
             return &(machine->sregs.es);
         case FS:
             return &(machine->sregs.fs);
-        case FS:
+        case GS:
             return &(machine->sregs.gs);
         default:
             return NULL;
@@ -645,7 +645,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     else if(opcode >= 0x40 && opcode <= 0x47)
     {
         uint8_t width = 16;
-        void* dest = NULL
+        void* dest = NULL;
         uint64_t result = 0;
         uint32_t dest_before;
         if(machine->internal_state.operand_32_bit) width=32;
@@ -663,14 +663,14 @@ int16_t parse_and_execute_instruction(v8086* machine)
         bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
         bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, result >> (width - 1)); //SIGN FLAG
         bit_write(machine->regs.d.eflags, 1<<OVERFLOW_FLAG_BIT, ((result >> (width - 1)) != (dest_before >> (width - 1)))); //OVERFLOW FLAG
-        else if(width == 16) *((uint16_t*)dest) = result & 0xFFFF;
+        if(width == 16) *((uint16_t*)dest) = result & 0xFFFF;
         else if(width == 32) *((uint32_t*)dest) = result & 0xFFFFFFFF;
     }
     //DEC general registers 16 or 32-bit
     else if(opcode >= 0x48 && opcode <= 0x4f)
     {
         uint8_t width = 16;
-        void* dest = NULL
+        void* dest = NULL;
         uint64_t result = 0;
         uint32_t dest_before;
         if(machine->internal_state.operand_32_bit) width=32;
@@ -688,7 +688,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
         bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
         bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, result >> (width - 1)); //SIGN FLAG
         bit_write(machine->regs.d.eflags, 1<<OVERFLOW_FLAG_BIT, ((result >> (width - 1)) != (dest_before >> (width - 1)))); //OVERFLOW FLAG
-        else if(width == 16) *((uint16_t*)dest) = result & 0xFFFF;
+        if(width == 16) *((uint16_t*)dest) = result & 0xFFFF;
         else if(width == 32) *((uint32_t*)dest) = result & 0xFFFFFFFF;
     }
     //LOGICAL operations
@@ -720,8 +720,8 @@ int16_t parse_and_execute_instruction(v8086* machine)
         void* reg = NULL;
         if(machine->internal_state.operand_32_bit) width = 16;
         reg = get_variable_length_register(machine, opcode & 7, width);
-        if(width==16) push_word(machine, *((uint16_t)reg));
-        else if(width==32) push_dword(machine, *((uint32_t)reg));
+        if(width==16) push_word(machine, *((uint16_t*)reg));
+        else if(width==32) push_dword(machine, *((uint32_t*)reg));
         else return -1;
     }
     //PUSH CS
@@ -744,8 +744,8 @@ int16_t parse_and_execute_instruction(v8086* machine)
         void* reg = NULL;
         if(machine->internal_state.operand_32_bit) width = 16;
         reg = get_variable_length_register(machine, opcode & 7, width);
-        if(width==16) *((uint16_t)reg)) = pop_word(machine);
-        else if(width==32) *((uint32_t)reg)) pop_dword(machine);
+        if(width==16) *((uint16_t*)reg) = pop_word(machine);
+        else if(width==32) *((uint32_t*)reg) = pop_dword(machine);
         else return -1;
     }
     //POP DS
@@ -802,7 +802,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
                 if(bit_get(machine->regs.x.flags, 1<<CARRY_FLAG_BIT)) jump = 1;
                 break;
             case 3: //JNB or JAE or JNC
-                if(!bit_get(machine->regs.x.flags, 1<<CARRY_FLAG_BIT) jump = 1);
+                if(!bit_get(machine->regs.x.flags, 1<<CARRY_FLAG_BIT)) jump = 1;
                 break;
             case 4: //JZ or JE
                 if(!bit_get(machine->regs.x.flags, 1<<ZERO_FLAG_BIT)) jump = 1;
@@ -845,6 +845,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
         if(tempIP > 0xFFFF) return -1;
         machine->IP = tempIP;
     }
+    //MOV Group
     //MOV r8, imm8
     else if(opcode >= 0xb0 && opcode <= 0xb7)
     {
@@ -870,6 +871,45 @@ int16_t parse_and_execute_instruction(v8086* machine)
             machine->internal_state.IPOffset += 2;
             *reg = imm; 
         }
+    }
+    //TEST GROUP
+    else if(opcode == 0x84)
+    {
+        //Mod/RM
+        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+        uint8_t* reg = get_byte_register(machine, (mod_rm >> 3) & 7);
+        uint8_t* memory = get_memory_from_mode(machine, mod_rm, 8);
+        uint8_t result = *reg & *memory;
+        bit_clear(machine->regs.d.eflags, 1<<CARRY_FLAG_BIT);
+        bit_clear(machine->regs.d.eflags, 1<<OVERFLOW_FLAG_BIT);
+        uint8_t parrity = result & 1;
+        for(int i = 1; i < 8; i++) parrity ^= (result >> i) & 1;
+        bit_write(machine->regs.d.eflags, 1<<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
+        bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
+        bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, result >> 7); //SIGN FLAG
+    }
+    else if(opcode == 0x85)
+    {
+        //Mod/RM
+        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+        uint8_t width = 16;
+        if(machine->internal_state.operand_32_bit) width = 32;
+        uint32_t result;
+        void* source = get_variable_length_register(machine, (mod_rm >> 3) & 7, width);
+        void* dest = get_memory_from_mode(machine, mod_rm, width);
+        
+        if(width == 16)
+            result = *((uint16_t*) source) & *((uint16_t*) dest);
+        else if(width == 32)
+            result = *((uint32_t*) source) & *((uint32_t*) dest);
+
+        uint8_t parrity = result & 1;
+        for(int i = 1; i < 8; i++) parrity ^= (result >> i) & 1;
+        bit_write(machine->regs.d.eflags, 1<<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
+        bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
+        bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, result >> (width - 1)); //SIGN FLAG
     }
     return 0;
 }
