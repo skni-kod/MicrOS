@@ -911,5 +911,51 @@ int16_t parse_and_execute_instruction(v8086* machine)
         bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
         bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, result >> (width - 1)); //SIGN FLAG
     }
+    else if(opcode == 0xa8)
+    {
+        //Mod/RM
+        uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+        uint8_t* reg = get_byte_register(machine, AL);
+        uint8_t result = *reg & immediate;
+        bit_clear(machine->regs.d.eflags, 1<<CARRY_FLAG_BIT);
+        bit_clear(machine->regs.d.eflags, 1<<OVERFLOW_FLAG_BIT);
+        uint8_t parrity = result & 1;
+        for(int i = 1; i < 8; i++) parrity ^= (result >> i) & 1;
+        bit_write(machine->regs.d.eflags, 1<<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
+        bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
+        bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, result >> 7); //SIGN FLAG
+    }
+    else if(opcode == 0xa9)
+    {
+        //Mod/RM
+        uint32_t immediate; 
+        uint8_t width = 16;
+        if(machine->internal_state.operand_32_bit) width = 32;
+        uint32_t result;
+        if(width == 16)
+        {
+            immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+            machine->internal_state.IPOffset += 2;
+        }
+        else if(width == 32)
+        {
+            immediate = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+            machine->internal_state.IPOffset += 4;
+        }
+
+        void* reg = get_variable_length_register(machine, AX, width);
+        
+        if(width == 16)
+            result = *((uint16_t*) reg) & immediate;
+        else if(width == 32)
+            result = *((uint32_t*) reg) & immediate;
+
+        uint8_t parrity = result & 1;
+        for(int i = 1; i < 8; i++) parrity ^= (result >> i) & 1;
+        bit_write(machine->regs.d.eflags, 1<<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
+        bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
+        bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, result >> (width - 1)); //SIGN FLAG
+    }
     return 0;
 }
