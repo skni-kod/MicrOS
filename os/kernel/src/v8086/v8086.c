@@ -608,7 +608,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
         machine->internal_state.segment_reg_select = FS;
         goto decode; //continue parsing opcode;
     }
-    //Segment Prefix FS
+    //Segment Prefix GS
     else if(opcode == 0x65)
     {
         machine->internal_state.segment_reg_select = GS;
@@ -618,7 +618,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     else if(opcode == 0x66)
     {
         machine->internal_state.operand_32_bit = 1;
-        goto decode;
+        goto decode; //continue parsing opcode;
     }
     //Aritmetic operations
     //ADD
@@ -782,6 +782,68 @@ int16_t parse_and_execute_instruction(v8086* machine)
             *regB = temp;
         }
         else return -1;
+    }
+    //SHORT JUMPS
+    else if(opcode >= 0x70 && opcode <= 0x7f)
+    {
+        int8_t offset = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+        uint32_t tempIP = machine->IP;
+        uint8_t jump = 0;
+        switch(opcode & 0x0f)
+        {
+            case 0: //JO
+                if(bit_get(machine->regs.x.flags, 1<<OVERFLOW_FLAG_BIT)) jump = 1;
+                break;
+            case 1: //JNO
+                if(!bit_get(machine->regs.x.flags, 1<<OVERFLOW_FLAG_BIT)) jump = 1;
+                break;
+            case 2: //JB or JNAE or JC
+                if(bit_get(machine->regs.x.flags, 1<<CARRY_FLAG_BIT)) jump = 1;
+                break;
+            case 3: //JNB or JAE or JNC
+                if(!bit_get(machine->regs.x.flags, 1<<CARRY_FLAG_BIT) jump = 1);
+                break;
+            case 4: //JZ or JE
+                if(!bit_get(machine->regs.x.flags, 1<<ZERO_FLAG_BIT)) jump = 1;
+                break;
+            case 5: //JNZ or JNE
+                if(!bit_get(machine->regs.x.flags, 1<<ZERO_FLAG_BIT)) jump = 1;
+                break;
+            case 6: //JBE or JNA
+                if(bit_get(machine->regs.x.flags, 1<<CARRY_FLAG_BIT) || bit_get(machine->regs.x.flags, 1<<ZERO_FLAG_BIT)) jump = 1;
+                break;
+            case 7: //JNBE or JA
+                if(!(bit_get(machine->regs.x.flags, 1<<CARRY_FLAG_BIT) || bit_get(machine->regs.x.flags, 1<<ZERO_FLAG_BIT))) jump = 1;
+                break;
+            case 8: //JS
+                if(bit_get(machine->regs.x.flags, 1<<SIGN_FLAG_BIT)) jump = 1;
+                break;
+            case 9: //JNS
+                if(!bit_get(machine->regs.x.flags, 1<<SIGN_FLAG_BIT)) jump = 1;
+                break;
+            case 0xa: //JP or JPE
+                if(bit_get(machine->regs.x.flags, 1<<PARITY_FLAG_BIT)) jump = 1;
+                break;
+            case 0xb: //JNP or JPO
+                if(!bit_get(machine->regs.x.flags, 1<<PARITY_FLAG_BIT)) jump = 1;
+                break;
+            case 0xc: //JL or JNGE
+                if(!bit_get(machine->regs.x.flags, 1<<SIGN_FLAG_BIT) != !bit_get(machine->regs.x.flags, 1<<OVERFLOW_FLAG_BIT)) jump = 1;
+                break; 
+            case 0xd: //JNL or JGE
+                if(!bit_get(machine->regs.x.flags, 1<<SIGN_FLAG_BIT) == !bit_get(machine->regs.x.flags, 1<<OVERFLOW_FLAG_BIT)) jump = 1;
+                break; 
+            case 0xe: //JLE or JNG
+                if(bit_get(machine->regs.x.flags, 1<<ZERO_FLAG_BIT) || !bit_get(machine->regs.x.flags, 1<<SIGN_FLAG_BIT) != !bit_get(machine->regs.x.flags, 1<<OVERFLOW_FLAG_BIT)) jump = 1;
+                break;
+            case 0xf: //JNLE or JG
+                if(bit_get(machine->regs.x.flags, 1<<ZERO_FLAG_BIT) || !bit_get(machine->regs.x.flags, 1<<SIGN_FLAG_BIT) == !bit_get(machine->regs.x.flags, 1<<OVERFLOW_FLAG_BIT)) jump = 1;
+                break;
+        }
+        if(jump) tempIP += offset;
+        if(tempIP > 0xFFFF) return -1;
+        machine->IP = tempIP;
     }
     return 0;
 }
