@@ -883,7 +883,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
         }
     }
     //MOV AL/AX/EAX, moffs8/moffs16/moffs32 or MOV moffs8/moffs16/moffs32, AL/AX/EAX
-    else if(opcode >= 0xa0 &&& opcode <= 0xa3)
+    else if(opcode >= 0xa0 && opcode <= 0xa3)
     {
         uint16_t offset = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 2;
@@ -904,6 +904,41 @@ int16_t parse_and_execute_instruction(v8086* machine)
         case 0xa3:
             if(machine->internal_state.operand_32_bit) write_dword_to_pointer(machine->Memory, get_absolute_address(segment, offset), machine->regs.d.eax);
             else write_word_to_pointer(machine->Memory, get_absolute_address(segment, offset), machine->regs.x.ax);
+            break;
+        }
+    }
+    //MOV r8/r16/r32, rm8/rm16/rm32 or MOV rm8/rm16/rm32, r8/r16/r32
+    else if(opcode >= 0x88 && opcode <= 0x8b)
+    {
+        //Mod/RM
+        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+        void* source = NULL;
+        void* dest = NULL;
+        uint8_t width = machine->internal_state.operand_32_bit ? 32 : 16;
+        switch (opcode)
+        {
+        case 0x88:
+            source = get_byte_register(machine, (mod_rm >> 3) & 7);
+            dest = get_memory_from_mode(machine, mod_rm, 8);
+            *((uint8_t*)dest) = *((uint8_t*) source);
+            break;
+        case 0x89:
+            source = get_variable_length_register(machine, (mod_rm >> 3) & 7, width);
+            dest = get_memory_from_mode(machine, mod_rm, width);
+            if(width == 16) *((uint16_t*)dest) = *((uint16_t*) source);
+            else *((uint32_t*)dest) = *((uint32_t*) source);
+            break;
+        case 0x8a:
+            dest = get_byte_register(machine, (mod_rm >> 3) & 7);
+            source = get_memory_from_mode(machine, mod_rm, 8);
+            *((uint8_t*)dest) = *((uint8_t*) source);
+            break;
+        case 0x8b:
+            dest = get_variable_length_register(machine, (mod_rm >> 3) & 7, width);
+            source = get_memory_from_mode(machine, mod_rm, width);
+            if(width == 16) *((uint16_t*)dest) = *((uint16_t*) source);
+            else *((uint32_t*)dest) = *((uint32_t*) source);
             break;
         }
     }
