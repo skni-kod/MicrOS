@@ -284,6 +284,7 @@ void* get_memory_from_mode(v8086* machine, uint8_t mod_rm, uint8_t width)
             if((mod_rm >> 6) == 0) segment_register = select_segment_register(machine, DS);
             else segment_register = select_segment_register(machine, SS);
         default:
+            segment_register = select_segment_register(machine, SS);
             break;
         }
     }
@@ -941,6 +942,25 @@ int16_t parse_and_execute_instruction(v8086* machine)
             else *((uint32_t*)dest) = *((uint32_t*) source);
             break;
         }
+    }
+    //MOV Segment to/from r/m
+    else if(opcode == 0x8c || opcode == 0x8e)
+    {
+        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+        uint16_t* source = NULL;
+        uint16_t* dest = NULL;
+        if(opcode == 0x8c)
+        {
+            source = select_segment_register(machine, (mod_rm >> 3) & 7);
+            dest = get_memory_from_mode(machine, mod_rm, 16);
+        }
+        else
+        {
+            dest = select_segment_register(machine, (mod_rm >> 3) & 7);
+            source = get_memory_from_mode(machine, mod_rm, 16);
+        }
+        *dest = *source;
     }
     //TEST GROUP
     else if(opcode == 0x84)
