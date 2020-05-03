@@ -962,6 +962,38 @@ int16_t parse_and_execute_instruction(v8086* machine)
         }
         *dest = *source;
     }
+    //MOV rm, imm
+    else if(opcode >= 0xc6 && opcode <= 0xc7)
+    {
+        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+        if(opcode == 0xc6)
+        {
+            uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+            machine->internal_state.IPOffset += 1;
+            uint8_t* mem = get_memory_from_mode(machine, mod_rm, 8);
+            *mem = immediate;
+        }
+        else
+        {
+            if(machine->internal_state.operand_32_bit)
+            {
+                uint32_t immediate = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+                machine->internal_state.IPOffset += 4;
+                uint32_t* mem = get_memory_from_mode(machine, mod_rm, 32);
+                *mem = immediate;
+            }   
+            else
+            {
+                uint16_t immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+                machine->internal_state.IPOffset += 2;
+                uint16_t* mem = get_memory_from_mode(machine, mod_rm, 16);
+                *mem = immediate;
+            }
+             
+        }
+        
+    }
     //TEST GROUP
     else if(opcode == 0x84)
     {
