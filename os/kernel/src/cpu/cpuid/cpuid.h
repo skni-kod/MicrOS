@@ -10,12 +10,9 @@
 //! Enum to represent cache type
 typedef enum cpuid_cache_type
 {
-    //! Data cache
-    DATA_CACHE = 0x01,
-    //! Instruction cache
-    INSTRUCTION_CACHE = 0x02,
-    //! Unified cache
-    UNIFIED_CACHE = 0x03   
+    DATA_CACHE = 0x01, /*!< Data cache. */
+    INSTRUCTION_CACHE = 0x02, /*!< Instruction cache. */
+    UNIFIED_CACHE = 0x03 /*!< Unified cache. */ 
 } cpuid_cache_type;
 
 //! Struct to represent cache.
