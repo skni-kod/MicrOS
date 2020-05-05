@@ -794,6 +794,43 @@ int16_t parse_and_execute_instruction(v8086* machine)
         }
         else return -1;
     }
+    //XCHG r8, rm8 or XCHG r16, rm16 or XCHG r32, rm32
+    else if(opcode >= 0x86 && opcode <= 0x87)
+    {
+        int8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+        if(opcode == 0x86)
+        {
+            uint8_t* source = get_byte_register(machine, (mod_rm >> 3) & 7);
+            uint8_t* dest = get_memory_from_mode(machine, mod_rm, 8);
+            uint8_t temp;
+            temp = *source;
+            *source = *dest;
+            *dest = temp;
+        }
+        else if(opcode  == 0x87)
+        {
+            if(machine->internal_state.operand_32_bit)
+            {
+                uint32_t* source = get_dword_register(machine, (mod_rm >> 3) & 7);
+                uint32_t* dest = get_memory_from_mode(machine, mod_rm, 32);
+                uint32_t temp;
+                temp = *source;
+                *source = *dest;
+                *dest = temp;
+            }
+            else
+            {
+                uint16_t* source = get_word_register(machine, (mod_rm >> 3) & 7);
+                uint16_t* dest = get_memory_from_mode(machine, mod_rm, 16);
+                uint16_t temp;
+                temp = *source;
+                *source = *dest;
+                *dest = temp;
+            }
+            
+        }
+    }
     //SHORT JUMPS
     else if(opcode >= 0x70 && opcode <= 0x7f)
     {
