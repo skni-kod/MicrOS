@@ -13,6 +13,7 @@
 #define AUX_CARRY_FLAG_BIT 4
 #define ZERO_FLAG_BIT 6
 #define SIGN_FLAG_BIT 7
+#define DIRECTION_FLAG_BIT 10
 #define OVERFLOW_FLAG_BIT 11
 
 enum BYTE_REGISTERS {AL=0, CL, DL, BL, AH, CH, DH, BH};
@@ -1134,5 +1135,58 @@ int16_t parse_and_execute_instruction(v8086* machine)
         bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
         bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, result >> (width - 1)); //SIGN FLAG
     }
+    //STRING GROUP
+    //MOVSB
+    else if(opcode==0xA4)
+    {
+        uint16_t* source_segment;
+        uint16_t* dest_segment = select_segment_register(machine, ES);
+        uint8_t* source;
+        uint8_t* dest;
+        if(machine->internal_state.segment_reg_select == DEFAULT) source_segment = select_segment_register(machine, DS);
+        else source_segment = select_segment_register(machine, machine->internal_state.segment_reg_select);
+
+        //if repeat and number of repats == 0 -> dont copy anything
+        if(machine->internal_state.rep_prefix == REP_REPE && machine->regs.w.cx == 0) goto recalculate_ip; 
+
+        do{
+            source = get_byte_pointer(machine->Memory, get_absolute_address(*source_segment, machine->regs.w.si));
+            dest = get_byte_pointer(machine->Memory, get_absolute_address(*dest_segment, machine->regs.w.di));
+            *dest = *source;
+            machine->regs.w.si += bit_get(machine->regs.w.flags, 1 << DIRECTION_FLAG_BIT) ? -1 : 1;
+            machine->regs.w.di += bit_get(machine->regs.w.flags, 1 << DIRECTION_FLAG_BIT) ? -1 : 1;
+        } while(machine->internal_state.rep_prefix == REP_REPE && --(machine->regs.w.cx));
+    }
+    //MOVSW or MOVSD
+    else if(opcode == 0xA5)
+    {
+        uint16_t* source_segment;
+        uint16_t* dest_segment = select_segment_register(machine, ES);
+        if(machine->internal_state.segment_reg_select == DEFAULT) source_segment = select_segment_register(machine, DS);
+        else source_segment = select_segment_register(machine, machine->internal_state.segment_reg_select);
+
+        //if repeat and number of repats == 0 -> dont copy anything
+        if(machine->internal_state.rep_prefix == REP_REPE && machine->regs.w.cx == 0) goto recalculate_ip; 
+
+        if(machine->internal_state.operand_32_bit)
+            do{
+                uint32_t* source = get_dword_pointer(machine->Memory, get_absolute_address(*source_segment, machine->regs.w.si));
+                uint32_t* dest = get_dword_pointer(machine->Memory, get_absolute_address(*dest_segment, machine->regs.w.di));
+                *dest = *source;
+                machine->regs.w.si += bit_get(machine->regs.w.flags, 1 << DIRECTION_FLAG_BIT) ? -4 : 4;
+                machine->regs.w.di += bit_get(machine->regs.w.flags, 1 << DIRECTION_FLAG_BIT) ? -4 : 4;
+            } while(machine->internal_state.rep_prefix == REP_REPE && --(machine->regs.w.cx));
+        else
+            do{
+                uint16_t* source = get_word_pointer(machine->Memory, get_absolute_address(*source_segment, machine->regs.w.si));
+                uint16_t* dest = get_word_pointer(machine->Memory, get_absolute_address(*dest_segment, machine->regs.w.di));
+                *dest = *source;
+                machine->regs.w.si += bit_get(machine->regs.w.flags, 1 << DIRECTION_FLAG_BIT) ? -2 : 2;
+                machine->regs.w.di += bit_get(machine->regs.w.flags, 1 << DIRECTION_FLAG_BIT) ? -2 : 2;
+            } while(machine->internal_state.rep_prefix == REP_REPE && --(machine->regs.w.cx));
+        
+    }
+    recalculate_ip: machine->IP += machine->internal_state.IPOffset;
+
     return 0;
 }
