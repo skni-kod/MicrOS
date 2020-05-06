@@ -1238,6 +1238,61 @@ int16_t parse_and_execute_instruction(v8086* machine)
             else if(machine->internal_state.rep_prefix == REPNE && bit_get(machine->regs.w.flags, ZERO_FLAG_BIT)) break;
         } while(machine->internal_state.rep_prefix != DEFAULT && --(machine->regs.w.cx));
     }
+    //STOSB STOSW STOSD
+    else if(opcode >= 0xAA && opcode <= 0xAB)
+    {
+        uint16_t* segment = select_segment_register(machine, ES);
+        void* source;
+        void* dest;
+        uint8_t width = 8;
+        if(opcode == 0xA7)
+            if(machine->internal_state.operand_32_bit) width=32;
+            else width = 16;
+        
+        //if repeat and number of repats == 0 -> dont copy anything
+        if(machine->internal_state.rep_prefix == REP_REPE && machine->regs.w.cx == 0) goto recalculate_ip; 
+
+        do{
+            dest = get_variable_length_pointer(machine->Memory, get_absolute_address(*segment, machine->regs.w.di), width);
+            source = get_variable_length_register(machine, AL, width);
+
+            if(width == 8) *((uint8_t*) dest) = *((uint8_t*) source);
+            else if(width == 16) *((uint16_t*) dest) = *((uint16_t*) source);
+            else if(width == 32) *((uint32_t*) dest) = *((uint32_t*) source);
+            else return -1;
+
+            machine->regs.w.di += bit_get(machine->regs.w.flags, 1 << DIRECTION_FLAG_BIT) ? -(width/8) : (width/8);
+        } while(machine->internal_state.rep_prefix == REP_REPE && --(machine->regs.w.cx));
+    }
+    //LOADB LOADW LOADD
+    else if(opcode >= 0xAC && opcode <= 0xAD)
+    {
+        uint16_t* segment;
+        void* source;
+        void* dest;
+        uint8_t width = 8;
+        if(opcode == 0xA7)
+            if(machine->internal_state.operand_32_bit) width=32;
+            else width = 16;
+
+        if(machine->internal_state.segment_reg_select == DEFAULT) segment = select_segment_register(machine, DS);
+        else segment = select_segment_register(machine, machine->internal_state.segment_reg_select);
+        
+        //if repeat and number of repats == 0 -> dont copy anything
+        if(machine->internal_state.rep_prefix == REP_REPE && machine->regs.w.cx == 0) goto recalculate_ip; 
+
+        do{
+            source = get_variable_length_pointer(machine->Memory, get_absolute_address(*segment, machine->regs.w.si), width);
+            dest = get_variable_length_register(machine, AL, width);
+
+            if(width == 8) *((uint8_t*) dest) = *((uint8_t*) source);
+            else if(width == 16) *((uint16_t*) dest) = *((uint16_t*) source);
+            else if(width == 32) *((uint32_t*) dest) = *((uint32_t*) source);
+            else return -1;
+
+            machine->regs.w.si += bit_get(machine->regs.w.flags, 1 << DIRECTION_FLAG_BIT) ? -(width/8) : (width/8);
+        }while(machine->internal_state.rep_prefix == REP_REPE && --(machine->regs.w.cx));
+    }
     recalculate_ip: machine->IP += machine->internal_state.IPOffset;
 
     return 0;
