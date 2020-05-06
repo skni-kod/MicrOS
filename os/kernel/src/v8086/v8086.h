@@ -7,6 +7,10 @@ typedef enum _segment_register_select {
   ES, CS, SS, DS, FS, GS, DEFAULT
 } segment_register_select;
 
+typedef enum _repeat_prefix {
+  NONE, REPNE, REP_REPE
+} repeat_prefix;
+
 struct DWORDREGS {
   uint32_t edi;
   uint32_t esi;
@@ -73,6 +77,7 @@ struct SREGS {
 typedef struct _is{
   uint32_t operand_32_bit;
   segment_register_select segment_reg_select;
+  repeat_prefix rep_prefix;
   uint16_t IPOffset;
 } _internal_state;
 

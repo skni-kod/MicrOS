@@ -600,6 +600,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     machine->internal_state.IPOffset = 0;
     machine->internal_state.operand_32_bit = 0;
     machine->internal_state.segment_reg_select = DEFAULT;
+    machine->internal_state.rep_prefix = NONE;
 
     //Maybe opcode, an be also prefix
     uint8_t opcode;
@@ -630,6 +631,23 @@ int16_t parse_and_execute_instruction(v8086* machine)
     {
         machine->internal_state.operand_32_bit = 1;
         goto decode; //continue parsing opcode;
+    }
+    //REPNE Prefix
+    else if(opcode == 0xF2)
+    {
+        machine->internal_state.rep_prefix = REPNE;
+        goto decode; //continue parsing opcode;
+    }
+    //REP/REPE Prefix
+    else if(opcode == 0xF3)
+    {
+        machine->internal_state.rep_prefix = REP_REPE;
+        goto decode; //continue parsing opcode;
+    }
+    //LOCK Prefix
+    else if(opcode == 0xF0)
+    {
+        goto decode; //ommit prefix, contniue parsinf opcode; 
     }
     //Aritmetic operations
     //ADD
