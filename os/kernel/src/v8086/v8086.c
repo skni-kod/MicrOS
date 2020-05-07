@@ -1569,7 +1569,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //CWD or CDQ
     else if(opcode == 0x99)
     {
-        if(machine->internal_state.operand_32_bit){}
+        if(machine->internal_state.operand_32_bit){
             int64_t t = machine->regs.d.eax;
             machine->regs.d.edx = (t >> 32);
         }
@@ -1578,6 +1578,15 @@ int16_t parse_and_execute_instruction(v8086* machine)
             machine->regs.w.dx = (t >> 16);
         }
     }
+    //Store and load flags
+    //SAHF
+    else if(opcode == 0x9e)
+        for(int i = 0; i < 8; i++)
+            if(i != 1 && i != 3 && i != 5)
+                bit_write(machine->regs.w.flags, 1<<i, bit_get(machine->regs.h.ah, 1<<i));
+    //LAHF
+    else if(opcode == 0x9f)
+        machine->regs.h.ah = machine->regs.w.flags & 0xFF;
     recalculate_ip: machine->IP += machine->internal_state.IPOffset;
 
     return 0;
