@@ -1293,6 +1293,53 @@ int16_t parse_and_execute_instruction(v8086* machine)
             machine->regs.w.si += bit_get(machine->regs.w.flags, 1 << DIRECTION_FLAG_BIT) ? -(width/8) : (width/8);
         }while(machine->internal_state.rep_prefix == REP_REPE && --(machine->regs.w.cx));
     }
+    //SCASB or SCASW or SCADD
+    else if(opcode >= 0xAE && opcode <= 0xAF)
+    {
+        uint16_t* source_segment = select_segment_register(machine, ES);
+        void* source;
+        void* dest;
+        uint32_t dest_before; //for overflow flag checking
+        uint32_t source_before;
+        uint64_t result;
+        uint8_t width = 8;
+        if(opcode == 0xA7)
+            if(machine->internal_state.operand_32_bit) width=32;
+            else width = 16;
+        
+        //if repeat and number of repats == 0 -> dont copy anything
+        if(machine->internal_state.rep_prefix != NONE && machine->regs.w.cx == 0) goto recalculate_ip; 
+
+        do{
+            dest = get_variable_length_register(machine, AX, width);
+            source = get_varaible_length_pointer(machine->Memory, get_absolute_address(*source_segment, machine->regs.w.di), width);
+            if(width == 8){
+                dest_before = *((uint8_t*)dest);
+                source_before = *((uint8_t*)source);
+            } else if(width == 16){
+            dest_before = *((uint16_t*)dest);
+                    source_before = *((uint16_t*)source);
+            } else if(width == 32){
+                dest_before = *((uint32_t*)dest);
+                source_before = *((uint32_t*)source);
+            } else return -1;
+            
+            result = dest_before - source_before;
+            bit_write(machine->regs.d.eflags, 1<<CARRY_FLAG_BIT, (result >> width) ? 1 : 0); // CARRY FLAG
+            bit_write(machine->regs.d.eflags, 1<<AUX_CARRY_FLAG_BIT, (((dest_before & 0xf) - (source_before & 0xf)) >> 4) ? 1: 0); //AUX CARRY FLAG
+            uint8_t parrity = result & 1;
+            for(int i = 1; i < 8; i++) parrity ^= (result >> i) & 1;
+            bit_write(machine->regs.d.eflags, 1<<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
+            bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
+            bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, result >> (width - 1)); //SIGN FLAG
+            bit_write(machine->regs.d.eflags, 1<<OVERFLOW_FLAG_BIT, ((result >> (width - 1)) != (dest_before >> (width - 1)))); //OVERFLOW FLAG
+
+            machine->regs.w.di += bit_get(machine->regs.w.flags, 1 << DIRECTION_FLAG_BIT) ? -(width/8) : (width/8);
+
+            if(machine->internal_state.rep_prefix == REP_REPE && !bit_get(machine->regs.w.flags, ZERO_FLAG_BIT)) break;
+            else if(machine->internal_state.rep_prefix == REPNE && bit_get(machine->regs.w.flags, ZERO_FLAG_BIT)) break;
+        } while(machine->internal_state.rep_prefix != DEFAULT && --(machine->regs.w.cx));
+    }
     recalculate_ip: machine->IP += machine->internal_state.IPOffset;
 
     return 0;
