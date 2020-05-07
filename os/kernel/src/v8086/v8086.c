@@ -806,6 +806,9 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //PUSH SS
     else if(opcode == 0x16)
         push_word(machine, machine->sregs.ss);
+    //PUSH FLAGS
+    else if(opcode == 0x9c)
+        push_word(machine, machine->regs.w.flags);
     //POP Operations
     //POP General purpose registers
     else if(opcode >= 0x50 && opcode <= 0x57)
@@ -827,6 +830,9 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //POP SS
     else if(opcode == 0x17)
         machine->sregs.ss = pop_word(machine);
+    //POP FLAGS
+    else if(opcode == 0x9d)
+        machine->regs.w.flags = pop_word(machine);
     //XCHG group
     //XCHG GRP with AX or EAX
     else if(opcode >= 90 && opcode <= 97)
