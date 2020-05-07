@@ -992,6 +992,45 @@ int16_t parse_and_execute_instruction(v8086* machine)
         machine->IP = newIP;
         machine->internal_state.IPOffset = 0;
     }
+    //LOOP Group
+    //LOOP LOOPE LOOPNE
+    else if(opcode >= 0xe0 && opcode <= 0xe2)
+    {
+        uint8_t jump = 0;
+        int8_t offset = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+
+        if(machine->internal_state.operand_32_bit) machine->regs.d.ecx--;
+        else machine->regs.w.cx--;
+            
+        switch (opcode)
+        {
+        case 0xe0:
+            if(machine->internal_state.operand_32_bit){
+                if(machine->regs.d.ecx && !bit_get(machine->regs.w.flags, 1 << ZERO_FLAG_BIT)) jump = 1;
+            }
+            else
+                if(machine->regs.w.cx && !bit_get(machine->regs.w.flags, 1 << ZERO_FLAG_BIT)) jump = 1;
+            break;
+        case 0xe1:
+            if(machine->internal_state.operand_32_bit){
+                if(machine->regs.d.ecx && bit_get(machine->regs.w.flags, 1 << ZERO_FLAG_BIT)) jump = 1;
+            }
+            else
+                if(machine->regs.w.cx && bit_get(machine->regs.w.flags, 1 << ZERO_FLAG_BIT)) jump = 1;
+            break;
+        case 0xe2:
+            if(machine->internal_state.operand_32_bit){
+                if(machine->regs.d.ecx) jump = 1;
+            }
+            else
+                if(machine->regs.w.cx) jump = 1;
+            break;
+        }
+
+        if(jump)
+            machine->IP += offset;
+    }
     //MOV Group
     //MOV r8, imm8
     else if(opcode >= 0xb0 && opcode <= 0xb7)
