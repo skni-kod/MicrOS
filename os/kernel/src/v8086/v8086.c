@@ -1797,6 +1797,41 @@ int16_t parse_and_execute_instruction(v8086* machine)
         machine->regs.w.sp += immediate;
         machine->internal_state.IPOffset = 0;
     }
+    //Interrupts group
+    //INT, imm and INT 3 and INTO
+    else if(opcode >= 0xcc && opcode <= 0xce)
+    {
+        uint8_t interrupt_number = 3;
+        if(opcode == 0xcd) //INT, imm
+        {
+            interrupt_number = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+            machine->internal_state.IPOffset += 1;
+        }
+        else if(opcode == 0xce) //INTO
+        {
+            if(!bit_get(machine->regs.w.flags, 1 << OVERFLOW_FLAG_BIT)) goto recalculate_ip;
+            interrupt_number = 4;
+        }
+
+        int16_t newIP = read_word_from_pointer(machine->Memory, get_absolute_address(0, interrupt_number * 4));
+        int16_t newCS = read_word_from_pointer(machine->Memory, get_absolute_address(0, interrupt_number * 4 + 2));
+
+        push_word(machine, machine->regs.w.flags);
+        push_word(machine, machine->sregs.cs);
+        push_word(machine, machine->IP);
+
+        machine->IP = newIP;
+        machine->sregs.cs = newCS;
+
+        machine->internal_state.IPOffset = 0;
+    }
+    //IRET
+    else if(opcode == 0xcf)
+    {
+        machine->IP = pop_word(machine);
+        machine->sregs.cs = pop_word(machine);
+        machine->regs.w.flags = pop_word(machine);
+    }
     //MISC group
     //XLAT/XLATB
     else if(opcode == 0xd7)
