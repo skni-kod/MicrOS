@@ -1386,7 +1386,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
             else if(machine->internal_state.rep_prefix == REPNE && bit_get(machine->regs.w.flags, ZERO_FLAG_BIT)) break;
         } while(machine->internal_state.rep_prefix != DEFAULT && --(machine->regs.w.cx));
     }
-    //ASCII ADJUSTMENT
+    //ASCII ADJUSTMENT group
     //AAA
     else if(opcode == 0x37)
     {
@@ -1505,7 +1505,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
         bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, machine->regs.h.al == 0); //ZERO FLAG
         bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, machine->regs.h.al >> (7)); //SIGN FLAG
     }
-    //LOAD Operations
+    //LOAD Operations group
     //LEA
     else if(opcode == 0x8d)
     {
@@ -1557,7 +1557,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
         }
         
     }
-    //CONVERSIONS
+    //CONVERSIONS group
     //CBW or CWDE
     else if(opcode == 0x98)
     {
@@ -1578,7 +1578,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
             machine->regs.w.dx = (t >> 16);
         }
     }
-    //Store and load flags
+    //Store and load flags group
     //SAHF
     else if(opcode == 0x9e)
         for(int i = 0; i < 8; i++)
@@ -1587,6 +1587,18 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //LAHF
     else if(opcode == 0x9f)
         machine->regs.h.ah = machine->regs.w.flags & 0xFF;
+    //MISC group
+    //XLAT/XLATB
+    else if(opcode == 0xd7)
+    {
+        uint8_t tempAL = machine->regs.h.al;
+        uint16_t* segment;
+        if(machine->internal_state.segment_reg_select != DEFAULT)
+            segment = select_segment_register(machine, machine->internal_state.segment_reg_select);
+        else
+            segment = select_segment_register(machine, DS);
+        machine->regs.h.al = read_byte_from_pointer(machine->Memory, get_absolute_address(*segment, machine->regs.w.bx + tempAL));
+    }
     recalculate_ip: machine->IP += machine->internal_state.IPOffset;
 
     return 0;
