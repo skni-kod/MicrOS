@@ -1557,6 +1557,27 @@ int16_t parse_and_execute_instruction(v8086* machine)
         }
         
     }
+    //CONVERSIONS
+    //CBW or CWDE
+    else if(opcode == 0x98)
+    {
+        if(machine->internal_state.operand_32_bit)
+            (int32_t)(machine->regs.d.eax) = (int16_t)(machine->regs.w.ax);
+        else
+            (int16_t)(machine->regs.w.ax) = (int8_t)(machine->regs.h.al);
+    }
+    //CWD or CDQ
+    else if(opcode == 0x99)
+    {
+        if(machine->internal_state.operand_32_bit){}
+            int64_t t = machine->regs.d.eax;
+            machine->regs.d.edx = (t >> 32);
+        }
+        else{
+            int32_t t = machine->regs.w.ax;
+            machine->regs.w.dx = (t >> 16);
+        }
+    }
     recalculate_ip: machine->IP += machine->internal_state.IPOffset;
 
     return 0;
