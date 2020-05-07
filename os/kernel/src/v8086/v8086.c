@@ -1340,6 +1340,125 @@ int16_t parse_and_execute_instruction(v8086* machine)
             else if(machine->internal_state.rep_prefix == REPNE && bit_get(machine->regs.w.flags, ZERO_FLAG_BIT)) break;
         } while(machine->internal_state.rep_prefix != DEFAULT && --(machine->regs.w.cx));
     }
+    //ASCII ADJUSTMENT
+    //AAA
+    else if(opcode == 0x37)
+    {
+        if(((machine->regs.h.al & 0x0f) > 9) || bit_get(machine->regs.w.flags, 1<<AUX_CARRY_FLAG_BIT))
+        {
+            machine->regs.x.ax += 0x106;
+            bit_set(machine->regs.w.flags, 1<<AUX_CARRY_FLAG_BIT);
+            bit_set(machine->regs.w.flags, 1<<CARRY_FLAG_BIT);
+        }
+        else
+        {
+            bit_clear(machine->regs.w.flags, 1<<AUX_CARRY_FLAG_BIT);
+            bit_clear(machine->regs.w.flags, 1<<CARRY_FLAG_BIT);
+        }
+        machine->regs.h.al &= 0x0f;
+    }
+    //AAS
+    else if(opcode == 0x3F)
+    {
+        if(((machine->regs.h.al & 0x0f) > 9) || bit_get(machine->regs.w.flags, 1<<AUX_CARRY_FLAG_BIT))
+        {
+            machine->regs.h.al -= 0x6;
+            machine->regs.h.ah -= 1;
+            bit_set(machine->regs.w.flags, 1<<AUX_CARRY_FLAG_BIT);
+            bit_set(machine->regs.w.flags, 1<<CARRY_FLAG_BIT);
+        }
+        else
+        {
+            bit_clear(machine->regs.w.flags, 1<<AUX_CARRY_FLAG_BIT);
+            bit_clear(machine->regs.w.flags, 1<<CARRY_FLAG_BIT);
+        }
+        machine->regs.h.al &= 0x0f;
+    }
+    //DAA
+    else if(opcode == 0x27)
+    {
+        uint8_t old_AL = machine->regs.h.al;
+        uint16_t old_cf = bit_get(machine->regs.w.flags, 1<<CARRY_FLAG_BIT);
+        bit_clear(machine->regs.w.flags, 1<<CARRY_FLAG_BIT);
+        if(((machine->regs.h.al & 0x0f) > 9) || bit_get(machine->regs.w.flags, 1<<AUX_CARRY_FLAG_BIT))
+        {
+            uint16_t temp_ax = machine->regs.h.al + 6;
+            machine->regs.h.al = temp_ax & 0xFF;
+            bit_write(machine->regs.w.flags, 1<<CARRY_FLAG_BIT, (old_cf || (temp_ax > 0xFF)) ? 1 : 0);
+            bit_set(machine->regs.w.flags, 1<<AUX_CARRY_FLAG_BIT);
+        }
+        else bit_clear(machine->regs.w.flags, 1<<AUX_CARRY_FLAG_BIT);
+
+        if((old_AL > 0x99) || old_cf)
+        {
+            machine->regs.h.al += 0x60;
+            bit_set(machine->regs.w.flags, 1<<CARRY_FLAG_BIT);
+        }
+        else bit_clear(machine->regs.w.flags, 1<<CARRY_FLAG_BIT);
+        uint8_t parrity = machine->regs.h.al & 1;
+        for(int i = 1; i < 8; i++) parrity ^= (machine->regs.h.al >> i) & 1;
+        bit_write(machine->regs.d.eflags, 1<<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
+        bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, machine->regs.h.al == 0); //ZERO FLAG
+        bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, machine->regs.h.al >> (7)); //SIGN FLAG
+    }
+    //DAS
+    else if(opcode == 0x2f)
+    {
+        uint8_t old_AL = machine->regs.h.al;
+        uint16_t old_cf = bit_get(machine->regs.w.flags, 1<<CARRY_FLAG_BIT);
+        bit_clear(machine->regs.w.flags, 1<<CARRY_FLAG_BIT);
+        if(((machine->regs.h.al & 0x0f) > 9) || bit_get(machine->regs.w.flags, 1<<AUX_CARRY_FLAG_BIT))
+        {
+            uint16_t temp_ax = machine->regs.h.al - 6;
+            machine->regs.h.al = temp_ax & 0xFF;
+            bit_write(machine->regs.w.flags, 1<<CARRY_FLAG_BIT, (old_cf || (temp_ax > 0xFF)) ? 1 : 0);
+            bit_set(machine->regs.w.flags, 1<<AUX_CARRY_FLAG_BIT);
+        }
+        else bit_clear(machine->regs.w.flags, 1<<AUX_CARRY_FLAG_BIT);
+
+        if((old_AL > 0x99) || old_cf)
+        {
+            machine->regs.h.al -= 0x60;
+            bit_set(machine->regs.w.flags, 1<<CARRY_FLAG_BIT);
+        }
+        uint8_t parrity = machine->regs.h.al & 1;
+        for(int i = 1; i < 8; i++) parrity ^= (machine->regs.h.al >> i) & 1;
+        bit_write(machine->regs.d.eflags, 1<<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
+        bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, machine->regs.h.al == 0); //ZERO FLAG
+        bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, machine->regs.h.al >> (7)); //SIGN FLAG
+    }
+    //AAM
+    else if(opcode == 0xd4)
+    {
+        uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+        uint8_t tempAL = machine->regs.h.al;
+        machine->regs.h.ah = tempAL / immediate;
+        machine->regs.h.al = tempAL % immediate;
+
+        uint8_t parrity = machine->regs.h.al & 1;
+        for(int i = 1; i < 8; i++) parrity ^= (machine->regs.h.al >> i) & 1;
+        bit_write(machine->regs.d.eflags, 1<<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
+        bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, machine->regs.h.al == 0); //ZERO FLAG
+        bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, machine->regs.h.al >> (7)); //SIGN FLAG
+    }
+    //AAD
+    else if(opcode == 0xd5)
+    {
+        uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+        uint8_t tempAL = machine->regs.h.al;
+        uint8_t tempAH = machine->regs.h.ah;
+
+        machine->regs.h.al = (tempAL + (tempAH * immediate)) & 0xFF;
+        machine->regs.h.ah = 0;
+        
+        uint8_t parrity = machine->regs.h.al & 1;
+        for(int i = 1; i < 8; i++) parrity ^= (machine->regs.h.al >> i) & 1;
+        bit_write(machine->regs.d.eflags, 1<<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
+        bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, machine->regs.h.al == 0); //ZERO FLAG
+        bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, machine->regs.h.al >> (7)); //SIGN FLAG
+    }
     recalculate_ip: machine->IP += machine->internal_state.IPOffset;
 
     return 0;
