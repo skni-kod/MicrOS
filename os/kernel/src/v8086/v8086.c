@@ -1740,6 +1740,63 @@ int16_t parse_and_execute_instruction(v8086* machine)
         else
             io_out_long(machine->regs.w.dx, machine->regs.w.ax);
     }
+    //CALLs and RETs group
+    //NEAR relative CALL
+    else if(opcode == 0xe8)
+    {
+        int16_t immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 2;
+
+        machine->IP += machine->internal_state.IPOffset;
+        push_word(machine, machine->IP);
+        machine->IP += immediate;
+        machine->internal_state.IPOffset = 0;
+    }
+    //FAR CALL
+    else if(opcode == 0x9a)
+    {
+        int16_t newIP = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 2;
+        int16_t newCS = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 2;
+        push_word(machine, machine->sregs.cs);
+        push_word(machine, machine->IP + machine->internal_state.IPOffset);
+        machine->IP = newIP;
+        machine->sregs.cs = newCS;
+        machine->internal_state.IPOffset = 0;
+    }
+    //Near RET
+    else if(opcode == 0xc3)
+    {
+        machine->IP = pop_word(machine);
+        machine->internal_state.IPOffset = 0;
+    }
+    //Near RET, imm16
+    else if(opcode == 0xc2)
+    {
+        uint16_t immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 2;
+        machine->IP = pop_word(machine);
+        machine->regs.w.sp += immediate;
+        machine->internal_state.IPOffset = 0;
+    }
+    //Far RET
+    else if(opcode == 0xcb)
+    {
+        machine->IP = pop_word(machine);
+        machine->sregs.cs = pop_word(machine);
+        machine->internal_state.IPOffset = 0;
+    }
+    //Far RET, imm16
+    else if(opcode == 0xca)
+    {
+        uint16_t immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 2;
+        machine->IP = pop_word(machine);
+        machine->sregs.cs = pop_word(machine);
+        machine->regs.w.sp += immediate;
+        machine->internal_state.IPOffset = 0;
+    }
     //MISC group
     //XLAT/XLATB
     else if(opcode == 0xd7)
