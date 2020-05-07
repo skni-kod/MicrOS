@@ -13,6 +13,7 @@
 #define AUX_CARRY_FLAG_BIT 4
 #define ZERO_FLAG_BIT 6
 #define SIGN_FLAG_BIT 7
+#define INTERRUPT_FLAG_BIT 9
 #define DIRECTION_FLAG_BIT 10
 #define OVERFLOW_FLAG_BIT 11
 
@@ -1587,6 +1588,28 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //LAHF
     else if(opcode == 0x9f)
         machine->regs.h.ah = machine->regs.w.flags & 0xFF;
+    //FLAG Setting and clearing Group
+    //CMC
+    else if(opcode == 0xf5)
+        bit_flip(machine->regs.w.flags, 1<<CARRY_FLAG_BIT);
+    //CLC
+    else if(opcode == 0xf8)
+        bit_clear(machine->regs.w.flags, 1<<CARRY_FLAG_BIT);
+    //STC
+    else if(opcode == 0xf9)
+        bit_set(machine->regs.w.flags, 1<<CARRY_FLAG_BIT);
+    //CLI
+    else if(opcode == 0xfa)
+        bit_clear(machine->regs.w.flags, 1<<INTERRUPT_FLAG_BIT);
+    //STI
+    else if(opcode == 0xfb)
+        bit_set(machine->regs.w.flags, 1<<INTERRUPT_FLAG_BIT);
+    //CLD
+    else if(opcode == 0xfc)
+        bit_clear(machine->regs.w.flags, 1<<DIRECTION_FLAG_BIT);
+    //STD
+    else if(opcode == 0xfd)
+        bit_set(machine->regs.w.flags, 1<<DIRECTION_FLAG_BIT);
     //MISC group
     //XLAT/XLATB
     else if(opcode == 0xd7)
