@@ -1,6 +1,7 @@
 #include "v8086.h"
 #include "../memory/heap/heap.h"
 #include <string.h>
+#include "../assembly/io.h"
 
 #define bit_get(p,m) ((p) & (m))
 #define bit_set(p,m) ((p) |= (m))
@@ -1682,6 +1683,63 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //STD
     else if(opcode == 0xfd)
         bit_set(machine->regs.w.flags, 1<<DIRECTION_FLAG_BIT);
+    //INPUT OUTPUT GROUP
+    //IN AL, i8
+    else if(opcode == 0xe4)
+    {
+        uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+        machine->regs.h.al = io_in_byte(immediate);        
+    }
+    //IN AX/EAX, i8
+    else if(opcode == 0xe5)
+    {
+        uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+        if(machine->internal_state.operand_32_bit)
+            machine->regs.d.eax = io_in_long(immediate);
+        else
+            machine->regs.w.ax = io_in_word(immediate);
+    }
+    //IN AL, DX
+    else if(opcode == 0xec)
+        machine->regs.h.al = io_in_byte(machine->regs.x.dx);
+    //IN AX/EAX, DX
+    else if(opcode == 0xed)
+    {
+        if(machine->internal_state.operand_32_bit)
+            machine->regs.d.eax = io_in_long(machine->regs.x.dx);
+        else
+            machine->regs.w.ax = io_in_word(machine->regs.x.dx);
+    }
+    //OUT i8, AL
+    else if(opcode == 0xe6)
+    {
+        uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+        io_out_byte(immediate, machine->regs.h.al);
+    }
+    //OUT i8, AX/EAX
+    else if(opcode == 0xe7)
+    {
+        uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+        if(machine->internal_state.operand_32_bit)
+            io_out_long(immediate, machine->regs.d.eax);
+        else
+            io_out_long(immediate, machine->regs.w.ax);
+    }
+    //OUT DX, AL
+    else if(opcode == 0xee)
+        io_out_byte(machine->regs.w.dx, machine->regs.h.al);
+    //OUT DX, AX/EAX
+    else if(opcode == 0xef)
+    {
+        if(machine->internal_state.operand_32_bit)
+            io_out_long(machine->regs.w.dx, machine->regs.d.eax);
+        else
+            io_out_long(machine->regs.w.dx, machine->regs.w.ax);
+    }
     //MISC group
     //XLAT/XLATB
     else if(opcode == 0xd7)
