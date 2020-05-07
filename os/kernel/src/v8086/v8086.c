@@ -1831,6 +1831,8 @@ int16_t parse_and_execute_instruction(v8086* machine)
         machine->IP = pop_word(machine);
         machine->sregs.cs = pop_word(machine);
         machine->regs.w.flags = pop_word(machine);
+
+        machine->internal_state.IPOffset = 0;
     }
     //MISC group
     //XLAT/XLATB
