@@ -1499,6 +1499,58 @@ int16_t parse_and_execute_instruction(v8086* machine)
         bit_write(machine-> regs.d.eflags, 1<<ZERO_FLAG_BIT, machine->regs.h.al == 0); //ZERO FLAG
         bit_write(machine->regs.d.eflags, 1<<SIGN_FLAG_BIT, machine->regs.h.al >> (7)); //SIGN FLAG
     }
+    //LOAD Operations
+    //LEA
+    else if(opcode == 0x8d)
+    {
+        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+
+        uint16_t segment;
+        uint16_t offset;
+
+        if((mod_rm >> 6) > 3) return -1;
+
+        int16_t r = calculate_segment_offset_from_mode(machine, mod_rm, &segment, &offset);
+        if(r) return r;
+        
+        if(machine->internal_state.operand_32_bit)
+        {
+            uint32_t* reg = get_dword_register(machine, (mod_rm>>3)&7);
+            *reg = offset;
+        }
+        else
+        {
+            uint16_t* reg = get_word_register(machine, (mod_rm>>3)&7);
+            *reg = offset;
+        }
+    }
+    //LDS or LES
+    else if(opcode >= 0xc4 && opcode <= 0xc5)
+    {
+        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+
+        uint16_t* segment_register;
+        if(opcode == 0xc4) segment_register = select_segment_register(machine, ES);
+        else segment_register = select_segment_register(machine, DS);
+
+        uint16_t* source = get_memory_from_mode(machine, mod_rm, 16);
+
+        if(machine->internal_state.operand_32_bit)
+        {
+            uint16_t* dest = get_dword_register(machine, (mod_rm >> 3) & 7);
+            *dest = *((uint32_t*) source);
+            *segment_register = *(source+2);
+        }
+        else
+        {
+            uint16_t* dest = get_word_register(machine, (mod_rm >> 3) & 7);
+            *dest = *source;
+            *segment_register = *(source+1);
+        }
+        
+    }
     recalculate_ip: machine->IP += machine->internal_state.IPOffset;
 
     return 0;
