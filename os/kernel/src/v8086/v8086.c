@@ -116,7 +116,7 @@ static inline uint16_t pop_word(v8086* machine)
     return v;
 }
 
-static inline uint32_t pop_word(v8086* machine)
+static inline uint32_t pop_dword(v8086* machine)
 {
     uint16_t v = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.w.sp));
     machine->regs.w.sp += 4;
@@ -286,6 +286,7 @@ int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint1
         case 6:
             if((mod_rm >> 6) == 0) segment_register = select_segment_register(machine, DS);
             else segment_register = select_segment_register(machine, SS);
+            break;
         default:
             segment_register = select_segment_register(machine, SS);
             break;
@@ -323,6 +324,7 @@ int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint1
                 }
                 case 7:
                     *offset = machine->regs.x.bx;
+                    return 0;
                 default:
                     return -1;
             }
@@ -392,7 +394,7 @@ int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint1
         }
         return -1;
     }
-
+    return -1;
 }
 
 void* get_memory_from_mode(v8086* machine, uint8_t mod_rm, uint8_t width)
@@ -509,6 +511,7 @@ int16_t perform_or(v8086* machine, void* dest, void* source, uint8_t width, uint
     if(width == 8) *((uint8_t*)dest) = result & 0xFF;
     else if(width == 16) *((uint16_t*)dest) = result & 0xFFFF;
     else if(width == 32) *((uint32_t*)dest) = result & 0xFFFFFFFF;
+    return 0;
 }
 
 int16_t perform_and(v8086* machine, void* dest, void* source, uint8_t width, uint32_t carry)
@@ -536,6 +539,7 @@ int16_t perform_and(v8086* machine, void* dest, void* source, uint8_t width, uin
     if(width == 8) *((uint8_t*)dest) = result & 0xFF;
     else if(width == 16) *((uint16_t*)dest) = result & 0xFFFF;
     else if(width == 32) *((uint32_t*)dest) = result & 0xFFFFFFFF;
+    return 0;
 }
 
 int16_t perform_xor(v8086* machine, void* dest, void* source, uint8_t width, uint32_t carry)
@@ -563,6 +567,7 @@ int16_t perform_xor(v8086* machine, void* dest, void* source, uint8_t width, uin
     if(width == 8) *((uint8_t*)dest) = result & 0xFF;
     else if(width == 16) *((uint16_t*)dest) = result & 0xFFFF;
     else if(width == 32) *((uint32_t*)dest) = result & 0xFFFFFFFF;
+    return 0;
 }
 
 int16_t perform_cmp(v8086* machine, void* dest, void* source, uint8_t width, uint32_t carry)
@@ -676,6 +681,7 @@ int16_t perform_artihmetic_or_logical_instruction_group(v8086* machine, uint8_t 
     }
     if(recalculated_opcode == 3) operation(machine, dest, &signed_immediate, width, carry);
     else operation(machine, dest, &immediate, width, carry);
+    return 0;
 }
 
 int16_t parse_and_execute_instruction(v8086* machine)
@@ -815,7 +821,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
         perform_artihmetic_or_logical_instruction(machine, opcode - 0x20, 0, perform_and);
     }
     //XOR
-    else if(opcode >- 0x30 && opcode <= 0x35)
+    else if(opcode >= 0x30 && opcode <= 0x35)
     {
         perform_artihmetic_or_logical_instruction(machine, opcode - 0x30, 0, perform_xor);
     }
@@ -927,8 +933,8 @@ int16_t parse_and_execute_instruction(v8086* machine)
         else if(width == 32)
         {
             uint16_t temp;
-            uint16_t* regA = get_dword_register(machine, EAX); 
-            uint16_t* regB = get_dword_register(machine, opcode & 7);
+            uint32_t* regA = get_dword_register(machine, EAX); 
+            uint32_t* regB = get_dword_register(machine, opcode & 7);
             temp = *regA;
             *regA = *regB;
             *regB = temp;
@@ -972,6 +978,9 @@ int16_t parse_and_execute_instruction(v8086* machine)
             
         }
     }
+    //ROLS and RORS Group
+    else if(opcode >= 0xd0 && opcode <= 0xd3)
+    {}
     //Jumps Group
     //SHORT JUMPS on conditions
     else if((opcode >= 0x70 && opcode <= 0x7f) || (opcode == 0xe3))
@@ -1035,7 +1044,9 @@ int16_t parse_and_execute_instruction(v8086* machine)
         else
         {
             if(machine->internal_state.operand_32_bit)
+            {
                 if(!machine->regs.d.ecx) jump = 1;
+            }
             else
                 if(!machine->regs.w.cx) jump = 1;
         }
@@ -1391,9 +1402,10 @@ int16_t parse_and_execute_instruction(v8086* machine)
         uint32_t source_before;
         uint64_t result;
         uint8_t width = 8;
-        if(opcode == 0xA7)
+        if(opcode == 0xA7){
             if(machine->internal_state.operand_32_bit) width=32;
             else width = 16;
+        }
         
         if(machine->internal_state.segment_reg_select == DEFAULT) source_segment = select_segment_register(machine, DS);
         else source_segment = select_segment_register(machine, machine->internal_state.segment_reg_select);
@@ -1403,7 +1415,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
 
         do{
             source = get_variable_length_pointer(machine->Memory, get_absolute_address(*source_segment, machine->regs.w.si), width);
-            dest = get_varaible_length_pointer(machine->Memory, get_absolute_address(*dest_segment, machine->regs.w.di), width);
+            dest = get_variable_length_pointer(machine->Memory, get_absolute_address(*dest_segment, machine->regs.w.di), width);
             if(width == 8){
                 dest_before = *((uint8_t*)dest);
                 source_before = *((uint8_t*)source);
@@ -1430,7 +1442,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
 
             if(machine->internal_state.rep_prefix == REP_REPE && !bit_get(machine->regs.w.flags, ZERO_FLAG_BIT)) break;
             else if(machine->internal_state.rep_prefix == REPNE && bit_get(machine->regs.w.flags, ZERO_FLAG_BIT)) break;
-        } while(machine->internal_state.rep_prefix != DEFAULT && --(machine->regs.w.cx));
+        } while(machine->internal_state.rep_prefix != NONE && --(machine->regs.w.cx));
     }
     //STOSB STOSW STOSD
     else if(opcode >= 0xAA && opcode <= 0xAB)
@@ -1440,8 +1452,10 @@ int16_t parse_and_execute_instruction(v8086* machine)
         void* dest;
         uint8_t width = 8;
         if(opcode == 0xA7)
+        {
             if(machine->internal_state.operand_32_bit) width=32;
             else width = 16;
+        }
         
         //if repeat and number of repats == 0 -> dont copy anything
         if(machine->internal_state.rep_prefix == REP_REPE && machine->regs.w.cx == 0) goto recalculate_ip; 
@@ -1466,8 +1480,10 @@ int16_t parse_and_execute_instruction(v8086* machine)
         void* dest;
         uint8_t width = 8;
         if(opcode == 0xA7)
+        {
             if(machine->internal_state.operand_32_bit) width=32;
             else width = 16;
+        }
 
         if(machine->internal_state.segment_reg_select == DEFAULT) segment = select_segment_register(machine, DS);
         else segment = select_segment_register(machine, machine->internal_state.segment_reg_select);
@@ -1498,15 +1514,17 @@ int16_t parse_and_execute_instruction(v8086* machine)
         uint64_t result;
         uint8_t width = 8;
         if(opcode == 0xA7)
+        {
             if(machine->internal_state.operand_32_bit) width=32;
             else width = 16;
+        }
         
         //if repeat and number of repats == 0 -> dont copy anything
         if(machine->internal_state.rep_prefix != NONE && machine->regs.w.cx == 0) goto recalculate_ip; 
 
         do{
             dest = get_variable_length_register(machine, AX, width);
-            source = get_varaible_length_pointer(machine->Memory, get_absolute_address(*source_segment, machine->regs.w.di), width);
+            source = get_variable_length_pointer(machine->Memory, get_absolute_address(*source_segment, machine->regs.w.di), width);
             if(width == 8){
                 dest_before = *((uint8_t*)dest);
                 source_before = *((uint8_t*)source);
@@ -1532,7 +1550,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
 
             if(machine->internal_state.rep_prefix == REP_REPE && !bit_get(machine->regs.w.flags, ZERO_FLAG_BIT)) break;
             else if(machine->internal_state.rep_prefix == REPNE && bit_get(machine->regs.w.flags, ZERO_FLAG_BIT)) break;
-        } while(machine->internal_state.rep_prefix != DEFAULT && --(machine->regs.w.cx));
+        } while(machine->internal_state.rep_prefix != NONE && --(machine->regs.w.cx));
     }
     //ASCII ADJUSTMENT group
     //AAA
@@ -1693,7 +1711,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
 
         if(machine->internal_state.operand_32_bit)
         {
-            uint16_t* dest = get_dword_register(machine, (mod_rm >> 3) & 7);
+            uint32_t* dest = get_dword_register(machine, (mod_rm >> 3) & 7);
             *dest = *((uint32_t*) source);
             *segment_register = *(source+2);
         }
@@ -1710,9 +1728,9 @@ int16_t parse_and_execute_instruction(v8086* machine)
     else if(opcode == 0x98)
     {
         if(machine->internal_state.operand_32_bit)
-            (int32_t)(machine->regs.d.eax) = (int16_t)(machine->regs.w.ax);
+            machine->regs.d.eax = ((int32_t)(machine->regs.w.ax));
         else
-            (int16_t)(machine->regs.w.ax) = (int8_t)(machine->regs.h.al);
+            machine->regs.w.ax = ((int16_t)(machine->regs.h.al));
     }
     //CWD or CDQ
     else if(opcode == 0x99)
@@ -1728,10 +1746,11 @@ int16_t parse_and_execute_instruction(v8086* machine)
     }
     //Store and load flags group
     //SAHF
-    else if(opcode == 0x9e)
+    else if(opcode == 0x9e){
         for(int i = 0; i < 8; i++)
             if(i != 1 && i != 3 && i != 5)
                 bit_write(machine->regs.w.flags, 1<<i, bit_get(machine->regs.h.ah, 1<<i));
+    }
     //LAHF
     else if(opcode == 0x9f)
         machine->regs.h.ah = machine->regs.w.flags & 0xFF;
