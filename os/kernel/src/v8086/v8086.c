@@ -634,8 +634,48 @@ int16_t perform_artihmetic_or_logical_instruction(v8086* machine, uint8_t recalc
             machine->internal_state.IPOffset += ((width / 8) - 1);
             break;
     }
-    perform_adding(machine, dest, source, width, carry);
+    operation(machine, dest, source, width, carry);
     return 0;
+}
+int16_t perform_artihmetic_or_logical_instruction_group(v8086* machine, uint8_t recalculated_opcode, uint8_t mod_rm, uint32_t carry, int16_t (*operation)(v8086*, void*, void*, uint8_t, uint32_t))
+{
+    void* dest = NULL;
+    uint8_t width;
+    uint32_t immediate;
+    int32_t signed_immediate;
+    switch(recalculated_opcode)
+    {
+        case 0: //OPERATION rm8, imm8
+        case 2: //OPERATION rm8, imm8
+            width = 8;
+            dest = get_memory_from_mode(machine, mod_rm, width);
+            immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+            machine->internal_state.IPOffset += 1;
+            break;
+        case 1: //OPERATION rm16, imm16 or rm32, imm32
+            if(machine->internal_state.operand_32_bit) {
+                width = 32;
+                immediate = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+                machine->internal_state.IPOffset += 4;
+            }
+            else
+            { 
+                width = 16;
+                immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+                machine->internal_state.IPOffset += 2;
+            }
+            dest = get_memory_from_mode(machine, mod_rm, width);
+            break;
+        case 3: //OPERATION rm16, imm8, or rm32, imm8
+            if(machine->internal_state.operand_32_bit) width = 32;
+            else width = 16;
+            signed_immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+            machine->internal_state.IPOffset += 1;
+            dest = get_memory_from_mode(machine, mod_rm, width);
+            break;
+    }
+    if(recalculated_opcode == 3) operation(machine, dest, &signed_immediate, width, carry);
+    else operation(machine, dest, &immediate, width, carry);
 }
 
 int16_t parse_and_execute_instruction(v8086* machine)
@@ -783,6 +823,40 @@ int16_t parse_and_execute_instruction(v8086* machine)
     else if(opcode >= 0x38 && opcode <= 0x3d)
     {
         perform_artihmetic_or_logical_instruction(machine, opcode - 0x30, 0, perform_cmp);
+    }
+    //GROUP 1
+    else if(opcode >= 0x80 && opcode <= 0x83)
+    {
+        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+        uint8_t recalculated_opcode = opcode - 0x80;
+        switch((mod_rm >> 3) & 7)
+        {
+            case 0: //ADD
+                perform_artihmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0, perform_adding);
+                break;
+            case 1: //OR
+                perform_artihmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0, perform_or);
+                break;
+            case 2: //ADC
+                perform_artihmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, bit_get(machine->regs.w.flags, 1<<CARRY_FLAG_BIT) != 0, perform_adding);
+                break;
+            case 3: //SBB
+                perform_artihmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, bit_get(machine->regs.w.flags, 1<<CARRY_FLAG_BIT) != 0, perform_subtracting);
+                break;
+            case 4: //AND
+                perform_artihmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0, perform_and);
+                break;
+            case 5: //SUB
+                perform_artihmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0, perform_subtracting);
+                break;
+            case 6: //XOR
+                perform_artihmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0, perform_xor);
+                break;
+            case 7: //CMP
+                perform_artihmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0, perform_cmp);
+                break;
+        }
     }
     //PUSH Operations
     //PUSH General purpose registers
