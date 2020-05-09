@@ -684,6 +684,126 @@ int16_t perform_artihmetic_or_logical_instruction_group(v8086* machine, uint8_t 
     return 0;
 }
 
+int16_t perform_ror(v8086* machine, void* dest, uint8_t arg, uint8_t width)
+{
+    uint16_t temp_flags = 0;
+    if(arg == 0) return 0;
+    if(width == 8)
+      __asm__ __volatile__("rorb %%cl, %%al; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint8_t*) dest)) : "a" (*((uint8_t*) dest)), "c" (arg));
+    else if(width == 16)
+      __asm__ __volatile__("rorw %%cl, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t*) dest)) : "a" (*((uint16_t*) dest)), "c" (arg));
+    else if(width == 32)
+      __asm__ __volatile__("rorl %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t*) dest)) : "a" (*((uint32_t*) dest)), "c" (arg));
+    else return -1;
+    if(arg == 1) bit_write(machine->regs.w.flags, 1<<OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1<<OVERFLOW_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1<<CARRY_FLAG_BIT, bit_get(temp_flags, 1<<CARRY_FLAG_BIT) != 0);
+    return 0;
+}
+
+int16_t perform_rol(v8086* machine, void* dest, uint8_t arg, uint8_t width)
+{
+    uint16_t temp_flags;
+    if(arg == 0) return 0;
+    if(width == 8)
+      __asm__ __volatile__("rolb %%cl, %%al; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint8_t*) dest)) : "a" (*((uint8_t*) dest)), "c" (arg));
+    else if(width == 16)
+      __asm__ __volatile__("rolw %%cl, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t*) dest)) : "a" (*((uint16_t*) dest)), "c" (arg));
+    else if(width == 32)
+      __asm__ __volatile__("roll %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t*) dest)) : "a" (*((uint32_t*) dest)), "c" (arg));
+    if(arg == 1) bit_write(machine->regs.w.flags, 1<<OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1<<OVERFLOW_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1<<CARRY_FLAG_BIT, bit_get(temp_flags, 1<<CARRY_FLAG_BIT) != 0);
+    return 0;
+}
+
+int16_t perform_rcl(v8086* machine, void* dest, uint8_t arg, uint8_t width)
+{
+    uint16_t temp_flags;
+    if(arg == 0) return 0;
+    if(width == 8)
+      __asm__ __volatile__("rclb %%cl, %%al; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint8_t*) dest)) : "a" (*((uint8_t*) dest)), "c" (arg));
+    else if(width == 16)
+      __asm__ __volatile__("rclw %%cl, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t*) dest)) : "a" (*((uint16_t*) dest)), "c" (arg));
+    else if(width == 32)
+      __asm__ __volatile__("rcll %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t*) dest)) : "a" (*((uint32_t*) dest)), "c" (arg));
+    else return -1;
+    if(arg == 1) bit_write(machine->regs.w.flags, 1<<OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1<<OVERFLOW_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1<<CARRY_FLAG_BIT, bit_get(temp_flags, 1<<CARRY_FLAG_BIT) != 0);
+    return 0;
+}
+
+int16_t perform_rcr(v8086* machine, void* dest, uint8_t arg, uint8_t width)
+{
+    uint16_t temp_flags;
+    if(arg == 0) return 0;
+    if(width == 8)
+      __asm__ __volatile__("rcrb %%cl, %%al; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint8_t*) dest)) : "a" (*((uint8_t*) dest)), "c" (arg));
+    else if(width == 16)
+      __asm__ __volatile__("rcrw %%cl, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t*) dest)) : "a" (*((uint16_t*) dest)), "c" (arg));
+    else if(width == 32)
+      __asm__ __volatile__("rcrl %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t*) dest)) : "a" (*((uint32_t*) dest)), "c" (arg));
+    else return -1;
+    if(arg == 1) bit_write(machine->regs.w.flags, 1<<OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1<<OVERFLOW_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1<<CARRY_FLAG_BIT, bit_get(temp_flags, 1<<CARRY_FLAG_BIT) != 0);
+    return 0;
+}
+
+int16_t perform_shl(v8086* machine, void* dest, uint8_t arg, uint8_t width)
+{
+    uint16_t temp_flags;
+    if(arg == 0) return 0;
+    if(width == 8)
+      __asm__ __volatile__("shlb %%cl, %%al; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint8_t*) dest)) : "a" (*((uint8_t*) dest)), "c" (arg));
+    else if(width == 16)
+      __asm__ __volatile__("shlw %%cl, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t*) dest)) : "a" (*((uint16_t*) dest)), "c" (arg));
+    else if(width == 32)
+      __asm__ __volatile__("shll %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t*) dest)) : "a" (*((uint32_t*) dest)), "c" (arg));
+    else return -1;
+    if(arg == 1) bit_write(machine->regs.w.flags, 1<<OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1<<OVERFLOW_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1<<CARRY_FLAG_BIT, bit_get(temp_flags, 1<<CARRY_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1<<SIGN_FLAG_BIT, bit_get(temp_flags, 1<<SIGN_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1<<ZERO_FLAG_BIT, bit_get(temp_flags, 1<<ZERO_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1<<PARITY_FLAG_BIT, bit_get(temp_flags, 1<<PARITY_FLAG_BIT) != 0);
+    return 0;
+}
+
+int16_t perform_shr(v8086* machine, void* dest, uint8_t arg, uint8_t width)
+{
+    uint16_t temp_flags;
+    if(arg == 0) return 0;
+    if(width == 8)
+      __asm__ __volatile__("shrb %%cl, %%al; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint8_t*) dest)) : "a" (*((uint8_t*) dest)), "c" (arg));
+    else if(width == 16)
+      __asm__ __volatile__("shrw %%cl, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t*) dest)) : "a" (*((uint16_t*) dest)), "c" (arg));
+    else if(width == 32)
+      __asm__ __volatile__("shrl %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t*) dest)) : "a" (*((uint32_t*) dest)), "c" (arg));
+    else return -1;
+    if(arg == 1) bit_write(machine->regs.w.flags, 1<<OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1<<OVERFLOW_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1<<CARRY_FLAG_BIT, bit_get(temp_flags, 1<<CARRY_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1<<SIGN_FLAG_BIT, bit_get(temp_flags, 1<<SIGN_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1<<ZERO_FLAG_BIT, bit_get(temp_flags, 1<<ZERO_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1<<PARITY_FLAG_BIT, bit_get(temp_flags, 1<<PARITY_FLAG_BIT) != 0);
+    return 0;
+}
+
+int16_t perform_sar(v8086* machine, void* dest, uint8_t arg, uint8_t width)
+{
+    uint16_t temp_flags;
+    if(arg == 0) return 0;
+    if(width == 8)
+      __asm__ __volatile__("sarb %%cl, %%al; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint8_t*) dest)) : "a" (*((uint8_t*) dest)), "c" (arg));
+    else if(width == 16)
+      __asm__ __volatile__("sarw %%cl, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t*) dest)) : "a" (*((uint16_t*) dest)), "c" (arg));
+    else if(width == 32)
+      __asm__ __volatile__("sarl %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t*) dest)) : "a" (*((uint32_t*) dest)), "c" (arg));
+    else return -1;
+    if(arg == 1) bit_write(machine->regs.w.flags, 1<<OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1<<OVERFLOW_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1<<CARRY_FLAG_BIT, bit_get(temp_flags, 1<<CARRY_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1<<SIGN_FLAG_BIT, bit_get(temp_flags, 1<<SIGN_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1<<ZERO_FLAG_BIT, bit_get(temp_flags, 1<<ZERO_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1<<PARITY_FLAG_BIT, bit_get(temp_flags, 1<<PARITY_FLAG_BIT) != 0);
+    return 0;
+}
+
 int16_t parse_and_execute_instruction(v8086* machine)
 {
     machine->internal_state.IPOffset = 0;
@@ -980,7 +1100,44 @@ int16_t parse_and_execute_instruction(v8086* machine)
     }
     //ROLS and RORS Group
     else if(opcode >= 0xd0 && opcode <= 0xd3)
-    {}
+    {
+        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+        uint8_t arg = opcode <=0xd1 ? 1 : machine->regs.h.cl;
+        uint8_t width = 8;
+        if(opcode % 2){
+            if(machine->internal_state.operand_32_bit) width = 32;
+            else width = 16;
+        }
+        void* dest = get_memory_from_mode(machine, mod_rm, width);
+        
+        switch((mod_rm >> 3) & 7)
+        {
+            case 0:
+                perform_rol(machine, dest, arg, width);
+                break;
+            case 1:
+                perform_ror(machine, dest, arg, width);
+                break;
+            case 2:
+                perform_rcl(machine, dest, arg, width);
+                break;
+            case 3:
+                perform_rcr(machine, dest, arg, width);
+                break;
+            case 4:
+                perform_shl(machine, dest, arg, width);
+                break;
+            case 5:
+                perform_shr(machine, dest, arg, width);
+                break;
+            case 6:
+                return -1;
+            case 7:
+                perform_sar(machine, dest, arg, width);
+                break;
+        }
+    }
     //Jumps Group
     //SHORT JUMPS on conditions
     else if((opcode >= 0x70 && opcode <= 0x7f) || (opcode == 0xe3))
