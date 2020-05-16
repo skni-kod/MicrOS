@@ -22,7 +22,7 @@ enum BYTE_REGISTERS {AL=0, CL, DL, BL, AH, CH, DH, BH};
 enum WORD_REGISTERS {AX=0, CX, DX, BX, SP, BP, SI, DI};
 enum DWORD_REGISTERS {EAX=0, ECX, EDX, EBX, ESP, EBP, ESI, EDI};
 
-int16_t parse_instruction(v8086* machine);
+int16_t parse_and_execute_instruction(v8086* machine);
 
 static inline uint16_t get_absolute_address(uint16_t segment, uint16_t offset)
 {
@@ -140,22 +140,22 @@ int16_t v8086_call_function(v8086* machine)
 {
     while(!(machine->IP == 0xFFFF && machine->sregs.cs == 0xFFFF))
     {
-        int x = -1;
-        if(x) return x;
+        int16_t status = parse_and_execute_instruction(machine);
+        if(status != OK) return status;
     }
-    return 0;
+    return OK;
 }
 
 int16_t v8086_call_int(v8086* machine, int16_t num)
 {
-    if ((num < 0) || (num > 0xFF)) return -1;
+    if ((num < 0) || (num > 0xFF)) return BAD_INT_NUMBER;
     machine -> IP = read_word_from_double_pointer(machine->Memory, get_absolute_address(0, num * 4));
     machine -> sregs.cs = read_word_from_double_pointer(machine->Memory, get_absolute_address(0, num * 4 + 2));
     push_word(machine, machine->regs.w.flags);
     push_word(machine, 0xFFFF);
     push_word(machine, 0xFFFF);
-    int x = v8086_call_function(machine);
-    if(x) return -2;
+    int16_t x = v8086_call_function(machine);
+    if(x != OK) return x;
     return num;
 }
 
@@ -299,6 +299,8 @@ int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint1
         }
     }
 
+    if(segment_register == NULL) return UNDEFINED_SEGMENT_REGISTER;
+
     *segment = *segment_register;
 
     switch(mod_rm >> 6u) //Parsing mod than parsing rm
@@ -307,32 +309,32 @@ int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint1
             switch(mod_rm & 7u){
                 case 0:
                     *offset = machine->regs.x.bx + machine->regs.x.si;
-                    return 0;  
+                    return OK;
                 case 1:
                     *offset = machine->regs.x.bx + machine->regs.x.di;
-                    return 0;
+                    return OK;
                 case 2:
                     *offset = machine->regs.x.bp + machine->regs.x.si;
-                    return 0;
+                    return OK;
                 case 3:
                     *offset = machine->regs.x.bp + machine->regs.x.di;
-                    return 0;
+                    return OK;
                 case 4:
                     *offset = machine->regs.x.si;
-                    return 0;
+                    return OK;
                 case 5:
                     *offset = machine->regs.x.di;
-                    return 0;
+                    return OK;
                 case 6:{
                     *offset = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + (machine->internal_state.IPOffset)));
                     machine->internal_state.IPOffset += 1;
-                    return 0;
+                    return OK;
                 }
                 case 7:
                     *offset = machine->regs.x.bx;
-                    return 0;
+                    return OK;
                 default:
-                    return -1;
+                    return BAD_RM;
             }
         case 1:{
             int8_t disp = (int8_t) read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
@@ -340,30 +342,30 @@ int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint1
             switch(mod_rm & 7u){
                 case 0:
                     *offset = machine->regs.x.bx + machine->regs.x.si + disp;
-                    return 0;
+                    return OK;
                 case 1:
                     *offset = machine->regs.x.bx + machine->regs.x.di + disp;
-                    return 0;
+                    return OK;
                 case 2:
                     *offset = machine->regs.x.bp + machine->regs.x.si + disp;
-                    return 0;
+                    return OK;
                 case 3:
                     *offset = machine->regs.x.bp + machine->regs.x.di + disp;
-                    return 0;
+                    return OK;
                 case 4:
                     *offset = machine->regs.x.si + disp;
-                    return 0;
+                    return OK;
                 case 5:
                     *offset = machine->regs.x.di + disp;
-                    return 0;
+                    return OK;
                 case 6:
                     *offset = machine->regs.x.bp + disp;
-                    return 0;
+                    return OK;
                 case 7:
                     *offset = machine->regs.x.bx + disp;
-                    return 0;
+                    return OK;
                 default:
-                    return -1;
+                    return BAD_RM;
             }
         }
         case 2:{
@@ -372,35 +374,36 @@ int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint1
             switch(mod_rm & 7u){
                 case 0:
                     *offset = machine->regs.x.bx + machine->regs.x.si + disp;
-                    return 0;
+                    return OK;
                 case 1:
                     *offset = machine->regs.x.bx + machine->regs.x.di + disp;
-                    return 0;
+                    return OK;
                 case 2:
                     *offset = machine->regs.x.bp + machine->regs.x.si + disp;
-                    return 0;
+                    return OK;
                 case 3:
                     *offset = machine->regs.x.bp + machine->regs.x.di + disp;
-                    return 0;
+                    return OK;
                 case 4:
                     *offset = machine->regs.x.si + disp;
-                    return 0;
+                    return OK;
                 case 5:
                     *offset = machine->regs.x.di + disp;
-                    return 0;
+                    return OK;
                 case 6:
                     *offset = machine->regs.x.bp + disp;
-                    return 0;
+                    return OK;
                 case 7:
                     *offset = machine->regs.x.bx + disp;
-                    return 0;
+                    return OK;
                 default:
-                    return -1;
+                    return BAD_RM;
             }
         }
-        return -1;
+        default:
+            return BAD_MOD;
     }
-    return -1;
+    return UNKNOWN_ERROR;
 }
 
 void* get_memory_from_mode(v8086* machine, uint8_t mod_rm, uint8_t width)
@@ -444,7 +447,7 @@ int16_t perform_adding(v8086* machine, void* dest, void* source, uint8_t width, 
     } else if(width == 32){
         dest_before = *((uint32_t*)dest);
         source_before = *((uint32_t*)source);
-    } else return -1;
+    } else return BAD_WIDTH;
     result = dest_before + source_before + carry;
     bit_write(machine->regs.d.eflags, 1u <<CARRY_FLAG_BIT, (result >> width) ? 1 : 0); // CARRY FLAG
     uint8_t parrity = result & 1u;
@@ -457,8 +460,8 @@ int16_t perform_adding(v8086* machine, void* dest, void* source, uint8_t width, 
     if(width == 8) *((uint8_t*)dest) = result & 0xFFu;
     else if(width == 16) *((uint16_t*)dest) = result & 0xFFFFu;
     else if(width == 32) *((uint32_t*)dest) = result & 0xFFFFFFFF;
-    else return -1;
-    return 0;
+    else return BAD_WIDTH;
+    return OK;
 }
 
 int16_t perform_subtracting(v8086* machine, void* dest, void* source, uint8_t width, uint32_t carry)
@@ -475,7 +478,7 @@ int16_t perform_subtracting(v8086* machine, void* dest, void* source, uint8_t wi
     } else if(width == 32){
         dest_before = *((uint32_t*)dest);
         source_before = *((uint32_t*)source);
-    } else return -1;
+    } else return BAD_WIDTH;
     result = dest_before - (source_before + carry);
     bit_write(machine->regs.d.eflags, 1u <<CARRY_FLAG_BIT, (result >> width) ? 1 : 0); // CARRY FLAG
     bit_write(machine->regs.d.eflags, 1u <<AUX_CARRY_FLAG_BIT, (((dest_before & 0xfu) - (source_before & 0xfu)) >> 4u) ? 1: 0); //AUX CARRY FLAG
@@ -488,24 +491,20 @@ int16_t perform_subtracting(v8086* machine, void* dest, void* source, uint8_t wi
     if(width == 8) *((uint8_t*)dest) = result & 0xFFu;
     else if(width == 16) *((uint16_t*)dest) = result & 0xFFFFu;
     else if(width == 32) *((uint32_t*)dest) = result & 0xFFFFFFFF;
-    else return -1;
-    return 0;
+    else return BAD_WIDTH;
+    return OK;
 }
 
 int16_t perform_or(v8086* machine, void* dest, void* source, uint8_t width, uint32_t carry)
 {
     uint32_t result = 0;
     if(width == 8)
-    {
         result = *((uint8_t*)dest) | *((uint8_t*)source);
-    } else if(width == 16)
-    {
+    else if(width == 16)
         result = *((uint16_t*)dest) | *((uint16_t*)source);
-    } else if(width == 32)
-    {
+    else if(width == 32)
         result = *((uint32_t*)dest) | *((uint32_t*)source);
-    }
-    else return -1;
+    else return BAD_WIDTH;
     bit_write(machine->regs.d.eflags, 1u <<CARRY_FLAG_BIT, 0); // CARRY FLAG
     bit_write(machine->regs.d.eflags, 1u <<OVERFLOW_FLAG_BIT, 0); // OVERFLOW FLAG
     uint8_t parrity = result & 1u;
@@ -517,23 +516,19 @@ int16_t perform_or(v8086* machine, void* dest, void* source, uint8_t width, uint
     if(width == 8) *((uint8_t*)dest) = result & 0xFFu;
     else if(width == 16) *((uint16_t*)dest) = result & 0xFFFFu;
     else if(width == 32) *((uint32_t*)dest) = result & 0xFFFFFFFF;
-    return 0;
+    return OK;
 }
 
 int16_t perform_and(v8086* machine, void* dest, void* source, uint8_t width, uint32_t carry)
 {
     uint32_t result = 0;
     if(width == 8)
-    {
         result = *((uint8_t*)dest) & *((uint8_t*)source);
-    } else if(width == 16)
-    {
+    else if(width == 16)
         result = *((uint16_t*)dest) & *((uint16_t*)source);
-    } else if(width == 32)
-    {
+    else if(width == 32)
         result = *((uint32_t*)dest) & *((uint32_t*)source);
-    }
-    else return -1;
+    else return BAD_WIDTH;
     bit_write(machine->regs.d.eflags, 1u <<CARRY_FLAG_BIT, 0); // CARRY FLAG
     bit_write(machine->regs.d.eflags, 1u <<OVERFLOW_FLAG_BIT, 0); // OVERFLOW FLAG
     uint8_t parrity = result & 1u;
@@ -545,23 +540,19 @@ int16_t perform_and(v8086* machine, void* dest, void* source, uint8_t width, uin
     if(width == 8) *((uint8_t*)dest) = result & 0xFFu;
     else if(width == 16) *((uint16_t*)dest) = result & 0xFFFFu;
     else if(width == 32) *((uint32_t*)dest) = result & 0xFFFFFFFF;
-    return 0;
+    return OK;
 }
 
 int16_t perform_xor(v8086* machine, void* dest, void* source, uint8_t width, uint32_t carry)
 {
     uint32_t result = 0;
     if(width == 8)
-    {
         result = *((uint8_t*)dest) ^ *((uint8_t*)source);
-    } else if(width == 16)
-    {
+    else if(width == 16)
         result = *((uint16_t*)dest) ^ *((uint16_t*)source);
-    } else if(width == 32)
-    {
+    else if(width == 32)
         result = *((uint32_t*)dest) ^ *((uint32_t*)source);
-    }
-    else return -1;
+    else return BAD_WIDTH;
     bit_write(machine->regs.d.eflags, 1u <<CARRY_FLAG_BIT, 0); // CARRY FLAG
     bit_write(machine->regs.d.eflags, 1u <<OVERFLOW_FLAG_BIT, 0); // OVERFLOW FLAG
     uint8_t parrity = result & 1u;
@@ -573,7 +564,7 @@ int16_t perform_xor(v8086* machine, void* dest, void* source, uint8_t width, uin
     if(width == 8) *((uint8_t*)dest) = result & 0xFFu;
     else if(width == 16) *((uint16_t*)dest) = result & 0xFFFFu;
     else if(width == 32) *((uint32_t*)dest) = result & 0xFFFFFFFF;
-    return 0;
+    return OK;
 }
 
 int16_t perform_cmp(v8086* machine, void* dest, void* source, uint8_t width, uint32_t carry)
@@ -590,7 +581,7 @@ int16_t perform_cmp(v8086* machine, void* dest, void* source, uint8_t width, uin
     } else if(width == 32){
         dest_before = *((uint32_t*)dest);
         source_before = *((uint32_t*)source);
-    } else return -1;
+    } else return BAD_WIDTH;
     result = dest_before - source_before;
     bit_write(machine->regs.d.eflags, 1u <<CARRY_FLAG_BIT, (result >> width) ? 1 : 0); // CARRY FLAG
     bit_write(machine->regs.d.eflags, 1u <<AUX_CARRY_FLAG_BIT, (((dest_before & 0xfu) - (source_before & 0xfu)) >> 4u) ? 1: 0); //AUX CARRY FLAG
@@ -600,7 +591,7 @@ int16_t perform_cmp(v8086* machine, void* dest, void* source, uint8_t width, uin
     bit_write(machine-> regs.d.eflags, 1u <<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
     bit_write(machine->regs.d.eflags, 1u <<SIGN_FLAG_BIT, result >> (width - 1u)); //SIGN FLAG
     bit_write(machine->regs.d.eflags, 1u <<OVERFLOW_FLAG_BIT, ((result >> (width - 1u)) != (dest_before >> (width - 1u)))); //OVERFLOW FLAG
-    return 0;
+    return OK;
 }
 
 int16_t perform_artihmetic_or_logical_instruction(v8086* machine, uint8_t recalculated_opcode, uint32_t carry, int16_t (*operation)(v8086*, void*, void*, uint8_t, uint32_t))
@@ -619,25 +610,35 @@ int16_t perform_artihmetic_or_logical_instruction(v8086* machine, uint8_t recalc
         case 0: //OPERATION r/m8, r8
             source = get_byte_register(machine, (mod_rm_or_immediate >> 3u) & 7u);
             dest = get_memory_from_mode(machine, mod_rm_or_immediate, 8);
+            if(source == NULL) return UNDEFINED_REGISTER;
+            if(dest == NULL) return UNABLE_GET_MEMORY;
             break;
         case 1: //OPERATION r/m32, r32 or OPERATION r/m16, r16
             source = get_variable_length_register(machine, (mod_rm_or_immediate >> 3u) & 7u, width);
             dest = get_memory_from_mode(machine, mod_rm_or_immediate, width);
+            if(source == NULL) return UNDEFINED_REGISTER;
+            if(dest == NULL) return UNABLE_GET_MEMORY;
             break;
         case 2: //OPERATION r8, r/m8
             dest = get_byte_register(machine, (mod_rm_or_immediate >> 3u) & 7u);
             source = get_memory_from_mode(machine, mod_rm_or_immediate, 8);
+            if(dest == NULL) return UNDEFINED_REGISTER;
+            if(source == NULL) return UNABLE_GET_MEMORY;
             break;
         case 3: //OPERATION r32, r/m32 or OPERATION r16, r/m16
             dest = get_variable_length_register(machine, (mod_rm_or_immediate >> 3u) & 7u, width);
             source = get_memory_from_mode(machine, mod_rm_or_immediate, width);
+            if(dest == NULL) return UNDEFINED_REGISTER;
+            if(source == NULL) return UNABLE_GET_MEMORY;
             break;
         case 4: //OPERATION AL, imm8
             dest = get_byte_register(machine, AL);
             source = &(mod_rm_or_immediate);
+            if(dest == NULL) return UNDEFINED_REGISTER;
             break;
         case 5: //OPERATION EAX, imm32 or OPERATION AX, imm16
             dest = get_variable_length_register(machine, AX, width);
+            if(dest == NULL) return UNDEFINED_REGISTER;
             if(width == 32)
                 source = get_dword_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP - 1 + machine->internal_state.IPOffset));
             else 
@@ -645,12 +646,13 @@ int16_t perform_artihmetic_or_logical_instruction(v8086* machine, uint8_t recalc
             machine->internal_state.IPOffset += ((width / 8) - 1);
             break;
         default:
-            return -1;
+            return UNDEFINED_RECALCULATED_OPCODE;
     }
-    operation(machine, dest, source, width, carry);
-    return 0;
+    int16_t status = operation(machine, dest, source, width, carry);
+    if(status) return status;
+    return OK;
 }
-int16_t perform_artihmetic_or_logical_instruction_group(v8086* machine, uint8_t recalculated_opcode, uint8_t mod_rm, uint32_t carry, int16_t (*operation)(v8086*, void*, void*, uint8_t, uint32_t))
+int16_t perform_arithmetic_or_logical_instruction_group(v8086* machine, uint8_t recalculated_opcode, uint8_t mod_rm, uint32_t carry, int16_t (*operation)(v8086*, void*, void*, uint8_t, uint32_t))
 {
     void* dest = NULL;
     uint8_t width;
@@ -687,33 +689,36 @@ int16_t perform_artihmetic_or_logical_instruction_group(v8086* machine, uint8_t 
             dest = get_memory_from_mode(machine, mod_rm, width);
             break;
         default:
-            return -1;
+            return UNDEFINED_RECALCULATED_OPCODE;
     }
-    if(recalculated_opcode == 3) operation(machine, dest, &signed_immediate, width, carry);
-    else operation(machine, dest, &immediate, width, carry);
-    return 0;
+    if(dest == NULL) return UNABLE_GET_MEMORY;
+    int16_t status;
+    if(recalculated_opcode == 3) status = operation(machine, dest, &signed_immediate, width, carry);
+    else status = operation(machine, dest, &immediate, width, carry);
+    if(status) return status;
+    return OK;
 }
 
 int16_t perform_ror(v8086* machine, void* dest, uint8_t arg, uint8_t width)
 {
     uint16_t temp_flags = 0;
-    if(arg == 0) return 0;
+    if(arg == 0) return OK;
     if(width == 8)
       __asm__ __volatile__("rorb %%cl, %%al; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint8_t*) dest)) : "a" (*((uint8_t*) dest)), "c" (arg));
     else if(width == 16)
       __asm__ __volatile__("rorw %%cl, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t*) dest)) : "a" (*((uint16_t*) dest)), "c" (arg));
     else if(width == 32)
       __asm__ __volatile__("rorl %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t*) dest)) : "a" (*((uint32_t*) dest)), "c" (arg));
-    else return -1;
+    else return BAD_WIDTH;
     if(arg == 1) bit_write(machine->regs.w.flags, 1u <<OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1u <<OVERFLOW_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u <<CARRY_FLAG_BIT, bit_get(temp_flags, 1u <<CARRY_FLAG_BIT) != 0);
-    return 0;
+    return OK;
 }
 
 int16_t perform_rol(v8086* machine, void* dest, uint8_t arg, uint8_t width)
 {
     uint16_t temp_flags;
-    if(arg == 0) return 0;
+    if(arg == 0) return OK;
     if(width == 8)
       __asm__ __volatile__("rolb %%cl, %%al; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint8_t*) dest)) : "a" (*((uint8_t*) dest)), "c" (arg));
     else if(width == 16)
@@ -722,96 +727,96 @@ int16_t perform_rol(v8086* machine, void* dest, uint8_t arg, uint8_t width)
       __asm__ __volatile__("roll %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t*) dest)) : "a" (*((uint32_t*) dest)), "c" (arg));
     if(arg == 1) bit_write(machine->regs.w.flags, 1u <<OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1u <<OVERFLOW_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u <<CARRY_FLAG_BIT, bit_get(temp_flags, 1u <<CARRY_FLAG_BIT) != 0);
-    return 0;
+    return OK;
 }
 
 int16_t perform_rcl(v8086* machine, void* dest, uint8_t arg, uint8_t width)
 {
     uint16_t temp_flags;
-    if(arg == 0) return 0;
+    if(arg == 0) return OK;
     if(width == 8)
       __asm__ __volatile__("rclb %%cl, %%al; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint8_t*) dest)) : "a" (*((uint8_t*) dest)), "c" (arg));
     else if(width == 16)
       __asm__ __volatile__("rclw %%cl, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t*) dest)) : "a" (*((uint16_t*) dest)), "c" (arg));
     else if(width == 32)
       __asm__ __volatile__("rcll %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t*) dest)) : "a" (*((uint32_t*) dest)), "c" (arg));
-    else return -1;
+    else return BAD_WIDTH;
     if(arg == 1) bit_write(machine->regs.w.flags, 1u <<OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1u <<OVERFLOW_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u <<CARRY_FLAG_BIT, bit_get(temp_flags, 1u <<CARRY_FLAG_BIT) != 0);
-    return 0;
+    return OK;
 }
 
 int16_t perform_rcr(v8086* machine, void* dest, uint8_t arg, uint8_t width)
 {
     uint16_t temp_flags;
-    if(arg == 0) return 0;
+    if(arg == 0) return OK;
     if(width == 8)
       __asm__ __volatile__("rcrb %%cl, %%al; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint8_t*) dest)) : "a" (*((uint8_t*) dest)), "c" (arg));
     else if(width == 16)
       __asm__ __volatile__("rcrw %%cl, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t*) dest)) : "a" (*((uint16_t*) dest)), "c" (arg));
     else if(width == 32)
       __asm__ __volatile__("rcrl %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t*) dest)) : "a" (*((uint32_t*) dest)), "c" (arg));
-    else return -1;
+    else return BAD_WIDTH;
     if(arg == 1) bit_write(machine->regs.w.flags, 1u <<OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1u <<OVERFLOW_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u <<CARRY_FLAG_BIT, bit_get(temp_flags, 1u <<CARRY_FLAG_BIT) != 0);
-    return 0;
+    return OK;
 }
 
 int16_t perform_shl(v8086* machine, void* dest, uint8_t arg, uint8_t width)
 {
     uint16_t temp_flags;
-    if(arg == 0) return 0;
+    if(arg == 0) return OK;
     if(width == 8)
       __asm__ __volatile__("shlb %%cl, %%al; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint8_t*) dest)) : "a" (*((uint8_t*) dest)), "c" (arg));
     else if(width == 16)
       __asm__ __volatile__("shlw %%cl, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t*) dest)) : "a" (*((uint16_t*) dest)), "c" (arg));
     else if(width == 32)
       __asm__ __volatile__("shll %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t*) dest)) : "a" (*((uint32_t*) dest)), "c" (arg));
-    else return -1;
+    else return BAD_WIDTH;
     if(arg == 1) bit_write(machine->regs.w.flags, 1u <<OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1u <<OVERFLOW_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u <<CARRY_FLAG_BIT, bit_get(temp_flags, 1u <<CARRY_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u <<SIGN_FLAG_BIT, bit_get(temp_flags, 1u <<SIGN_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u <<ZERO_FLAG_BIT, bit_get(temp_flags, 1u <<ZERO_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u <<PARITY_FLAG_BIT, bit_get(temp_flags, 1u <<PARITY_FLAG_BIT) != 0);
-    return 0;
+    return OK;
 }
 
 int16_t perform_shr(v8086* machine, void* dest, uint8_t arg, uint8_t width)
 {
     uint16_t temp_flags;
-    if(arg == 0) return 0;
+    if(arg == 0) return OK;
     if(width == 8)
       __asm__ __volatile__("shrb %%cl, %%al; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint8_t*) dest)) : "a" (*((uint8_t*) dest)), "c" (arg));
     else if(width == 16)
       __asm__ __volatile__("shrw %%cl, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t*) dest)) : "a" (*((uint16_t*) dest)), "c" (arg));
     else if(width == 32)
       __asm__ __volatile__("shrl %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t*) dest)) : "a" (*((uint32_t*) dest)), "c" (arg));
-    else return -1;
+    else return BAD_WIDTH;
     if(arg == 1) bit_write(machine->regs.w.flags, 1u <<OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1u <<OVERFLOW_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u <<CARRY_FLAG_BIT, bit_get(temp_flags, 1u <<CARRY_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u <<SIGN_FLAG_BIT, bit_get(temp_flags, 1u <<SIGN_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u <<ZERO_FLAG_BIT, bit_get(temp_flags, 1u <<ZERO_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u <<PARITY_FLAG_BIT, bit_get(temp_flags, 1u <<PARITY_FLAG_BIT) != 0);
-    return 0;
+    return OK;
 }
 
 int16_t perform_sar(v8086* machine, void* dest, uint8_t arg, uint8_t width)
 {
     uint16_t temp_flags;
-    if(arg == 0) return 0;
+    if(arg == 0) return OK;
     if(width == 8)
       __asm__ __volatile__("sarb %%cl, %%al; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint8_t*) dest)) : "a" (*((uint8_t*) dest)), "c" (arg));
     else if(width == 16)
       __asm__ __volatile__("sarw %%cl, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t*) dest)) : "a" (*((uint16_t*) dest)), "c" (arg));
     else if(width == 32)
       __asm__ __volatile__("sarl %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t*) dest)) : "a" (*((uint32_t*) dest)), "c" (arg));
-    else return -1;
+    else return BAD_WIDTH;
     if(arg == 1) bit_write(machine->regs.w.flags, 1u <<OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1u <<OVERFLOW_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u <<CARRY_FLAG_BIT, bit_get(temp_flags, 1u <<CARRY_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u <<SIGN_FLAG_BIT, bit_get(temp_flags, 1u <<SIGN_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u <<ZERO_FLAG_BIT, bit_get(temp_flags, 1u <<ZERO_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u <<PARITY_FLAG_BIT, bit_get(temp_flags, 1u <<PARITY_FLAG_BIT) != 0);
-    return 0;
+    return OK;
 }
 
 int16_t perform_neg(v8086* machine, void* source, uint8_t width)
@@ -823,7 +828,7 @@ int16_t perform_neg(v8086* machine, void* source, uint8_t width)
             __asm__ __volatile__("negw %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t*) source)) : "a" (*((uint16_t*) source)));
     else if(width == 32)
             __asm__ __volatile__("negl %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t*) source)) : "a" (*((uint16_t*) source)));
-    else return -1;
+    else return BAD_WIDTH;
     bit_write(machine->regs.w.flags, 1u <<OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1u <<OVERFLOW_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u <<CARRY_FLAG_BIT, bit_get(temp_flags, 1u <<CARRY_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u <<SIGN_FLAG_BIT, bit_get(temp_flags, 1u <<SIGN_FLAG_BIT) != 0);
@@ -831,7 +836,7 @@ int16_t perform_neg(v8086* machine, void* source, uint8_t width)
     bit_write(machine->regs.w.flags, 1u <<PARITY_FLAG_BIT, bit_get(temp_flags, 1u <<PARITY_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u <<AUX_CARRY_FLAG_BIT, bit_get(temp_flags, 1u <<AUX_CARRY_FLAG_BIT) != 0);
 
-    return 0;
+    return OK;
 }
 
 int16_t perform_multiplication(v8086* machine, void* source, uint8_t signed_mul, uint8_t width)
@@ -860,6 +865,7 @@ int16_t perform_multiplication(v8086* machine, void* source, uint8_t signed_mul,
             : "=b" (temp_flags), "=a" (machine->regs.d.eax), "=d"(machine->regs.d.edx) : "d" (machine->regs.d.eax), "c" (*((uint32_t*) source))
             );
         }
+        else return BAD_WIDTH;
     }
     else
     {
@@ -884,10 +890,11 @@ int16_t perform_multiplication(v8086* machine, void* source, uint8_t signed_mul,
             : "=b" (temp_flags), "=a" (machine->regs.d.eax), "=d"(machine->regs.d.edx) : "d" (machine->regs.d.eax), "c" (*((uint32_t*) source))
             );
         }
+        else return BAD_WIDTH;
     }
     bit_write(machine->regs.w.flags, 1u <<OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1u <<OVERFLOW_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u <<CARRY_FLAG_BIT, bit_get(temp_flags, 1u <<CARRY_FLAG_BIT) != 0);
-    return 0;
+    return OK;
 }
 
 int16_t perform_division(v8086* machine, void* source, uint8_t signed_div, uint8_t width)
@@ -916,6 +923,7 @@ int16_t perform_division(v8086* machine, void* source, uint8_t signed_div, uint8
             : "=b" (temp_flags), "=a" (machine->regs.d.eax), "=d"(machine->regs.d.edx) : "d" (machine->regs.d.eax), "c" (*((uint32_t*) source))
             );
         }
+        else return BAD_WIDTH;
     }
     else
     {
@@ -940,8 +948,9 @@ int16_t perform_division(v8086* machine, void* source, uint8_t signed_div, uint8
             : "=b" (temp_flags), "=a" (machine->regs.d.eax), "=d"(machine->regs.d.edx) : "d" (machine->regs.d.eax), "c" (*((uint32_t*) source))
             );
         }
+        else return BAD_WIDTH;
     }
-    return 0;
+    return OK;
 }
 
 int16_t perform_test(v8086* machine, void* source, void* dest, uint8_t width)
@@ -954,14 +963,14 @@ int16_t perform_test(v8086* machine, void* source, void* dest, uint8_t width)
         result = *((uint16_t*) source) & *((uint16_t*) dest);
     else if(width == 32)
         result = *((uint32_t*) source) & *((uint32_t*) dest);
-    else return -1;
+    else return BAD_WIDTH;
 
     uint8_t parrity = result & 1u;
     for(uint8_t i = 1; i < 8; i++) parrity ^= (result >> i) & 1u;
     bit_write(machine->regs.d.eflags, 1u <<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
     bit_write(machine-> regs.d.eflags, 1u <<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
     bit_write(machine->regs.d.eflags, 1u <<SIGN_FLAG_BIT, result >> (width - 1u)); //SIGN FLAG
-    return 0;
+    return OK;
 }
 
 int16_t perform_inc(v8086* machine, void* dest, uint8_t width)
@@ -972,7 +981,7 @@ int16_t perform_inc(v8086* machine, void* dest, uint8_t width)
     if (width == 8) dest_before = *((uint8_t*) dest);
     else if(width == 16) dest_before = *((uint16_t*)dest);
     else if(width == 32) dest_before = *((uint32_t*)dest);
-    else return -1;
+    else return BAD_WIDTH;
 
     result = dest_before + 1;
 
@@ -987,7 +996,7 @@ int16_t perform_inc(v8086* machine, void* dest, uint8_t width)
     if(width == 8) *((uint8_t*)dest) = result & 0xFFu;
     else if(width == 16) *((uint16_t*)dest) = result & 0xFFFFu;
     else if(width == 32) *((uint32_t*)dest) = result & 0xFFFFFFFF;
-    return 0;
+    return OK;
 }
 
 int16_t perform_dec(v8086* machine, void* dest, uint8_t width)
@@ -998,7 +1007,7 @@ int16_t perform_dec(v8086* machine, void* dest, uint8_t width)
     if (width == 8) dest_before = *((uint8_t*) dest);
     else if(width == 16) dest_before = *((uint16_t*)dest);
     else if(width == 32) dest_before = *((uint32_t*)dest);
-    else return -1;
+    else return BAD_WIDTH;
 
     result = dest_before - 1;
 
@@ -1013,7 +1022,7 @@ int16_t perform_dec(v8086* machine, void* dest, uint8_t width)
     if(width == 8) *((uint8_t*)dest) = result & 0xFFu;
     else if(width == 16) *((uint16_t*)dest) = result & 0xFFFFu;
     else if(width == 32) *((uint32_t*)dest) = result & 0xFFFFFFFF;
-    return 0;
+    return OK;
 }
 
 int16_t parse_and_execute_instruction(v8086* machine)
@@ -1022,6 +1031,8 @@ int16_t parse_and_execute_instruction(v8086* machine)
     machine->internal_state.operand_32_bit = 0;
     machine->internal_state.segment_reg_select = DEFAULT;
     machine->internal_state.rep_prefix = NONE;
+
+    int16_t status = OK;
 
     //Maybe opcode, an be also prefix
     uint8_t opcode;
@@ -1074,22 +1085,22 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //ADD
     else if(opcode <= 5)
     {
-        perform_artihmetic_or_logical_instruction(machine, opcode, 0, perform_adding);
+        status = perform_artihmetic_or_logical_instruction(machine, opcode, 0, perform_adding);
     }
     //ADC
     else if(opcode >= 0x10 && opcode <= 0x15)
     {
-        perform_artihmetic_or_logical_instruction(machine, opcode - 0x10, bit_get(machine->regs.d.eflags, 1u <<CARRY_FLAG_BIT) >> CARRY_FLAG_BIT, perform_adding);
+        status = perform_artihmetic_or_logical_instruction(machine, opcode - 0x10, bit_get(machine->regs.d.eflags, 1u <<CARRY_FLAG_BIT) >> CARRY_FLAG_BIT, perform_adding);
     }
     //SBB
     else if(opcode >= 0x18 && opcode <= 0x1d)
     {
-        perform_artihmetic_or_logical_instruction(machine, opcode - 0x18, bit_get(machine->regs.d.eflags, 1u <<CARRY_FLAG_BIT) >> CARRY_FLAG_BIT, perform_subtracting);
+        status = perform_artihmetic_or_logical_instruction(machine, opcode - 0x18, bit_get(machine->regs.d.eflags, 1u <<CARRY_FLAG_BIT) >> CARRY_FLAG_BIT, perform_subtracting);
     }
     //SUB
     else if(opcode >= 0x28 && opcode <= 0x2d)
     {
-        perform_artihmetic_or_logical_instruction(machine, opcode - 0x28, 0, perform_subtracting);
+        status = perform_artihmetic_or_logical_instruction(machine, opcode - 0x28, 0, perform_subtracting);
     }
     //INC general registers 16 or 32-bit
     else if(opcode >= 0x40 && opcode <= 0x47)
@@ -1098,7 +1109,8 @@ int16_t parse_and_execute_instruction(v8086* machine)
         void* dest = NULL;
         if(machine->internal_state.operand_32_bit) width=32;
         dest = get_variable_length_register(machine, opcode & 7u, width);
-        perform_inc(machine, dest, width);
+        if(dest == NULL) return UNDEFINED_REGISTER;
+        status = perform_inc(machine, dest, width);
     }
     //DEC general registers 16 or 32-bit
     else if(opcode >= 0x48 && opcode <= 0x4f)
@@ -1107,28 +1119,29 @@ int16_t parse_and_execute_instruction(v8086* machine)
         void* dest = NULL;
         if(machine->internal_state.operand_32_bit) width=32;
         dest = get_variable_length_register(machine, opcode & 7u, width);
-        perform_dec(machine, dest, width);
+        if(dest == NULL) return UNDEFINED_REGISTER;
+        status = perform_dec(machine, dest, width);
     }
     //LOGICAL operations
     //OR
     else if(opcode >= 0x08 && opcode <= 0x0d)
     {
-        perform_artihmetic_or_logical_instruction(machine, opcode - 0x08, 0, perform_or);
+        status = perform_artihmetic_or_logical_instruction(machine, opcode - 0x08, 0, perform_or);
     }
     //AND
     else if(opcode >= 0x20 && opcode <= 0x25)
     {
-        perform_artihmetic_or_logical_instruction(machine, opcode - 0x20, 0, perform_and);
+        status = perform_artihmetic_or_logical_instruction(machine, opcode - 0x20, 0, perform_and);
     }
     //XOR
     else if(opcode >= 0x30 && opcode <= 0x35)
     {
-        perform_artihmetic_or_logical_instruction(machine, opcode - 0x30, 0, perform_xor);
+        status = perform_artihmetic_or_logical_instruction(machine, opcode - 0x30, 0, perform_xor);
     }
     //CMP
     else if(opcode >= 0x38 && opcode <= 0x3d)
     {
-        perform_artihmetic_or_logical_instruction(machine, opcode - 0x30, 0, perform_cmp);
+        status = perform_artihmetic_or_logical_instruction(machine, opcode - 0x30, 0, perform_cmp);
     }
     //GROUP 1
     else if(opcode >= 0x80 && opcode <= 0x83)
@@ -1139,28 +1152,34 @@ int16_t parse_and_execute_instruction(v8086* machine)
         switch((mod_rm >> 3u) & 7u)
         {
             case 0: //ADD
-                perform_artihmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0, perform_adding);
+                status = perform_arithmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0,
+                                                                perform_adding);
                 break;
             case 1: //OR
-                perform_artihmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0, perform_or);
+                status = perform_arithmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0, perform_or);
                 break;
             case 2: //ADC
-                perform_artihmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, bit_get(machine->regs.w.flags, 1u <<CARRY_FLAG_BIT) != 0, perform_adding);
+                status = perform_arithmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm,
+                                                                bit_get(machine->regs.w.flags, 1u << CARRY_FLAG_BIT) !=
+                                                                0, perform_adding);
                 break;
             case 3: //SBB
-                perform_artihmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, bit_get(machine->regs.w.flags, 1u <<CARRY_FLAG_BIT) != 0, perform_subtracting);
+                status = perform_arithmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm,
+                                                                bit_get(machine->regs.w.flags, 1u << CARRY_FLAG_BIT) !=
+                                                                0, perform_subtracting);
                 break;
             case 4: //AND
-                perform_artihmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0, perform_and);
+                status = perform_arithmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0, perform_and);
                 break;
             case 5: //SUB
-                perform_artihmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0, perform_subtracting);
+                status = perform_arithmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0,
+                                                                perform_subtracting);
                 break;
             case 6: //XOR
-                perform_artihmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0, perform_xor);
+                status = perform_arithmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0, perform_xor);
                 break;
             case 7: //CMP
-                perform_artihmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0, perform_cmp);
+                status = perform_arithmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0, perform_cmp);
                 break;
         }
     }
@@ -1177,6 +1196,8 @@ int16_t parse_and_execute_instruction(v8086* machine)
         }
 
         void* dest = get_memory_from_mode(machine, mod_rm, width);
+
+        if(dest == NULL) return UNABLE_GET_MEMORY;
 
         switch((mod_rm >> 3u) & 7u)
         {
@@ -1198,7 +1219,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
                     immediate = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
                     machine -> internal_state.IPOffset += 4;
                 }
-                perform_test(machine, &immediate, dest, width);
+                status = perform_test(machine, &immediate, dest, width);
                 break;
             }
             case 2: //NOT
@@ -1210,22 +1231,22 @@ int16_t parse_and_execute_instruction(v8086* machine)
                     *((uint32_t*)dest) = ~(*((uint32_t*)dest));
                 break;
             case 3: //NEG
-                perform_neg(machine, dest, width);
+                status = perform_neg(machine, dest, width);
                 break;
             case 4: //MUL
-                perform_multiplication(machine, dest, 0, width);
+                status = perform_multiplication(machine, dest, 0, width);
                 break;
             case 5: //IMUL
-                perform_multiplication(machine, dest, 1, width);
+                status = perform_multiplication(machine, dest, 1, width);
                 break;
             case 6: //DIV
-                perform_division(machine, dest, 0, width);
+                status = perform_division(machine, dest, 0, width);
                 break;
             case 7:
-                perform_division(machine, dest, 1, width);
+                status = perform_division(machine, dest, 1, width);
                 break;
             default:
-                return -1;
+                return BAD_REG;
         }
     }
     //PUSH Operations
@@ -1236,9 +1257,10 @@ int16_t parse_and_execute_instruction(v8086* machine)
         void* reg = NULL;
         if(machine->internal_state.operand_32_bit) width = 16;
         reg = get_variable_length_register(machine, opcode & 7u, width);
+        if(reg == NULL) return UNDEFINED_REGISTER;
         if(width==16) push_word(machine, *((uint16_t*)reg));
         else if(width==32) push_dword(machine, *((uint32_t*)reg));
-        else return -1;
+        else return BAD_WIDTH;
     }
     //PUSH CS
     else if(opcode == 0x0e)
@@ -1263,9 +1285,10 @@ int16_t parse_and_execute_instruction(v8086* machine)
         void* reg = NULL;
         if(machine->internal_state.operand_32_bit) width = 16;
         reg = get_variable_length_register(machine, opcode & 7u, width);
+        if(reg == NULL) return UNDEFINED_REGISTER;
         if(width==16) *((uint16_t*)reg) = pop_word(machine);
         else if(width==32) *((uint32_t*)reg) = pop_dword(machine);
-        else return -1;
+        else return BAD_WIDTH;
     }
     //POP DS
     else if(opcode == 0x1f)
@@ -1290,15 +1313,17 @@ int16_t parse_and_execute_instruction(v8086* machine)
             uint16_t temp;
             uint16_t* regA = get_word_register(machine, AX); 
             uint16_t* regB = get_word_register(machine, opcode & 7u);
+            if((regA == NULL) || (regB == NULL)) return UNDEFINED_REGISTER;
             temp = *regA;
             *regA = *regB;
             *regB = temp;
         }
         else if(width == 32)
         {
-            uint16_t temp;
+            uint32_t temp;
             uint32_t* regA = get_dword_register(machine, EAX); 
             uint32_t* regB = get_dword_register(machine, opcode & 7u);
+            if((regA == NULL) || (regB == NULL)) return UNDEFINED_REGISTER;
             temp = *regA;
             *regA = *regB;
             *regB = temp;
@@ -1314,6 +1339,8 @@ int16_t parse_and_execute_instruction(v8086* machine)
         {
             uint8_t* source = get_byte_register(machine, (mod_rm >> 3u) & 7u);
             uint8_t* dest = get_memory_from_mode(machine, mod_rm, 8);
+            if(source == NULL) return UNDEFINED_REGISTER;
+            if(dest == NULL) return UNABLE_GET_MEMORY;
             uint8_t temp;
             temp = *source;
             *source = *dest;
@@ -1325,6 +1352,8 @@ int16_t parse_and_execute_instruction(v8086* machine)
             {
                 uint32_t* source = get_dword_register(machine, (mod_rm >> 3u) & 7u);
                 uint32_t* dest = get_memory_from_mode(machine, mod_rm, 32);
+                if(source == NULL) return UNDEFINED_REGISTER;
+                if(dest == NULL) return UNABLE_GET_MEMORY;
                 uint32_t temp;
                 temp = *source;
                 *source = *dest;
@@ -1334,12 +1363,13 @@ int16_t parse_and_execute_instruction(v8086* machine)
             {
                 uint16_t* source = get_word_register(machine, (mod_rm >> 3u) & 7u);
                 uint16_t* dest = get_memory_from_mode(machine, mod_rm, 16);
+                if(source == NULL) return UNDEFINED_REGISTER;
+                if(dest == NULL) return UNABLE_GET_MEMORY;
                 uint16_t temp;
                 temp = *source;
                 *source = *dest;
                 *dest = temp;
             }
-            
         }
     }
     //ROLS and RORS Group (Group 2)
@@ -1354,31 +1384,31 @@ int16_t parse_and_execute_instruction(v8086* machine)
             else width = 16;
         }
         void* dest = get_memory_from_mode(machine, mod_rm, width);
-        
+        if(dest == NULL) return UNABLE_GET_MEMORY;
         switch((mod_rm >> 3u) & 7u)
         {
             case 0:
-                perform_rol(machine, dest, arg, width);
+                status = perform_rol(machine, dest, arg, width);
                 break;
             case 1:
-                perform_ror(machine, dest, arg, width);
+                status = perform_ror(machine, dest, arg, width);
                 break;
             case 2:
-                perform_rcl(machine, dest, arg, width);
+                status = perform_rcl(machine, dest, arg, width);
                 break;
             case 3:
-                perform_rcr(machine, dest, arg, width);
+                status = perform_rcr(machine, dest, arg, width);
                 break;
             case 4:
-                perform_shl(machine, dest, arg, width);
+                status = perform_shl(machine, dest, arg, width);
                 break;
             case 5:
-                perform_shr(machine, dest, arg, width);
+                status = perform_shr(machine, dest, arg, width);
                 break;
             case 6:
-                return -1;
+                return UNDEFINED_OPCODE;
             case 7:
-                perform_sar(machine, dest, arg, width);
+                status = perform_sar(machine, dest, arg, width);
                 break;
         }
     }
@@ -1514,7 +1544,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
                 if(machine->regs.w.cx) jump = 1;
             break;
         default:
-             break;
+             return UNKNOWN_ERROR;
         }
 
         if(jump)
@@ -1526,6 +1556,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     {
         uint8_t* reg = get_byte_register(machine, opcode & 0x7u);
         uint8_t imm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        if(reg == NULL) return UNDEFINED_REGISTER;
         machine->internal_state.IPOffset += 1;
         *reg = imm;
     }
@@ -1535,6 +1566,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
         if(machine->internal_state.operand_32_bit)
         {
             uint32_t* reg = get_dword_register(machine, (opcode - 0xb8u) & 0x7u);
+            if(reg == NULL) return UNDEFINED_REGISTER;
             uint32_t imm = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
             machine->internal_state.IPOffset += 4;
             *reg = imm;
@@ -1542,6 +1574,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
         else
         {
             uint16_t* reg = get_word_register(machine, (opcode - 0xb8u) & 0x7u);
+            if(reg == NULL) return UNDEFINED_REGISTER;
             uint16_t imm = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
             machine->internal_state.IPOffset += 2;
             *reg = imm; 
@@ -1552,26 +1585,26 @@ int16_t parse_and_execute_instruction(v8086* machine)
     {
         uint16_t offset = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 2;
-        uint16_t segment = *select_segment_register(machine, DS) ? machine->internal_state.segment_reg_select == DEFAULT : *select_segment_register(machine, machine->internal_state.segment_reg_select);
-
+        uint16_t* segment = machine->internal_state.segment_reg_select == DEFAULT ? select_segment_register(machine, DS) : select_segment_register(machine, machine->internal_state.segment_reg_select);
+        if(segment == NULL) return UNDEFINED_SEGMENT_REGISTER;
         switch (opcode)
         {
         case 0xa0:
-            machine->regs.h.al = read_byte_from_pointer(machine->Memory, get_absolute_address(segment, offset));
+            machine->regs.h.al = read_byte_from_pointer(machine->Memory, get_absolute_address(*segment, offset));
             break;
         case 0xa1:
-            if(machine->internal_state.operand_32_bit) machine->regs.d.eax = read_dword_from_pointer(machine->Memory, get_absolute_address(segment, offset));
-            else machine->regs.x.ax = read_word_from_pointer(machine->Memory, get_absolute_address(segment, offset));
+            if(machine->internal_state.operand_32_bit) machine->regs.d.eax = read_dword_from_pointer(machine->Memory, get_absolute_address(*segment, offset));
+            else machine->regs.x.ax = read_word_from_pointer(machine->Memory, get_absolute_address(*segment, offset));
             break;
         case 0xa2:
-            write_byte_to_pointer(machine->Memory, get_absolute_address(segment, offset), machine->regs.h.al);
+            write_byte_to_pointer(machine->Memory, get_absolute_address(*segment, offset), machine->regs.h.al);
             break;
         case 0xa3:
-            if(machine->internal_state.operand_32_bit) write_dword_to_pointer(machine->Memory, get_absolute_address(segment, offset), machine->regs.d.eax);
-            else write_word_to_pointer(machine->Memory, get_absolute_address(segment, offset), machine->regs.x.ax);
+            if(machine->internal_state.operand_32_bit) write_dword_to_pointer(machine->Memory, get_absolute_address(*segment, offset), machine->regs.d.eax);
+            else write_word_to_pointer(machine->Memory, get_absolute_address(*segment, offset), machine->regs.x.ax);
             break;
         default:
-            break;
+            return UNKNOWN_ERROR;
         }
     }
     //MOV r8/r16/r32, rm8/rm16/rm32 or MOV rm8/rm16/rm32, r8/r16/r32
@@ -1588,27 +1621,35 @@ int16_t parse_and_execute_instruction(v8086* machine)
         case 0x88:
             source = get_byte_register(machine, (mod_rm >> 3u) & 7u);
             dest = get_memory_from_mode(machine, mod_rm, 8);
+            if(source == NULL) return UNDEFINED_REGISTER;
+            if(dest == NULL) return UNABLE_GET_MEMORY;
             *((uint8_t*)dest) = *((uint8_t*) source);
             break;
         case 0x89:
             source = get_variable_length_register(machine, (mod_rm >> 3u) & 7u, width);
             dest = get_memory_from_mode(machine, mod_rm, width);
+            if(source == NULL) return UNDEFINED_REGISTER;
+            if(dest == NULL) return UNABLE_GET_MEMORY;
             if(width == 16) *((uint16_t*)dest) = *((uint16_t*) source);
             else *((uint32_t*)dest) = *((uint32_t*) source);
             break;
         case 0x8a:
             dest = get_byte_register(machine, (mod_rm >> 3u) & 7u);
             source = get_memory_from_mode(machine, mod_rm, 8);
+            if(dest == NULL) return UNDEFINED_REGISTER;
+            if(source == NULL) return UNABLE_GET_MEMORY;
             *((uint8_t*)dest) = *((uint8_t*) source);
             break;
         case 0x8b:
             dest = get_variable_length_register(machine, (mod_rm >> 3u) & 7u, width);
             source = get_memory_from_mode(machine, mod_rm, width);
+            if(dest == NULL) return UNDEFINED_REGISTER;
+            if(source == NULL) return UNABLE_GET_MEMORY;
             if(width == 16) *((uint16_t*)dest) = *((uint16_t*) source);
             else *((uint32_t*)dest) = *((uint32_t*) source);
             break;
         default:
-            break;
+            return UNKNOWN_ERROR;
         }
     }
     //MOV Segment to/from r/m
@@ -1622,11 +1663,15 @@ int16_t parse_and_execute_instruction(v8086* machine)
         {
             source = select_segment_register(machine, (mod_rm >> 3u) & 7u);
             dest = get_memory_from_mode(machine, mod_rm, 16);
+            if(source == NULL) return UNDEFINED_SEGMENT_REGISTER;
+            if(dest == NULL) return UNABLE_GET_MEMORY;
         }
         else
         {
             dest = select_segment_register(machine, (mod_rm >> 3u) & 7);
             source = get_memory_from_mode(machine, mod_rm, 16);
+            if(dest == NULL) return UNDEFINED_SEGMENT_REGISTER;
+            if(source == NULL) return UNABLE_GET_MEMORY;
         }
         *dest = *source;
     }
@@ -1640,6 +1685,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
             uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
             machine->internal_state.IPOffset += 1;
             uint8_t* mem = get_memory_from_mode(machine, mod_rm, 8);
+            if(mem == NULL) return UNABLE_GET_MEMORY;
             *mem = immediate;
         }
         else
@@ -1649,6 +1695,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
                 uint32_t immediate = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
                 machine->internal_state.IPOffset += 4;
                 uint32_t* mem = get_memory_from_mode(machine, mod_rm, 32);
+                if(mem == NULL) return UNABLE_GET_MEMORY;
                 *mem = immediate;
             }   
             else
@@ -1656,11 +1703,10 @@ int16_t parse_and_execute_instruction(v8086* machine)
                 uint16_t immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
                 machine->internal_state.IPOffset += 2;
                 uint16_t* mem = get_memory_from_mode(machine, mod_rm, 16);
+                if(mem == NULL) return UNABLE_GET_MEMORY;
                 *mem = immediate;
             }
-             
         }
-        
     }
     //TEST GROUP
     else if(opcode == 0x84)
@@ -1670,7 +1716,9 @@ int16_t parse_and_execute_instruction(v8086* machine)
         machine->internal_state.IPOffset += 1;
         uint8_t* reg = get_byte_register(machine, (mod_rm >> 3u) & 7u);
         uint8_t* memory = get_memory_from_mode(machine, mod_rm, 8);
-        perform_test(machine, reg, memory, 8);
+        if(reg == NULL) return UNDEFINED_REGISTER;
+        if(memory == NULL) return UNABLE_GET_MEMORY;
+        status = perform_test(machine, reg, memory, 8);
     }
     else if(opcode == 0x85)
     {
@@ -1681,7 +1729,9 @@ int16_t parse_and_execute_instruction(v8086* machine)
         if(machine->internal_state.operand_32_bit) width = 32;
         void* source = get_variable_length_register(machine, (mod_rm >> 3u) & 7u, width);
         void* dest = get_memory_from_mode(machine, mod_rm, width);
-        perform_test(machine, source, dest, width);
+        if(source == NULL) return UNDEFINED_REGISTER;
+        if(dest == NULL) return UNABLE_GET_MEMORY;
+        status = perform_test(machine, source, dest, width);
     }
     else if(opcode == 0xa8)
     {
@@ -1689,6 +1739,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
         uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
         uint8_t* reg = get_byte_register(machine, AL);
+        if(reg == NULL) return UNDEFINED_REGISTER;
         uint8_t result = *reg & immediate;
         bit_clear(machine->regs.d.eflags, 1u <<CARRY_FLAG_BIT);
         bit_clear(machine->regs.d.eflags, 1u <<OVERFLOW_FLAG_BIT);
@@ -1715,8 +1766,10 @@ int16_t parse_and_execute_instruction(v8086* machine)
             immediate = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
             machine->internal_state.IPOffset += 4;
         }
+        else return BAD_WIDTH;
 
         void* reg = get_variable_length_register(machine, AX, width);
+        if(reg == NULL) return UNDEFINED_REGISTER;
         
         if(width == 16)
             result = *((uint16_t*) reg) & immediate;
@@ -1739,7 +1792,8 @@ int16_t parse_and_execute_instruction(v8086* machine)
         uint8_t* dest;
         if(machine->internal_state.segment_reg_select == DEFAULT) source_segment = select_segment_register(machine, DS);
         else source_segment = select_segment_register(machine, machine->internal_state.segment_reg_select);
-
+        if(source_segment == NULL) return UNDEFINED_SEGMENT_REGISTER;
+        if(dest_segment == NULL) return UNDEFINED_SEGMENT_REGISTER;
         //if repeat and number of repats == 0 -> dont copy anything
         if(machine->internal_state.rep_prefix == REP_REPE && machine->regs.w.cx == 0) goto recalculate_ip; 
 
@@ -1758,7 +1812,8 @@ int16_t parse_and_execute_instruction(v8086* machine)
         uint16_t* dest_segment = select_segment_register(machine, ES);
         if(machine->internal_state.segment_reg_select == DEFAULT) source_segment = select_segment_register(machine, DS);
         else source_segment = select_segment_register(machine, machine->internal_state.segment_reg_select);
-
+        if(source_segment == NULL) return UNDEFINED_SEGMENT_REGISTER;
+        if(dest_segment == NULL) return UNDEFINED_SEGMENT_REGISTER;
         //if repeat and number of repats == 0 -> dont copy anything
         if(machine->internal_state.rep_prefix == REP_REPE && machine->regs.w.cx == 0) goto recalculate_ip; 
 
@@ -1798,7 +1853,8 @@ int16_t parse_and_execute_instruction(v8086* machine)
         
         if(machine->internal_state.segment_reg_select == DEFAULT) source_segment = select_segment_register(machine, DS);
         else source_segment = select_segment_register(machine, machine->internal_state.segment_reg_select);
-
+        if(source_segment == NULL) return UNDEFINED_SEGMENT_REGISTER;
+        if(dest_segment == NULL) return UNDEFINED_SEGMENT_REGISTER;
         //if repeat and number of repats == 0 -> dont copy anything
         if(machine->internal_state.rep_prefix != NONE && machine->regs.w.cx == 0) goto recalculate_ip; 
 
@@ -1845,14 +1901,15 @@ int16_t parse_and_execute_instruction(v8086* machine)
             if(machine->internal_state.operand_32_bit) width=32;
             else width = 16;
         }
-        
+
+        if(segment == NULL) return UNDEFINED_SEGMENT_REGISTER;
         //if repeat and number of repats == 0 -> dont copy anything
         if(machine->internal_state.rep_prefix == REP_REPE && machine->regs.w.cx == 0) goto recalculate_ip; 
 
         do{
             dest = get_variable_length_pointer(machine->Memory, get_absolute_address(*segment, machine->regs.w.di), width);
             source = get_variable_length_register(machine, AL, width);
-
+            if(source == NULL) return UNDEFINED_REGISTER;
             if(width == 8) *((uint8_t*) dest) = *((uint8_t*) source);
             else if(width == 16) *((uint16_t*) dest) = *((uint16_t*) source);
             else if(width == 32) *((uint32_t*) dest) = *((uint32_t*) source);
@@ -1876,14 +1933,14 @@ int16_t parse_and_execute_instruction(v8086* machine)
 
         if(machine->internal_state.segment_reg_select == DEFAULT) segment = select_segment_register(machine, DS);
         else segment = select_segment_register(machine, machine->internal_state.segment_reg_select);
-        
+        if(segment == NULL) return UNDEFINED_SEGMENT_REGISTER;
         //if repeat and number of repats == 0 -> dont copy anything
         if(machine->internal_state.rep_prefix == REP_REPE && machine->regs.w.cx == 0) goto recalculate_ip; 
 
         do{
             source = get_variable_length_pointer(machine->Memory, get_absolute_address(*segment, machine->regs.w.si), width);
             dest = get_variable_length_register(machine, AL, width);
-
+            if(dest == NULL) return UNDEFINED_REGISTER;
             if(width == 8) *((uint8_t*) dest) = *((uint8_t*) source);
             else if(width == 16) *((uint16_t*) dest) = *((uint16_t*) source);
             else if(width == 32) *((uint32_t*) dest) = *((uint32_t*) source);
@@ -1907,13 +1964,14 @@ int16_t parse_and_execute_instruction(v8086* machine)
             if(machine->internal_state.operand_32_bit) width=32;
             else width = 16;
         }
-        
+        if(source_segment == NULL) return UNDEFINED_SEGMENT_REGISTER;
         //if repeat and number of repats == 0 -> dont copy anything
         if(machine->internal_state.rep_prefix != NONE && machine->regs.w.cx == 0) goto recalculate_ip; 
 
         do{
             dest = get_variable_length_register(machine, AX, width);
             source = get_variable_length_pointer(machine->Memory, get_absolute_address(*source_segment, machine->regs.w.di), width);
+            if(dest == NULL) return UNDEFINED_REGISTER;
             if(width == 8){
                 dest_before = *((uint8_t*)dest);
                 source_before = *((uint8_t*)source);
@@ -2095,8 +2153,9 @@ int16_t parse_and_execute_instruction(v8086* machine)
         uint16_t* segment_register;
         if(opcode == 0xc4) segment_register = select_segment_register(machine, ES);
         else segment_register = select_segment_register(machine, DS);
-
+        if(segment_register == NULL) return UNDEFINED_SEGMENT_REGISTER;
         uint16_t* source = get_memory_from_mode(machine, mod_rm, 16);
+        if(source == NULL) return UNABLE_GET_MEMORY;
 
         if(machine->internal_state.operand_32_bit)
         {
@@ -2326,6 +2385,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
             segment = select_segment_register(machine, machine->internal_state.segment_reg_select);
         else
             segment = select_segment_register(machine, DS);
+        if(segment == NULL) return UNDEFINED_SEGMENT_REGISTER;
         machine->regs.h.al = read_byte_from_pointer(machine->Memory, get_absolute_address(*segment, machine->regs.w.bx + tempAL));
     }
     //GROUP 4
@@ -2336,17 +2396,17 @@ int16_t parse_and_execute_instruction(v8086* machine)
         uint8_t width = 8;
 
         void* dest = get_memory_from_mode(machine, mod_rm, width);
-
+        if(dest == NULL) return UNABLE_GET_MEMORY;
         switch((mod_rm >> 3u) & 7u)
         {
             case 0: //INC rm8
-                perform_inc(machine, dest, width);
+                status = perform_inc(machine, dest, width);
                 break;
             case 1: //DEC rm8
-                perform_dec(machine, dest, width);
+                status = perform_dec(machine, dest, width);
                 break;
             default:
-                return -1;
+                return UNDEFINED_OPCODE;
         }
     }
     //GROUP 5
@@ -2358,21 +2418,21 @@ int16_t parse_and_execute_instruction(v8086* machine)
         if(machine->internal_state.operand_32_bit) width = 32;
 
         void* dest = get_memory_from_mode(machine, mod_rm, width);
-
+        if(dest == NULL) return UNABLE_GET_MEMORY;
         switch((mod_rm >> 3u) & 7u)
         {
             case 0: //INC rm8
-                perform_inc(machine, dest, width);
+                status = perform_inc(machine, dest, width);
                 break;
             case 1: //DEC rm8
-                perform_dec(machine, dest, width);
+                status = perform_dec(machine, dest, width);
                 break;
             case 2: //Near absolute indirect call
                 machine->IP += machine->internal_state.IPOffset;
                 push_word(machine, machine->IP);
                 if(width == 16)
                     machine->IP += *((uint16_t*) dest);
-                else return -1;
+                else return BAD_WIDTH;
                 machine->internal_state.IPOffset = 0;
                 break;
             case 3: // Far absolute indirect call
@@ -2386,7 +2446,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
             case 4: //Near absolute indirect jmp
                 if(width == 16)
                     machine->IP += *((uint16_t*) dest);
-                else return -1;
+                else return BAD_WIDTH;
                 machine->internal_state.IPOffset = 0;
                 break;
             case 5: //Far absolute indirect jmp
@@ -2395,13 +2455,12 @@ int16_t parse_and_execute_instruction(v8086* machine)
                 machine->internal_state.IPOffset = 0;
                 break;
             case 6:
-                if(width == 16)
-                    push_word(machine, *((uint16_t*)dest));
-                else if(width == 32)
-                    push_dword(machine, *((uint32_t*)dest));
-                else return -1;
+                if(width == 16) push_word(machine, *((uint16_t*)dest));
+                else if(width == 32) push_dword(machine, *((uint32_t*)dest));
+                else return BAD_WIDTH;
+                break;
             default:
-                return -1;
+                return UNDEFINED_OPCODE;
         }
     }
     //GROUP 1A
@@ -2419,7 +2478,8 @@ int16_t parse_and_execute_instruction(v8086* machine)
         else if(width == 32)
             *((uint32_t*)dest) = pop_dword(machine);
     }
+    else return UNDEFINED_OPCODE;
     recalculate_ip: machine->IP += machine->internal_state.IPOffset;
 
-    return 0;
+    return status;
 }

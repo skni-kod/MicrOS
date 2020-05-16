@@ -11,6 +11,22 @@ typedef enum _repeat_prefix {
   NONE, REPNE, REP_REPE
 } repeat_prefix;
 
+typedef enum _machine_status {
+    OK = 0,
+    UNDEFINED_OPCODE = -1,
+    UNDEFINED_REGISTER = -2,
+    UNDEFINED_SEGMENT_REGISTER = -3,
+    UNABLE_GET_MEMORY = -4,
+    BAD_MOD_RM = -5,
+    BAD_RM = -6,
+    BAD_MOD = -7,
+    BAD_REG = -8,
+    BAD_WIDTH = -9,
+    UNDEFINED_RECALCULATED_OPCODE = -10,
+    BAD_INT_NUMBER = -11,
+    UNKNOWN_ERROR = -69
+} machine_status;
+
 struct DWORDREGS {
   uint32_t edi;
   uint32_t esi;
