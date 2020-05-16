@@ -2375,11 +2375,49 @@ int16_t parse_and_execute_instruction(v8086* machine)
                 else return -1;
                 machine->internal_state.IPOffset = 0;
                 break;
-            case 3:
-
+            case 3: // Far absolute indirect call
+                machine->IP += machine->internal_state.IPOffset;
+                push_word(machine, machine->sregs.cs);
+                push_word(machine, machine->IP);
+                machine->IP = *((uint16_t*) dest);
+                machine->sregs.cs = *(((uint16_t*)dest)+1);
+                machine->internal_state.IPOffset = 0;
+                break;
+            case 4: //Near absolute indirect jmp
+                if(width == 16)
+                    machine->IP += *((uint16_t*) dest);
+                else return -1;
+                machine->internal_state.IPOffset = 0;
+                break;
+            case 5: //Far absolute indirect jmp
+                machine->IP = *((uint16_t*) dest);
+                machine->sregs.cs = *(((uint16_t*)dest)+1);
+                machine->internal_state.IPOffset = 0;
+                break;
+            case 6:
+                if(width == 16)
+                    push_word(machine, *((uint16_t*)dest));
+                else if(width == 32)
+                    push_dword(machine, *((uint32_t*)dest));
+                else return -1;
             default:
                 return -1;
         }
+    }
+    //GROUP 1A
+    else if(opcode == 0x8f)
+    {
+        //ITS only POP rm16/32
+        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+        uint8_t width = 16;
+        if(machine->internal_state.operand_32_bit) width = 32;
+
+        void* dest = get_memory_from_mode(machine, mod_rm, width);
+        if(width == 16)
+            *((uint16_t*)dest) = pop_word(machine);
+        else if(width == 32)
+            *((uint32_t*)dest) = pop_dword(machine);
     }
     recalculate_ip: machine->IP += machine->internal_state.IPOffset;
 
