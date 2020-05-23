@@ -34,7 +34,6 @@
 #include <time.h>
 #include "terminal/terminal_manager.h"
 #include "cpu/cpuid/cpuid.h"
-
 #include "v8086/v8086.h"
 
 typedef struct _linesStruct
@@ -396,6 +395,9 @@ int kmain()
     switch_active_terminal(0);
     
     v8086* v8086 = v8086_create_machine();
+    v8086->regs.h.ah = 0x00;
+    v8086->regs.h.al = 0x13;
+    int16_t status = v8086_call_int(v8086, 0x10);
     // terminal_manager_print_string(p, "CIASTKO");
     // p = process_manager_create_process("A:/ENV/SHELL.ELF", "", 1000, false);
     // attach_process_to_terminal(ts[0].terminal_id, process_manager_get_process(p));
@@ -407,7 +409,24 @@ int kmain()
     //terminal_manager_print_string(ts[2].active_process->id, "CZEKOLADA!");
     //process_manager_run();
     //destroy_active_terminal();
-
+    char str[100] = "";
+    vga_printstring("IP: ");
+    uint16_t IP = *(uint16_t*)(v8086->Memory + 0x10 * 4);
+    uint16_t CS = *(uint16_t*)(v8086->Memory + 0x10 * 4 + 2);
+    itoa(IP, str, 10);
+    vga_printstring(str);
+    vga_newline();
+    vga_printstring("CS: ");
+    itoa(CS, str, 10);
+    vga_printstring(str);
+    vga_newline();
+    for(uint32_t i = CS * 16 + IP; i < (CS * 16 + IP + 16); i++)
+    {
+        uint8_t mem = v8086->Memory[i];
+        itoa(mem, str, 16);
+        vga_printstring(str);
+        vga_printstring(" ");
+    }
     while (1);
     // {
     //     sleep(5000);

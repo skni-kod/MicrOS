@@ -11,6 +11,14 @@ typedef enum _repeat_prefix {
   NONE, REPNE, REP_REPE
 } repeat_prefix;
 
+enum instruction_set_compatibility{
+    IS8086, IS386
+};
+
+enum BYTE_REGISTERS {AL=0, CL, DL, BL, AH, CH, DH, BH};
+enum WORD_REGISTERS {AX=0, CX, DX, BX, SP, BP, SI, DI};
+enum DWORD_REGISTERS {EAX=0, ECX, EDX, EBX, ESP, EBP, ESI, EDI};
+
 typedef enum _machine_status {
     OK = 0,
     UNDEFINED_OPCODE = -1,
@@ -22,8 +30,10 @@ typedef enum _machine_status {
     BAD_MOD = -7,
     BAD_REG = -8,
     BAD_WIDTH = -9,
-    UNDEFINED_RECALCULATED_OPCODE = -10,
-    BAD_INT_NUMBER = -11,
+    BAD_INDEX = -10,
+    BAD_BASE = -11
+    UNDEFINED_RECALCULATED_OPCODE = -12,
+    BAD_INT_NUMBER = -13,
     UNKNOWN_ERROR = -69
 } machine_status;
 
@@ -90,8 +100,24 @@ struct SREGS {
   uint16_t ss;
 };
 
+struct DWORDIP{
+    uint32_t eip;
+};
+
+struct WORDIP {
+    uint16_t ip;
+    uint16_t _upper_ip;
+};
+
+union IP {
+    struct DWORDIP d;
+    struct WORDIP w;
+    struct WORDIP x;
+};
+
 typedef struct _is{
   uint32_t operand_32_bit;
+  uint32_t address_32_bit;
   segment_register_select segment_reg_select;
   repeat_prefix rep_prefix;
   uint16_t IPOffset;
@@ -101,9 +127,11 @@ typedef struct _v8086
 {
     union REGS regs;
     struct SREGS sregs;
-    uint16_t IP;
+    union IP IP;
     _internal_state internal_state;
     uint8_t	Memory[0x100000];
+    enum instruction_set_compatibility is_compatibility;
+    int16_t (*operations[256]) (struct _v8086*, uint8_t);
 } v8086;
 
 

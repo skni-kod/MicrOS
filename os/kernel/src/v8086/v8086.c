@@ -2,6 +2,9 @@
 #include "../memory/heap/heap.h"
 #include <string.h>
 #include "../assembly/io.h"
+#include "./memory_operations.h"
+#include "./stack.h"
+#include "./mod_rm_parsing.h"
 
 #define bit_get(p,m) ((p) & (m))
 #define bit_set(p,m) ((p) |= (m))
@@ -18,110 +21,7 @@
 #define DIRECTION_FLAG_BIT 10u
 #define OVERFLOW_FLAG_BIT 11u
 
-enum BYTE_REGISTERS {AL=0, CL, DL, BL, AH, CH, DH, BH};
-enum WORD_REGISTERS {AX=0, CX, DX, BX, SP, BP, SI, DI};
-enum DWORD_REGISTERS {EAX=0, ECX, EDX, EBX, ESP, EBP, ESI, EDI};
-
 int16_t parse_and_execute_instruction(v8086* machine);
-
-static inline uint16_t get_absolute_address(uint16_t segment, uint16_t offset)
-{
-    return segment * 16 + offset;
-}
-
-static inline uint8_t* get_byte_pointer(uint8_t* memory, uint16_t offset)
-{
-    return memory + offset;
-}
-
-static inline uint16_t* get_word_pointer(uint8_t* memory, uint16_t offset)
-{
-    return (uint16_t*)(memory + offset);
-}
-
-static inline uint32_t* get_dword_pointer(uint8_t* memory, uint16_t offset)
-{
-    return (uint32_t*)(memory + offset);
-}
-
-static inline void* get_variable_length_pointer(uint8_t* memory, uint16_t offset, uint8_t width)
-{
-    switch(width)
-    {
-        case 8:
-            return get_byte_pointer(memory, offset);
-        case 16:
-            return get_word_pointer(memory, offset);
-        case 32:
-            return get_dword_pointer(memory, offset);
-        default:
-            return NULL;
-    }
-}
-
-static inline uint8_t read_byte_from_pointer(const uint8_t* memory, uint16_t offset)
-{
-    return *(memory + offset);
-}
-
-static inline uint16_t read_word_from_pointer(uint8_t* memory, uint16_t offset)
-{
-    return *get_word_pointer(memory, offset);
-}
-
-static inline uint32_t read_dword_from_pointer(uint8_t* memory, uint16_t offset)
-{
-    return *get_dword_pointer(memory, offset);
-}
-
-static inline void write_byte_to_pointer(uint8_t* memory, uint16_t offset, uint8_t value)
-{
-    *(get_byte_pointer(memory, offset)) = value;
-}
-
-static inline void write_word_to_pointer(uint8_t* memory, uint16_t offset, uint16_t value)
-{
-    *(get_word_pointer(memory, offset)) = value;
-}
-
-static inline void write_dword_to_pointer(uint8_t* memory, uint16_t offset, uint32_t value)
-{
-    *(get_dword_pointer(memory, offset)) = value;
-}
-
-static inline uint16_t read_word_from_double_pointer(uint8_t* memory, uint16_t offset)
-{
-    return *(get_word_pointer(memory, read_word_from_pointer(memory, offset)));
-}
-
-static inline void write_word_from_double_pointer(uint8_t* memory, uint16_t offset, uint16_t value)
-{
-    *(get_word_pointer(memory, read_word_from_pointer(memory, offset))) = value;
-}
-
-static inline void push_word(v8086* machine, uint16_t value)
-{
-    write_word_to_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.w.sp -= 2), value);
-}
-
-static inline void push_dword(v8086* machine, uint32_t value)
-{
-    write_dword_to_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.w.sp -= 4), value);
-}
-
-static inline uint16_t pop_word(v8086* machine)
-{
-    uint16_t v = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.w.sp));
-    machine->regs.w.sp += 2;
-    return v;
-}
-
-static inline uint32_t pop_dword(v8086* machine)
-{
-    uint16_t v = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.w.sp));
-    machine->regs.w.sp += 4;
-    return v;
-}
 
 v8086* v8086_create_machine()
 {
@@ -130,7 +30,7 @@ v8086* v8086_create_machine()
     memset(machine, 0, sizeof(v8086));
     machine->regs.x.flags = 0x2;
     machine->sregs.cs = 0xf000;
-    machine->IP = 0xfff0;
+    machine->IP.w.ip = 0xfff0;
 	memcpy(machine->Memory, (void*)0xc0000000, 0x100000);
 
     return machine;
@@ -138,7 +38,7 @@ v8086* v8086_create_machine()
 
 int16_t v8086_call_function(v8086* machine)
 {
-    while(!(machine->IP == 0xFFFF && machine->sregs.cs == 0xFFFF))
+    while(!(machine->IP.w.ip == 0xFFFF && machine->sregs.cs == 0xFFFF))
     {
         int16_t status = parse_and_execute_instruction(machine);
         if(status != OK) return status;
@@ -149,288 +49,14 @@ int16_t v8086_call_function(v8086* machine)
 int16_t v8086_call_int(v8086* machine, int16_t num)
 {
     if ((num < 0) || (num > 0xFF)) return BAD_INT_NUMBER;
-    machine -> IP = read_word_from_double_pointer(machine->Memory, get_absolute_address(0, num * 4));
-    machine -> sregs.cs = read_word_from_double_pointer(machine->Memory, get_absolute_address(0, num * 4 + 2));
+    machine -> IP.w.ip = read_word_from_pointer(machine->Memory, get_absolute_address(0, num * 4));
+    machine -> sregs.cs = read_word_from_pointer(machine->Memory, get_absolute_address(0, num * 4 + 2));
     push_word(machine, machine->regs.w.flags);
     push_word(machine, 0xFFFF);
     push_word(machine, 0xFFFF);
     int16_t x = v8086_call_function(machine);
     if(x != OK) return x;
     return num;
-}
-
-uint8_t* get_byte_register(v8086* machine, uint8_t reg_field)
-{
-    switch(reg_field)
-    {
-        case AL:
-            return &(machine->regs.h.al);
-        case AH:
-            return &(machine->regs.h.ah);
-        case BL:
-            return &(machine->regs.h.bl);
-        case BH:
-            return &(machine->regs.h.bh);
-        case CL:
-            return &(machine->regs.h.cl);
-        case CH:
-            return &(machine->regs.h.ch);
-        case DL:
-            return &(machine->regs.h.dl);
-        case DH:
-            return &(machine->regs.h.dh);
-        default:
-            return NULL;
-    }
-    return NULL;
-}
-
-uint16_t* get_word_register(v8086* machine, uint8_t reg_field)
-{
-    switch(reg_field)
-    {
-        case AX:
-            return &(machine->regs.x.ax);
-        case CX:
-            return &(machine->regs.x.cx);
-        case DX:
-            return &(machine->regs.x.dx);  
-        case BX:
-            return &(machine->regs.x.bx);
-        case SP:
-            return &(machine->regs.x.sp);
-        case BP:
-            return &(machine->regs.x.bp);
-        case SI:
-            return &(machine->regs.x.si);
-        case DI:
-            return &(machine->regs.x.di);
-        default:
-            return NULL;
-    }
-    return NULL;
-}
-
-uint32_t* get_dword_register(v8086* machine, uint8_t reg_field)
-{
-    switch(reg_field)
-    {
-        case EAX:
-            return &(machine->regs.d.eax);
-        case ECX:
-            return &(machine->regs.d.ecx);
-        case EDX:
-            return &(machine->regs.d.edx);  
-        case EBX:
-            return &(machine->regs.d.ebx);
-        case ESP:
-            return &(machine->regs.d.esp);
-        case EBP:
-            return &(machine->regs.d.ebp);
-        case ESI:
-            return &(machine->regs.d.esi);
-        case EDI:
-            return &(machine->regs.d.edi);
-        default:
-            return NULL;
-    }
-    return NULL;
-}
-
-void* get_variable_length_register(v8086* machine, uint8_t reg_field, uint8_t width)
-{
-    switch (width)
-    {
-        case 8:
-            return get_byte_register(machine, reg_field);
-        case 16:
-            return get_word_register(machine, reg_field);
-        case 32:
-            return get_dword_register(machine, reg_field);
-        default:
-            return NULL;
-    }
-}
-
-uint16_t* select_segment_register(v8086* machine, segment_register_select select)
-{
-    switch(select)
-    {
-        case CS:
-            return &(machine->sregs.cs);
-        case DS:
-            return &(machine->sregs.ds);
-        case SS:
-            return &(machine->sregs.ss);
-        case ES:
-            return &(machine->sregs.es);
-        case FS:
-            return &(machine->sregs.fs);
-        case GS:
-            return &(machine->sregs.gs);
-        default:
-            return NULL;
-    }
-}
-
-int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint16_t* segment, uint16_t* offset)
-{
-    uint16_t* segment_register = NULL;
-    if(machine->internal_state.segment_reg_select != DEFAULT)
-        segment_register = select_segment_register(machine, machine->internal_state.segment_reg_select);
-    else
-    {
-        switch (mod_rm & 7u)
-        {
-        case 0:
-        case 1:
-        case 4:
-        case 5:
-        case 7:
-            segment_register = select_segment_register(machine, DS);
-            break;
-        case 6:
-            if((mod_rm >> 6u) == 0) segment_register = select_segment_register(machine, DS);
-            else segment_register = select_segment_register(machine, SS);
-            break;
-        default:
-            segment_register = select_segment_register(machine, SS);
-            break;
-        }
-    }
-
-    if(segment_register == NULL) return UNDEFINED_SEGMENT_REGISTER;
-
-    *segment = *segment_register;
-
-    switch(mod_rm >> 6u) //Parsing mod than parsing rm
-    {
-        case 0:
-            switch(mod_rm & 7u){
-                case 0:
-                    *offset = machine->regs.x.bx + machine->regs.x.si;
-                    return OK;
-                case 1:
-                    *offset = machine->regs.x.bx + machine->regs.x.di;
-                    return OK;
-                case 2:
-                    *offset = machine->regs.x.bp + machine->regs.x.si;
-                    return OK;
-                case 3:
-                    *offset = machine->regs.x.bp + machine->regs.x.di;
-                    return OK;
-                case 4:
-                    *offset = machine->regs.x.si;
-                    return OK;
-                case 5:
-                    *offset = machine->regs.x.di;
-                    return OK;
-                case 6:{
-                    *offset = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + (machine->internal_state.IPOffset)));
-                    machine->internal_state.IPOffset += 1;
-                    return OK;
-                }
-                case 7:
-                    *offset = machine->regs.x.bx;
-                    return OK;
-                default:
-                    return BAD_RM;
-            }
-        case 1:{
-            int8_t disp = (int8_t) read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
-            machine->internal_state.IPOffset += 1;
-            switch(mod_rm & 7u){
-                case 0:
-                    *offset = machine->regs.x.bx + machine->regs.x.si + disp;
-                    return OK;
-                case 1:
-                    *offset = machine->regs.x.bx + machine->regs.x.di + disp;
-                    return OK;
-                case 2:
-                    *offset = machine->regs.x.bp + machine->regs.x.si + disp;
-                    return OK;
-                case 3:
-                    *offset = machine->regs.x.bp + machine->regs.x.di + disp;
-                    return OK;
-                case 4:
-                    *offset = machine->regs.x.si + disp;
-                    return OK;
-                case 5:
-                    *offset = machine->regs.x.di + disp;
-                    return OK;
-                case 6:
-                    *offset = machine->regs.x.bp + disp;
-                    return OK;
-                case 7:
-                    *offset = machine->regs.x.bx + disp;
-                    return OK;
-                default:
-                    return BAD_RM;
-            }
-        }
-        case 2:{
-            uint16_t disp = (uint16_t) read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
-            machine->internal_state.IPOffset += 2;
-            switch(mod_rm & 7u){
-                case 0:
-                    *offset = machine->regs.x.bx + machine->regs.x.si + disp;
-                    return OK;
-                case 1:
-                    *offset = machine->regs.x.bx + machine->regs.x.di + disp;
-                    return OK;
-                case 2:
-                    *offset = machine->regs.x.bp + machine->regs.x.si + disp;
-                    return OK;
-                case 3:
-                    *offset = machine->regs.x.bp + machine->regs.x.di + disp;
-                    return OK;
-                case 4:
-                    *offset = machine->regs.x.si + disp;
-                    return OK;
-                case 5:
-                    *offset = machine->regs.x.di + disp;
-                    return OK;
-                case 6:
-                    *offset = machine->regs.x.bp + disp;
-                    return OK;
-                case 7:
-                    *offset = machine->regs.x.bx + disp;
-                    return OK;
-                default:
-                    return BAD_RM;
-            }
-        }
-        default:
-            return BAD_MOD;
-    }
-    return UNKNOWN_ERROR;
-}
-
-void* get_memory_from_mode(v8086* machine, uint8_t mod_rm, uint8_t width)
-{
-    uint16_t segment;
-    uint16_t offset;
-
-    switch(mod_rm >> 6u) //Parsing mod than parsing rm
-    {
-        case 0:
-        case 1:
-        case 2:
-            calculate_segment_offset_from_mode(machine, mod_rm, &segment, &offset);
-            return get_variable_length_pointer(machine->Memory, get_absolute_address(segment, offset), width);
-        case 3:
-            switch(width){
-                case 8:
-                    return get_byte_register(machine, mod_rm & 7u);
-                case 16:
-                    return get_word_register(machine, mod_rm & 7u);
-                case 32:
-                    return get_dword_register(machine, mod_rm & 7u);
-                default:
-                    return NULL;
-            }
-    }
-    return NULL;
 }
 
 int16_t perform_adding(v8086* machine, void* dest, void* source, uint8_t width, uint32_t carry)
@@ -597,7 +223,7 @@ int16_t perform_cmp(v8086* machine, void* dest, void* source, uint8_t width, uin
 int16_t perform_artihmetic_or_logical_instruction(v8086* machine, uint8_t recalculated_opcode, uint32_t carry, int16_t (*operation)(v8086*, void*, void*, uint8_t, uint32_t))
 {
     //Maybe Mod/RM, Can be Immediate
-    uint8_t mod_rm_or_immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+    uint8_t mod_rm_or_immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
     machine->internal_state.IPOffset += 1;
         
     uint8_t width = 16;
@@ -640,9 +266,9 @@ int16_t perform_artihmetic_or_logical_instruction(v8086* machine, uint8_t recalc
             dest = get_variable_length_register(machine, AX, width);
             if(dest == NULL) return UNDEFINED_REGISTER;
             if(width == 32)
-                source = get_dword_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP - 1 + machine->internal_state.IPOffset));
+                source = get_dword_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip - 1 + machine->internal_state.IPOffset));
             else 
-                source = get_word_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP - 1 + machine->internal_state.IPOffset));
+                source = get_word_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip - 1 + machine->internal_state.IPOffset));
             machine->internal_state.IPOffset += ((width / 8) - 1);
             break;
         default:
@@ -664,19 +290,19 @@ int16_t perform_arithmetic_or_logical_instruction_group(v8086* machine, uint8_t 
         case 2: //OPERATION rm8, imm8
             width = 8;
             dest = get_memory_from_mode(machine, mod_rm, width);
-            immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+            immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
             machine->internal_state.IPOffset += 1;
             break;
         case 1: //OPERATION rm16, imm16 or rm32, imm32
             if(machine->internal_state.operand_32_bit) {
                 width = 32;
-                immediate = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+                immediate = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
                 machine->internal_state.IPOffset += 4;
             }
             else
             { 
                 width = 16;
-                immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+                immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
                 machine->internal_state.IPOffset += 2;
             }
             dest = get_memory_from_mode(machine, mod_rm, width);
@@ -684,7 +310,7 @@ int16_t perform_arithmetic_or_logical_instruction_group(v8086* machine, uint8_t 
         case 3: //OPERATION rm16, imm8, or rm32, imm8
             if(machine->internal_state.operand_32_bit) width = 32;
             else width = 16;
-            signed_immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+            signed_immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
             machine->internal_state.IPOffset += 1;
             dest = get_memory_from_mode(machine, mod_rm, width);
             break;
@@ -1036,7 +662,9 @@ int16_t parse_and_execute_instruction(v8086* machine)
 
     //Maybe opcode, an be also prefix
     uint8_t opcode;
-    decode: opcode = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+    decode: opcode = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    uint32_t temp = get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset);
+    uint8_t* ptr_to_opcode = get_byte_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
     machine->internal_state.IPOffset += 1;
     
     //PREFIXES
@@ -1146,7 +774,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //GROUP 1
     else if(opcode >= 0x80 && opcode <= 0x83)
     {
-        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
         uint8_t recalculated_opcode = opcode - 0x80;
         switch((mod_rm >> 3u) & 7u)
@@ -1186,7 +814,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //GROUP 3
     else if(opcode >= 0xf6 && opcode <= 0xf7)
     {
-        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
         uint8_t width = 8;
         if(opcode == 0xf7)
@@ -1206,17 +834,17 @@ int16_t parse_and_execute_instruction(v8086* machine)
                 uint32_t immediate;
                 if(width == 8)
                 {
-                    immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+                    immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
                     machine -> internal_state.IPOffset += 1;
                 }
                 else if(width == 16)
                 {
-                    immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+                    immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
                     machine -> internal_state.IPOffset += 2;
                 }
                 else if(width == 32)
                 {
-                    immediate = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+                    immediate = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
                     machine -> internal_state.IPOffset += 4;
                 }
                 status = perform_test(machine, &immediate, dest, width);
@@ -1333,7 +961,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //XCHG r8, rm8 or XCHG r16, rm16 or XCHG r32, rm32
     else if(opcode >= 0x86 && opcode <= 0x87)
     {
-        int8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        int8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
         if(opcode == 0x86)
         {
@@ -1375,7 +1003,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //ROLS and RORS Group (Group 2)
     else if(opcode >= 0xd0 && opcode <= 0xd3)
     {
-        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
         uint8_t arg = opcode <=0xd1 ? 1 : machine->regs.h.cl;
         uint8_t width = 8;
@@ -1416,9 +1044,9 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //SHORT JUMPS on conditions
     else if((opcode >= 0x70 && opcode <= 0x7f) || (opcode == 0xe3))
     {
-        int8_t offset = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        int8_t offset = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
-        uint32_t tempIP = machine->IP;
+        uint32_t tempIP = machine->IP.w.ip;
         uint8_t jump = 0;
         if(opcode != 0xe3)
             switch(opcode & 0x0fu)
@@ -1483,30 +1111,30 @@ int16_t parse_and_execute_instruction(v8086* machine)
         }
         if(jump) tempIP += offset;
         if(tempIP > 0xFFFF) return -1;
-        machine->IP = tempIP;
+        machine->IP.w.ip = tempIP;
     }
     //Short relative JMP
     else if(opcode == 0xeb)
     {
-        int8_t offset = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        int8_t offset = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
-        machine->IP += offset;
+        machine->IP.w.ip += offset;
     }
     //Near realtive JMP
     else if(opcode == 0xe9)
     {
-        int16_t offset = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        int16_t offset = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
-        machine->IP += offset;
+        machine->IP.w.ip += offset;
     }
     //Far JMP
     else if(opcode == 0xea)
     {
-        int16_t newIP = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        int16_t newIP = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
-        int16_t newCS = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        int16_t newCS = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->sregs.cs = newCS;
-        machine->IP = newIP;
+        machine->IP.w.ip = newIP;
         machine->internal_state.IPOffset = 0;
     }
     //LOOP Group
@@ -1514,7 +1142,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     else if(opcode >= 0xe0 && opcode <= 0xe2)
     {
         uint8_t jump = 0;
-        int8_t offset = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        int8_t offset = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
 
         if(machine->internal_state.operand_32_bit) machine->regs.d.ecx--;
@@ -1548,14 +1176,14 @@ int16_t parse_and_execute_instruction(v8086* machine)
         }
 
         if(jump)
-            machine->IP += offset;
+            machine->IP.w.ip += offset;
     }
     //MOV Group
     //MOV r8, imm8
     else if(opcode >= 0xb0 && opcode <= 0xb7)
     {
         uint8_t* reg = get_byte_register(machine, opcode & 0x7u);
-        uint8_t imm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint8_t imm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         if(reg == NULL) return UNDEFINED_REGISTER;
         machine->internal_state.IPOffset += 1;
         *reg = imm;
@@ -1567,7 +1195,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
         {
             uint32_t* reg = get_dword_register(machine, (opcode - 0xb8u) & 0x7u);
             if(reg == NULL) return UNDEFINED_REGISTER;
-            uint32_t imm = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+            uint32_t imm = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
             machine->internal_state.IPOffset += 4;
             *reg = imm;
         }
@@ -1575,7 +1203,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
         {
             uint16_t* reg = get_word_register(machine, (opcode - 0xb8u) & 0x7u);
             if(reg == NULL) return UNDEFINED_REGISTER;
-            uint16_t imm = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+            uint16_t imm = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
             machine->internal_state.IPOffset += 2;
             *reg = imm; 
         }
@@ -1583,7 +1211,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //MOV AL/AX/EAX, moffs8/moffs16/moffs32 or MOV moffs8/moffs16/moffs32, AL/AX/EAX
     else if(opcode >= 0xa0 && opcode <= 0xa3)
     {
-        uint16_t offset = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint16_t offset = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 2;
         uint16_t* segment = machine->internal_state.segment_reg_select == DEFAULT ? select_segment_register(machine, DS) : select_segment_register(machine, machine->internal_state.segment_reg_select);
         if(segment == NULL) return UNDEFINED_SEGMENT_REGISTER;
@@ -1611,7 +1239,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     else if(opcode >= 0x88 && opcode <= 0x8b)
     {
         //Mod/RM
-        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
         void* source = NULL;
         void* dest = NULL;
@@ -1655,7 +1283,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //MOV Segment to/from r/m
     else if(opcode == 0x8c || opcode == 0x8e)
     {
-        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
         uint16_t* source = NULL;
         uint16_t* dest = NULL;
@@ -1678,11 +1306,11 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //MOV rm, imm
     else if(opcode >= 0xc6 && opcode <= 0xc7)
     {
-        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
         if(opcode == 0xc6)
         {
-            uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+            uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
             machine->internal_state.IPOffset += 1;
             uint8_t* mem = get_memory_from_mode(machine, mod_rm, 8);
             if(mem == NULL) return UNABLE_GET_MEMORY;
@@ -1692,7 +1320,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
         {
             if(machine->internal_state.operand_32_bit)
             {
-                uint32_t immediate = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+                uint32_t immediate = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
                 machine->internal_state.IPOffset += 4;
                 uint32_t* mem = get_memory_from_mode(machine, mod_rm, 32);
                 if(mem == NULL) return UNABLE_GET_MEMORY;
@@ -1700,7 +1328,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
             }   
             else
             {
-                uint16_t immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+                uint16_t immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
                 machine->internal_state.IPOffset += 2;
                 uint16_t* mem = get_memory_from_mode(machine, mod_rm, 16);
                 if(mem == NULL) return UNABLE_GET_MEMORY;
@@ -1712,7 +1340,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     else if(opcode == 0x84)
     {
         //Mod/RM
-        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
         uint8_t* reg = get_byte_register(machine, (mod_rm >> 3u) & 7u);
         uint8_t* memory = get_memory_from_mode(machine, mod_rm, 8);
@@ -1723,7 +1351,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     else if(opcode == 0x85)
     {
         //Mod/RM
-        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
         uint8_t width = 16;
         if(machine->internal_state.operand_32_bit) width = 32;
@@ -1736,7 +1364,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     else if(opcode == 0xa8)
     {
         //Mod/RM
-        uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
         uint8_t* reg = get_byte_register(machine, AL);
         if(reg == NULL) return UNDEFINED_REGISTER;
@@ -1758,12 +1386,12 @@ int16_t parse_and_execute_instruction(v8086* machine)
         uint32_t result;
         if(width == 16)
         {
-            immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+            immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
             machine->internal_state.IPOffset += 2;
         }
         else if(width == 32)
         {
-            immediate = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+            immediate = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
             machine->internal_state.IPOffset += 4;
         }
         else return BAD_WIDTH;
@@ -2089,7 +1717,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //AAM
     else if(opcode == 0xd4)
     {
-        uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
         uint8_t tempAL = machine->regs.h.al;
         machine->regs.h.ah = tempAL / immediate;
@@ -2104,7 +1732,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //AAD
     else if(opcode == 0xd5)
     {
-        uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
         uint8_t tempAL = machine->regs.h.al;
         uint8_t tempAH = machine->regs.h.ah;
@@ -2122,7 +1750,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //LEA
     else if(opcode == 0x8d)
     {
-        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
 
         uint16_t segment;
@@ -2147,7 +1775,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //LDS or LES
     else if(opcode >= 0xc4 && opcode <= 0xc5)
     {
-        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
 
         uint16_t* segment_register;
@@ -2228,14 +1856,14 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //IN AL, i8
     else if(opcode == 0xe4)
     {
-        uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
         machine->regs.h.al = io_in_byte(immediate);        
     }
     //IN AX/EAX, i8
     else if(opcode == 0xe5)
     {
-        uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
         if(machine->internal_state.operand_32_bit)
             machine->regs.d.eax = io_in_long(immediate);
@@ -2256,14 +1884,14 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //OUT i8, AL
     else if(opcode == 0xe6)
     {
-        uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
         io_out_byte(immediate, machine->regs.h.al);
     }
     //OUT i8, AX/EAX
     else if(opcode == 0xe7)
     {
-        uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
         if(machine->internal_state.operand_32_bit)
             io_out_long(immediate, machine->regs.d.eax);
@@ -2285,55 +1913,55 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //NEAR relative CALL
     else if(opcode == 0xe8)
     {
-        int16_t immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        int16_t immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 2;
 
-        machine->IP += machine->internal_state.IPOffset;
-        push_word(machine, machine->IP);
-        machine->IP += immediate;
+        machine->IP.w.ip += machine->internal_state.IPOffset;
+        push_word(machine, machine->IP.w.ip);
+        machine->IP.w.ip += immediate;
         machine->internal_state.IPOffset = 0;
     }
     //FAR CALL
     else if(opcode == 0x9a)
     {
-        int16_t newIP = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        int16_t newIP = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 2;
-        int16_t newCS = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        int16_t newCS = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 2;
         push_word(machine, machine->sregs.cs);
-        push_word(machine, machine->IP + machine->internal_state.IPOffset);
-        machine->IP = newIP;
+        push_word(machine, machine->IP.w.ip + machine->internal_state.IPOffset);
+        machine->IP.w.ip = newIP;
         machine->sregs.cs = newCS;
         machine->internal_state.IPOffset = 0;
     }
     //Near RET
     else if(opcode == 0xc3)
     {
-        machine->IP = pop_word(machine);
+        machine->IP.w.ip = pop_word(machine);
         machine->internal_state.IPOffset = 0;
     }
     //Near RET, imm16
     else if(opcode == 0xc2)
     {
-        uint16_t immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint16_t immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 2;
-        machine->IP = pop_word(machine);
+        machine->IP.w.ip = pop_word(machine);
         machine->regs.w.sp += immediate;
         machine->internal_state.IPOffset = 0;
     }
     //Far RET
     else if(opcode == 0xcb)
     {
-        machine->IP = pop_word(machine);
+        machine->IP.w.ip = pop_word(machine);
         machine->sregs.cs = pop_word(machine);
         machine->internal_state.IPOffset = 0;
     }
     //Far RET, imm16
     else if(opcode == 0xca)
     {
-        uint16_t immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint16_t immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 2;
-        machine->IP = pop_word(machine);
+        machine->IP.w.ip = pop_word(machine);
         machine->sregs.cs = pop_word(machine);
         machine->regs.w.sp += immediate;
         machine->internal_state.IPOffset = 0;
@@ -2345,7 +1973,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
         uint8_t interrupt_number = 3;
         if(opcode == 0xcd) //INT, imm
         {
-            interrupt_number = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+            interrupt_number = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
             machine->internal_state.IPOffset += 1;
         }
         else if(opcode == 0xce) //INTO
@@ -2359,9 +1987,9 @@ int16_t parse_and_execute_instruction(v8086* machine)
 
         push_word(machine, machine->regs.w.flags);
         push_word(machine, machine->sregs.cs);
-        push_word(machine, machine->IP);
+        push_word(machine, machine->IP.w.ip);
 
-        machine->IP = newIP;
+        machine->IP.w.ip = newIP;
         machine->sregs.cs = newCS;
 
         machine->internal_state.IPOffset = 0;
@@ -2369,7 +1997,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //IRET
     else if(opcode == 0xcf)
     {
-        machine->IP = pop_word(machine);
+        machine->IP.w.ip = pop_word(machine);
         machine->sregs.cs = pop_word(machine);
         machine->regs.w.flags = pop_word(machine);
 
@@ -2391,7 +2019,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //GROUP 4
     else if(opcode == 0xfe)
     {
-        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
         uint8_t width = 8;
 
@@ -2412,7 +2040,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //GROUP 5
     else if(opcode == 0xff)
     {
-        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
         uint8_t width = 16;
         if(machine->internal_state.operand_32_bit) width = 32;
@@ -2428,29 +2056,29 @@ int16_t parse_and_execute_instruction(v8086* machine)
                 status = perform_dec(machine, dest, width);
                 break;
             case 2: //Near absolute indirect call
-                machine->IP += machine->internal_state.IPOffset;
-                push_word(machine, machine->IP);
+                machine->IP.w.ip += machine->internal_state.IPOffset;
+                push_word(machine, machine->IP.w.ip);
                 if(width == 16)
-                    machine->IP += *((uint16_t*) dest);
+                    machine->IP.w.ip += *((uint16_t*) dest);
                 else return BAD_WIDTH;
                 machine->internal_state.IPOffset = 0;
                 break;
             case 3: // Far absolute indirect call
-                machine->IP += machine->internal_state.IPOffset;
+                machine->IP.w.ip += machine->internal_state.IPOffset;
                 push_word(machine, machine->sregs.cs);
-                push_word(machine, machine->IP);
-                machine->IP = *((uint16_t*) dest);
+                push_word(machine, machine->IP.w.ip);
+                machine->IP.w.ip = *((uint16_t*) dest);
                 machine->sregs.cs = *(((uint16_t*)dest)+1);
                 machine->internal_state.IPOffset = 0;
                 break;
             case 4: //Near absolute indirect jmp
                 if(width == 16)
-                    machine->IP += *((uint16_t*) dest);
+                    machine->IP.w.ip += *((uint16_t*) dest);
                 else return BAD_WIDTH;
                 machine->internal_state.IPOffset = 0;
                 break;
             case 5: //Far absolute indirect jmp
-                machine->IP = *((uint16_t*) dest);
+                machine->IP.w.ip = *((uint16_t*) dest);
                 machine->sregs.cs = *(((uint16_t*)dest)+1);
                 machine->internal_state.IPOffset = 0;
                 break;
@@ -2467,7 +2095,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     else if(opcode == 0x8f)
     {
         //ITS only POP rm16/32
-        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP + machine->internal_state.IPOffset));
+        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
         uint8_t width = 16;
         if(machine->internal_state.operand_32_bit) width = 32;
@@ -2479,7 +2107,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
             *((uint32_t*)dest) = pop_dword(machine);
     }
     else return UNDEFINED_OPCODE;
-    recalculate_ip: machine->IP += machine->internal_state.IPOffset;
+    recalculate_ip: machine->IP.w.ip += machine->internal_state.IPOffset;
 
     return status;
 }
