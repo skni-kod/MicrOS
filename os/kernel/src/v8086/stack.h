@@ -1,6 +1,9 @@
 #ifndef V8086_STACK_H
 #define V8086_STACK_H
 
+#include "v8086.h"
+#include "memory_operations.h"
+
 static inline void push_word(v8086* machine, uint16_t value)
 {
     write_word_to_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.w.sp -= 2), value);

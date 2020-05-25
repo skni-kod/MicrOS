@@ -116,7 +116,7 @@ uint16_t* select_segment_register(v8086* machine, segment_register_select select
     }
 }
 
-int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint16_t* segment, uint16_t* offset)
+int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint16_t* segment, uint32_t* offset)
 {
     uint16_t* segment_register = NULL;
     if(machine->internal_state.segment_reg_select != DEFAULT)
@@ -249,12 +249,12 @@ int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint1
     return UNKNOWN_ERROR;
 }
 
-int16_t read_and_parse_sib(v8086* machine, uint8_t mod, uint16_t* segment, uint32_t *offset)
+int16_t read_and_parse_sib(v8086* machine, uint8_t mod, const uint16_t* segment, uint32_t *offset)
 {
     uint8_t sib = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
     machine->internal_state.IPOffset += 1;
     uint8_t scale = sib >> 6u;
-    uint8_t index = (sib >> 3u) & 7u;
+    uint8_t index = (uint8_t)(sib >> 3u) & 7u;
     uint8_t base = sib & 7u;
 
     switch (index) {
@@ -275,7 +275,6 @@ int16_t read_and_parse_sib(v8086* machine, uint8_t mod, uint16_t* segment, uint3
             break;
         case 5:
             *offset = machine->regs.d.ebp;
-            segment = select_segment_register(machine, SS);
             break;
         case 6:
             *offset = machine->regs.d.esi;
@@ -313,28 +312,10 @@ int16_t read_and_parse_sib(v8086* machine, uint8_t mod, uint16_t* segment, uint3
                 machine->internal_state.IPOffset += 4;
                 *offset += disp;
             }
-            else if (mod == 1)
+            else
             {
-                uint8_t disp = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs,
-                                                                                              machine->IP.w.ip +
-                                                                                              machine->internal_state.IPOffset));
-                machine->internal_state.IPOffset += 1;
-                *offset += disp;
                 *offset += machine->regs.d.ebp;
                 segment = select_segment_register(machine, SS);
-            }
-            else if(mod == 2)
-            {
-                uint32_t disp = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs,
-                                                                                              machine->IP.w.ip +
-                                                                                              machine->internal_state.IPOffset));
-                machine->internal_state.IPOffset += 4;
-                *offset += disp;
-                *offset += machine->regs.d.ebp;
-                segment = select_segment_register(machine, SS);
-            }
-            else{
-                return BAD_BASE;
             }
             break;
         case 6:
@@ -392,21 +373,106 @@ int16_t calculate_segment_offset_from_mode_32(v8086 *machine, uint8_t mod_rm, ui
                     return BAD_RM;
             }
             break;
+        case 1:
+        {
+            int8_t disp = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+            machine->internal_state.IPOffset += 1;
+            switch (rm) {
+                case 0:
+                    *offset = machine->regs.d.eax + disp;
+                    break;
+                case 1:
+                    *offset = machine->regs.d.ecx + disp;
+                    break;
+                case 2:
+                    *offset = machine->regs.d.edx + disp;
+                    break;
+                case 3:
+                    *offset = machine->regs.d.ebx + disp;
+                    break;
+                case 4: // SIB
+                    read_and_parse_sib(machine, mod, segment_register, offset);
+                    *offset += disp;
+                    break;
+                case 5:{
+                    *offset = machine->regs.d.ebp + disp;
+                    segment_register = select_segment_register(machine, SS);
+                    break;
+                }
+                case 6:
+                    *offset = machine->regs.d.esi + disp;
+                    break;
+                case 7:
+                    *offset = machine->regs.d.edi + disp;
+                    break;
+                default:
+                    return BAD_RM;
+            }
+            break;
+        }
+        case 2: {
+            uint32_t disp = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+            machine->internal_state.IPOffset += 4;
+            switch (rm) {
+                case 0:
+                    *offset = machine->regs.d.eax + disp;
+                    break;
+                case 1:
+                    *offset = machine->regs.d.ecx + disp;
+                    break;
+                case 2:
+                    *offset = machine->regs.d.edx + disp;
+                    break;
+                case 3:
+                    *offset = machine->regs.d.ebx + disp;
+                    break;
+                case 4: // SIB
+                    read_and_parse_sib(machine, mod, segment_register, offset);
+                    *offset += disp;
+                    break;
+                case 5:{
+                    *offset = machine->regs.d.ebp + disp;
+                    segment_register = select_segment_register(machine, SS);
+                    break;
+                }
+                case 6:
+                    *offset = machine->regs.d.esi + disp;
+                    break;
+                case 7:
+                    *offset = machine->regs.d.edi + disp;
+                    break;
+                default:
+                    return BAD_RM;
+            }
+            break;
+        }
+        default:
+            return BAD_MOD;
     }
+
+    if(machine->internal_state.segment_reg_select != DEFAULT)
+        segment_register = select_segment_register(machine, machine->internal_state.segment_reg_select);
+    else if(segment_register == NULL)
+        segment_register = select_segment_register(machine, DS);
+
+    *segment = *segment_register;
     return 0;
 }
 
 void* get_memory_from_mode(v8086* machine, uint8_t mod_rm, uint8_t width)
 {
     uint16_t segment;
-    uint16_t offset;
+    uint32_t offset;
 
     switch(mod_rm >> 6u) //Parsing mod than parsing rm
     {
         case 0:
         case 1:
         case 2:
-            calculate_segment_offset_from_mode(machine, mod_rm, &segment, &offset);
+            if(machine->internal_state.address_32_bit)
+                calculate_segment_offset_from_mode_32(machine, mod_rm, &segment, &offset);
+            else
+                calculate_segment_offset_from_mode(machine, mod_rm, &segment, &offset);
             return get_variable_length_pointer(machine->Memory, get_absolute_address(segment, offset), width);
         case 3:
             switch(width){

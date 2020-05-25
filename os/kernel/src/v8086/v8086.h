@@ -3,6 +3,21 @@
 
 #include <stdint.h>
 
+#define bit_get(p,m) ((p) & (m))
+#define bit_set(p,m) ((p) |= (m))
+#define bit_clear(p,m) ((p) &= ~(m))
+#define bit_flip(p,m) ((p) ^= (m))
+#define bit_write(p,m,v) (v ? bit_set(p,m) : bit_clear(p,m))
+
+#define CARRY_FLAG_BIT 0u
+#define PARITY_FLAG_BIT 2u
+#define AUX_CARRY_FLAG_BIT 4u
+#define ZERO_FLAG_BIT 6u
+#define SIGN_FLAG_BIT 7u
+#define INTERRUPT_FLAG_BIT 9u
+#define DIRECTION_FLAG_BIT 10u
+#define OVERFLOW_FLAG_BIT 11u
+
 typedef enum _segment_register_select {
   ES, CS, SS, DS, FS, GS, DEFAULT
 } segment_register_select;
@@ -31,7 +46,7 @@ typedef enum _machine_status {
     BAD_REG = -8,
     BAD_WIDTH = -9,
     BAD_INDEX = -10,
-    BAD_BASE = -11
+    BAD_BASE = -11,
     UNDEFINED_RECALCULATED_OPCODE = -12,
     BAD_INT_NUMBER = -13,
     UNKNOWN_ERROR = -69
