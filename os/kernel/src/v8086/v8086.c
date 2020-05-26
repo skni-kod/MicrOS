@@ -44,6 +44,18 @@ void v8086_set_8086_instruction_set(v8086* machine)
     ASSIGN_OPCODE(0x3fu, aas);
     GROUP_OF_OPCODES(0x40u, 0x47u, inc);
     GROUP_OF_OPCODES(0x48u, 0x4f, dec);
+    GROUP_OF_OPCODES(0x50u, 0x57u, push_gpr);
+    GROUP_OF_OPCODES(0x58u, 0x5fu, pop_gpr);
+    //NOT DEFINED IN 8086 processor
+    for(uint8_t i = 0x60u; i <= 0x6fu; i++) ASSIGN_NULL(i);
+    GROUP_OF_OPCODES(0x70u, 0x7fu, jcc);
+    GROUP_OF_OPCODES(0x80u, 0x83u, group1);
+    GROUP_OF_OPCODES(0x84u, 0x85u, test);
+    GROUP_OF_OPCODES(0x86u, 0x87u, xchg);
+    GROUP_OF_OPCODES(0x88u, 0x8bu, mov_rm);
+    ASSIGN_OPCODE(0x8cu, mov_segment);
+    ASSIGN_OPCODE(0x8du, lea);
+    ASSIGN_OPCODE(0x8eu, mov_segment);
 
 }
 
@@ -141,46 +153,6 @@ int16_t parse_and_execute_instruction(v8086* machine)
     {
         goto decode; //ommit prefix, contniue parsinf opcode; 
     }
-    //GROUP 1
-    else if(opcode >= 0x80 && opcode <= 0x83)
-    {
-        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
-        machine->internal_state.IPOffset += 1;
-        uint8_t recalculated_opcode = opcode - 0x80;
-        switch(get_reg(mod_rm))
-        {
-            case 0: //ADD
-                status = perform_arithmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0,
-                                                                perform_adding);
-                break;
-            case 1: //OR
-                status = perform_arithmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0, perform_or);
-                break;
-            case 2: //ADC
-                status = perform_arithmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm,
-                                                                bit_get(machine->regs.w.flags, 1u << CARRY_FLAG_BIT) !=
-                                                                0, perform_adding);
-                break;
-            case 3: //SBB
-                status = perform_arithmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm,
-                                                                bit_get(machine->regs.w.flags, 1u << CARRY_FLAG_BIT) !=
-                                                                0, perform_subtracting);
-                break;
-            case 4: //AND
-                status = perform_arithmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0, perform_and);
-                break;
-            case 5: //SUB
-                status = perform_arithmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0,
-                                                                perform_subtracting);
-                break;
-            case 6: //XOR
-                status = perform_arithmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0, perform_xor);
-                break;
-            case 7: //CMP
-                status = perform_arithmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, 0, perform_cmp);
-                break;
-        }
-    }
     //GROUP 3
     else if(opcode >= 0xf6 && opcode <= 0xf7)
     {
@@ -248,107 +220,13 @@ int16_t parse_and_execute_instruction(v8086* machine)
         }
     }
     //PUSH Operations
-    //PUSH General purpose registers
-    else if(opcode >= 0x50 && opcode <= 0x57)
-    {
-        uint8_t width = 16;
-        void* reg = NULL;
-        if(machine->internal_state.operand_32_bit) width = 16;
-        reg = get_variable_length_register(machine, opcode & 7u, width);
-        if(reg == NULL) return UNDEFINED_REGISTER;
-        if(width==16) push_word(machine, *((uint16_t*)reg));
-        else if(width==32) push_dword(machine, *((uint32_t*)reg));
-        else return BAD_WIDTH;
-    }
     //PUSH FLAGS
     else if(opcode == 0x9c)
         push_word(machine, machine->regs.w.flags);
     //POP Operations
-    //POP General purpose registers
-    else if(opcode >= 0x50 && opcode <= 0x57)
-    {
-        uint8_t width = 16;
-        void* reg = NULL;
-        if(machine->internal_state.operand_32_bit) width = 16;
-        reg = get_variable_length_register(machine, opcode & 7u, width);
-        if(reg == NULL) return UNDEFINED_REGISTER;
-        if(width==16) *((uint16_t*)reg) = pop_word(machine);
-        else if(width==32) *((uint32_t*)reg) = pop_dword(machine);
-        else return BAD_WIDTH;
-    }
     //POP FLAGS
     else if(opcode == 0x9d)
         machine->regs.w.flags = pop_word(machine);
-    //XCHG group
-    //XCHG GRP with AX or EAX
-    else if(opcode >= 90 && opcode <= 97)
-    {
-        uint8_t width = 16;
-        if(machine->internal_state.operand_32_bit) width = 32;
-        if(width == 16)
-        {
-            uint16_t temp;
-            uint16_t* regA = get_word_register(machine, AX); 
-            uint16_t* regB = get_word_register(machine, opcode & 7u);
-            if((regA == NULL) || (regB == NULL)) return UNDEFINED_REGISTER;
-            temp = *regA;
-            *regA = *regB;
-            *regB = temp;
-        }
-        else if(width == 32)
-        {
-            uint32_t temp;
-            uint32_t* regA = get_dword_register(machine, EAX); 
-            uint32_t* regB = get_dword_register(machine, opcode & 7u);
-            if((regA == NULL) || (regB == NULL)) return UNDEFINED_REGISTER;
-            temp = *regA;
-            *regA = *regB;
-            *regB = temp;
-        }
-        else return -1;
-    }
-    //XCHG r8, rm8 or XCHG r16, rm16 or XCHG r32, rm32
-    else if(opcode >= 0x86 && opcode <= 0x87)
-    {
-        int8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
-        machine->internal_state.IPOffset += 1;
-        if(opcode == 0x86)
-        {
-            uint8_t* source = get_byte_register(machine, get_reg(mod_rm));
-            uint8_t* dest = get_memory_from_mode(machine, mod_rm, 8);
-            if(source == NULL) return UNDEFINED_REGISTER;
-            if(dest == NULL) return UNABLE_GET_MEMORY;
-            uint8_t temp;
-            temp = *source;
-            *source = *dest;
-            *dest = temp;
-        }
-        else if(opcode  == 0x87)
-        {
-            if(machine->internal_state.operand_32_bit)
-            {
-                uint32_t* source = get_dword_register(machine, get_reg(mod_rm));
-                uint32_t* dest = get_memory_from_mode(machine, mod_rm, 32);
-                if(source == NULL) return UNDEFINED_REGISTER;
-                if(dest == NULL) return UNABLE_GET_MEMORY;
-                uint32_t temp;
-                temp = *source;
-                *source = *dest;
-                *dest = temp;
-            }
-            else
-            {
-                uint16_t* source = get_word_register(machine, get_reg(mod_rm));
-                uint16_t* dest = get_memory_from_mode(machine, mod_rm, 16);
-                if(source == NULL) return UNDEFINED_REGISTER;
-                if(dest == NULL) return UNABLE_GET_MEMORY;
-                uint16_t temp;
-                temp = *source;
-                *source = *dest;
-                *dest = temp;
-            }
-        }
-    }
     //ROLS and RORS Group (Group 2)
     else if(opcode >= 0xd0 && opcode <= 0xd3)
     {
@@ -390,78 +268,6 @@ int16_t parse_and_execute_instruction(v8086* machine)
         }
     }
     //Jumps Group
-    //SHORT JUMPS on conditions
-    else if((opcode >= 0x70 && opcode <= 0x7f) || (opcode == 0xe3))
-    {
-        int8_t offset = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
-        machine->internal_state.IPOffset += 1;
-        uint32_t tempIP = machine->IP.w.ip;
-        uint8_t jump = 0;
-        if(opcode != 0xe3)
-            switch(opcode & 0x0fu)
-            {
-                case 0: //JO
-                    if(bit_get(machine->regs.x.flags, 1u <<OVERFLOW_FLAG_BIT)) jump = 1;
-                    break;
-                case 1: //JNO
-                    if(!bit_get(machine->regs.x.flags, 1u <<OVERFLOW_FLAG_BIT)) jump = 1;
-                    break;
-                case 2: //JB or JNAE or JC
-                    if(bit_get(machine->regs.x.flags, 1u <<CARRY_FLAG_BIT)) jump = 1;
-                    break;
-                case 3: //JNB or JAE or JNC
-                    if(!bit_get(machine->regs.x.flags, 1u <<CARRY_FLAG_BIT)) jump = 1;
-                    break;
-                case 4: //JZ or JE
-                    if(bit_get(machine->regs.x.flags, 1u <<ZERO_FLAG_BIT)) jump = 1;
-                    break;
-                case 5: //JNZ or JNE
-                    if(!bit_get(machine->regs.x.flags, 1u <<ZERO_FLAG_BIT)) jump = 1;
-                    break;
-                case 6: //JBE or JNA
-                    if(bit_get(machine->regs.x.flags, 1u <<CARRY_FLAG_BIT) || bit_get(machine->regs.x.flags, 1u <<ZERO_FLAG_BIT)) jump = 1;
-                    break;
-                case 7: //JNBE or JA
-                    if(!(bit_get(machine->regs.x.flags, 1u <<CARRY_FLAG_BIT) || bit_get(machine->regs.x.flags, 1u <<ZERO_FLAG_BIT))) jump = 1;
-                    break;
-                case 8: //JS
-                    if(bit_get(machine->regs.x.flags, 1u <<SIGN_FLAG_BIT)) jump = 1;
-                    break;
-                case 9: //JNS
-                    if(!bit_get(machine->regs.x.flags, 1u <<SIGN_FLAG_BIT)) jump = 1;
-                    break;
-                case 0xa: //JP or JPE
-                    if(bit_get(machine->regs.x.flags, 1u <<PARITY_FLAG_BIT)) jump = 1;
-                    break;
-                case 0xb: //JNP or JPO
-                    if(!bit_get(machine->regs.x.flags, 1u <<PARITY_FLAG_BIT)) jump = 1;
-                    break;
-                case 0xc: //JL or JNGE
-                    if(!bit_get(machine->regs.x.flags, 1u <<SIGN_FLAG_BIT) != !bit_get(machine->regs.x.flags, 1u <<OVERFLOW_FLAG_BIT)) jump = 1;
-                    break; 
-                case 0xd: //JNL or JGE
-                    if(!bit_get(machine->regs.x.flags, 1u <<SIGN_FLAG_BIT) == !bit_get(machine->regs.x.flags, 1u <<OVERFLOW_FLAG_BIT)) jump = 1;
-                    break; 
-                case 0xe: //JLE or JNG
-                    if(bit_get(machine->regs.x.flags, 1u <<ZERO_FLAG_BIT) || !bit_get(machine->regs.x.flags, 1u <<SIGN_FLAG_BIT) != !bit_get(machine->regs.x.flags, 1u <<OVERFLOW_FLAG_BIT)) jump = 1;
-                    break;
-                case 0xf: //JNLE or JG
-                    if(bit_get(machine->regs.x.flags, 1u <<ZERO_FLAG_BIT) || !bit_get(machine->regs.x.flags, 1u <<SIGN_FLAG_BIT) == !bit_get(machine->regs.x.flags, 1u <<OVERFLOW_FLAG_BIT)) jump = 1;
-                    break;
-            }
-        else
-        {
-            if(machine->internal_state.operand_32_bit)
-            {
-                if(!machine->regs.d.ecx) jump = 1;
-            }
-            else
-                if(!machine->regs.w.cx) jump = 1;
-        }
-        if(jump) tempIP += offset;
-        if(tempIP > 0xFFFF) return -1;
-        machine->IP.w.ip = tempIP;
-    }
     //Short relative JMP
     else if(opcode == 0xeb)
     {
@@ -584,74 +390,6 @@ int16_t parse_and_execute_instruction(v8086* machine)
             return UNKNOWN_ERROR;
         }
     }
-    //MOV r8/r16/r32, rm8/rm16/rm32 or MOV rm8/rm16/rm32, r8/r16/r32
-    else if(opcode >= 0x88 && opcode <= 0x8b)
-    {
-        //Mod/RM
-        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
-        machine->internal_state.IPOffset += 1;
-        void* source = NULL;
-        void* dest = NULL;
-        uint8_t width = machine->internal_state.operand_32_bit ? 32 : 16;
-        switch (opcode)
-        {
-        case 0x88:
-            source = get_byte_register(machine, get_reg(mod_rm));
-            dest = get_memory_from_mode(machine, mod_rm, 8);
-            if(source == NULL) return UNDEFINED_REGISTER;
-            if(dest == NULL) return UNABLE_GET_MEMORY;
-            *((uint8_t*)dest) = *((uint8_t*) source);
-            break;
-        case 0x89:
-            source = get_variable_length_register(machine, get_reg(mod_rm), width);
-            dest = get_memory_from_mode(machine, mod_rm, width);
-            if(source == NULL) return UNDEFINED_REGISTER;
-            if(dest == NULL) return UNABLE_GET_MEMORY;
-            if(width == 16) *((uint16_t*)dest) = *((uint16_t*) source);
-            else *((uint32_t*)dest) = *((uint32_t*) source);
-            break;
-        case 0x8a:
-            dest = get_byte_register(machine, get_reg(mod_rm));
-            source = get_memory_from_mode(machine, mod_rm, 8);
-            if(dest == NULL) return UNDEFINED_REGISTER;
-            if(source == NULL) return UNABLE_GET_MEMORY;
-            *((uint8_t*)dest) = *((uint8_t*) source);
-            break;
-        case 0x8b:
-            dest = get_variable_length_register(machine, get_reg(mod_rm), width);
-            source = get_memory_from_mode(machine, mod_rm, width);
-            if(dest == NULL) return UNDEFINED_REGISTER;
-            if(source == NULL) return UNABLE_GET_MEMORY;
-            if(width == 16) *((uint16_t*)dest) = *((uint16_t*) source);
-            else *((uint32_t*)dest) = *((uint32_t*) source);
-            break;
-        default:
-            return UNKNOWN_ERROR;
-        }
-    }
-    //MOV Segment to/from r/m
-    else if(opcode == 0x8c || opcode == 0x8e)
-    {
-        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
-        machine->internal_state.IPOffset += 1;
-        uint16_t* source = NULL;
-        uint16_t* dest = NULL;
-        if(opcode == 0x8c)
-        {
-            source = select_segment_register(machine, get_reg(mod_rm));
-            dest = get_memory_from_mode(machine, mod_rm, 16);
-            if(source == NULL) return UNDEFINED_SEGMENT_REGISTER;
-            if(dest == NULL) return UNABLE_GET_MEMORY;
-        }
-        else
-        {
-            dest = select_segment_register(machine, get_reg(mod_rm));
-            source = get_memory_from_mode(machine, mod_rm, 16);
-            if(dest == NULL) return UNDEFINED_SEGMENT_REGISTER;
-            if(source == NULL) return UNABLE_GET_MEMORY;
-        }
-        *dest = *source;
-    }
     //MOV rm, imm
     else if(opcode >= 0xc6 && opcode <= 0xc7)
     {
@@ -686,30 +424,6 @@ int16_t parse_and_execute_instruction(v8086* machine)
         }
     }
     //TEST GROUP
-    else if(opcode == 0x84)
-    {
-        //Mod/RM
-        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
-        machine->internal_state.IPOffset += 1;
-        uint8_t* reg = get_byte_register(machine, get_reg(mod_rm));
-        uint8_t* memory = get_memory_from_mode(machine, mod_rm, 8);
-        if(reg == NULL) return UNDEFINED_REGISTER;
-        if(memory == NULL) return UNABLE_GET_MEMORY;
-        status = perform_test(machine, reg, memory, 8);
-    }
-    else if(opcode == 0x85)
-    {
-        //Mod/RM
-        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
-        machine->internal_state.IPOffset += 1;
-        uint8_t width = 16;
-        if(machine->internal_state.operand_32_bit) width = 32;
-        void* source = get_variable_length_register(machine, get_reg(mod_rm), width);
-        void* dest = get_memory_from_mode(machine, mod_rm, width);
-        if(source == NULL) return UNDEFINED_REGISTER;
-        if(dest == NULL) return UNABLE_GET_MEMORY;
-        status = perform_test(machine, source, dest, width);
-    }
     else if(opcode == 0xa8)
     {
         //Mod/RM
@@ -977,31 +691,6 @@ int16_t parse_and_execute_instruction(v8086* machine)
         } while(machine->internal_state.rep_prefix != NONE && --(machine->regs.w.cx));
     }
     //LOAD Operations group
-    //LEA
-    else if(opcode == 0x8d)
-    {
-        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
-        machine->internal_state.IPOffset += 1;
-
-        uint16_t segment;
-        uint32_t offset;
-
-        if((mod_rm >> 6u) > 3) return -1;
-
-        int16_t r = calculate_segment_offset_from_mode(machine, mod_rm, &segment, &offset);
-        if(r) return r;
-        
-        if(machine->internal_state.operand_32_bit)
-        {
-            uint32_t* reg = get_dword_register(machine, get_reg(mod_rm));
-            *reg = offset;
-        }
-        else
-        {
-            uint16_t* reg = get_word_register(machine, get_reg(mod_rm));
-            *reg = offset;
-        }
-    }
     //LDS or LES
     else if(opcode >= 0xc4 && opcode <= 0xc5)
     {
@@ -1324,17 +1013,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //GROUP 1A
     else if(opcode == 0x8f)
     {
-        //ITS only POP rm16/32
-        uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
-        machine->internal_state.IPOffset += 1;
-        uint8_t width = 16;
-        if(machine->internal_state.operand_32_bit) width = 32;
 
-        void* dest = get_memory_from_mode(machine, mod_rm, width);
-        if(width == 16)
-            *((uint16_t*)dest) = pop_word(machine);
-        else if(width == 32)
-            *((uint32_t*)dest) = pop_dword(machine);
     }
     else return UNDEFINED_OPCODE;
     recalculate_ip: machine->IP.w.ip += machine->internal_state.IPOffset;

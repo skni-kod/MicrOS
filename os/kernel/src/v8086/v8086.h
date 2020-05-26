@@ -49,6 +49,7 @@ typedef enum _machine_status {
     BAD_BASE = -11,
     UNDEFINED_RECALCULATED_OPCODE = -12,
     BAD_INT_NUMBER = -13,
+    RELATIVE_JMP_OVERFLOW = -14,
     UNKNOWN_ERROR = -69
 } machine_status;
 

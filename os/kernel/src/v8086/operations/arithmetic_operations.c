@@ -611,3 +611,19 @@ int16_t perform_inc_dec(v8086* machine, uint8_t opcode, bool dec)
         return perform_inc(machine, dest, width);
     return perform_dec(machine, dest, width);
 }
+
+int16_t execute_test(v8086* machine, uint8_t opcode)
+{
+    //Mod/RM
+    uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    machine->internal_state.IPOffset += 1;
+    uint8_t width = 8;
+    if(opcode % 2)
+        width = machine->internal_state.operand_32_bit ? 32 : 16;
+    void* source = get_variable_length_register(machine, get_reg(mod_rm), width);
+    void* dest = get_memory_from_mode(machine, mod_rm, width);
+
+    if(source == NULL) return UNDEFINED_REGISTER;
+    if(dest == NULL) return UNABLE_GET_MEMORY;
+    return perform_test(machine, source, dest, width);
+}
