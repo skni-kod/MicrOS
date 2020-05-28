@@ -2,6 +2,7 @@
 #define V8086_MEMORY_OPERATIONS_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 static inline uint32_t get_absolute_address(uint32_t segment, uint32_t offset)
 {

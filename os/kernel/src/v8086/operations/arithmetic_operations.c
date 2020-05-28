@@ -627,3 +627,112 @@ int16_t execute_test(v8086* machine, uint8_t opcode)
     if(dest == NULL) return UNABLE_GET_MEMORY;
     return perform_test(machine, source, dest, width);
 }
+
+int16_t execute_test_immediate(v8086* machine, uint8_t opcode)
+{
+    uint8_t width = 8;
+    if(opcode == 0xa9u) width = machine->internal_state.operand_32_bit ? 32 : 16;
+    void* immediate = get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset), width);
+    machine->internal_state.IPOffset += width / 8;
+    void* reg = get_variable_length_register(machine, AX, width);
+    if(immediate == NULL) return UNABLE_GET_MEMORY;
+    if(reg == NULL) return UNDEFINED_REGISTER;
+    return perform_test(machine, immediate, reg, width);
+}
+
+int16_t execute_group_2(v8086 *machine, uint8_t opcode) {
+    uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    machine->internal_state.IPOffset += 1;
+    uint8_t arg = opcode <=0xd1 ? 1 : machine->regs.h.cl;
+    uint8_t width = 8;
+    if(opcode % 2){
+        if(machine->internal_state.operand_32_bit) width = 32;
+        else width = 16;
+    }
+    void* dest = get_memory_from_mode(machine, mod_rm, width);
+    if(dest == NULL) return UNABLE_GET_MEMORY;
+    switch(get_reg(mod_rm))
+    {
+        case 0:
+            return perform_rol(machine, dest, arg, width);
+        case 1:
+            return perform_ror(machine, dest, arg, width);
+        case 2:
+            return perform_rcl(machine, dest, arg, width);
+        case 3:
+            return perform_rcr(machine, dest, arg, width);
+        case 4:
+            return perform_shl(machine, dest, arg, width);
+        case 5:
+            return perform_shr(machine, dest, arg, width);
+        case 6:
+            return UNDEFINED_OPCODE;
+        case 7:
+            return perform_sar(machine, dest, arg, width);
+        default:
+            return BAD_REG;
+    }
+}
+
+int16_t execute_group_3(v8086* machine, uint8_t opcode)
+{
+    uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    machine->internal_state.IPOffset += 1;
+    uint8_t width = 8;
+    if(opcode == 0xf7)
+    {
+        if(machine->internal_state.operand_32_bit) width = 32;
+        else width = 16;
+    }
+
+    void* dest = get_memory_from_mode(machine, mod_rm, width);
+
+    if(dest == NULL) return UNABLE_GET_MEMORY;
+
+    switch(get_reg(mod_rm))
+    {
+        case 0: //TEST
+        {
+            uint32_t immediate;
+            if(width == 8)
+            {
+                immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+                machine -> internal_state.IPOffset += 1;
+            }
+            else if(width == 16)
+            {
+                immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+                machine -> internal_state.IPOffset += 2;
+            }
+            else if(width == 32)
+            {
+                immediate = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+                machine -> internal_state.IPOffset += 4;
+            }
+            return perform_test(machine, &immediate, dest, width);
+            break;
+        }
+        case 2: //NOT
+            if(width == 8)
+                *((uint8_t*)dest) = ~(*((uint8_t*)dest));
+            else if(width == 16)
+                *((uint16_t*)dest) = ~(*((uint16_t*)dest));
+            else if(width == 32)
+                *((uint32_t*)dest) = ~(*((uint32_t*)dest));
+            else return BAD_WIDTH;
+            return OK;
+            break;
+        case 3: //NEG
+            return perform_neg(machine, dest, width);
+        case 4: //MUL
+            return perform_multiplication(machine, dest, 0, width);
+        case 5: //IMUL
+            return perform_multiplication(machine, dest, 1, width);
+        case 6: //DIV
+            return perform_division(machine, dest, 0, width);
+        case 7: //IDIV
+            return perform_division(machine, dest, 1, width);
+        default:
+            return BAD_REG;
+    }
+}

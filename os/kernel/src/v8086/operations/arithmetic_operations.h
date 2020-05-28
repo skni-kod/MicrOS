@@ -25,4 +25,8 @@ int16_t perform_artihmetic_or_logical_instruction(v8086* machine, uint8_t recalc
 int16_t perform_arithmetic_or_logical_instruction_group(v8086* machine, uint8_t recalculated_opcode, uint8_t mod_rm, uint32_t carry, int16_t (*operation)(v8086*, void*, void*, uint8_t, uint32_t));
 int16_t perform_inc_dec(v8086* machine, uint8_t opcode, bool dec);
 int16_t execute_test(v8086* machine, uint8_t opcode);
+int16_t execute_test_immediate(v8086* machine, uint8_t opcode);
+int16_t execute_group_2(v8086* machine, uint8_t opcode);
+int16_t execute_group_3(v8086* machine, uint8_t opcode);
+
 #endif //V8086_ARITHMETIC_OPERATIONS_H

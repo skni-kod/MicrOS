@@ -14,6 +14,25 @@ int16_t jump_short_relative(v8086* machine)
     return OK;
 }
 
+int16_t jump_near_relative(v8086* machine)
+{
+    int16_t offset = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    machine->internal_state.IPOffset += 1;
+    machine->IP.w.ip += offset;
+    return OK;
+}
+
+int16_t jump_far(v8086* machine)
+{
+    int16_t newIP = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    machine->internal_state.IPOffset += 1;
+    int16_t newCS = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    machine->sregs.cs = newCS;
+    machine->IP.w.ip = newIP;
+    machine->internal_state.IPOffset = 0;
+    return OK;
+}
+
 int16_t jump_short_relative_on_condition(v8086* machine, uint8_t opcode)
 {
     uint8_t jump = 0;
@@ -79,5 +98,47 @@ int16_t jump_short_relative_on_condition(v8086* machine, uint8_t opcode)
         if(!machine->regs.w.cx) jump = 1;
     }
     if(jump) return jump_short_relative(machine);
+    return OK;
+}
+
+int16_t perform_loop_loopne(v8086* machine, uint8_t opcode)
+{
+    uint8_t jump = 0;
+    int8_t offset = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    machine->internal_state.IPOffset += 1;
+
+    if(machine->internal_state.operand_32_bit) machine->regs.d.ecx--;
+    else machine->regs.w.cx--;
+
+    switch (opcode)
+    {
+        case 0xe0:
+            if(machine->internal_state.operand_32_bit){
+                if(machine->regs.d.ecx && !bit_get(machine->regs.w.flags, 1u << ZERO_FLAG_BIT)) jump = 1;
+            }
+            else
+            if(machine->regs.w.cx && !bit_get(machine->regs.w.flags, 1u << ZERO_FLAG_BIT)) jump = 1;
+            break;
+        case 0xe1:
+            if(machine->internal_state.operand_32_bit){
+                if(machine->regs.d.ecx && bit_get(machine->regs.w.flags, 1u << ZERO_FLAG_BIT)) jump = 1;
+            }
+            else
+            if(machine->regs.w.cx && bit_get(machine->regs.w.flags, 1u << ZERO_FLAG_BIT)) jump = 1;
+            break;
+        case 0xe2:
+            if(machine->internal_state.operand_32_bit){
+                if(machine->regs.d.ecx) jump = 1;
+            }
+            else
+            if(machine->regs.w.cx) jump = 1;
+            break;
+        default:
+            return UNKNOWN_ERROR;
+    }
+
+    if(jump)
+        machine->IP.w.ip += offset;
+
     return OK;
 }

@@ -40,6 +40,27 @@ OPCODE_PROTO(mov_rm);
 OPCODE_PROTO(mov_segment);
 OPCODE_PROTO(lea);
 OPCODE_PROTO(pop_rm);
+OPCODE_PROTO(xchg_ax);
+OPCODE_PROTO(cbw);
+OPCODE_PROTO(cwd);
+OPCODE_PROTO(far_call);
+OPCODE_PROTO(pushf);
+OPCODE_PROTO(popf);
+OPCODE_PROTO(sahf);
+OPCODE_PROTO(lahf);
+OPCODE_PROTO(mov_moffset);
+OPCODE_PROTO(movsb);
+OPCODE_PROTO(movsw);
+OPCODE_PROTO(cmpsb);
+OPCODE_PROTO(cmpsw);
+OPCODE_PROTO(test_imm);
+OPCODE_PROTO(stosb);
+OPCODE_PROTO(stosw);
+OPCODE_PROTO(lodsb);
+OPCODE_PROTO(lodsw);
+OPCODE_PROTO(scasb);
+OPCODE_PROTO(scasw);
+OPCODE_PROTO(mov_gpr_imm);
 
 
 #endif //MICROS_OPCODES_H
