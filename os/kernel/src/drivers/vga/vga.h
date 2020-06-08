@@ -502,28 +502,6 @@ void __vga_enable_cursor(uint8_t cursor_start, uint8_t cursor_end);
 */
 void __vga_disable_cursor();
 
-//! Update cursor.
-/*!
-    Move cursor to given position.
-    \param x x coordinate.
-    \param y y coordinate.
-*/
-void __vga_update_cursor(uint16_t x, uint16_t y);
-
-//! Update cursor.
-/*!
-    Move cursor to given position.
-    \param pos Position on screen.
-*/
-void __vga_update_cursor_struct(vga_screen_pos pos);
-
-//! Get cursor position.
-/*!
-    Get cursor position on screen.
-    \return Position on screen.
-*/
-vga_screen_pos __vga_get_cursor_pos();
-
 //! Get default terminal color.
 /*!
     Get default terminal color for mode. 
