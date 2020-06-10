@@ -27,7 +27,7 @@ void pic_remap(uint32_t master_offset, uint32_t slave_offset)
 	io_out_byte(SLAVE_PIC_DATA, 2);
 
 	// We are in 8086 mode
-	io_out_byte(MASTER_PIC_DATA, 0x01);
+	io_out_byte(MASTER_PIC_DATA, 0x05);
 	io_out_byte(SLAVE_PIC_DATA, 0x01);
 
 	// Reset masks to the default values
