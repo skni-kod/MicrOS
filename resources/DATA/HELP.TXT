@@ -1,9 +1,12 @@
 MicrOS HELP
  cat [filename] - display file content
+ help - display help text
  ls [?path] - display list of files
  mkdir [dirname] - create new directory
+ reboot - reboot emulator
  rename [path] [newname] - rename file or the directory
  rm [path] - delete file or the directory
+ shutdown - power off emulator
  snake - run Snake game
  space - display space stats
  tasks - display running tasks
