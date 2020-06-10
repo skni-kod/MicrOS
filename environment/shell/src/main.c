@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
         {
             printf("MicrOS Shell v1.1 (terminal %s)\n", argv[1]);
             printf("Type \"help\" to list all available applications\n");
-            printf("Click Ctrl+[X] to switch terminal\n\n");
+            printf("Click Ctrl+F1/F2/F3/F4 to switch terminal\n\n");
         }
         
         printf(" %c:%s> ", current_partition_symbol, current_dir);
