@@ -207,3 +207,43 @@ int16_t load_flags(v8086* machine)
     machine->regs.h.ah = machine->regs.w.flags & 0xFFu;
     return OK;
 }
+
+int16_t perform_lds_les(v8086* machine, uint8_t les_op)
+{
+    uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    machine->internal_state.IPOffset += 1;
+
+    uint16_t* segment_register;
+    if(les_op) segment_register = select_segment_register(machine, ES);
+    else segment_register = select_segment_register(machine, DS);
+    if(segment_register == NULL) return UNDEFINED_SEGMENT_REGISTER;
+    uint16_t* source = get_memory_from_mode(machine, mod_rm, 16);
+    if(source == NULL) return UNABLE_GET_MEMORY;
+
+    if(machine->internal_state.operand_32_bit)
+    {
+        uint32_t* dest = get_dword_register(machine, get_reg(mod_rm));
+        *dest = *((uint32_t*) source);
+        *segment_register = *(source+2);
+    }
+    else
+    {
+        uint16_t* dest = get_word_register(machine, get_reg(mod_rm));
+        *dest = *source;
+        *segment_register = *(source+1);
+    }
+    return OK;
+}
+
+int16_t perform_xlat(v8086* machine)
+{
+    uint8_t tempAL = machine->regs.h.al;
+    uint16_t* segment;
+    if(machine->internal_state.segment_reg_select != DEFAULT)
+        segment = select_segment_register(machine, machine->internal_state.segment_reg_select);
+    else
+        segment = select_segment_register(machine, DS);
+    if(segment == NULL) return UNDEFINED_SEGMENT_REGISTER;
+    machine->regs.h.al = read_byte_from_pointer(machine->Memory, get_absolute_address(*segment, machine->regs.w.bx + tempAL));
+    return OK;
+}

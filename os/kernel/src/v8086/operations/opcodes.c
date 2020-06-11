@@ -296,26 +296,174 @@ OPCODE_PROTO(scasw)
 {
     return perform_scas(machine, machine->internal_state.operand_32_bit ? 32: 16);
 }
+
 OPCODE_PROTO(mov_gpr_imm)
 {
     return perform_mov_gpr_imm(machine, opcode);
 }
 
+OPCODE_PROTO(retn)
+{
+    return near_ret(machine);
+}
 
-/*
- *     //INT, imm and INT 3 and INTO
-    else if(opcode >= 0xcc && opcode <= 0xce)
+OPCODE_PROTO(retn_imm)
+{
+    return near_ret_imm(machine);
+}
+
+OPCODE_PROTO(les)
+{
+    return perform_lds_les(machine, 1);
+}
+
+OPCODE_PROTO(lds)
+{
+    return perform_lds_les(machine, 0);
+}
+
+OPCODE_PROTO(mov_rm_imm)
+{
+    return perform_mov_rm_imm(machine, opcode);
+}
+
+OPCODE_PROTO(retf_imm)
+{
+    return far_ret_imm(machine);
+}
+
+OPCODE_PROTO(retf)
+{
+    return far_ret(machine);
+}
+
+OPCODE_PROTO(interrupt)
+{
+    uint8_t interrupt_number = 3;
+    if(opcode == 0xcd) //INT, imm
     {
-        uint8_t interrupt_number = 3;
-        if(opcode == 0xcd) //INT, imm
-        {
-            interrupt_number = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
-            machine->internal_state.IPOffset += 1;
-        }
-        else if(opcode == 0xce) //INTO
-        {
-            if(!bit_get(machine->regs.w.flags, 1u << OVERFLOW_FLAG_BIT)) goto recalculate_ip;
-            interrupt_number = 4;
-        }
+        interrupt_number = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
     }
- */
+    else if(opcode == 0xce) //INTO
+    {
+        if(!bit_get(machine->regs.w.flags, 1u << OVERFLOW_FLAG_BIT)) return OK;
+        interrupt_number = 4;
+    }
+
+    return perform_interrupt(machine, interrupt_number);
+}
+
+OPCODE_PROTO(iret)
+{
+    return perform_iret(machine);
+}
+
+OPCODE_PROTO(group_2)
+{
+    return execute_group_2(machine, opcode);
+}
+
+OPCODE_PROTO(aam)
+{
+    return adjust_after_mul_div(machine, 0);
+}
+
+OPCODE_PROTO(aad)
+{
+    return adjust_after_mul_div(machine, 1);
+}
+
+OPCODE_PROTO(xlat)
+{
+    return perform_xlat(machine);
+}
+
+OPCODE_PROTO(loop)
+{
+    return perform_loop_loopne(machine, opcode);
+}
+
+OPCODE_PROTO(jrcxz)
+{
+    return jump_short_relative_on_condition(machine, opcode);
+}
+
+OPCODE_PROTO(inb_imm)
+{
+    return perform_in_imm(machine, 8);
+}
+
+OPCODE_PROTO(inw_imm)
+{
+    return perform_in_imm(machine, machine->internal_state.operand_32_bit ? 32 : 16);
+}
+
+OPCODE_PROTO(outb_imm)
+{
+    return perform_out_imm(machine, 8);
+}
+
+OPCODE_PROTO(outw_imm)
+{
+    return perform_in_imm(machine, machine->internal_state.operand_32_bit ? 32 : 16);
+}
+
+OPCODE_PROTO(call_near)
+{
+    return near_relative_call(machine);
+}
+
+OPCODE_PROTO(jmp_near)
+{
+    return jump_near_relative(machine);
+}
+
+OPCODE_PROTO(jmp_far)
+{
+    return jump_far(machine);
+}
+
+OPCODE_PROTO(jmp_short)
+{
+    return jump_short_relative(machine);
+}
+
+OPCODE_PROTO(inb_dx)
+{
+    return perform_in_dx(machine, 8);
+}
+
+OPCODE_PROTO(inw_dx)
+{
+    return perform_in_dx(machine, machine->internal_state.operand_32_bit ? 32 : 16);
+}
+
+OPCODE_PROTO(outb_dx)
+{
+    return perform_out_dx(machine, 8);
+}
+
+OPCODE_PROTO(outw_dx)
+{
+    return perform_in_dx(machine, machine->internal_state.operand_32_bit ? 32 : 16);
+}
+
+OPCODE_PROTO(set_flag)
+{
+    return setting_and_clearing_flags(machine, opcode);
+}
+
+OPCODE_PROTO(group_3)
+{
+    return execute_group_3(machine, opcode);
+}
+
+OPCODE_PROTO(group_4)
+{
+    return perform_group_4(machine);
+}
+OPCODE_PROTO(group_5)
+{
+    return perform_group_5(machine);
+}

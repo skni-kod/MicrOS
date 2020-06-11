@@ -1,6 +1,8 @@
 #ifndef V8086_ARITHMETIC_OPERATIONS_H
 #define V8086_ARITHMETIC_OPERATIONS_H
 
+#include <stdbool.h>
+
 int16_t perform_adding(v8086* machine, void* dest, void* source, uint8_t width, uint32_t carry);
 int16_t perform_subtracting(v8086* machine, void* dest, void* source, uint8_t width, uint32_t carry);
 int16_t perform_or(v8086* machine, void* dest, void* source, uint8_t width, uint32_t carry);
