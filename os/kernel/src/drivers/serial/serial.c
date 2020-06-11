@@ -8,7 +8,7 @@ void serial_init(unsigned int port, unsigned int baud_rate, unsigned int data_bi
     
     // Set divisor
     // -----------
-    uint16_t divisor = 115200 / baud_date;
+    uint16_t divisor = 115200 / baud_rate;
     uint8_t divisor_low = divisor;
     uint8_t config_high = divisor >> 8;
     
@@ -28,4 +28,25 @@ void serial_init(unsigned int port, unsigned int baud_rate, unsigned int data_bi
     
     // Handshake with attached device
     io_out_byte(port + MODEM_CONTROL_REGISTER, 0x0B);
+}
+
+void serial_send(unsigned int port, char c)
+{
+    while ((io_in_byte(port + LINE_STATUS_REGISTER) & 0x20) == 0);
+    io_out_byte(port, c);
+}
+
+void serial_send_string(unsigned int port, char *str)
+{
+    while (*str != 0)
+    {
+        serial_send(port, *str);
+        str++;
+    }
+}
+
+char serial_receive(unsigned int port)
+{
+    while ((io_in_byte(port + LINE_STATUS_REGISTER) & 1) == 0);
+    return io_in_byte(port);
 }

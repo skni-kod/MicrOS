@@ -25,6 +25,8 @@
 #define PARITY_MARK 5
 #define PARITY_SPACE 7
 
-void serial_init(unsigned int port, unsigned int baud_rate, unsigned int data_bits, unsigned int parity);
+void serial_init(unsigned int port, unsigned int baud_rate, unsigned int data_bits, unsigned int stop_bits, unsigned int parity);
+void serial_send(unsigned int port, char c);
+char serial_receive(unsigned int port);
 
 #endif
