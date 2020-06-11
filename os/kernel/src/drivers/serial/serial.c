@@ -30,9 +30,19 @@ void serial_init(unsigned int port, unsigned int baud_rate, unsigned int data_bi
     io_out_byte(port + MODEM_CONTROL_REGISTER, 0x0B);
 }
 
+bool serial_is_busy(unsigned int port)
+{
+    return (io_in_byte(port + LINE_STATUS_REGISTER) & 0x20) == 0;
+}
+
+bool serial_is_queue_empty(unsigned int port)
+{
+    return (io_in_byte(port + LINE_STATUS_REGISTER) & 1) == 0;
+}
+
 void serial_send(unsigned int port, char c)
 {
-    while ((io_in_byte(port + LINE_STATUS_REGISTER) & 0x20) == 0);
+    while (serial_is_busy(port));
     io_out_byte(port, c);
 }
 
@@ -47,6 +57,6 @@ void serial_send_string(unsigned int port, char *str)
 
 char serial_receive(unsigned int port)
 {
-    while ((io_in_byte(port + LINE_STATUS_REGISTER) & 1) == 0);
+    while (serial_is_queue_empty(port));
     return io_in_byte(port);
 }
