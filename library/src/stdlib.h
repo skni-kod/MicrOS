@@ -188,6 +188,20 @@ void srand(unsigned int new_seed);
 */
 void qsort(void *base, size_t num, size_t size, int (*compar)(const void *, const void*));
 
+//! Binary search in array.
+/*
+    Searches the given \p key in the array pointed to by \p base (which is formed by num elements, each of size bytes),
+    and returns a void* pointer to a matching element, if found.
+    \param key Pointer to the object that serves as key for the search.
+    \param base Pointer to the first object of the array where the search is performed.
+    \param num Number of elements in the array pointed to by \p base.
+    \param size Size in bytes of each element in the array.
+    \param compar Pointer to a function that compares two elements.
+    \return A pointer to an entry in the array that matches the search \p key. If there are more than one matching elements,
+    this may point to any of them. If key is not found, a null pointer is returned. 
+*/
+void* bsearch(const void* key, const void* base, size_t num, size_t size, int (*compar)(const void*,const void*));
+
 //! Abort current process
 /*
     Aborts the current process, producing an abnormal program termination.
