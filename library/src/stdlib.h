@@ -98,6 +98,16 @@ int rand();
  */
 void srand(unsigned int new_seed);
 
+//! Sorts an array.
+/*
+    Sorts the \p num elements of the array pointed to by \p base, each element \p size bytes long, using the \p compar function to determine the order.
+    \param base Pointer to the first object of the array to be sorted.
+    \param num Number of elements in the array pointed to by \p base.
+    \param size Size in bytes of each element in the array.
+    \param compar Pointer to a function that compares two elements.
+*/
+void qsort(void *base, size_t num, size_t size, int (*compar)(const void *, const void*));
+
 //! Abort current process
 /*
     Aborts the current process, producing an abnormal program termination.
@@ -110,6 +120,26 @@ void abort();
     \param status Status code.
  */
 void exit(int status);
+
+// Helpers
+
+//! Swap two elements. Used by \p qsort().
+/*
+    \param first Pointer to the first object to be swapped.
+    \param second Pointer to the first object to be swapped.
+    \param size Size of element in bytes.
+*/
+void __stdlib_swap(void *first, void *second, size_t size);
+
+//! Sort and return position of key. Used by \p qsort().
+/*
+    \param base Pointer to the first object of the array to be sorted.
+    \param num Number of elements in the array pointed to by \p base.
+    \param size Size in bytes of each element in the array.
+    \param compar Pointer to a function that compares two elements.
+    \return Index of key
+*/
+int __stdlib_partition(void* base, size_t num, size_t size, int (*compar)(const void *, const void*));
 
 #ifdef __cplusplus
 }
