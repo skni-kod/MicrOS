@@ -10,9 +10,62 @@
 
 unsigned int seed;
 
+//! Structure to represent the result value of an integral division.
+/*! Structure to represent the result value of an integral division performed by function \p div. */
+typedef struct div_t
+{
+    //! Represents the quotient.
+    int quot;
+    //! Represents the remainder.
+    int rem;
+} div_t;
+
+//! Structure to represent the result value of an integral division.
+/*! Structure to represent the result value of an integral division performed by function \p ldiv. */
+typedef struct ldiv_t
+{
+    //! Represents the quotient.
+    long int quot;
+    //! Represents the remainder.
+    long int rem;
+} ldiv_t;
+
+//! Structure to represent the result value of an integral division.
+/*! Structure to represent the result value of an integral division performed by function \p lldiv. */
+typedef struct lldiv_t
+{
+    //! Represents the quotient.
+    long long int quot;
+    //! Represents the remainder.
+    long long int rem;
+} lldiv_t;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+//! Integral division.
+/*
+    \param numer Number to divide.
+    \param denom Divider.
+    \return Struct with quotient and remainder.
+*/
+div_t div(int numer, int denom);
+
+//! Integral division.
+/*
+    \param numer Number to divide.
+    \param denom Divider.
+    \return Struct with quotient and remainder.
+*/
+ldiv_t ldiv(long int numer, long int denom);
+
+//! Integral division.
+/*
+    \param numer Number to divide.
+    \param denom Divider.
+    \return Struct with quotient and remainder.
+*/
+lldiv_t lldiv(long long int numer, long long int denom);
 
 //! Convert string to integer
 /*
