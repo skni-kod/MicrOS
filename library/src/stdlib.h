@@ -43,8 +43,33 @@ typedef struct lldiv_t
 #ifdef __cplusplus
 extern "C" {
 #endif
+//! Absolute value
+/*
+    Returns the absolute value of parameter \p n.
+    \param n Integral value.
+    \return The absolute value of n.
+*/
+int abs(int n);
+
+//! Absolute value
+/*
+    Returns the absolute value of parameter \p n.
+    \param n Integral value.
+    \return The absolute value of n.
+*/
+long int labs(long int n);
+
+//! Absolute value
+/*
+    Returns the absolute value of parameter \p n.
+    \param n Integral value.
+    \return The absolute value of n.
+*/
+long long int llabs(long long int n);
+
 //! Integral division.
 /*
+    Returns the integral quotient and remainder of the division of \p numer by \p denom.
     \param numer Number to divide.
     \param denom Divider.
     \return Struct with quotient and remainder.
@@ -53,6 +78,7 @@ div_t div(int numer, int denom);
 
 //! Integral division.
 /*
+    Returns the integral quotient and remainder of the division of \p numer by \p denom.
     \param numer Number to divide.
     \param denom Divider.
     \return Struct with quotient and remainder.
@@ -61,6 +87,7 @@ ldiv_t ldiv(long int numer, long int denom);
 
 //! Integral division.
 /*
+    Returns the integral quotient and remainder of the division of \p numer by \p denom.
     \param numer Number to divide.
     \param denom Divider.
     \return Struct with quotient and remainder.
