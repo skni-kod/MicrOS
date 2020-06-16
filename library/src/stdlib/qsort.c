@@ -19,7 +19,6 @@ int __stdlib_partition(void* base, size_t num, size_t size, int (*compar)(const 
 {
     uint8_t *key = base + (size * (num - 1));
     uint8_t *begin = base;
-    uint8_t *end = base + (size * (num - 1));
     // Represent first item from left that is larger than key
     uint32_t itemFromLeft = 0;
     // Represent first item from left that is smaller or equal than key
