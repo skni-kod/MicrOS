@@ -1,14 +1,15 @@
 #ifndef STDLIB_H
 #define STDLIB_H
 
-#define RAND_MAX INT32_MAX
-
 #include <stdint.h>
 #include "string.h"
 #include "time.h"
 #include "micros.h"
 
 unsigned int seed;
+
+//! Maximum value returned by rand
+#define RAND_MAX INT32_MAX
 
 //! Structure to represent the result value of an integral division.
 /*! Structure to represent the result value of an integral division performed by function \p div. */
