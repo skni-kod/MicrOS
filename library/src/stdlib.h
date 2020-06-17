@@ -222,6 +222,14 @@ void abort();
  */
 void exit(int status);
 
+//! Get environment string.
+/*
+    etrieves a C-string containing the value of the environment variable whose \p name is specified as argument.
+    \param name Name of the requested variable.
+    \return A C-string with the value of the requested environment variable, or a null pointer if such environment variable does not exist.
+ */
+char* getenv(const char* name);
+
 // Helpers
 
 //! Swap two elements. Used by \p qsort().
