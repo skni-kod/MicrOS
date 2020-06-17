@@ -376,6 +376,14 @@ int feof(FILE *stream);
 */
 int ferror(FILE *stream);
 
+//! Print error message.
+/*
+    Interprets the value of \p errno as an error message, and prints it to \p stderr
+    (the standard error output stream, usually the console), optionally preceding it with the custom message specified in \p str.
+    \param str C string containing a custom message to be printed before the error message itself.
+*/
+void perror(const char *str);
+
 //! Write formatted data to string
 /*!
     Composes a string with the same text that would be printed if format was used on printf, but instead of being printed, the content is stored as a C string in the buffer pointed by str.
