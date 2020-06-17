@@ -107,7 +107,23 @@ lldiv_t lldiv(long long int numer, long long int denom);
     \param string C-string beginning with the representation of an integral number.
     \return On success, the function returns the converted integral number as an int value.
  */
-int32_t atoi(const char *string);
+int atoi(const char *string);
+
+//! Convert string to integer
+/*
+    Parses the C-string str interpreting its content as an integral number, which is returned as a value of type long int.
+    \param string C-string beginning with the representation of an integral number.
+    \return On success, the function returns the converted integral number as an int value.
+ */
+long int atol(const char *string);
+
+//! Convert string to integer
+/*
+    Parses the C-string str interpreting its content as an integral number, which is returned as a value of type long long int.
+    \param string C-string beginning with the representation of an integral number.
+    \return On success, the function returns the converted integral number as an int value.
+ */
+long long int atoll(const char *string);
 
 //! Convert integer to string (non-standard function)
 /*

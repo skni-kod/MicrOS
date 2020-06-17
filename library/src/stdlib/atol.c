@@ -1,9 +1,9 @@
 #include "../stdlib.h"
 
-int atoi(const char *string)
+long int atol(const char *string)
 {
     size_t len = strlen(string);
-    int value = 0;
+    long int value = 0;
     int position = 1;
 
     char sign = 1;
