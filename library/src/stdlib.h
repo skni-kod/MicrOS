@@ -11,6 +11,12 @@ unsigned int seed;
 //! Maximum value returned by rand
 #define RAND_MAX INT32_MAX
 
+//! Success termination code
+#define EXIT_SUCCESS 0
+
+//! Failure termination code
+#define EXIT_FAILURE -1
+
 //! Structure to represent the result value of an integral division.
 /*! Structure to represent the result value of an integral division performed by function \p div. */
 typedef struct div_t
