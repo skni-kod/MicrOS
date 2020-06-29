@@ -30,6 +30,7 @@ void serial_init(unsigned int port, unsigned int baud_rate, unsigned int data_bi
 bool serial_is_busy(unsigned int port);
 bool serial_is_queue_empty(unsigned int port);
 void serial_send(unsigned int port, char c);
+void serial_send_string(unsigned int port, char *str);
 char serial_receive(unsigned int port);
 
 #endif
