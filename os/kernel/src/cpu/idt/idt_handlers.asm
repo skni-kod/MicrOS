@@ -90,6 +90,7 @@ idt_exc_wrapper:
   call idt_global_exc_handler
 
   pop esp
+  add esp, 48
   popa
   
   ; Restore FPU state

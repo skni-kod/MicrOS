@@ -53,23 +53,6 @@ void hdd_wrapper_write_sector(int device_number, int sector, uint8_t *content)
         case -2: logger_log_error("harddisk_read_sector returned -2 - parameters error"); break;
     }
     
-    // NOTE: this is only for debug purposes
-    hdd_wrapper_read_sector(device_number, sector);
-    if (memcmp(read_content, content, 512) != 0)
-    {
-        logger_log_error("hdd_wrapper_write_sector - failed to save content");
-        
-        logger_log_error("Requested content (512 bytes): ");
-        for (int i = 0; i < 512; i++) vga_printchar(content[i]);
-        vga_newline();
-        
-        logger_log_error("Read content (512 bytes): ");
-        for (int i = 0; i < 512; i++) vga_printchar(read_content[i]);
-        vga_newline();
-        
-        sleep(1000);
-    }
-    
     uint32_t current_time = timer_get_system_clock();
     while(timer_get_system_clock() - current_time < 15);
 }

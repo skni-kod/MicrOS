@@ -171,10 +171,15 @@ void partitions_get_info(char symbol, partition_info *info)
                 int type = hdd_wrapper_get_type_by_device_number(partition->device_number);
                 int bus = hdd_wrapper_get_bus_by_device_number(partition->device_number);
                 
-                HARDDISK_STATE state = harddisk_get_state(type, bus);
                 info->device_type = 1 + partition->device_number;
                 harddisk_get_disk_model_number_terminated(type, bus, info->device_name);
                 
+                break;
+            }
+            
+            case device_type_unknown:
+            {
+                // We have unsupported disk attached
                 break;
             }
         }

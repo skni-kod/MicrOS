@@ -308,7 +308,8 @@ void idt_global_int_handler(interrupt_state *state)
 
 void idt_global_exc_handler(exception_state *state)
 {
-    if (state->cs == 27)
+    bool allow_exception_in_kernel = state->interrupt_number == 1 || state->interrupt_number == 3;
+    if (allow_exception_in_kernel || state->cs == 27)
     {
         for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
         {
@@ -318,7 +319,12 @@ void idt_global_exc_handler(exception_state *state)
             }
         }
     }
-
+    
+    if (allow_exception_in_kernel)
+    {
+        return;
+    }
+    
     for (int i = 0; i < 32; i++)
     {
         if (exceptions[i].interrupt_number == state->interrupt_number)

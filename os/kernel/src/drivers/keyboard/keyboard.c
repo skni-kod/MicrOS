@@ -329,5 +329,5 @@ unsigned char keyboard_is_between_or_eq(unsigned char number, unsigned char l, u
 
 keyboard_state_flags *keyboard_get_state_flags()
 {
-    return kb_state;
+    return (keyboard_state_flags *) kb_state;
 }

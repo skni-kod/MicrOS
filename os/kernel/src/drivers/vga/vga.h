@@ -28,16 +28,11 @@
 //! Enum represent available VGA text modes.
 enum VGA_TEXT_MODES
 {
-    //! VGA mode 00h.
-    VGA_MODE_00H = 0x00,
-    //! VGA mode 01h.
-    VGA_MODE_01H = 0x01,
-    //! VGA mode 02h.
-    VGA_MODE_02H = 0x02,
-    //! VGA mode 03h.
-    VGA_MODE_03H = 0x03,
-    //! VGA mode 07h.
-    VGA_MODE_07H = 0x07
+    VGA_MODE_00H = 0x00, /*!< VGA mode 00h. */
+    VGA_MODE_01H = 0x01, /*!< VGA mode 01h. */
+    VGA_MODE_02H = 0x02, /*!< VGA mode 02h. */
+    VGA_MODE_03H = 0x03, /*!< VGA mode 03h. */
+    VGA_MODE_07H = 0x07 /*!< VGA mode 07h. */
 };
 
 // Mode 00h
@@ -506,21 +501,6 @@ void __vga_enable_cursor(uint8_t cursor_start, uint8_t cursor_end);
 /*!
 */
 void __vga_disable_cursor();
-
-//! Update cursor.
-/*!
-    Move cursor to given position.
-    \param x x coordinate.
-    \param y y coordinate.
-*/
-void __vga_update_cursor(uint16_t x, uint16_t y);
-
-//! Update cursor.
-/*!
-    Move cursor to given position.
-    \param pos Position on screen.
-*/
-void __vga_update_cursor_struct(vga_screen_pos pos);
 
 //! Get default terminal color.
 /*!

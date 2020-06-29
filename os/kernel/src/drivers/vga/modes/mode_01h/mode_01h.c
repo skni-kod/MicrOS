@@ -473,7 +473,7 @@ int8_t mode01h_swap_buffers()
 {
     if(mode01h_buffer == NULL) return -1;
     memcpy((screen_char*)VGA_MODE_01H_BASE_ADDR, mode01h_buffer, MODE01H_HEIGHT * MODE01H_WIDTH * sizeof(screen_char));
-	__vga_update_cursor(mode01h_buffer_cursor_x, mode01h_buffer_cursor_y);
+	vga_set_cursor_pos(mode01h_buffer_cursor_x, mode01h_buffer_cursor_y);
     return 0;
 }
 

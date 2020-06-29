@@ -20,6 +20,7 @@ Documentation: https://tearth.github.io/MicrOS/
   * Keyboard
   * Floppy
   * PC Speaker
+  * Serial port
   * RTC (Real-Time Clock)
   * PIT (Programmable Interval Timer)
   * ATA

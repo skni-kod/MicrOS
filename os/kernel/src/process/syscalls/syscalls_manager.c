@@ -91,6 +91,14 @@ void syscalls_manager_init()
     // 0xCX - Power
     syscalls_manager_attach_handler(0xC0, syscall_power_reboot);
     syscalls_manager_attach_handler(0xC1, syscall_power_shutdown);
+    
+    // 0xDX - Serial
+    syscalls_manager_attach_handler(0xD0, syscall_serial_init);
+    syscalls_manager_attach_handler(0xD1, syscall_serial_is_busy);
+    syscalls_manager_attach_handler(0xD2, syscall_serial_is_queue_empty);
+    syscalls_manager_attach_handler(0xD3, syscall_serial_send);
+    syscalls_manager_attach_handler(0xD4, syscall_serial_send_string);
+    syscalls_manager_attach_handler(0xD5, syscall_serial_receive);
 }
 
 void syscalls_manager_attach_handler(uint8_t function_number, void (*handler)(interrupt_state *state))
