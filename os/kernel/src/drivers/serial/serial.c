@@ -27,7 +27,10 @@ void serial_init(unsigned int port, unsigned int baud_rate, unsigned int data_bi
     io_out_byte(port + INTERRUPT_FIFO_CONTROL_REGISTER, 0xC7);
     
     // Handshake with attached device
-    io_out_byte(port + MODEM_CONTROL_REGISTER, 0x0B);
+    io_out_byte(port + MODEM_CONTROL_REGISTER, 0x2B);
+    
+    // Enable interrupts
+    // io_out_byte(port + INTERRUPT_ENABLE_REGISTER, 0x01);
 }
 
 bool serial_is_busy(unsigned int port)
