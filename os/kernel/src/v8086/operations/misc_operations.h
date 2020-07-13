@@ -6,5 +6,6 @@
 int16_t perform_group_4(v8086* machine);
 int16_t perform_group_5(v8086* machine);
 int16_t setting_and_clearing_flags(v8086* machine, uint8_t opcode);
+int16_t check_bounds(v8086* machine);
 
 #endif //MICROS_MISC_OPERATIONS_H

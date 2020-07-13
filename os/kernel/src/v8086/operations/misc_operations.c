@@ -107,3 +107,32 @@ int16_t setting_and_clearing_flags(v8086* machine, uint8_t opcode)
         return UNKNOWN_ERROR;
     return OK;
 }
+
+int16_t check_bounds(v8086* machine)
+{
+    uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    machine->internal_state.IPOffset += 1;
+    uint8_t width = 16;
+    if(machine->internal_state.operand_32_bit) width = 32;
+
+    void* index = get_variable_length_register(machine, get_reg(mod_rm), width);
+    void* bounds = get_memory_from_mode(machine, mod_rm, width);
+
+    if(width==16)
+    {
+        int16_t* i = (int16_t*) index;
+        int16_t* lb = (int16_t*) bounds;
+        int16_t* ub = ((int16_t*) bounds + 1);
+
+        if((*i < *lb) || (*i > *ub)) return BOUND_ERROR;
+    }
+    else
+    {
+        int32_t* i = (int32_t*) index;
+        int32_t* lb = (int32_t*) bounds;
+        int32_t* ub = ((int32_t*) bounds + 1);
+
+        if((*i < *lb) || (*i > *ub)) return BOUND_ERROR;
+    }
+    return OK;
+}

@@ -43,3 +43,60 @@ uint16_t pop_rm(v8086* machine)
         *((uint32_t*)dest) = pop_dword(machine);
     return OK;
 }
+
+uint16_t push_all(v8086* machine)
+{
+    uint8_t width = machine->internal_state.operand_32_bit ? 32 : 16;
+    uint32_t temp_sp = width == 16 ? machine->regs.w.sp : machine->regs.d.esp;
+    if(width == 16)
+    {
+        push_word(machine, machine->regs.x.ax);
+        push_word(machine, machine->regs.x.cx);
+        push_word(machine, machine->regs.x.dx);
+        push_word(machine, machine->regs.x.bx);
+        push_word(machine, temp_sp);
+        push_word(machine, machine->regs.x.bp);
+        push_word(machine, machine->regs.x.si);
+        push_word(machine, machine->regs.x.di);
+    } else
+    {
+        push_dword(machine, machine->regs.d.eax);
+        push_dword(machine, machine->regs.d.ecx);
+        push_dword(machine, machine->regs.d.edx);
+        push_dword(machine, machine->regs.d.ebx);
+        push_dword(machine, temp_sp);
+        push_dword(machine, machine->regs.d.ebp);
+        push_dword(machine, machine->regs.d.esi);
+        push_dword(machine, machine->regs.d.edi);
+    }
+    return OK;
+}
+
+uint16_t pop_all(v8086* machine)
+{
+    uint8_t width = machine->internal_state.operand_32_bit ? 32 : 16;
+    if(width == 16)
+    {
+        machine->regs.x.di = pop_word(machine);
+        machine->regs.x.si = pop_word(machine);
+        machine->regs.x.bp = pop_word(machine);
+        //Throw away sp;
+        pop_word(machine);
+        machine->regs.x.bx = pop_word(machine);
+        machine->regs.x.dx = pop_word(machine);
+        machine->regs.x.cx = pop_word(machine);
+        machine->regs.x.ax = pop_word(machine);
+    } else
+    {
+        machine->regs.d.edi = pop_dword(machine);
+        machine->regs.d.esi = pop_dword(machine);
+        machine->regs.d.ebp = pop_dword(machine);
+        //Throw away esp;
+        pop_dword(machine);
+        machine->regs.d.ebx = pop_dword(machine);
+        machine->regs.d.edx = pop_dword(machine);
+        machine->regs.d.ecx = pop_dword(machine);
+        machine->regs.d.eax = pop_dword(machine);
+    }
+    return OK;
+}

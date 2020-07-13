@@ -92,4 +92,10 @@ OPCODE_PROTO(set_flag);
 OPCODE_PROTO(group_3);
 OPCODE_PROTO(group_4);
 OPCODE_PROTO(group_5);
+
+//386 PROTOS
+OPCODE_PROTO(push_all);
+OPCODE_PROTO(pop_all);
+OPCODE_PROTO(bound);
+
 #endif //MICROS_OPCODES_H

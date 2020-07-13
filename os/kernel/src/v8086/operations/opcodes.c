@@ -467,3 +467,20 @@ OPCODE_PROTO(group_5)
 {
     return perform_group_5(machine);
 }
+
+//386 PROTOS
+
+OPCODE_PROTO(push_all)
+{
+    return push_all(machine);
+}
+
+OPCODE_PROTO(pop_all)
+{
+    return pop_all(machine);
+}
+
+OPCODE_PROTO(bound)
+{
+    return check_bounds(machine);
+}

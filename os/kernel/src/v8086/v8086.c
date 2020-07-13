@@ -132,6 +132,14 @@ void v8086_set_8086_instruction_set(v8086* machine)
     ASSIGN_OPCODE(0xffu, group_5);
 }
 
+void v8086_set_386_instruction_set(v8086* machine)
+{
+    v8086_set_8086_instruction_set(machine);
+    ASSIGN_OPCODE(0x60u, push_all);
+    ASSIGN_OPCODE(0x61u, pop_all);
+    ASSIGN_OPCODE(0x62u, bound);
+}
+
 v8086* v8086_create_machine()
 {
     v8086* machine = (v8086*) heap_kernel_alloc(sizeof(v8086), 0);
