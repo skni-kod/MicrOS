@@ -366,6 +366,92 @@ int16_t perform_multiplication(v8086* machine, void* source, uint8_t signed_mul,
     return OK;
 }
 
+int16_t perform_multiplication_3_byte(v8086* machine, void* dest, void* source, void* imm, uint8_t signed_mul, uint8_t width, uint8_t second_width)
+{
+    uint16_t temp_flags;
+    if(signed_mul) {
+        if (width == 16) {
+            if (second_width == 8) {
+                int8_t a_imm = *((int8_t*) imm);
+                __asm__ __volatile__(
+                "imul %%ax, %%cx, a_imm; pushfw; pop %%bx;"
+                : "=b" (temp_flags), "=d" (*((uint16_t *) dest)) : "c" (*((uint16_t *) source))
+                );
+            }
+            else if(second_width == 16)
+            {
+                int16_t a_imm = *((int16_t*) imm);
+                __asm__ __volatile__(
+                "imul %%ax, %%cx, a_imm; pushfw; pop %%bx;"
+                : "=b" (temp_flags), "=d" (*((uint16_t *) dest)) : "c" (*((uint16_t *) source))
+                );
+            }
+            else return BAD_WIDTH;
+        }
+        else if(width == 32) {
+            if (second_width == 8) {
+                int8_t a_imm = *((int8_t*) imm);
+                __asm__ __volatile__(
+                "imul %%ax, %%cx, a_imm; pushfw; pop %%bx;"
+                : "=b" (temp_flags), "=d" (*((uint16_t *) dest)) : "c" (*((uint16_t *) source))
+                );
+            }
+            else if(second_width == 32)
+            {
+                int32_t a_imm = *((int32_t*) imm);
+                __asm__ __volatile__(
+                "imul %%ax, %%cx, a_imm; pushfw; pop %%bx;"
+                : "=b" (temp_flags), "=d" (*((uint16_t *) dest)) : "c" (*((uint16_t *) source))
+                );
+            }
+            else return BAD_WIDTH;
+        }
+        else return BAD_WIDTH;
+    }
+    else{
+        if (width == 16) {
+            if (second_width == 8) {
+                uint8_t a_imm = *((uint8_t*) imm);
+                __asm__ __volatile__(
+                "mul %%ax, %%cx, a_imm; pushfw; pop %%bx;"
+                : "=b" (temp_flags), "=d" (*((uint16_t *) dest)) : "c" (*((uint16_t *) source))
+                );
+            }
+            else if(second_width == 16)
+            {
+                uint16_t a_imm = *((uint16_t*) imm);
+                __asm__ __volatile__(
+                "mul %%ax, %%cx, a_imm; pushfw; pop %%bx;"
+                : "=b" (temp_flags), "=d" (*((uint16_t *) dest)) : "c" (*((uint16_t *) source))
+                );
+            }
+            else return BAD_WIDTH;
+        }
+        else if(width == 32) {
+            if (second_width == 8) {
+                uint8_t a_imm = *((uint8_t*) imm);
+                __asm__ __volatile__(
+                "mul %%ax, %%cx, a_imm; pushfw; pop %%bx;"
+                : "=b" (temp_flags), "=d" (*((uint16_t *) dest)) : "c" (*((uint16_t *) source))
+                );
+            }
+            else if(second_width == 32)
+            {
+                uint32_t a_imm = *((uint32_t*) imm);
+                __asm__ __volatile__(
+                "mul %%ax, %%cx, a_imm; pushfw; pop %%bx;"
+                : "=b" (temp_flags), "=d" (*((uint16_t *) dest)) : "c" (*((uint16_t *) source))
+                );
+            }
+            else return BAD_WIDTH;
+        }
+        else return BAD_WIDTH;
+    }
+    bit_write(machine->regs.w.flags, 1u <<OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1u <<OVERFLOW_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1u <<CARRY_FLAG_BIT, bit_get(temp_flags, 1u <<CARRY_FLAG_BIT) != 0);
+    return OK;
+}
+
 int16_t perform_division(v8086* machine, void* source, uint8_t signed_div, uint8_t width)
 {
     uint16_t temp_flags;

@@ -100,3 +100,29 @@ uint16_t pop_all(v8086* machine)
     }
     return OK;
 }
+
+uint16_t push_immediate(v8086* machine, uint8_t width)
+{
+    if(width == 8)
+    {
+        uint8_t imm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+        push_byte(machine, imm);
+        return OK;
+    }
+    if(width == 16)
+    {
+        uint16_t imm = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 2;
+        push_word(machine, imm);
+        return OK;
+    }
+    if(width == 32)
+    {
+        uint32_t imm = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 4;
+        push_dword(machine, imm);
+        return OK;
+    }
+    return BAD_WIDTH;
+}

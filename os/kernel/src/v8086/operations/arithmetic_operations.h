@@ -18,6 +18,7 @@ int16_t perform_shr(v8086* machine, void* dest, uint8_t arg, uint8_t width);
 int16_t perform_sar(v8086* machine, void* dest, uint8_t arg, uint8_t width);
 int16_t perform_neg(v8086* machine, void* source, uint8_t width);
 int16_t perform_multiplication(v8086* machine, void* source, uint8_t signed_mul, uint8_t width);
+int16_t perform_multiplication_3_byte(v8086* machine, void* dest, void* source, void* imm, uint8_t signed_mul, uint8_t width, uint8_t second_width);
 int16_t perform_division(v8086* machine, void* source, uint8_t signed_div, uint8_t width);
 int16_t perform_test(v8086* machine, void* source, void* dest, uint8_t width);
 int16_t perform_inc(v8086* machine, void* dest, uint8_t width);

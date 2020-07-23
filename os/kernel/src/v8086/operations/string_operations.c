@@ -15,8 +15,16 @@ uint16_t perform_movs(v8086 *machine, uint8_t width) {
     if(machine->internal_state.rep_prefix == REP_REPE && machine->regs.w.cx == 0) return OK;
 
     do{
-        void* source = get_variable_length_pointer(machine->Memory, get_absolute_address(*source_segment, machine->regs.w.si), width);
-        void* dest = get_variable_length_pointer(machine->Memory, get_absolute_address(*dest_segment, machine->regs.w.di), width);
+        void* source = NULL;
+        if(machine->internal_state.address_32_bit)
+            source = get_variable_length_pointer(machine->Memory, get_absolute_address(*source_segment, machine->regs.d.esi), width);
+        else
+            source = get_variable_length_pointer(machine->Memory, get_absolute_address(*source_segment, machine->regs.w.si), width);
+        void* dest = NULL;
+        if(machine->internal_state.address_32_bit)
+            dest = get_variable_length_pointer(machine->Memory, get_absolute_address(*dest_segment, machine->regs.d.edi), width);
+        else
+            dest = get_variable_length_pointer(machine->Memory, get_absolute_address(*dest_segment, machine->regs.w.di), width);
         if(width == 8)
             *((uint8_t*)dest) = *((uint8_t*) source);
         else if(width == 16)
@@ -26,8 +34,14 @@ uint16_t perform_movs(v8086 *machine, uint8_t width) {
         else
             return BAD_WIDTH;
         int8_t offset = width / 8;
-        machine->regs.w.si += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -offset : offset;
-        machine->regs.w.di += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -offset : offset;
+        if(machine->internal_state.address_32_bit){
+            machine->regs.d.esi += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -offset : offset;
+            machine->regs.d.edi += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -offset : offset;
+        }
+        else {
+            machine->regs.w.si += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -offset : offset;
+            machine->regs.w.di += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -offset : offset;
+        }
     } while(machine->internal_state.rep_prefix == REP_REPE && --(machine->regs.w.cx));
 
     return OK;
@@ -43,7 +57,10 @@ uint16_t perform_stos(v8086* machine, uint8_t width)
     if(machine->internal_state.rep_prefix == REP_REPE && machine->regs.w.cx == 0) return OK;
 
     do{
-        dest = get_variable_length_pointer(machine->Memory, get_absolute_address(*segment, machine->regs.w.di), width);
+        if(machine->internal_state.address_32_bit)
+            dest = get_variable_length_pointer(machine->Memory, get_absolute_address(*segment, machine->regs.d.edi), width);
+        else
+            dest = get_variable_length_pointer(machine->Memory, get_absolute_address(*segment, machine->regs.w.di), width);
         source = get_variable_length_register(machine, AL, width);
         if(source == NULL) return UNDEFINED_REGISTER;
         if(width == 8) *((uint8_t*) dest) = *((uint8_t*) source);
@@ -51,7 +68,10 @@ uint16_t perform_stos(v8086* machine, uint8_t width)
         else if(width == 32) *((uint32_t*) dest) = *((uint32_t*) source);
         else return -1;
 
-        machine->regs.w.di += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -(width/8) : (width/8);
+        if(machine->internal_state.address_32_bit)
+            machine->regs.d.edi += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -(width/8) : (width/8);
+        else
+            machine->regs.w.di += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -(width/8) : (width/8);
     } while(machine->internal_state.rep_prefix == REP_REPE && --(machine->regs.w.cx));
 
     return OK;
@@ -75,8 +95,14 @@ uint16_t perform_cmps(v8086* machine, uint8_t width)
     if(machine->internal_state.rep_prefix != NONE && machine->regs.w.cx == 0) return OK;
 
     do{
-        source = get_variable_length_pointer(machine->Memory, get_absolute_address(*source_segment, machine->regs.w.si), width);
-        dest = get_variable_length_pointer(machine->Memory, get_absolute_address(*dest_segment, machine->regs.w.di), width);
+        if(machine->internal_state.address_32_bit)
+            source = get_variable_length_pointer(machine->Memory, get_absolute_address(*source_segment, machine->regs.d.esi), width);
+        else
+            source = get_variable_length_pointer(machine->Memory, get_absolute_address(*source_segment, machine->regs.w.si), width);
+        if(machine->internal_state.address_32_bit)
+            dest = get_variable_length_pointer(machine->Memory, get_absolute_address(*dest_segment, machine->regs.d.edi), width);
+        else
+            dest = get_variable_length_pointer(machine->Memory, get_absolute_address(*dest_segment, machine->regs.w.di), width);
         if(width == 8){
             dest_before = *((uint8_t*)dest);
             source_before = *((uint8_t*)source);
@@ -98,8 +124,14 @@ uint16_t perform_cmps(v8086* machine, uint8_t width)
         bit_write(machine->regs.d.eflags, 1u <<SIGN_FLAG_BIT, result >> (width - 1u)); //SIGN FLAG
         bit_write(machine->regs.d.eflags, 1u <<OVERFLOW_FLAG_BIT, ((result >> (width - 1u)) != (dest_before >> (width - 1u)))); //OVERFLOW FLAG
 
-        machine->regs.w.si += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -(width/8) : (width/8);
-        machine->regs.w.di += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -(width/8) : (width/8);
+        if(machine->internal_state.address_32_bit){
+            machine->regs.d.esi += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -(width/8) : (width/8);
+            machine->regs.d.edi += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -(width/8) : (width/8);
+        }
+        else {
+            machine->regs.w.si += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -(width/8) : (width/8);
+            machine->regs.w.di += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -(width/8) : (width/8);
+        }
 
         if((machine->internal_state.rep_prefix == REP_REPE && !bit_get(machine->regs.w.flags, ZERO_FLAG_BIT)) ||
           (machine->internal_state.rep_prefix == REPNE && bit_get(machine->regs.w.flags, ZERO_FLAG_BIT))) break;
@@ -121,7 +153,10 @@ uint16_t perform_lods(v8086* machine, uint8_t width)
     if(machine->internal_state.rep_prefix == REP_REPE && machine->regs.w.cx == 0) return OK;
 
     do{
-        source = get_variable_length_pointer(machine->Memory, get_absolute_address(*segment, machine->regs.w.si), width);
+        if(machine->internal_state.address_32_bit)
+            source = get_variable_length_pointer(machine->Memory, get_absolute_address(*segment, machine->regs.d.esi), width);
+        else
+            source = get_variable_length_pointer(machine->Memory, get_absolute_address(*segment, machine->regs.w.si), width);
         dest = get_variable_length_register(machine, AL, width);
         if(dest == NULL) return UNDEFINED_REGISTER;
         if(width == 8) *((uint8_t*) dest) = *((uint8_t*) source);
@@ -129,7 +164,10 @@ uint16_t perform_lods(v8086* machine, uint8_t width)
         else if(width == 32) *((uint32_t*) dest) = *((uint32_t*) source);
         else return BAD_WIDTH;
 
-        machine->regs.w.si += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -(width/8) : (width/8);
+        if(machine->internal_state.address_32_bit)
+            machine->regs.d.esi += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -(width/8) : (width/8);
+        else
+            machine->regs.w.si += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -(width/8) : (width/8);
     }while(machine->internal_state.rep_prefix == REP_REPE && --(machine->regs.w.cx));
     return OK;
 }
@@ -149,7 +187,10 @@ uint16_t perform_scas(v8086* machine, uint8_t width)
 
     do{
         dest = get_variable_length_register(machine, AX, width);
-        source = get_variable_length_pointer(machine->Memory, get_absolute_address(*source_segment, machine->regs.w.di), width);
+        if(machine->internal_state.address_32_bit)
+            source = get_variable_length_pointer(machine->Memory, get_absolute_address(*source_segment, machine->regs.d.edi), width);
+        else
+            source = get_variable_length_pointer(machine->Memory, get_absolute_address(*source_segment, machine->regs.w.di), width);
         if(dest == NULL) return UNDEFINED_REGISTER;
         if(width == 8){
             dest_before = *((uint8_t*)dest);
@@ -172,7 +213,10 @@ uint16_t perform_scas(v8086* machine, uint8_t width)
         bit_write(machine->regs.d.eflags, 1u <<SIGN_FLAG_BIT, result >> (width - 1u)); //SIGN FLAG
         bit_write(machine->regs.d.eflags, 1u <<OVERFLOW_FLAG_BIT, ((result >> (width - 1u)) != (dest_before >> (width - 1u)))); //OVERFLOW FLAG
 
-        machine->regs.w.di += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -(width/8) : (width/8);
+        if(machine->internal_state.address_32_bit)
+            machine->regs.d.edi += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -(width/8) : (width/8);
+        else
+            machine->regs.w.di += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -(width/8) : (width/8);
 
         if((machine->internal_state.rep_prefix == REP_REPE && !bit_get(machine->regs.w.flags, ZERO_FLAG_BIT)) ||
            (machine->internal_state.rep_prefix == REPNE && bit_get(machine->regs.w.flags, ZERO_FLAG_BIT))) break;

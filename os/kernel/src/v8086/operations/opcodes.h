@@ -97,5 +97,13 @@ OPCODE_PROTO(group_5);
 OPCODE_PROTO(push_all);
 OPCODE_PROTO(pop_all);
 OPCODE_PROTO(bound);
+OPCODE_PROTO(push_imm16_32);
+OPCODE_PROTO(push_imm8);
+OPCODE_PROTO(imul_reg_reg_imm);
+OPCODE_PROTO(imul_reg_reg_imm8);
+OPCODE_PROTO(ins8);
+OPCODE_PROTO(ins);
+OPCODE_PROTO(outs8);
+OPCODE_PROTO(outs);
 
 #endif //MICROS_OPCODES_H

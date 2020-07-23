@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <v8086/stack.h>
 #include <stdbool.h>
+#include <v8086/mod_rm_parsing.h>
 #include "opcodes.h"
 #include "arithmetic_operations.h"
 #include "ascii_adjustments_operations.h"
@@ -483,4 +484,58 @@ OPCODE_PROTO(pop_all)
 OPCODE_PROTO(bound)
 {
     return check_bounds(machine);
+}
+
+OPCODE_PROTO(push_imm16_32)
+{
+    return push_immediate(machine, machine->internal_state.operand_32_bit ? 32 : 16);
+}
+
+OPCODE_PROTO(push_imm8)
+{
+    return push_immediate(machine, 8);
+}
+
+OPCODE_PROTO(imul_reg_reg_imm)
+{
+    uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    machine->internal_state.IPOffset += 1;
+    uint8_t width = machine->internal_state.operand_32_bit ? 32 : 16;
+    void* mem_or_reg = get_memory_from_mode(machine, mod_rm, width);
+    void* reg = get_variable_length_register(machine, get_reg(mod_rm), width);
+    void* imm = get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset), width);
+    machine->internal_state.IPOffset += width/8;
+
+    return perform_multiplication_3_byte(machine, reg, mem_or_reg, imm, 1, width, width);
+}
+
+OPCODE_PROTO(imul_reg_reg_imm8)
+{
+    uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    machine->internal_state.IPOffset += 1;
+    uint8_t width = machine->internal_state.operand_32_bit ? 32 : 16;
+    void* mem_or_reg = get_memory_from_mode(machine, mod_rm, width);
+    void* reg = get_variable_length_register(machine, get_reg(mod_rm), width);
+    uint8_t imm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    machine->internal_state.IPOffset += 1;
+
+    return perform_multiplication_3_byte(machine, reg, mem_or_reg, &imm, 1, width, 8);
+}
+
+OPCODE_PROTO(ins8){
+    return perform_ins_dx(machine, 8);
+}
+
+OPCODE_PROTO(ins)
+{
+    return perform_ins_dx(machine, machine->internal_state.operand_32_bit ? 32 : 16);
+}
+
+OPCODE_PROTO(outs8){
+    return perform_outs_dx(machine, 8);
+}
+
+OPCODE_PROTO(outs)
+{
+    return perform_outs_dx(machine, machine->internal_state.operand_32_bit ? 32 : 16);
 }

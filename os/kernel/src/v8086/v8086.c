@@ -138,6 +138,20 @@ void v8086_set_386_instruction_set(v8086* machine)
     ASSIGN_OPCODE(0x60u, push_all);
     ASSIGN_OPCODE(0x61u, pop_all);
     ASSIGN_OPCODE(0x62u, bound);
+    //ARPL Not working in REAL MODE
+    ASSIGN_NULL(0x63u);
+    //RESERVED FOR SEG=FS
+    ASSIGN_NULL(0x64u);
+    //RESERVED FOR SEG=GS
+    ASSIGN_NULL(0x65u);
+    ASSIGN_OPCODE(0x68u, push_imm16_32);
+    ASSIGN_OPCODE(0x69u, imul_reg_reg_imm);
+    ASSIGN_OPCODE(0x6au, push_imm8);
+    ASSIGN_OPCODE(0x6bu, imul_reg_reg_imm8);
+    ASSIGN_OPCODE(0x6cu, ins8);
+    ASSIGN_OPCODE(0x6du, ins);
+    ASSIGN_OPCODE(0x6eu, outs8);
+    ASSIGN_OPCODE(0x6fu, outs);
 }
 
 v8086* v8086_create_machine()
@@ -180,6 +194,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
 {
     machine->internal_state.IPOffset = 0;
     machine->internal_state.operand_32_bit = 0;
+    machine->internal_state.address_32_bit = 0;
     machine->internal_state.segment_reg_select = DEFAULT;
     machine->internal_state.rep_prefix = NONE;
 
@@ -216,6 +231,12 @@ int16_t parse_and_execute_instruction(v8086* machine)
     {
         machine->internal_state.operand_32_bit = 1;
         goto decode; //continue parsing opcode;
+    }
+    //Address Szie Prefix
+    else if(opcode == 0x67)
+    {
+        machine->internal_state.address_32_bit = 1;
+        goto decode;
     }
     //REPNE Prefix
     else if(opcode == 0xF2)
