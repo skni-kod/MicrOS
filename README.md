@@ -78,13 +78,13 @@ A simple shell that allows executing other applications. Using Ctrl+F1/F2/F3/F4 
 
 Task manager displaying basic info about the current operating system state. There are two bars (with processor utilization and memory usage) and a tree with all processes - initially, OS runs 4 terminals where each of it can run its child process (like TASKS or SNAKE here).
 
-![Task manager](https://i.imgur.com/WKjSxQv.png)
+![Task manager](https://i.imgur.com/86EIQTh.png)
 
 #### Example application (cat)
 
 Example of working CAT application with KERNEL.BIN file given in the parameter. It displays the first 1600 bytes of the binary content (so that's why there are a ton of strange chars).
 
-![CAT application](https://i.imgur.com/CC2bwX6.png)
+![CAT application](https://i.imgur.com/8w7Ydng.png)
 
 #### Example game (snake)
 
