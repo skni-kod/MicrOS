@@ -45,6 +45,8 @@ Documentation: https://tearth.github.io/MicrOS/
 * Other standards of hard disk drive support
 * More advanced scheduler with priorities and IO blocking
 * Support for network cards (and protocols related to them)
+* Support for threads
+* Lock/mutex, synchronization objects, queues...
 * ...
 
 ## Used tools
