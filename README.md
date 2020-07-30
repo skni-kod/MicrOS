@@ -72,13 +72,13 @@ Test of the multitasking with five processes, where each one increments its inte
 
 A simple shell that allows executing other applications. Using Ctrl+F1/F2/F3/F4 user can switch to another terminal and run an application simultaneously with other ones.
 
-![Shell](https://i.imgur.com/XRrfbL5.png)
+![Shell](https://i.imgur.com/FshcXi3.png)
 
 #### Task manager
 
 Task manager displaying basic info about the current operating system state. There are two bars (with processor utilization and memory usage) and a tree with all processes - initially, OS runs 4 terminals where each of it can run its child process (like TASKS or SNAKE here).
 
-![Task manager](https://i.imgur.com/etz6MKd.png)
+![Task manager](https://i.imgur.com/WKjSxQv.png)
 
 #### Example application (cat)
 
