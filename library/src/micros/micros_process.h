@@ -221,6 +221,16 @@ void micros_process_finish_signal_handler(micros_signal_params *old_state);
 */
 void micros_process_wait_for_process(uint32_t process_id_to_wait);
 
+//! Creates new thread
+/*!
+    Creates new thread with the specified parameters.
+    \param entry_point Address of the entry point from which thread will start.
+    \return ID of the create thread.
+*/
+uint32_t micros_process_start_thread(void *entry_point);
+
+void __micros_process_close_thread();
+
 #ifdef __cplusplus
 }
 #endif

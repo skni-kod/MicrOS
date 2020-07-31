@@ -54,3 +54,19 @@ void micros_process_wait_for_process(uint32_t process_id_to_wait)
 {
     micros_interrupt_1a(0x9A, process_id_to_wait);
 }
+
+uint32_t micros_process_start_thread(void *entry_point)
+{
+    uint32_t stack_size = 1024 * 1024 * 4 - 4;
+    char *stack_area = (char *)malloc(stack_size);
+    char *stack = stack_area + stack_size;
+    
+    *(uint32_t*)stack = __micros_process_close_thread;
+    
+    return micros_interrupt_2a(0x9B, entry_point, stack);
+}
+
+void __micros_process_close_thread()
+{
+    micros_process_exit(0);
+}
