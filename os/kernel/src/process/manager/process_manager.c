@@ -149,7 +149,7 @@ uint32_t process_manager_create_thread(uint32_t process_id, void *entry_point, v
     thread->is_thread = true;
 
     thread->state.eip = entry_point;
-    thread->state.esp = (uint32_t)thread->user_stack - 4;
+    thread->state.esp = (uint32_t)thread->user_stack - sizeof(void*);
     thread->state.interrupt_number = 0;
     thread->state.eflags = 0x200;
     thread->state.cs = 0x1B;
@@ -273,13 +273,13 @@ void process_manager_switch_to_next_process()
     enter_user_space(&new_process->state);
 }
 
-void process_manager_close_current_process()
+void process_manager_close_current_process(bool is_thread)
 {
     process_info *current_process = processes.data[current_process_id];
-    process_manager_close_process(current_process->id, true);
+    process_manager_close_process(current_process->id, is_thread, true);
 }
 
-void process_manager_close_process(uint32_t process_id, bool allow_to_switch)
+void process_manager_close_process(uint32_t process_id, bool is_thread, bool allow_to_switch)
 {
     io_disable_interrupts();
     
@@ -289,20 +289,23 @@ void process_manager_close_process(uint32_t process_id, bool allow_to_switch)
     
     dettached_process_from_terminal(process);
     
-    void *page_directory_backup = (uint32_t*)paging_get_page_directory();
-    void *heap_backup = (uint32_t*)heap_get_user_heap();
-    
-    paging_set_page_directory(process->page_directory);
-    heap_set_user_heap((void *)(process->heap));
-    
-    uint32_t allocated_pages_count = virtual_memory_get_allocated_pages_count(false);
-    for(uint32_t i=0; i<allocated_pages_count; i++)
+    if (!is_thread)
     {
-        virtual_memory_dealloc_last_page(false);
+        void *page_directory_backup = (uint32_t*)paging_get_page_directory();
+        void *heap_backup = (uint32_t*)heap_get_user_heap();
+        
+        paging_set_page_directory(process->page_directory);
+        heap_set_user_heap((void *)(process->heap));
+        
+        uint32_t allocated_pages_count = virtual_memory_get_allocated_pages_count(false);
+        for(uint32_t i=0; i<allocated_pages_count; i++)
+        {
+            virtual_memory_dealloc_last_page(false);
+        }
+        
+        paging_set_page_directory(page_directory_backup);
+        heap_set_user_heap(heap_backup);
     }
-    
-    paging_set_page_directory(page_directory_backup);
-    heap_set_user_heap(heap_backup);
     
     for(int i = processes.count - 1; i >= 0; i--)
     {
@@ -314,7 +317,7 @@ void process_manager_close_process(uint32_t process_id, bool allow_to_switch)
         
         if(potential_child_process->parent_id == process->id)
         {
-            process_manager_close_process(potential_child_process->id, false);
+            process_manager_close_process(potential_child_process->id, potential_child_process->is_thread, false);
         }
     }
     

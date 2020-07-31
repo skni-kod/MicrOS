@@ -28,8 +28,8 @@ uint32_t process_manager_get_root_process();
 
 void process_manager_save_current_process_state(interrupt_state *state, uint32_t delta);
 void process_manager_switch_to_next_process();
-void process_manager_close_current_process();
-void process_manager_close_process(uint32_t process_id, bool allow_to_switch);
+void process_manager_close_current_process(bool is_thread);
+void process_manager_close_process(uint32_t process_id, bool is_thread, bool allow_to_switch);
 uint32_t process_manager_get_processes_count();
 uint32_t process_manager_get_process_index(uint32_t process_id);
 process_info *process_manager_get_process_info(uint32_t id);

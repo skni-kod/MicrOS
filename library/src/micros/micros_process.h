@@ -142,9 +142,10 @@ extern "C" {
 //! Forces current process to exit
 /*!
     Forces current process to exit with the specified status code (typically 0 means success).
-    \param status Exis status code.
+    \param status Exit status code.
+    \param is_thread Flag indicating if the system should close only current thread or whole process.
 */
-void micros_process_exit(int status);
+void micros_process_exit(int status, bool is_thread);
 
 //! Returns number of processes
 /*!

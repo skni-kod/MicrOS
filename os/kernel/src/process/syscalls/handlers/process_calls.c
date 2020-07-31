@@ -2,7 +2,7 @@
 
 void syscall_process_exit(interrupt_state *state)
 {
-    process_manager_close_current_process(state);
+    process_manager_close_current_process(state->registers.ecx);
 }
 
 void syscall_process_get_processes_count(interrupt_state *state)

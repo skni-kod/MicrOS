@@ -1,8 +1,8 @@
 #include "micros_process.h"
 
-void micros_process_exit(int status)
+void micros_process_exit(int status, bool is_thread)
 {
-    micros_interrupt_1a(0x90, status);
+    micros_interrupt_2a(0x90, status, is_thread);
 }
 
 uint32_t micros_process_get_processes_count()
@@ -57,16 +57,18 @@ void micros_process_wait_for_process(uint32_t process_id_to_wait)
 
 uint32_t micros_process_start_thread(void *entry_point)
 {
-    uint32_t stack_size = 1024 * 1024 * 4 - 4;
-    char *stack_area = (char *)malloc(stack_size);
-    char *stack = stack_area + stack_size;
+    uint32_t stack_size = 1024 * 1024 * 4;
     
-    *(uint32_t*)stack = __micros_process_close_thread;
+    uint32_t *stack_area = (uint32_t *)malloc(stack_size);
+    uint32_t *stack = stack_area + stack_size / 4;
+    
+    *(stack - 1) = __micros_process_close_thread;
+    uint32_t test = *(stack - 1);
     
     return micros_interrupt_2a(0x9B, entry_point, stack);
 }
 
 void __micros_process_close_thread()
 {
-    micros_process_exit(0);
+    micros_process_exit(0, true);
 }
