@@ -148,7 +148,7 @@ uint32_t process_manager_create_thread(uint32_t process_id, void *entry_point, v
     thread->terminal_id = process->terminal_id;
     thread->is_thread = true;
 
-    thread->state.eip = entry_point;
+    thread->state.eip = (uint32_t)entry_point;
     thread->state.esp = (uint32_t)thread->user_stack - sizeof(void*);
     thread->state.interrupt_number = 0;
     thread->state.eflags = 0x200;

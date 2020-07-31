@@ -62,10 +62,9 @@ uint32_t micros_process_start_thread(void *entry_point)
     uint32_t *stack_area = (uint32_t *)malloc(stack_size);
     uint32_t *stack = stack_area + stack_size / 4;
     
-    *(stack - 1) = __micros_process_close_thread;
-    uint32_t test = *(stack - 1);
+    *(stack - 1) = (uint32_t)__micros_process_close_thread;
     
-    return micros_interrupt_2a(0x9B, entry_point, stack);
+    return micros_interrupt_2a(0x9B, (uint32_t)entry_point, (uint32_t)stack);
 }
 
 void __micros_process_close_thread()
