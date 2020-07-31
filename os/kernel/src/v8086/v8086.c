@@ -152,6 +152,8 @@ void v8086_set_386_instruction_set(v8086* machine)
     ASSIGN_OPCODE(0x6du, ins);
     ASSIGN_OPCODE(0x6eu, outs8);
     ASSIGN_OPCODE(0x6fu, outs);
+    ASSIGN_OPCODE(0xc8u, enter);
+    ASSIGN_OPCODE(0xc9u, leave);
 }
 
 v8086* v8086_create_machine()

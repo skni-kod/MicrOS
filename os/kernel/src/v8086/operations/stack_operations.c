@@ -5,7 +5,7 @@
 #include <v8086/stack.h>
 #include "stack_operations.h"
 
-uint16_t push_gpr(v8086* machine, uint8_t opcode)
+int16_t push_gpr(v8086* machine, uint8_t opcode)
 {
     uint8_t width = 16;
     void* reg = NULL;
@@ -17,7 +17,7 @@ uint16_t push_gpr(v8086* machine, uint8_t opcode)
     return OK;
 }
 
-uint16_t pop_gpr(v8086* machine, uint8_t opcode)
+int16_t pop_gpr(v8086* machine, uint8_t opcode)
 {
     uint8_t width = 16;
     void* reg = NULL;
@@ -29,7 +29,7 @@ uint16_t pop_gpr(v8086* machine, uint8_t opcode)
     return OK;
 }
 
-uint16_t pop_rm(v8086* machine)
+int16_t pop_rm(v8086* machine)
 {
     uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
     machine->internal_state.IPOffset += 1;
@@ -44,7 +44,7 @@ uint16_t pop_rm(v8086* machine)
     return OK;
 }
 
-uint16_t push_all(v8086* machine)
+int16_t push_all(v8086* machine)
 {
     uint8_t width = machine->internal_state.operand_32_bit ? 32 : 16;
     uint32_t temp_sp = width == 16 ? machine->regs.w.sp : machine->regs.d.esp;
@@ -72,7 +72,7 @@ uint16_t push_all(v8086* machine)
     return OK;
 }
 
-uint16_t pop_all(v8086* machine)
+int16_t pop_all(v8086* machine)
 {
     uint8_t width = machine->internal_state.operand_32_bit ? 32 : 16;
     if(width == 16)
@@ -101,7 +101,7 @@ uint16_t pop_all(v8086* machine)
     return OK;
 }
 
-uint16_t push_immediate(v8086* machine, uint8_t width)
+int16_t push_immediate(v8086* machine, uint8_t width)
 {
     if(width == 8)
     {
@@ -122,6 +122,77 @@ uint16_t push_immediate(v8086* machine, uint8_t width)
         uint32_t imm = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 4;
         push_dword(machine, imm);
+        return OK;
+    }
+    return BAD_WIDTH;
+}
+
+int16_t enter(v8086* machine, uint8_t width)
+{
+    uint16_t alloc_size = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    machine->internal_state.IPOffset += 2;
+
+    uint8_t nesting_level = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    machine->internal_state.IPOffset += 1;
+
+    nesting_level = nesting_level & 0x1fu;
+
+    uint32_t temp_ebp;
+
+    if(width == 32)
+    {
+        push_dword(machine, machine->regs.d.ebp);
+        temp_ebp = machine->regs.d.esp;
+    }
+    else if(width == 16)
+    {
+        push_word(machine, machine->regs.w.bp);
+        temp_ebp = machine->regs.w.sp;
+    }
+    else return BAD_WIDTH;
+
+    if(nesting_level > 0)
+    {
+        for(uint8_t i = 1; i < nesting_level; i++)
+        {
+            if(width == 32)
+            {
+                machine->regs.d.ebp -= 4;
+                push_dword(machine, read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.d.ebp)));
+            }
+            else{
+                machine->regs.w.bp -= 2;
+                push_word(machine, read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.w.bp)));
+            }
+        }
+        if(width == 32)
+            push_dword(machine, temp_ebp);
+        else
+            push_word(machine, temp_ebp);
+    }
+
+    if(width == 32) {
+        machine->regs.d.ebp = temp_ebp;
+        machine->regs.d.esp -= alloc_size;
+    }
+    else {
+        machine->regs.w.bp = temp_ebp;
+        machine->regs.w.sp -= alloc_size;
+    }
+
+    return OK;
+}
+
+int16_t leave(v8086* machine, uint8_t width)
+{
+    if(width == 32) {
+        machine->regs.d.esp = machine->regs.d.ebp;
+        machine->regs.d.ebp = pop_dword(machine);
+        return OK;
+    }
+    if(width == 16){
+        machine -> regs.w.sp = machine->regs.w.sp;
+        machine->regs.w.bp = pop_word(machine);
         return OK;
     }
     return BAD_WIDTH;

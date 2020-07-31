@@ -535,7 +535,16 @@ OPCODE_PROTO(outs8){
     return perform_outs_dx(machine, 8);
 }
 
-OPCODE_PROTO(outs)
-{
+OPCODE_PROTO(outs) {
     return perform_outs_dx(machine, machine->internal_state.operand_32_bit ? 32 : 16);
+}
+
+OPCODE_PROTO(enter)
+{
+    return enter(machine, machine->internal_state.operand_32_bit ? 32 : 16);
+}
+
+OPCODE_PROTO(leave)
+{
+    return leave(machine, machine->internal_state.operand_32_bit ? 32 : 16);
 }
