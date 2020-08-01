@@ -149,6 +149,7 @@ typedef struct _v8086
     uint8_t	Memory[0x100000];
     enum instruction_set_compatibility is_compatibility;
     int16_t (*operations[256]) (struct _v8086*, uint8_t);
+    int16_t (*operations_0fh[256]) (struct _v8086*, uint8_t);
 } v8086;
 
 

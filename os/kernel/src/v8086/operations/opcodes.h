@@ -7,7 +7,9 @@
 #define OPCODE_PROTO(name) int16_t OPCODE_PROTO_NAME(name)(v8086* machine, uint8_t opcode)
 #define ASSIGN_NULL(i) machine->operations[i] = NULL
 #define ASSIGN_OPCODE(i, name) machine->operations[i] = OPCODE_PROTO_NAME(name)
+#define ASSIGN_0FH_OPCODE(i, name) machine->operations_0fh[i] = OPCODE_PROTO_NAME(name)
 #define GROUP_OF_OPCODES(from, to, name) for(uint8_t i = from; i <= to; i++) ASSIGN_OPCODE(i, name)
+#define GROUP_OF_0FH_OPCODES(from, to, name) for(uint8_t i = from; i <= to; i++) ASSIGN_0FH_OPCODE(i, name)
 
 OPCODE_PROTO(add);
 OPCODE_PROTO(push_es);
@@ -107,5 +109,8 @@ OPCODE_PROTO(outs8);
 OPCODE_PROTO(outs);
 OPCODE_PROTO(enter);
 OPCODE_PROTO(leave);
+//386 2_bytes_protos 0x0f Prefix
+OPCODE_PROTO(two_byte_0fh);
+
 
 #endif //MICROS_OPCODES_H

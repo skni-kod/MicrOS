@@ -548,3 +548,15 @@ OPCODE_PROTO(leave)
 {
     return leave(machine, machine->internal_state.operand_32_bit ? 32 : 16);
 }
+
+//386 2_bytes_protos 0x0f Prefix
+
+OPCODE_PROTO(two_byte_0fh){
+    uint8_t secondary_opcode;
+    secondary_opcode = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    machine->internal_state.IPOffset += 1;
+
+    if(machine->operations_0fh[opcode] == NULL) return UNDEFINED_OPCODE;
+
+    return machine->operations_0fh[opcode](machine, secondary_opcode);
+}
