@@ -230,9 +230,10 @@ void micros_process_wait_for_process(uint32_t process_id_to_wait);
 /*!
     Creates new thread with the specified parameters.
     \param entry_point Address of the entry point from which thread will start.
+    \param param Parameter which will be passed to the thread function.
     \return ID of the create thread.
 */
-uint32_t micros_process_start_thread(void *entry_point);
+uint32_t micros_process_start_thread(void *entry_point, void *param);
 
 void __micros_process_close_thread();
 
