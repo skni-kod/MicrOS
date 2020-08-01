@@ -6,6 +6,7 @@
 #define OPCODE_PROTO_NAME(name) v8086_opcode_##name
 #define OPCODE_PROTO(name) int16_t OPCODE_PROTO_NAME(name)(v8086* machine, uint8_t opcode)
 #define ASSIGN_NULL(i) machine->operations[i] = NULL
+#define ASSIGN_NULL_0FH(i) machine->operations_0fh[i] = NULL
 #define ASSIGN_OPCODE(i, name) machine->operations[i] = OPCODE_PROTO_NAME(name)
 #define ASSIGN_0FH_OPCODE(i, name) machine->operations_0fh[i] = OPCODE_PROTO_NAME(name)
 #define GROUP_OF_OPCODES(from, to, name) for(uint8_t i = from; i <= to; i++) ASSIGN_OPCODE(i, name)

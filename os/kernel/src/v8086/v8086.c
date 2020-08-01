@@ -130,6 +130,11 @@ void v8086_set_8086_instruction_set(v8086* machine)
     GROUP_OF_OPCODES(0xf8u, 0xfdu, set_flag);
     ASSIGN_OPCODE(0xfeu, group_4);
     ASSIGN_OPCODE(0xffu, group_5);
+
+    for(uint16_t i = 0u; i < 256; i++)
+    {
+        machine->operations_0fh[i] = NULL;
+    }
 }
 
 void v8086_set_386_instruction_set(v8086* machine)
@@ -157,6 +162,31 @@ void v8086_set_386_instruction_set(v8086* machine)
 
     //2 byte opcodes 0fh_prefix
     ASSIGN_OPCODE(0x0fu, two_byte_0fh);
+    //NO Protected mode and CR0 emulated
+    ASSIGN_NULL_0FH(0x00u);
+    ASSIGN_NULL_0FH(0x01u);
+    ASSIGN_NULL_0FH(0x02u);
+    ASSIGN_NULL_0FH(0x03u);
+    //NO DEFINED IN 386
+    ASSIGN_NULL_0FH(0x04u);
+    ASSIGN_NULL_0FH(0x05u);
+    //NO Protected mode and CR0 emulated
+    ASSIGN_NULL_0FH(0x06u);
+    //NOT DEFINED IN 386
+    for(uint8_t i = 0x07; i <= 0x1fu; i++)
+    {
+        machine->operations_0fh[i] = NULL;
+    }
+    //NO CR, DEBUG, TEST registers emulated
+    for(uint8_t i = 0x20u; i <= 0x26u; i++)
+    {
+        machine->operations_0fh[i] = NULL;
+    }
+    //NOT DEFINED IN 386
+    for(uint8_t i = 0x27u; i <= 0x7fu; i++)
+    {
+        machine->operations_0fh[i] = NULL;
+    }
 
 }
 
