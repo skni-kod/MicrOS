@@ -44,6 +44,9 @@ typedef struct micros_process_user_info
     
     //! Current process memory usage calculated by the kernel
     uint32_t memory_usage;
+    
+    //! Flag indicating if this is a process or a thread
+    bool is_thread;
 } __attribute__((packed)) micros_process_user_info;
 
 //! Process registers state

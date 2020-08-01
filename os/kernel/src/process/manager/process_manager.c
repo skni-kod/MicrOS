@@ -486,6 +486,7 @@ void process_manager_convert_process_info_to_user_info(process_info *process, pr
     user_info->status = (uint32_t)process->status;
     user_info->cpu_usage = process->last_cpu_usage;
     user_info->memory_usage = process_manager_get_process_memory_usage(process);
+    user_info->is_thread = process->is_thread;
 }
 
 uint32_t process_manager_get_process_memory_usage(process_info *process)
