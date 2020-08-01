@@ -217,6 +217,12 @@ void process_manager_save_current_process_state(interrupt_state *state, uint32_t
     memcpy(&old_process->state, state, sizeof(interrupt_state));
 
     old_process->current_cpu_usage += delta;
+    
+    if (old_process->is_thread)
+    {
+        process_info *parent_process = process_manager_get_process_info(old_process->parent_id);
+        parent_process->current_cpu_usage += delta;
+    }
 }
 
 void process_manager_switch_to_next_process()

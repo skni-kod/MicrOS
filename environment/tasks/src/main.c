@@ -12,35 +12,17 @@ void draw_memory_usage_bar(micros_physical_memory_stats *memory_stats, uint32_t 
 void print_process_info(micros_process_user_info *process_info);
 void print_memory_stats(micros_physical_memory_stats *memory_stats);
 
-void shuka1()
-{
-    while(true)
-    {
-        
-    }
-}
-void shuka2()
-{
-    while(true)
-    {
-        
-    }
-}
-
 int main(int argc, char *argv[])
 {
     micros_process_set_current_process_name("TASKS");
     micros_console_set_cursor_visibility(false);
     printf("TASKS");
-    
-    micros_process_start_thread(shuka1);
-    micros_process_start_thread(shuka2);
 
     while (1)
     {
         micros_console_clear();
 
-        printf("TASKS v1.1 @ MicrOS\n");
+        printf("TASKS v1.2 @ MicrOS\n");
         printf("\n");
 
         uint32_t processes_count = micros_process_get_processes_count();
@@ -53,8 +35,12 @@ int main(int argc, char *argv[])
         for (uint32_t i = 0; i < processes_count; i++)
         {
             micros_process_user_info *process = &processes[i];
-            total_cpu_usage += process->cpu_usage;
-            total_memory_usage += process->memory_usage;
+            
+            if (!process->is_thread)
+            {
+                total_cpu_usage += process->cpu_usage;
+                total_memory_usage += process->memory_usage;
+            }
         }
 
         micros_physical_memory_stats memory_stats;
@@ -141,8 +127,7 @@ void draw_process_tree(micros_process_user_info *processes, uint32_t root_id, ui
         micros_process_user_info *process = &processes[i];
         if (process->id != 0 && process->parent_id == root_id)
         {
-            
-                draw_process_tree(processes, process->id, level + 2, count);
+            draw_process_tree(processes, process->id, level + 2, count);
         }
     }
 }
