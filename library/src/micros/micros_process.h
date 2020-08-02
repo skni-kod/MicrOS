@@ -147,9 +147,8 @@ extern "C" {
 /*!
     Forces current process to exit with the specified status code (typically 0 means success).
     \param status Exit status code.
-    \param is_thread Flag indicating if the system should close only current thread or whole process.
 */
-void micros_process_exit(int status, bool is_thread);
+void micros_process_exit_process(int status);
 
 //! Returns number of processes
 /*!
@@ -235,7 +234,11 @@ void micros_process_wait_for_process(uint32_t process_id_to_wait);
 */
 uint32_t micros_process_start_thread(void *entry_point, void *param);
 
-void __micros_process_close_thread();
+//! Forces current thread to exit
+/*!
+    Forces current thread to exit.
+*/
+void micros_process_abort_thread();
 
 #ifdef __cplusplus
 }
