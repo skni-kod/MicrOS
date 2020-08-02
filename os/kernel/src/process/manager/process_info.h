@@ -11,6 +11,7 @@ typedef enum process_status
     process_status_waiting_sleep,
     process_status_waiting_key_press,
     process_status_waiting_for_process,
+    process_status_blocked
 } process_status;
 
 typedef struct process_info
