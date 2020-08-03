@@ -136,3 +136,65 @@ int16_t check_bounds(v8086* machine)
     }
     return OK;
 }
+
+int16_t set_byte(v8086* machine, uint8_t opcode)
+{
+    uint8_t set_byte = 0;
+    switch(opcode & 0x0fu)
+    {
+        case 0: //JO
+            if(bit_get(machine->regs.x.flags, 1u <<OVERFLOW_FLAG_BIT)) set_byte = 1;
+            break;
+        case 1: //JNO
+            if(!bit_get(machine->regs.x.flags, 1u <<OVERFLOW_FLAG_BIT)) set_byte = 1;
+            break;
+        case 2: //JB or JNAE or JC
+            if(bit_get(machine->regs.x.flags, 1u <<CARRY_FLAG_BIT)) set_byte = 1;
+            break;
+        case 3: //JNB or JAE or JNC
+            if(!bit_get(machine->regs.x.flags, 1u <<CARRY_FLAG_BIT)) set_byte = 1;
+            break;
+        case 4: //JZ or JE
+            if(bit_get(machine->regs.x.flags, 1u <<ZERO_FLAG_BIT)) set_byte = 1;
+            break;
+        case 5: //JNZ or JNE
+            if(!bit_get(machine->regs.x.flags, 1u <<ZERO_FLAG_BIT)) set_byte = 1;
+            break;
+        case 6: //JBE or JNA
+            if(bit_get(machine->regs.x.flags, 1u <<CARRY_FLAG_BIT) || bit_get(machine->regs.x.flags, 1u <<ZERO_FLAG_BIT)) set_byte = 1;
+            break;
+        case 7: //JNBE or JA
+            if(!(bit_get(machine->regs.x.flags, 1u <<CARRY_FLAG_BIT) || bit_get(machine->regs.x.flags, 1u <<ZERO_FLAG_BIT))) set_byte = 1;
+            break;
+        case 8: //JS
+            if(bit_get(machine->regs.x.flags, 1u <<SIGN_FLAG_BIT)) set_byte = 1;
+            break;
+        case 9: //JNS
+            if(!bit_get(machine->regs.x.flags, 1u <<SIGN_FLAG_BIT)) set_byte = 1;
+            break;
+        case 0xa: //JP or JPE
+            if(bit_get(machine->regs.x.flags, 1u <<PARITY_FLAG_BIT)) set_byte = 1;
+            break;
+        case 0xb: //JNP or JPO
+            if(!bit_get(machine->regs.x.flags, 1u <<PARITY_FLAG_BIT)) set_byte = 1;
+            break;
+        case 0xc: //JL or JNGE
+            if(!bit_get(machine->regs.x.flags, 1u <<SIGN_FLAG_BIT) != !bit_get(machine->regs.x.flags, 1u <<OVERFLOW_FLAG_BIT)) set_byte = 1;
+            break;
+        case 0xd: //JNL or JGE
+            if(!bit_get(machine->regs.x.flags, 1u <<SIGN_FLAG_BIT) == !bit_get(machine->regs.x.flags, 1u <<OVERFLOW_FLAG_BIT)) set_byte = 1;
+            break;
+        case 0xe: //JLE or JNG
+            if(bit_get(machine->regs.x.flags, 1u <<ZERO_FLAG_BIT) || !bit_get(machine->regs.x.flags, 1u <<SIGN_FLAG_BIT) != !bit_get(machine->regs.x.flags, 1u <<OVERFLOW_FLAG_BIT)) set_byte = 1;
+            break;
+        case 0xf: //JNLE or JG
+            if(bit_get(machine->regs.x.flags, 1u <<ZERO_FLAG_BIT) || !bit_get(machine->regs.x.flags, 1u <<SIGN_FLAG_BIT) == !bit_get(machine->regs.x.flags, 1u <<OVERFLOW_FLAG_BIT)) set_byte = 1;
+            break;
+    }
+
+    uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    machine->internal_state.IPOffset += 1;
+    uint8_t* memory = (uint8_t*) get_memory_from_mode(machine, mod_rm, 8);
+    *memory = set_byte;
+    return OK;
+}

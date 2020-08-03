@@ -187,6 +187,15 @@ void v8086_set_386_instruction_set(v8086* machine)
     {
         machine->operations_0fh[i] = NULL;
     }
+    GROUP_OF_0FH_OPCODES(0x80u, 0x8fu, jcc_l);
+    GROUP_OF_0FH_OPCODES(0x90u, 0x9fu, setcc);
+    ASSIGN_0FH_OPCODE(0xa0u, push_fs);
+    ASSIGN_0FH_OPCODE(0xa1u, pop_fs);
+
+    ASSIGN_0FH_OPCODE(0xa8u, push_gs);
+    ASSIGN_0FH_OPCODE(0xa9u, pop_gs);
+
+
 
 }
 

@@ -560,3 +560,37 @@ OPCODE_PROTO(two_byte_0fh){
 
     return machine->operations_0fh[opcode](machine, secondary_opcode);
 }
+
+OPCODE_PROTO(jcc_l)
+{
+    return jump_on_condition(machine, opcode, machine->internal_state.operand_32_bit ? 32 : 16);
+}
+
+OPCODE_PROTO(setcc)
+{
+    return set_byte(machine, opcode);
+}
+
+OPCODE_PROTO(push_fs)
+{
+    push_word(machine, machine->sregs.fs);
+    return OK;
+}
+
+OPCODE_PROTO(pop_fs)
+{
+    machine->sregs.fs = pop_word(machine);
+    return OK;
+}
+
+OPCODE_PROTO(push_gs)
+{
+    push_word(machine, machine->sregs.gs);
+    return OK;
+}
+
+OPCODE_PROTO(pop_gs)
+{
+    machine->sregs.gs = pop_word(machine);
+    return OK;
+}

@@ -112,6 +112,13 @@ OPCODE_PROTO(enter);
 OPCODE_PROTO(leave);
 //386 2_bytes_protos 0x0f Prefix
 OPCODE_PROTO(two_byte_0fh);
+OPCODE_PROTO(jcc_l);
+OPCODE_PROTO(setcc);
+OPCODE_PROTO(push_fs);
+OPCODE_PROTO(pop_fs);
+OPCODE_PROTO(push_gs);
+OPCODE_PROTO(pop_gs);
+
 
 
 #endif //MICROS_OPCODES_H
