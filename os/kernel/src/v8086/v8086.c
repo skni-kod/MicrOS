@@ -216,8 +216,18 @@ void v8086_set_386_instruction_set(v8086* machine)
     ASSIGN_0FH_OPCODE(0xb3u, btr);
     ASSIGN_0FH_OPCODE(0xb4u, lfs);
     ASSIGN_0FH_OPCODE(0xb5u, lgs);
+    ASSIGN_0FH_OPCODE(0xb6u, movzx); // BYTE MOVZX
+    ASSIGN_0FH_OPCODE(0xb7u, movzx); // WORD MOVZX
+    //NOT defined in 386
+    ASSIGN_NULL_0FH(0xb8u);
+    ASSIGN_NULL_0FH(0xb9u);
     ASSIGN_0FH_OPCODE(0xbau, group_8);
     ASSIGN_0FH_OPCODE(0xbbu, btc);
+    ASSIGN_0FH_OPCODE(0xbcu, bsf);
+    ASSIGN_0FH_OPCODE(0xbdu, bsr);
+    ASSIGN_0FH_OPCODE(0xbeu, movsx); // BYTE MOVSX
+    ASSIGN_0FH_OPCODE(0xbfu, movsx); //BYTE MOVSX
+
 
 
 }

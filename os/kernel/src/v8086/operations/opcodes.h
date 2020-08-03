@@ -131,6 +131,11 @@ OPCODE_PROTO(imul_2_byte);
 OPCODE_PROTO(lss);
 OPCODE_PROTO(lfs);
 OPCODE_PROTO(lgs);
+OPCODE_PROTO(movzx);
+OPCODE_PROTO(movsx);
+OPCODE_PROTO(bsf);
+OPCODE_PROTO(bsr);
+
 
 
 

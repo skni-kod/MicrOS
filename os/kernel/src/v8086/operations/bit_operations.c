@@ -193,3 +193,75 @@ int16_t perform_group_8(v8086* machine, uint8_t width)
             return UNDEFINED_OPCODE;
     }
 }
+
+int16_t bit_scan_forward(v8086* machine, uint8_t width)
+{
+    uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    machine->internal_state.IPOffset += 1;
+    void* dest = get_variable_length_register(machine, get_reg(mod_rm), width);
+    void* source = get_memory_from_mode(machine, mod_rm, width);
+
+    if(width == 16)
+    {
+        uint16_t s = *((uint16_t*) source);
+        if(s == 0)
+        {
+            bit_set(machine->regs.w.flags, 1u<<ZERO_FLAG_BIT);
+            return OK;
+        }
+        bit_clear(machine->regs.w.flags, 1u<<ZERO_FLAG_BIT);
+        uint8_t temp = 0;
+        while(!bit_get(s, 1u<<temp)) temp++;
+        *((uint16_t*) dest) = temp;
+    }
+    else if(width == 32)
+    {
+        uint16_t s = *((uint32_t*) source);
+        if(s == 0)
+        {
+            bit_set(machine->regs.w.flags, 1u<<ZERO_FLAG_BIT);
+            return OK;
+        }
+        bit_clear(machine->regs.w.flags, 1u<<ZERO_FLAG_BIT);
+        uint8_t temp = 0;
+        while(!bit_get(s, 1u<<temp)) temp++;
+        *((uint32_t*) dest) = temp;
+    } else return BAD_WIDTH;
+    return OK;
+}
+
+int16_t bit_scan_backward(v8086* machine, uint8_t width)
+{
+    uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    machine->internal_state.IPOffset += 1;
+    void* dest = get_variable_length_register(machine, get_reg(mod_rm), width);
+    void* source = get_memory_from_mode(machine, mod_rm, width);
+
+    if(width == 16)
+    {
+        uint16_t s = *((uint16_t*) source);
+        if(s == 0)
+        {
+            bit_set(machine->regs.w.flags, 1u<<ZERO_FLAG_BIT);
+            return OK;
+        }
+        bit_clear(machine->regs.w.flags, 1u<<ZERO_FLAG_BIT);
+        uint8_t temp = width - 1;
+        while(!bit_get(s, 1u<<temp)) temp--;
+        *((uint16_t*) dest) = temp;
+    }
+    else if(width == 32)
+    {
+        uint16_t s = *((uint32_t*) source);
+        if(s == 0)
+        {
+            bit_set(machine->regs.w.flags, 1u<<ZERO_FLAG_BIT);
+            return OK;
+        }
+        bit_clear(machine->regs.w.flags, 1u<<ZERO_FLAG_BIT);
+        uint8_t temp = width - 1;
+        while(!bit_get(s, 1u<<temp)) temp--;
+        *((uint32_t*) dest) = temp;
+    } else return BAD_WIDTH;
+    return OK;
+}

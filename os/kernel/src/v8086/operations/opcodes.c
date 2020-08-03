@@ -666,3 +666,23 @@ OPCODE_PROTO(lgs)
 {
     return perform_load_far_pointer(machine, GS);
 }
+
+OPCODE_PROTO(movzx)
+{
+    return perform_movzx(machine, opcode);
+}
+
+OPCODE_PROTO(movsx)
+{
+    return perform_movsx(machine, opcode);
+}
+
+OPCODE_PROTO(bsf)
+{
+    return bit_scan_forward(machine, machine->internal_state.operand_32_bit ? 32 : 16);
+}
+
+OPCODE_PROTO(bsr)
+{
+    return bit_scan_backward(machine, machine->internal_state.operand_32_bit ? 32 : 16);
+}

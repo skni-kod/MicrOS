@@ -47,6 +47,88 @@ int16_t perform_mov_rm(v8086* machine, uint8_t opcode)
     }
 }
 
+int16_t perform_movzx_variable_length(void* source, void* dest, uint8_t source_width, uint8_t dest_width)
+{
+    if(source_width == 8)
+    {
+        if(dest_width == 16)
+            *((uint16_t *) dest) = *((uint8_t *) source);
+        else if(dest_width == 32)
+            *((uint32_t *) dest) = *((uint8_t *) source);
+        else return BAD_WIDTH;
+    }
+    else if(source_width == 16)
+    {
+        if(dest_width == 32)
+            *((uint32_t *) dest) = *((uint16_t *) source);
+        else return BAD_WIDTH;
+    } else return BAD_WIDTH;
+    return OK;
+}
+
+int16_t perform_movsx_variable_length(void* source, void* dest, uint8_t source_width, uint8_t dest_width)
+{
+    if(source_width == 8)
+    {
+        if(dest_width == 16)
+            *((int16_t *) dest) = *((int8_t *) source);
+        else if(dest_width == 32)
+            *((int32_t *) dest) = *((int8_t *) source);
+        else return BAD_WIDTH;
+    }
+    else if(source_width == 16)
+    {
+        if(dest_width == 32)
+            *((int32_t *) dest) = *((int16_t *) source);
+        else return BAD_WIDTH;
+    } else return BAD_WIDTH;
+    return OK;
+}
+
+int16_t perform_movzx(v8086* machine, uint8_t opcode)
+{
+    uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    machine->internal_state.IPOffset += 1;
+    uint8_t width = 32;
+    if(!(opcode % 2))
+        width = machine->internal_state.operand_32_bit ? 32 : 16;
+    void* dest = get_variable_length_register(machine, get_reg(mod_rm), width);
+
+    if(opcode == 0xb6u)
+    {
+        void* source = get_memory_from_mode(machine, mod_rm, 8);
+        return perform_movzx_variable_length(source, dest, 8, width);
+    }
+    else if(opcode == 0xb7u)
+    {
+        void* source = get_memory_from_mode(machine, mod_rm, 16);
+        return perform_movzx_variable_length(source, dest, 16, width);
+    }
+    else return UNKNOWN_ERROR;
+}
+
+int16_t perform_movsx(v8086* machine, uint8_t opcode)
+{
+    uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    machine->internal_state.IPOffset += 1;
+    uint8_t width = 32;
+    if(!(opcode % 2))
+        width = machine->internal_state.operand_32_bit ? 32 : 16;
+    void* dest = get_variable_length_register(machine, get_reg(mod_rm), width);
+
+    if(opcode == 0xbeu)
+    {
+        void* source = get_memory_from_mode(machine, mod_rm, 8);
+        return perform_movsx_variable_length(source, dest, 8, width);
+    }
+    else if(opcode == 0xbfu)
+    {
+        void* source = get_memory_from_mode(machine, mod_rm, 16);
+        return perform_movsx_variable_length(source, dest, 16, width);
+    }
+    else return UNKNOWN_ERROR;
+}
+
 int16_t perform_mov_segment(v8086* machine, uint8_t opcode)
 {
     uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
