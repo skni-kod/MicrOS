@@ -20,18 +20,22 @@ typedef struct binary_semaphore_data
 
 void binary_semaphore_init();
 
-binary_semaphore create_named_binary_semaphore(char* name);
+binary_semaphore binary_semaphore_create_named(char* name);
 
-void acquire(binary_semaphore semaphore);
+void binary_semaphore_acquire(binary_semaphore semaphore);
 
-void release(binary_semaphore semaphore);
+bool binary_semaphore_tryAcquire(binary_semaphore semaphore);
 
-void destroy(binary_semaphore semaphore);
+void binary_semaphore_release(binary_semaphore semaphore);
 
-bool __get_index_of_binary_semaphore_by_name(kvector* vector, uint32_t* index, char* name);
+void binary_semaphore_destroy(binary_semaphore semaphore);
 
-bool __get_index_of_binary_semaphore_by_id(kvector* vector, uint32_t* index, binary_semaphore id);
+uint32_t binary_semaphore_available(binary_semaphore semaphore);
 
-bool __get_index_of_process_in_processes(kvector* vector, uint32_t* index, uint32_t process_id);
+bool __bs_get_index_of_binary_semaphore_by_name(kvector* vector, uint32_t* index, char* name);
+
+bool __bs_get_index_of_binary_semaphore_by_id(kvector* vector, uint32_t* index, binary_semaphore id);
+
+bool __bs_get_index_of_process_in_processes(kvector* vector, uint32_t* index, uint32_t process_id);
 
 #endif

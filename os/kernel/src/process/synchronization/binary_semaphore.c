@@ -8,10 +8,10 @@ void binary_semaphore_init()
     kvector_init(&binary_semaphores);
 }
 
-binary_semaphore create_named_binary_semaphore(char* name)
+binary_semaphore binary_semaphore_create_named(char* name)
 {
     uint32_t semaphore_index;    
-    if(__get_index_of_binary_semaphore_by_name(&binary_semaphores, &semaphore_index, name) == true)
+    if(__bs_get_index_of_binary_semaphore_by_name(&binary_semaphores, &semaphore_index, name) == true)
     {
         binary_semaphore_data* sem = (binary_semaphore_data*)(binary_semaphores.data[semaphore_index]);
         // Add process id to vector
@@ -45,10 +45,10 @@ binary_semaphore create_named_binary_semaphore(char* name)
     }
 }
 
-void acquire(binary_semaphore semaphore)
+void binary_semaphore_acquire(binary_semaphore semaphore)
 {
     uint32_t semaphore_index;
-    if(__get_index_of_binary_semaphore_by_id(&binary_semaphores, &semaphore_index, semaphore) == true)
+    if(__bs_get_index_of_binary_semaphore_by_id(&binary_semaphores, &semaphore_index, semaphore) == true)
     {
         // This ends when process gets semaphore. Otherwise it's blocked until it's get semaphore
         while(true)
@@ -85,10 +85,45 @@ void acquire(binary_semaphore semaphore)
     }
 }
 
-void release(binary_semaphore semaphore)
+bool binary_semaphore_tryAcquire(binary_semaphore semaphore)
+{
+        uint32_t semaphore_index;
+    if(__bs_get_index_of_binary_semaphore_by_id(&binary_semaphores, &semaphore_index, semaphore) == true)
+    {
+        // This ends when process gets semaphore. Otherwise it's blocked until it's get semaphore
+        while(true)
+        {
+            binary_semaphore_data* sem = (binary_semaphore_data*)(binary_semaphores.data[semaphore_index]);
+            int32_t value = 0;
+            __asm__ (
+            "movl $0x00, %%eax \n" \
+            "movl $0x01, %%edx \n" \
+            "cmpxchgl %%edx, %0 \n" \
+            "movl %%eax, %1"
+            :: "m"(sem->isBlocked), "m"(value)
+            : "%eax", "%edx");
+            if(value == 0)
+            {
+                // You got semaphore
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+    else
+    {
+        // Trying to acquire non-existing semaphore, nice try
+        return false;
+    }
+}
+
+void binary_semaphore_release(binary_semaphore semaphore)
 {
     uint32_t semaphore_index;
-    if(__get_index_of_binary_semaphore_by_id(&binary_semaphores, &semaphore_index, semaphore) == true)
+    if(__bs_get_index_of_binary_semaphore_by_id(&binary_semaphores, &semaphore_index, semaphore) == true)
     {
         binary_semaphore_data* sem = (binary_semaphore_data*)(binary_semaphores.data[semaphore_index]);
         sem->isBlocked = 0;
@@ -102,10 +137,10 @@ void release(binary_semaphore semaphore)
     }
 }
 
-void destroy(binary_semaphore semaphore)
+void binary_semaphore_destroy(binary_semaphore semaphore)
 {
     uint32_t semaphore_index;
-    if(__get_index_of_binary_semaphore_by_id(&binary_semaphores, &semaphore_index, semaphore) == true)
+    if(__bs_get_index_of_binary_semaphore_by_id(&binary_semaphores, &semaphore_index, semaphore) == true)
     {
         // Get semaphore
         binary_semaphore_data* sem = (binary_semaphore_data*)(binary_semaphores.data[semaphore_index]);
@@ -113,7 +148,7 @@ void destroy(binary_semaphore semaphore)
         uint32_t process_id = process_manager_get_current_process()->id;
         // Check if this process opened this semaphore
         uint32_t index;
-        if(__get_index_of_process_in_processes(&sem->processes, &index, process_id) == true)
+        if(__bs_get_index_of_process_in_processes(&sem->processes, &index, process_id) == true)
         {
             // If opened remove from processes
             kvector_remove(&sem->processes, index);
@@ -133,7 +168,22 @@ void destroy(binary_semaphore semaphore)
     }
 }
 
-bool __get_index_of_binary_semaphore_by_name(kvector* vector, uint32_t* index, char* name)
+uint32_t binary_semaphore_available(binary_semaphore semaphore)
+{
+    uint32_t semaphore_index;
+    if(__bs_get_index_of_binary_semaphore_by_id(&binary_semaphores, &semaphore_index, semaphore) == true)
+    {
+        binary_semaphore_data* sem = (binary_semaphore_data*)(binary_semaphores.data[semaphore_index]);
+        return (sem->isBlocked == 0) ? 1 : 0;
+    }
+    else
+    {
+        // Trying to get available resources from non-existing semaphore, nice try
+        return 0;
+    }
+}
+
+bool __bs_get_index_of_binary_semaphore_by_name(kvector* vector, uint32_t* index, char* name)
 {
     for(uint32_t i = 0; i < vector->count; i++)
     {
@@ -146,7 +196,7 @@ bool __get_index_of_binary_semaphore_by_name(kvector* vector, uint32_t* index, c
     return false;
 }
 
-bool __get_index_of_binary_semaphore_by_id(kvector* vector, uint32_t* index, binary_semaphore id)
+bool __bs_get_index_of_binary_semaphore_by_id(kvector* vector, uint32_t* index, binary_semaphore id)
 {
     for(uint32_t i = 0; i < vector->count; i++)
     {
@@ -159,7 +209,7 @@ bool __get_index_of_binary_semaphore_by_id(kvector* vector, uint32_t* index, bin
     return false;
 }
 
-bool __get_index_of_process_in_processes(kvector* vector, uint32_t* index, uint32_t process_id)
+bool __bs_get_index_of_process_in_processes(kvector* vector, uint32_t* index, uint32_t process_id)
 {
     for(uint32_t i = 0; i < vector->count; i++)
     {
