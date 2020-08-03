@@ -595,3 +595,28 @@ OPCODE_PROTO(pop_gs)
     machine->sregs.gs = pop_word(machine);
     return OK;
 }
+
+OPCODE_PROTO(bt)
+{
+    return bit_test(machine, machine->internal_state.operand_32_bit ? 32 : 16);
+}
+
+OPCODE_PROTO(bts)
+{
+    return bit_test_set(machine, machine->internal_state.operand_32_bit ? 32 : 16);
+}
+
+OPCODE_PROTO(btr)
+{
+    return bit_test_reset(machine, machine->internal_state.operand_32_bit ? 32 : 16);
+}
+
+OPCODE_PROTO(btc)
+{
+    return bit_test_complement(machine, machine->internal_state.operand_32_bit ? 32 : 16);
+}
+
+OPCODE_PROTO(group_8)
+{
+    return perform_group_8(machine, machine->internal_state.operand_32_bit ? 32 : 16);
+}

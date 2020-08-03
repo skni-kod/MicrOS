@@ -118,6 +118,11 @@ OPCODE_PROTO(push_fs);
 OPCODE_PROTO(pop_fs);
 OPCODE_PROTO(push_gs);
 OPCODE_PROTO(pop_gs);
+OPCODE_PROTO(bt);
+OPCODE_PROTO(bts);
+OPCODE_PROTO(btr);
+OPCODE_PROTO(btc);
+OPCODE_PROTO(group_8);
 
 
 
