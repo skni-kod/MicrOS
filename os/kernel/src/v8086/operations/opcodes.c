@@ -14,6 +14,7 @@
 #include "string_operations.h"
 #include "io_operations.h"
 #include "misc_operations.h"
+#include "bit_operations.h"
 
 #define NO_CARRY 0
 #define CARRY_FLAG_AS_NUMBER bit_get(machine->regs.d.eflags, 1u <<CARRY_FLAG_BIT) >> CARRY_FLAG_BIT
