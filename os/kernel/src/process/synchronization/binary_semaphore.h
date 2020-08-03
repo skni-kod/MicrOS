@@ -15,7 +15,7 @@ typedef struct binary_semaphore_data
     uint32_t semaphore_id;
     kvector processes;
 	kvector blocked_processes;
-    int32_t blocked;
+    int32_t isBlocked;
 } binary_semaphore_data;
 
 void binary_semaphore_init();
@@ -24,8 +24,14 @@ binary_semaphore create_named_binary_semaphore(char* name);
 
 void acquire(binary_semaphore semaphore);
 
+void release(binary_semaphore semaphore);
+
+void destroy(binary_semaphore semaphore);
+
 bool __get_index_of_binary_semaphore_by_name(kvector* vector, uint32_t* index, char* name);
 
 bool __get_index_of_binary_semaphore_by_id(kvector* vector, uint32_t* index, binary_semaphore id);
+
+bool __get_index_of_process_in_processes(kvector* vector, uint32_t* index, uint32_t process_id);
 
 #endif

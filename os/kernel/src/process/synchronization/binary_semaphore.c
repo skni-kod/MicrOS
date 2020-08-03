@@ -10,7 +10,7 @@ void binary_semaphore_init()
 
 binary_semaphore create_named_binary_semaphore(char* name)
 {
-    binary_semaphore semaphore_index;    
+    uint32_t semaphore_index;    
     if(__get_index_of_binary_semaphore_by_name(&binary_semaphores, &semaphore_index, name) == true)
     {
         binary_semaphore_data* sem = (binary_semaphore_data*)(binary_semaphores.data[semaphore_index]);
@@ -24,7 +24,7 @@ binary_semaphore create_named_binary_semaphore(char* name)
     else
     {
         binary_semaphore_data* new_semaphore = heap_kernel_alloc(sizeof(binary_semaphore_data), 0);
-        new_semaphore->blocked = 0;
+        new_semaphore->isBlocked = 0;
         new_semaphore->semaphore_id = next_binary_semaphore_id++;
         kvector_init(&(new_semaphore->processes));
         kvector_init(&(new_semaphore->blocked_processes));
@@ -47,7 +47,7 @@ binary_semaphore create_named_binary_semaphore(char* name)
 
 void acquire(binary_semaphore semaphore)
 {
-    binary_semaphore semaphore_index;
+    uint32_t semaphore_index;
     if(__get_index_of_binary_semaphore_by_id(&binary_semaphores, &semaphore_index, semaphore) == true)
     {
         // This ends when process gets semaphore. Otherwise it's blocked until it's get semaphore
@@ -60,7 +60,7 @@ void acquire(binary_semaphore semaphore)
             "movl $0x01, %%edx \n" \
             "cmpxchgl %%edx, %0 \n" \
             "movl %%eax, %1"
-            :: "m"(sem->blocked), "m"(value)
+            :: "m"(sem->isBlocked), "m"(value)
             : "%eax", "%edx");
             if(value == 0)
             {
@@ -74,13 +74,61 @@ void acquire(binary_semaphore semaphore)
                 uint32_t* process_id = heap_kernel_alloc(sizeof(uint32_t), 0);
                 *process_id = process_manager_get_current_process()->id;
                 kvector_add(&sem->blocked_processes, &process_id);
+                // TODO: block process in process manager
             }
         }
-        
     }
     else
     {
         // Trying to acquire non-existing semaphore, nice try
+        return;
+    }
+}
+
+void release(binary_semaphore semaphore)
+{
+    uint32_t semaphore_index;
+    if(__get_index_of_binary_semaphore_by_id(&binary_semaphores, &semaphore_index, semaphore) == true)
+    {
+        binary_semaphore_data* sem = (binary_semaphore_data*)(binary_semaphores.data[semaphore_index]);
+        sem->isBlocked = 0;
+        // TODO: Release all blocked processes
+        return;
+    }
+    else
+    {
+        // Trying to release non-existing semaphore, nice try
+        return;
+    }
+}
+
+void destroy(binary_semaphore semaphore)
+{
+    uint32_t semaphore_index;
+    if(__get_index_of_binary_semaphore_by_id(&binary_semaphores, &semaphore_index, semaphore) == true)
+    {
+        // Get semaphore
+        binary_semaphore_data* sem = (binary_semaphore_data*)(binary_semaphores.data[semaphore_index]);
+        // Get process id
+        uint32_t process_id = process_manager_get_current_process()->id;
+        // Check if this process opened this semaphore
+        uint32_t index;
+        if(__get_index_of_process_in_processes(&sem->processes, &index, process_id) == true)
+        {
+            // If opened remove from processes
+            kvector_remove(&sem->processes, index);
+        }
+        // Check if thare's any process that still uses this semaphore
+        if(sem->processes.count == 0)
+        {
+            // Remove semaphore from list
+            kvector_remove(&binary_semaphores, semaphore_index);
+        }  
+        return;
+    }
+    else
+    {
+        // Trying to destroy non-existing semaphore, nice try
         return;
     }
 }
@@ -103,6 +151,19 @@ bool __get_index_of_binary_semaphore_by_id(kvector* vector, uint32_t* index, bin
     for(uint32_t i = 0; i < vector->count; i++)
     {
         if(((binary_semaphore_data*)(vector->data[i]))->semaphore_id == id)
+        {
+            *index = i;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool __get_index_of_process_in_processes(kvector* vector, uint32_t* index, uint32_t process_id)
+{
+    for(uint32_t i = 0; i < vector->count; i++)
+    {
+        if(*(uint32_t*)(vector->data[i]) == process_id)
         {
             *index = i;
             return true;
