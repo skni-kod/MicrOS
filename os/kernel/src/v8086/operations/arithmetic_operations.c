@@ -269,6 +269,25 @@ int16_t perform_shr(v8086 *machine, void *dest, uint8_t arg, uint8_t width) {
     return OK;
 }
 
+int16_t perform_sar(v8086* machine, void* dest, uint8_t arg, uint8_t width)
+{
+    uint16_t temp_flags;
+    if(arg == 0) return 0;
+    if(width == 8)
+            __asm__ __volatile__("sarb %%cl, %%al; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint8_t*) dest)) : "a" (*((uint8_t*) dest)), "c" (arg));
+    else if(width == 16)
+            __asm__ __volatile__("sarw %%cl, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t*) dest)) : "a" (*((uint16_t*) dest)), "c" (arg));
+    else if(width == 32)
+            __asm__ __volatile__("sarl %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t*) dest)) : "a" (*((uint32_t*) dest)), "c" (arg));
+    else return -1;
+    if(arg == 1) bit_write(machine->regs.w.flags, 1<<OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1<<OVERFLOW_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1<<CARRY_FLAG_BIT, bit_get(temp_flags, 1<<CARRY_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1<<SIGN_FLAG_BIT, bit_get(temp_flags, 1<<SIGN_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1<<ZERO_FLAG_BIT, bit_get(temp_flags, 1<<ZERO_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1<<PARITY_FLAG_BIT, bit_get(temp_flags, 1<<PARITY_FLAG_BIT) != 0);
+    return 0;
+}
+
 int16_t perform_shld(v8086 *machine, void *rm, void* reg, uint8_t arg, uint8_t width) {
     uint16_t temp_flags;
     if (arg == 0) return OK;
