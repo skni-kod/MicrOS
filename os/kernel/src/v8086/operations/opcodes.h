@@ -123,6 +123,12 @@ OPCODE_PROTO(bts);
 OPCODE_PROTO(btr);
 OPCODE_PROTO(btc);
 OPCODE_PROTO(group_8);
+OPCODE_PROTO(shld_imm);
+OPCODE_PROTO(shld_cl);
+OPCODE_PROTO(shrd_imm);
+OPCODE_PROTO(shrd_cl);
+OPCODE_PROTO(imul_2_byte);
+
 
 
 

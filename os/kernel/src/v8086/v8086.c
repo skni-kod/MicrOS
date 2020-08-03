@@ -194,13 +194,21 @@ void v8086_set_386_instruction_set(v8086* machine)
     //NO CPUID in 386
     ASSIGN_NULL_0FH(0xa2u);
     ASSIGN_0FH_OPCODE(0xa3u, bt);
-
+    ASSIGN_0FH_OPCODE(0xa4u, shld_imm);
+    ASSIGN_0FH_OPCODE(0xa5u, shld_cl);
+    //Not Defined in 386;
+    ASSIGN_NULL_0FH(0xa6u);
+    ASSIGN_NULL_0FH(0xa7u);
     ASSIGN_0FH_OPCODE(0xa8u, push_gs);
     ASSIGN_0FH_OPCODE(0xa9u, pop_gs);
     //NOT Defined in 386
     ASSIGN_NULL_0FH(0xaau);
     ASSIGN_0FH_OPCODE(0xabu, bts);
-
+    ASSIGN_0FH_OPCODE(0xacu, shrd_imm);
+    ASSIGN_0FH_OPCODE(0xadu, shrd_cl);
+    //NOT Defined in 386
+    ASSIGN_NULL(0xaeu);
+    ASSIGN_0FH_OPCODE(0xafu, imul_2_byte);
     ASSIGN_0FH_OPCODE(0xb3u, btr);
     ASSIGN_0FH_OPCODE(0xbau, group_8);
     ASSIGN_0FH_OPCODE(0xbbu, btc);

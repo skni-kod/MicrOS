@@ -269,15 +269,30 @@ int16_t perform_shr(v8086 *machine, void *dest, uint8_t arg, uint8_t width) {
     return OK;
 }
 
-int16_t perform_sar(v8086 *machine, void *dest, uint8_t arg, uint8_t width) {
+int16_t perform_shld(v8086 *machine, void *rm, void* reg, uint8_t arg, uint8_t width) {
     uint16_t temp_flags;
     if (arg == 0) return OK;
-    if (width == 8)
-            __asm__ __volatile__("sarb %%cl, %%al; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint8_t *) dest)) : "a" (*((uint8_t *) dest)), "c" (arg));
-    else if (width == 16)
-            __asm__ __volatile__("sarw %%cl, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t *) dest)) : "a" (*((uint16_t *) dest)), "c" (arg));
+    if (width == 16)
+            __asm__ __volatile__("shldw %%cl, %%dx, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t *) rm)), "=d" (*((uint16_t *) reg)) : "a" (*((uint16_t *) rm)), "d" (*((uint16_t *) reg)), "c" (arg));
     else if (width == 32)
-            __asm__ __volatile__("sarl %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t *) dest)) : "a" (*((uint32_t *) dest)), "c" (arg));
+            __asm__ __volatile__("shld %%cl, %%edx, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t *) rm)), "=d" (*((uint16_t *) reg)) : "a" (*((uint32_t *) rm)), "d" (*((uint16_t *) reg)), "c" (arg));
+    else return BAD_WIDTH;
+    if (arg == 1)
+        bit_write(machine->regs.w.flags, 1u << OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1u << OVERFLOW_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1u << CARRY_FLAG_BIT, bit_get(temp_flags, 1u << CARRY_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1u << SIGN_FLAG_BIT, bit_get(temp_flags, 1u << SIGN_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1u << ZERO_FLAG_BIT, bit_get(temp_flags, 1u << ZERO_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1u << PARITY_FLAG_BIT, bit_get(temp_flags, 1u << PARITY_FLAG_BIT) != 0);
+    return OK;
+}
+
+int16_t perform_shrd(v8086 *machine, void *rm, void* reg, uint8_t arg, uint8_t width) {
+    uint16_t temp_flags;
+    if (arg == 0) return OK;
+    if (width == 16)
+            __asm__ __volatile__("shrdw %%cl, %%dx, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t *) rm)), "=d" (*((uint16_t *) reg)) : "a" (*((uint16_t *) rm)), "d" (*((uint16_t *) reg)), "c" (arg));
+    else if (width == 32)
+            __asm__ __volatile__("shrd %%cl, %%edx, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t *) rm)), "=d" (*((uint16_t *) reg)) : "a" (*((uint32_t *) rm)), "d" (*((uint16_t *) reg)), "c" (arg));
     else return BAD_WIDTH;
     if (arg == 1)
         bit_write(machine->regs.w.flags, 1u << OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1u << OVERFLOW_FLAG_BIT) != 0);
@@ -755,4 +770,27 @@ int16_t execute_group_3(v8086 *machine, uint8_t opcode) {
         default:
             return BAD_REG;
     }
+}
+
+int16_t execute_double_shift(v8086* machine, uint8_t width, uint8_t right_shift, uint8_t use_cl)
+{
+    uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip +
+                                                                                                     machine->internal_state.IPOffset));
+    machine->internal_state.IPOffset += 1;
+
+    void* reg = get_variable_length_register(machine, get_reg(mod_rm), width);
+    void* rm = get_memory_from_mode(machine, mod_rm, width);
+    uint8_t imm;
+    if(use_cl)
+        imm = machine->regs.h.cl;
+    else{
+        imm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip +
+                                                                                                 machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+    }
+
+    if(right_shift)
+        return perform_shrd(machine, rm, reg, imm, width);
+    else
+        return perform_shld(machine, rm, reg, imm, width);
 }

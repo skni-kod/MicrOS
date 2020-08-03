@@ -620,3 +620,34 @@ OPCODE_PROTO(group_8)
 {
     return perform_group_8(machine, machine->internal_state.operand_32_bit ? 32 : 16);
 }
+
+OPCODE_PROTO(shld_imm)
+{
+    return execute_double_shift(machine, machine->internal_state.operand_32_bit ? 32 : 16, 0, 0);
+}
+
+OPCODE_PROTO(shld_cl)
+{
+    return execute_double_shift(machine, machine->internal_state.operand_32_bit ? 32 : 16, 0, 1);
+}
+
+OPCODE_PROTO(shrd_imm)
+{
+    return execute_double_shift(machine, machine->internal_state.operand_32_bit ? 32 : 16, 1, 0);
+}
+
+OPCODE_PROTO(shrd_cl)
+{
+    return execute_double_shift(machine, machine->internal_state.operand_32_bit ? 32 : 16, 1, 1);
+}
+
+OPCODE_PROTO(imul_2_byte)
+{
+    uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    machine->internal_state.IPOffset += 1;
+    uint8_t width = machine->internal_state.operand_32_bit ? 32 : 16;
+    void* mem_or_reg = get_memory_from_mode(machine, mod_rm, width);
+    void* reg = get_variable_length_register(machine, get_reg(mod_rm), width);
+
+    return perform_multiplication_3_byte(machine, reg, reg, mem_or_reg, 1, width, width);
+}

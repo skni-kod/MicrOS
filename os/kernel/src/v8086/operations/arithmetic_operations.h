@@ -31,5 +31,6 @@ int16_t execute_test(v8086* machine, uint8_t opcode);
 int16_t execute_test_immediate(v8086* machine, uint8_t opcode);
 int16_t execute_group_2(v8086* machine, uint8_t opcode);
 int16_t execute_group_3(v8086* machine, uint8_t opcode);
+int16_t execute_double_shift(v8086* machine, uint8_t width, uint8_t right_shift, uint8_t use_cl);
 
 #endif //V8086_ARITHMETIC_OPERATIONS_H
