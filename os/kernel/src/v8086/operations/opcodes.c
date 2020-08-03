@@ -316,12 +316,12 @@ OPCODE_PROTO(retn_imm)
 
 OPCODE_PROTO(les)
 {
-    return perform_lds_les(machine, 1);
+    return perform_load_far_pointer(machine, ES);
 }
 
 OPCODE_PROTO(lds)
 {
-    return perform_lds_les(machine, 0);
+    return perform_load_far_pointer(machine, DS);
 }
 
 OPCODE_PROTO(mov_rm_imm)
@@ -650,4 +650,19 @@ OPCODE_PROTO(imul_2_byte)
     void* reg = get_variable_length_register(machine, get_reg(mod_rm), width);
 
     return perform_multiplication_3_byte(machine, reg, reg, mem_or_reg, 1, width, width);
+}
+
+OPCODE_PROTO(lss)
+{
+    return perform_load_far_pointer(machine, SS);
+}
+
+OPCODE_PROTO(lfs)
+{
+    return perform_load_far_pointer(machine, FS);
+}
+
+OPCODE_PROTO(lgs)
+{
+    return perform_load_far_pointer(machine, GS);
 }

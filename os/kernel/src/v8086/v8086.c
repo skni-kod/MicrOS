@@ -207,9 +207,15 @@ void v8086_set_386_instruction_set(v8086* machine)
     ASSIGN_0FH_OPCODE(0xacu, shrd_imm);
     ASSIGN_0FH_OPCODE(0xadu, shrd_cl);
     //NOT Defined in 386
-    ASSIGN_NULL(0xaeu);
+    ASSIGN_NULL_0FH(0xaeu);
     ASSIGN_0FH_OPCODE(0xafu, imul_2_byte);
+    //NOT Defined in 386
+    ASSIGN_NULL_0FH(0xb0u);
+    ASSIGN_NULL_0FH(0xb1u);
+    ASSIGN_0FH_OPCODE(0xb2u, lss);
     ASSIGN_0FH_OPCODE(0xb3u, btr);
+    ASSIGN_0FH_OPCODE(0xb4u, lfs);
+    ASSIGN_0FH_OPCODE(0xb5u, lgs);
     ASSIGN_0FH_OPCODE(0xbau, group_8);
     ASSIGN_0FH_OPCODE(0xbbu, btc);
 

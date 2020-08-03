@@ -208,14 +208,13 @@ int16_t load_flags(v8086* machine)
     return OK;
 }
 
-int16_t perform_lds_les(v8086* machine, uint8_t les_op)
+int16_t perform_load_far_pointer(v8086* machine, segment_register_select segment_op)
 {
     uint8_t mod_rm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
     machine->internal_state.IPOffset += 1;
 
     uint16_t* segment_register;
-    if(les_op) segment_register = select_segment_register(machine, ES);
-    else segment_register = select_segment_register(machine, DS);
+    segment_register = select_segment_register(machine, segment_op);
     if(segment_register == NULL) return UNDEFINED_SEGMENT_REGISTER;
     uint16_t* source = get_memory_from_mode(machine, mod_rm, 16);
     if(source == NULL) return UNABLE_GET_MEMORY;

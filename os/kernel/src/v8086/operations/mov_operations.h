@@ -13,7 +13,7 @@ int16_t convert_byte_to_word(v8086* machine);
 int16_t convert_word_to_double(v8086* machine);
 int16_t store_flags(v8086* machine);
 int16_t load_flags(v8086* machine);
-int16_t perform_lds_les(v8086* machine, uint8_t les_op);
+int16_t perform_load_far_pointer(v8086* machine, segment_register_select segment_op);
 int16_t perform_xlat(v8086* machine);
 
 #endif //MICROS_MOV_OPERATIONS_H

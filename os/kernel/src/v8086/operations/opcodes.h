@@ -128,7 +128,9 @@ OPCODE_PROTO(shld_cl);
 OPCODE_PROTO(shrd_imm);
 OPCODE_PROTO(shrd_cl);
 OPCODE_PROTO(imul_2_byte);
-
+OPCODE_PROTO(lss);
+OPCODE_PROTO(lfs);
+OPCODE_PROTO(lgs);
 
 
 
