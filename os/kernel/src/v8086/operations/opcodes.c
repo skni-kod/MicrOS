@@ -113,7 +113,7 @@ OPCODE_PROTO(aaa)
 
 OPCODE_PROTO(cmp)
 {
-    return perform_artihmetic_or_logical_instruction(machine, opcode - 0x30, NO_CARRY, perform_cmp);
+    return perform_artihmetic_or_logical_instruction(machine, opcode - 0x38, NO_CARRY, perform_cmp);
 }
 
 OPCODE_PROTO(aas)
@@ -557,9 +557,9 @@ OPCODE_PROTO(two_byte_0fh){
     secondary_opcode = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
     machine->internal_state.IPOffset += 1;
 
-    if(machine->operations_0fh[opcode] == NULL) return UNDEFINED_OPCODE;
+    if(machine->operations_0fh[secondary_opcode] == NULL) return UNDEFINED_OPCODE;
 
-    return machine->operations_0fh[opcode](machine, secondary_opcode);
+    return machine->operations_0fh[secondary_opcode](machine, secondary_opcode);
 }
 
 OPCODE_PROTO(jcc_l)

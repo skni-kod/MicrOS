@@ -135,6 +135,8 @@ void v8086_set_8086_instruction_set(v8086* machine)
     {
         machine->operations_0fh[i] = NULL;
     }
+
+    machine->is_compatibility = IS8086;
 }
 
 void v8086_set_386_instruction_set(v8086* machine)
@@ -228,8 +230,7 @@ void v8086_set_386_instruction_set(v8086* machine)
     ASSIGN_0FH_OPCODE(0xbeu, movsx); // BYTE MOVSX
     ASSIGN_0FH_OPCODE(0xbfu, movsx); //BYTE MOVSX
 
-
-
+    machine->is_compatibility = IS386;
 }
 
 v8086* v8086_create_machine()

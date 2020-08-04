@@ -150,10 +150,12 @@ typedef struct _v8086
     enum instruction_set_compatibility is_compatibility;
     int16_t (*operations[256]) (struct _v8086*, uint8_t);
     int16_t (*operations_0fh[256]) (struct _v8086*, uint8_t);
+
 } v8086;
 
 
 v8086* v8086_create_machine();
 int16_t v8086_call_int(v8086* machine, int16_t num);
-
+void v8086_set_8086_instruction_set(v8086* machine);
+void v8086_set_386_instruction_set(v8086* machine);
 #endif
