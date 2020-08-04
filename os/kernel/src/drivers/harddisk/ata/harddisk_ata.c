@@ -179,17 +179,13 @@ int8_t __harddisk_ata_poll(uint16_t control_port)
             for(;;)
             {
                 result.value = io_in_byte(control_port + HARDDISK_CONTROL_ALTERNATE_STATUS_REGISTER_OFFSET);
-                if(result.fields.has_pio_data_to_transfer_or_ready_to_accept_pio_data == 1)
+                if(result.fields.has_pio_data_to_transfer_or_ready_to_accept_pio_data == 1 || result.fields.overlapped_mode_service_request == 1)
                 {
                     return 1;
                 }
                 else if(result.fields.error_occurred == 1 || result.fields.drive_fault_error == 1)
                 {
                     return -1;
-                }
-                if(result.value == 0x50)
-                {
-                    return 0;
                 }
             }
         }
