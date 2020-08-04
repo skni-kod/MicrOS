@@ -35,19 +35,21 @@ void kvector_insert(kvector *vector, void *data, uint32_t index)
 	vector->count++;
 }
 
-void kvector_remove(kvector *vector, uint32_t index)
+void* kvector_remove(kvector *vector, uint32_t index)
 {
 	if (index >= vector->count)
 	{
-		return;
+		return NULL;
 	}
-
+	void* pointer; 
+	pointer = vector->data[index];
 	for (uint32_t i = index; i < vector->count - 1; i++)
 	{
 		vector->data[i] = vector->data[i + 1];
 	}
 
 	vector->count--;
+	return pointer;
 }
 
 void kvector_clear(kvector *vector)

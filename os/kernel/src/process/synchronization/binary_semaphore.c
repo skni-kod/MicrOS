@@ -69,7 +69,7 @@ void binary_semaphore_acquire(binary_semaphore semaphore)
             }
             else
             {
-                // Block proccess
+                // Block process
                 // Add blocked process to list
                 uint32_t* process_id = heap_kernel_alloc(sizeof(uint32_t), 0);
                 *process_id = process_manager_get_current_process()->id;
@@ -151,13 +151,13 @@ void binary_semaphore_destroy(binary_semaphore semaphore)
         if(__bs_get_index_of_process_in_processes(&sem->processes, &index, process_id) == true)
         {
             // If opened remove from processes
-            kvector_remove(&sem->processes, index);
+            heap_kernel_dealloc(kvector_remove(&sem->processes, index));
         }
         // Check if thare's any process that still uses this semaphore
         if(sem->processes.count == 0)
         {
             // Remove semaphore from list
-            kvector_remove(&binary_semaphores, semaphore_index);
+            heap_kernel_dealloc(kvector_remove(&binary_semaphores, semaphore_index));
         }  
         return;
     }

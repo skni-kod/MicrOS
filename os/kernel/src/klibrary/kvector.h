@@ -14,7 +14,7 @@ typedef struct kvector
 void kvector_init(kvector *vector);
 void kvector_add(kvector *vector, void *data);
 void kvector_insert(kvector *vector, void *data, uint32_t index);
-void kvector_remove(kvector *vector, uint32_t index);
+void* kvector_remove(kvector *vector, uint32_t index);
 void kvector_clear(kvector *vector);
 
 #endif
