@@ -22,7 +22,7 @@ void binary_semaphore_init();
 
 binary_semaphore binary_semaphore_create_named(char* name);
 
-void binary_semaphore_acquire(binary_semaphore semaphore);
+bool binary_semaphore_acquire(binary_semaphore semaphore);
 
 bool binary_semaphore_tryAcquire(binary_semaphore semaphore);
 

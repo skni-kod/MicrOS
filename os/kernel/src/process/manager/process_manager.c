@@ -562,3 +562,17 @@ void process_manager_run()
 {
     run_scheduler_on_next_interrupt = true;
 }
+
+void process_synchronization_block_process(uint32_t process_id)
+{
+    process_info* process = process_manager_get_process(process_id);
+    process->status = process_status_blocked;
+    run_scheduler_on_next_interrupt = true;
+}
+
+void process_synchronization_unblock_process(uint32_t process_id)
+{
+    process_info* process = process_manager_get_process(process_id);
+    process->status = process_status_ready;
+    run_scheduler_on_next_interrupt = true;
+}

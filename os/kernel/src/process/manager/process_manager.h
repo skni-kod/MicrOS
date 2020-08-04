@@ -55,4 +55,7 @@ void process_manager_interrupt_handler(interrupt_state *state);
 bool process_manager_keyboard_interrupt_handler(interrupt_state *state);
 void process_manager_run();
 
+void process_synchronization_block_process(uint32_t process_id);
+void process_synchronization_unblock_process(uint32_t process_id);
+
 #endif

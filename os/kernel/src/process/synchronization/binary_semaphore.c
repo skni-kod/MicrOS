@@ -45,7 +45,7 @@ binary_semaphore binary_semaphore_create_named(char* name)
     }
 }
 
-void binary_semaphore_acquire(binary_semaphore semaphore)
+bool binary_semaphore_acquire(binary_semaphore semaphore)
 {
     uint32_t semaphore_index;
     if(__bs_get_index_of_binary_semaphore_by_id(&binary_semaphores, &semaphore_index, semaphore) == true)
@@ -65,7 +65,7 @@ void binary_semaphore_acquire(binary_semaphore semaphore)
             if(value == 0)
             {
                 // You got semaphore
-                return;
+                return true;
             }
             else
             {
@@ -74,14 +74,16 @@ void binary_semaphore_acquire(binary_semaphore semaphore)
                 uint32_t* process_id = heap_kernel_alloc(sizeof(uint32_t), 0);
                 *process_id = process_manager_get_current_process()->id;
                 kvector_add(&sem->blocked_processes, &process_id);
-                // TODO: block process in process manager
+                // Block process in process manager
+                process_synchronization_block_process(*process_id);
+                return false;
             }
         }
     }
     else
     {
         // Trying to acquire non-existing semaphore, nice try
-        return;
+        return true;
     }
 }
 
@@ -127,7 +129,11 @@ void binary_semaphore_release(binary_semaphore semaphore)
     {
         binary_semaphore_data* sem = (binary_semaphore_data*)(binary_semaphores.data[semaphore_index]);
         sem->isBlocked = 0;
-        // TODO: Release all blocked processes
+        // Release all blocked processes
+        for(uint32_t i = 0; i < sem->blocked_processes.count; ++i)
+        {
+            process_synchronization_unblock_process(*(uint32_t*)(sem->blocked_processes.data[i]));
+        }
         return;
     }
     else
