@@ -87,7 +87,7 @@ bool binary_semaphore_acquire(binary_semaphore semaphore)
     }
 }
 
-bool binary_semaphore_tryAcquire(binary_semaphore semaphore)
+bool binary_semaphore_try_acquire(binary_semaphore semaphore)
 {
         uint32_t semaphore_index;
     if(__bs_get_index_of_binary_semaphore_by_id(&binary_semaphores, &semaphore_index, semaphore) == true)
@@ -122,7 +122,7 @@ bool binary_semaphore_tryAcquire(binary_semaphore semaphore)
     }
 }
 
-void binary_semaphore_release(binary_semaphore semaphore)
+bool binary_semaphore_release(binary_semaphore semaphore)
 {
     uint32_t semaphore_index;
     if(__bs_get_index_of_binary_semaphore_by_id(&binary_semaphores, &semaphore_index, semaphore) == true)
@@ -134,16 +134,16 @@ void binary_semaphore_release(binary_semaphore semaphore)
         {
             process_synchronization_unblock_process(*(uint32_t*)(sem->blocked_processes.data[i]));
         }
-        return;
+        return true;
     }
     else
     {
         // Trying to release non-existing semaphore, nice try
-        return;
+        return false;
     }
 }
 
-void binary_semaphore_destroy(binary_semaphore semaphore)
+bool binary_semaphore_destroy(binary_semaphore semaphore)
 {
     uint32_t semaphore_index;
     if(__bs_get_index_of_binary_semaphore_by_id(&binary_semaphores, &semaphore_index, semaphore) == true)
@@ -165,12 +165,12 @@ void binary_semaphore_destroy(binary_semaphore semaphore)
             // Remove semaphore from list
             heap_kernel_dealloc(kvector_remove(&binary_semaphores, semaphore_index));
         }  
-        return;
+        return true;
     }
     else
     {
         // Trying to destroy non-existing semaphore, nice try
-        return;
+        return false;
     }
 }
 

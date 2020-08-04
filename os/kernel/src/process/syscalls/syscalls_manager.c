@@ -100,6 +100,15 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0xD3, syscall_serial_send);
     syscalls_manager_attach_handler(0xD4, syscall_serial_send_string);
     syscalls_manager_attach_handler(0xD5, syscall_serial_receive);
+
+    // 0xEX - Synchronization
+    syscalls_manager_attach_handler(0xE0, syscall_binary_semaphore_create_named);
+    syscalls_manager_attach_handler(0xE1, syscall_binary_semaphore_acquire);
+    syscalls_manager_attach_handler(0xE2, syscall_binary_semaphore_try_acquire);
+    syscalls_manager_attach_handler(0xE3, syscall_binary_semaphore_release);
+    syscalls_manager_attach_handler(0xE4, syscall_binary_semaphore_destroy);
+    syscalls_manager_attach_handler(0xE5, syscall_binary_semaphore_available);
+
 }
 
 void syscalls_manager_attach_handler(uint8_t function_number, void (*handler)(interrupt_state *state))

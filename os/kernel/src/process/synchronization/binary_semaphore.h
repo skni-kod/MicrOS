@@ -24,11 +24,11 @@ binary_semaphore binary_semaphore_create_named(char* name);
 
 bool binary_semaphore_acquire(binary_semaphore semaphore);
 
-bool binary_semaphore_tryAcquire(binary_semaphore semaphore);
+bool binary_semaphore_try_acquire(binary_semaphore semaphore);
 
-void binary_semaphore_release(binary_semaphore semaphore);
+bool binary_semaphore_release(binary_semaphore semaphore);
 
-void binary_semaphore_destroy(binary_semaphore semaphore);
+bool binary_semaphore_destroy(binary_semaphore semaphore);
 
 uint32_t binary_semaphore_available(binary_semaphore semaphore);
 
