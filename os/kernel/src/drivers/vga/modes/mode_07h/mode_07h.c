@@ -473,7 +473,7 @@ int8_t mode07h_swap_buffers()
 {
     if(mode07h_buffer == NULL) return -1;
     memcpy((screen_char*)VGA_MODE_07H_BASE_ADDR, mode07h_buffer, MODE07H_HEIGHT * MODE07H_WIDTH * sizeof(screen_char));
-	__vga_update_cursor(mode07h_buffer_cursor_x, mode07h_buffer_cursor_y);
+	vga_set_cursor_pos(mode07h_buffer_cursor_x, mode07h_buffer_cursor_y);
     return 0;
 }
 
@@ -912,8 +912,10 @@ int8_t mode07h_draw_circle_external_buffer(uint8_t* buffer, uint16_t mode, uint8
 int8_t mode07h_draw_rectangle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by){
 	return -1;
 }
-int8_t mode07h_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode)
+int8_t mode07h_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y)
 {
+	if(x != NULL) *x = 0;
+	if(y != NULL) *y = 0;
     vga_color_without_blink col = {.background = VGA_MODE_07H_COLOR_BLACK, .letter = VGA_MODE_07H_COLOR_LIGHT_GRAY};
 	for (uint16_t i = 0; i < VGA_MODE_07H_SCREEN_ROWS; ++i)
     {
@@ -936,7 +938,7 @@ int8_t mode07h_swap_external_buffer(uint8_t* buffer, uint16_t mode){
 uint8_t* mode07h_create_external_buffer(uint16_t mode){
 	uint8_t* ptr = heap_kernel_alloc(MODE07H_HEIGHT * MODE07H_WIDTH * sizeof(screen_char), 0);
 	memset(ptr, 0, MODE07H_HEIGHT * MODE07H_WIDTH * sizeof(screen_char));
-	mode07h_clear_screen_external_buffer(ptr, mode);
+	mode07h_clear_screen_external_buffer(ptr, mode, NULL, NULL);
 	return ptr;
 }
 

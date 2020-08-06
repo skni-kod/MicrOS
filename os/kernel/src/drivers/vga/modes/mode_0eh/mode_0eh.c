@@ -347,7 +347,7 @@ int8_t mode0eh_draw_rectangle_external_buffer(uint8_t* buffer, uint16_t mode, ui
     return 0;
 }
 
-int8_t mode0eh_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode){
+int8_t mode0eh_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y){
     memset(buffer, 0, 4*MODE0EH_WIDTH*MODE0EH_HEIGHT / 8);
     return 0;
 }

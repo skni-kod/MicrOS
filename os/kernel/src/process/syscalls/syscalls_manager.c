@@ -79,6 +79,7 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0x98, syscall_process_set_current_process_signal_handler);
     syscalls_manager_attach_handler(0x99, syscall_process_finish_signal_handler);
     syscalls_manager_attach_handler(0x9A, syscall_process_wait_for_process);
+    syscalls_manager_attach_handler(0x9B, syscall_process_start_thread);
 
     // 0xAX - Memory
     syscalls_manager_attach_handler(0xA0, syscall_memory_get_physical_memory_stats);
@@ -91,6 +92,14 @@ void syscalls_manager_init()
     // 0xCX - Power
     syscalls_manager_attach_handler(0xC0, syscall_power_reboot);
     syscalls_manager_attach_handler(0xC1, syscall_power_shutdown);
+    
+    // 0xDX - Serial
+    syscalls_manager_attach_handler(0xD0, syscall_serial_init);
+    syscalls_manager_attach_handler(0xD1, syscall_serial_is_busy);
+    syscalls_manager_attach_handler(0xD2, syscall_serial_is_queue_empty);
+    syscalls_manager_attach_handler(0xD3, syscall_serial_send);
+    syscalls_manager_attach_handler(0xD4, syscall_serial_send_string);
+    syscalls_manager_attach_handler(0xD5, syscall_serial_receive);
 }
 
 void syscalls_manager_attach_handler(uint8_t function_number, void (*handler)(interrupt_state *state))

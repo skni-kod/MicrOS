@@ -99,6 +99,7 @@ int8_t create_terminal(uint32_t* terminal_id)
     if(ptr == NULL) return -1;
     terminals_array = ptr;
     terminals_array[_terminal_number].terminal_id = next_terminal_id;
+    terminals_array[_terminal_number].cursor = true;
     terminals_array[_terminal_number].cursor_position_x = 0;
     terminals_array[_terminal_number].cursor_position_y = 0;
     terminals_array[_terminal_number].screen_mode = 0x03;
@@ -130,7 +131,7 @@ int8_t destroy_terminal(uint32_t terminal_id)
 
     for(uint32_t i; i<s.process_number; i++)
     {
-        process_manager_close_process(s.attached_processes[i]->id);
+        process_manager_close_process(s.attached_processes[i]->id, s.attached_processes[i]->is_thread, true);
     }
 
     heap_kernel_dealloc(s.attached_processes);
@@ -164,6 +165,14 @@ int8_t switch_active_terminal(uint32_t terminal_id)
             if(video_card_is_text_mode())
             {
                 video_card_set_cursor_pos(terminals_array[i].cursor_position_x, terminals_array[i].cursor_position_y);
+                if(terminals_array[i].cursor)
+                {
+                    video_card_turn_cursor_on();
+                }
+                else
+                {
+                    video_card_turn_cursor_off();
+                }
             }
             return 0;
         }
@@ -184,7 +193,14 @@ int8_t next_terminal()
                 if(video_card_is_text_mode())
                 {
                     video_card_set_cursor_pos(terminals_array[0].cursor_position_x, terminals_array[0].cursor_position_y);
+                    if(terminals_array[i].cursor)
+                {
                     video_card_turn_cursor_on();
+                }
+                else
+                {
+                    video_card_turn_cursor_off();
+                }
                 }
             }
             else{
@@ -194,7 +210,14 @@ int8_t next_terminal()
                 if(video_card_is_text_mode())
                 {
                     video_card_set_cursor_pos(terminals_array[i+1].cursor_position_x, terminals_array[i+1].cursor_position_y);
+                    if(terminals_array[i].cursor)
+                {
                     video_card_turn_cursor_on();
+                }
+                else
+                {
+                    video_card_turn_cursor_off();
+                }
                 }  
             }
             return 0;
@@ -212,7 +235,7 @@ int8_t terminal_manager_set_mode(uint32_t process_id, int8_t mode)
     video_card_destroy_external_buffer(terminal->screen_buffer);
     terminal->screen_buffer = buffer;
     terminal->screen_mode = mode;
-    video_card_clear_screen_external_buffer(buffer, mode);
+    video_card_clear_screen_external_buffer(buffer, mode, &(terminal->cursor_position_x), &(terminal->cursor_position_y));
     if(terminal->terminal_id == active_terminal_id)
     {
         video_card_set_video_mode(mode);
@@ -447,7 +470,7 @@ int8_t terminal_manager_clear_screen(uint32_t process_id)
     terminal_struct* terminal = find_terminal_for_process(process_id);
     if(terminal == NULL) return -1;
     video_card_clear_screen_external_buffer(terminal->screen_buffer, 
-    terminal->screen_mode);
+    terminal->screen_mode, &(terminal->cursor_position_x), &(terminal->cursor_position_y));
     if(terminal->terminal_id == active_terminal_id) video_card_clear_screen();
     return 0;
 }

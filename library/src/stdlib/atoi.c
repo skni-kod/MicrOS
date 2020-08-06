@@ -1,10 +1,10 @@
 #include "../stdlib.h"
 
-int32_t atoi(const char *string)
+int atoi(const char *string)
 {
     size_t len = strlen(string);
-    int32_t value = 0;
-    int32_t position = 1;
+    int value = 0;
+    int position = 1;
 
     char sign = 1;
     char lengthOffset = 0;

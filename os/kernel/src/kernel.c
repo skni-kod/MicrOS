@@ -387,7 +387,7 @@ int kmain()
         create_terminal(&d);
     
         uint32_t terminal_number = i;
-        terminal_struct* ts = get_terminals(&terminal_number);
+        const terminal_struct* ts = get_terminals(&terminal_number);
         attach_process_to_terminal(ts[i].terminal_id, process_manager_get_process(p));
     }
     

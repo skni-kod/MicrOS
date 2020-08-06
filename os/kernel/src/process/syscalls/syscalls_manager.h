@@ -16,6 +16,7 @@
 #include "handlers/generic_vga.h"
 #include "handlers/partitions_calls.h"
 #include "handlers/power_calls.h"
+#include "handlers/serial_calls.h"
 
 void syscalls_manager_init();
 void syscalls_manager_attach_handler(uint8_t function_number, void (*handler)(interrupt_state *state));
