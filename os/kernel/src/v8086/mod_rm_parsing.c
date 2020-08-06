@@ -170,7 +170,7 @@ int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint1
                     return OK;
                 case 6:{
                     *offset = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + (machine->internal_state.IPOffset)));
-                    machine->internal_state.IPOffset += 1;
+                    machine->internal_state.IPOffset += 2;
                     return OK;
                 }
                 case 7:

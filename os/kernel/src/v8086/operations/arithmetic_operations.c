@@ -426,16 +426,19 @@ int16_t perform_division(v8086 *machine, void *source, uint8_t signed_div, uint8
     uint16_t temp_flags;
     if (signed_div) {
         if (width == 8) {
+            if(*((uint8_t *) source) == 0) return DIVISION_BY_ZERO;
             __asm__ __volatile__(
             "movb %%dl, %%al; idiv %%cl; pushfw; pop %%bx;"
             : "=b" (temp_flags), "=a" (machine->regs.w.ax) : "d" (machine->regs.h.al), "c" (*((uint8_t *) source))
             );
         } else if (width == 16) {
+            if(*((uint16_t *) source) == 0) return DIVISION_BY_ZERO;
             __asm__ __volatile__(
             "movw %%dx, %%ax; idiv %%cx; pushfw; pop %%bx;"
             : "=b" (temp_flags), "=a" (machine->regs.d.eax) : "d" (machine->regs.w.ax), "c" (*((uint16_t *) source))
             );
         } else if (width == 32) {
+            if(*((uint32_t *) source) == 0) return DIVISION_BY_ZERO;
             __asm__ __volatile__(
             "movl %%edx, %%eax; idiv %%ecx; pushfw; pop %%bx;"
             : "=b" (temp_flags), "=a" (machine->regs.d.eax), "=d"(machine->regs.d.edx) : "d" (machine->regs.d.eax), "c" (*((uint32_t *) source))
@@ -443,16 +446,20 @@ int16_t perform_division(v8086 *machine, void *source, uint8_t signed_div, uint8
         } else return BAD_WIDTH;
     } else {
         if (width == 8) {
+            if(*((uint8_t *) source) == 0) return DIVISION_BY_ZERO;
             __asm__ __volatile__(
             "movb %%dl, %%al; div %%cl; pushfw; pop %%bx;"
             : "=b" (temp_flags), "=a" (machine->regs.w.ax) : "d" (machine->regs.h.al), "c" (*((uint8_t *) source))
             );
         } else if (width == 16) {
+            if(*((uint16_t *) source) == 0) return DIVISION_BY_ZERO;
             __asm__ __volatile__(
             "movw %%dx, %%ax; div %%cx; pushfw; pop %%bx;"
             : "=b" (temp_flags), "=a" (machine->regs.d.eax) : "d" (machine->regs.w.ax), "c" (*((uint16_t *) source))
             );
         } else if (width == 32) {
+            uint32_t temp = *((uint32_t *) source);
+            if(temp == 0) return DIVISION_BY_ZERO;
             __asm__ __volatile__(
             "movl %%edx, %%eax; div %%ecx; pushfw; pop %%bx;"
             : "=b" (temp_flags), "=a" (machine->regs.d.eax), "=d"(machine->regs.d.edx) : "d" (machine->regs.d.eax), "c" (*((uint32_t *) source))
@@ -706,6 +713,12 @@ int16_t execute_group_2(v8086 *machine, uint8_t opcode) {
         else width = 16;
     }
     void *dest = get_memory_from_mode(machine, mod_rm, width);
+    if((opcode & 0xf0u) == 0xc0u)
+    {
+        arg = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip +
+                                                                                              machine->internal_state.IPOffset));
+        machine->internal_state.IPOffset += 1;
+    }
     if (dest == NULL) return UNABLE_GET_MEMORY;
     switch (get_reg(mod_rm)) {
         case 0:

@@ -42,7 +42,7 @@ int16_t jump_long_relative(v8086* machine, uint8_t width)
 int16_t jump_near_relative(v8086* machine)
 {
     int16_t offset = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
-    machine->internal_state.IPOffset += 1;
+    machine->internal_state.IPOffset += 2;
     machine->IP.w.ip += offset;
     return OK;
 }
@@ -50,8 +50,9 @@ int16_t jump_near_relative(v8086* machine)
 int16_t jump_far(v8086* machine)
 {
     int16_t newIP = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
-    machine->internal_state.IPOffset += 1;
+    machine->internal_state.IPOffset += 2;
     int16_t newCS = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    machine->internal_state.IPOffset += 2;
     machine->sregs.cs = newCS;
     machine->IP.w.ip = newIP;
     machine->internal_state.IPOffset = 0;

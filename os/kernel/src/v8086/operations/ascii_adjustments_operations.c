@@ -63,6 +63,7 @@ int16_t adjust_after_mul_div(v8086* machine, bool div)
     uint8_t tempAH = machine->regs.h.ah;
 
     if(!div) {
+        if(immediate == 0) return DIVISION_BY_ZERO;
         machine->regs.h.ah = tempAL / immediate;
         machine->regs.h.al = tempAL % immediate;
     }

@@ -111,10 +111,10 @@ void v8086_set_8086_instruction_set(v8086* machine)
     ASSIGN_OPCODE(0xe9u, jmp_near);
     ASSIGN_OPCODE(0xeau, jmp_far);
     ASSIGN_OPCODE(0xebu, jmp_short);
-    ASSIGN_OPCODE(0xe4u, inb_dx);
-    ASSIGN_OPCODE(0xe5u, inw_dx);
-    ASSIGN_OPCODE(0xe6u, outb_dx);
-    ASSIGN_OPCODE(0xe7u, outw_dx);
+    ASSIGN_OPCODE(0xecu, inb_dx);
+    ASSIGN_OPCODE(0xedu, inw_dx);
+    ASSIGN_OPCODE(0xeeu, outb_dx);
+    ASSIGN_OPCODE(0xefu, outw_dx);
     //RESERVED FOR LOCK PREFIX
     ASSIGN_NULL(0xf0u);
     //NOT DEFINED IN 8086
@@ -159,6 +159,8 @@ void v8086_set_386_instruction_set(v8086* machine)
     ASSIGN_OPCODE(0x6du, ins);
     ASSIGN_OPCODE(0x6eu, outs8);
     ASSIGN_OPCODE(0x6fu, outs);
+    ASSIGN_OPCODE(0xc0u, group_2);
+    ASSIGN_OPCODE(0xc1u, group_2);
     ASSIGN_OPCODE(0xc8u, enter);
     ASSIGN_OPCODE(0xc9u, leave);
 
@@ -269,6 +271,13 @@ int16_t v8086_call_int(v8086* machine, int16_t num)
     return num;
 }
 
+uint32_t v8086_get_address_of_int(v8086* machine, int16_t num)
+{
+    uint32_t ip = read_word_from_pointer(machine->Memory, get_absolute_address(0, num * 4));
+    uint32_t cs = read_word_from_pointer(machine->Memory, get_absolute_address(0, num * 4 + 2));
+    return cs * 0x10 + ip;
+}
+
 int16_t parse_and_execute_instruction(v8086* machine)
 {
     machine->internal_state.IPOffset = 0;
@@ -284,6 +293,9 @@ int16_t parse_and_execute_instruction(v8086* machine)
     decode: opcode = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
     uint32_t temp = get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset);
     uint8_t* ptr_to_opcode = get_byte_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    if(machine->IP.w.ip == 0x0f04u) {
+        int x = 0;
+    }
     machine->internal_state.IPOffset += 1;
     
     //PREFIXES

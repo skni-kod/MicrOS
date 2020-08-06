@@ -399,14 +399,24 @@ int kmain()
     v8086* v8086 = v8086_create_machine();
     v8086_set_386_instruction_set(v8086);
 
-    filesystem_create_file("B:/DUMP.BIN");
-    bool dupa = filesystem_save_to_file("B:/DUMP.BIN", (char*) v8086->Memory, 0x100000);
+    //filesystem_create_file("A:/DUMP.BIN");
+    //bool dupa = filesystem_save_to_file("A:/DUMP.BIN", (char*) v8086->Memory + 0xC0000, 64*1024);
 
+    //void (*ptr)() = (void*)(v8086_get_address_of_int(v8086, 0x10) + v8086->Memory);
 
     v8086->regs.h.ah = 0x00;
     v8086->regs.h.al = 0x13;
-    int16_t status = v8086_call_int(v8086, 0x10);
-    /*char str[100] = "";
+    //int16_t status = v8086_call_int(v8086, 0x10);
+    //__asm__ __volatile__(
+    //"mov %%dx, %%ax; pushfw;"
+    //: : "d" (v8086->regs.w.ax)
+    //);
+    int16_t temp_flags;
+    __asm__ __volatile__(
+    "movl %%edx, %%eax; div %%ecx; pushfw; pop %%bx;"
+    : "=b" (temp_flags), "=a" (v8086->regs.d.eax), "=d"(v8086->regs.d.edx) : "d" (0x5000), "c" (0xa)
+    );
+    char str[100] = "";
     vga_printstring("IP: ");
     uint16_t IP = *(uint16_t*)(v8086->Memory + 0x10 * 4);
     uint16_t CS = *(uint16_t*)(v8086->Memory + 0x10 * 4 + 2);
@@ -423,7 +433,7 @@ int kmain()
         itoa(mem, str, 16);
         vga_printstring(str);
         vga_printstring(" ");
-    }*/
+    }
     while (1);
     return 0;
 }

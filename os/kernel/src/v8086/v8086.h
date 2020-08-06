@@ -51,6 +51,7 @@ typedef enum _machine_status {
     BAD_INT_NUMBER = -13,
     RELATIVE_JMP_OVERFLOW = -14,
     BOUND_ERROR = -15,
+    DIVISION_BY_ZERO = -16,
     UNKNOWN_ERROR = -69
 } machine_status;
 
@@ -158,4 +159,5 @@ v8086* v8086_create_machine();
 int16_t v8086_call_int(v8086* machine, int16_t num);
 void v8086_set_8086_instruction_set(v8086* machine);
 void v8086_set_386_instruction_set(v8086* machine);
+uint32_t v8086_get_address_of_int(v8086* machine, int16_t num);
 #endif
