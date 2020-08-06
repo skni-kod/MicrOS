@@ -6,21 +6,21 @@ uint8_t* get_byte_register(v8086* machine, uint8_t reg_field)
 {
     switch(reg_field)
     {
-        case AL:
+        case V8086_AL:
             return &(machine->regs.h.al);
-        case AH:
+        case V8086_AH:
             return &(machine->regs.h.ah);
-        case BL:
+        case V8086_BL:
             return &(machine->regs.h.bl);
-        case BH:
+        case V8086_BH:
             return &(machine->regs.h.bh);
-        case CL:
+        case V8086_CL:
             return &(machine->regs.h.cl);
-        case CH:
+        case V8086_CH:
             return &(machine->regs.h.ch);
-        case DL:
+        case V8086_DL:
             return &(machine->regs.h.dl);
-        case DH:
+        case V8086_DH:
             return &(machine->regs.h.dh);
         default:
             return NULL;
@@ -32,21 +32,21 @@ uint16_t* get_word_register(v8086* machine, uint8_t reg_field)
 {
     switch(reg_field)
     {
-        case AX:
+        case V8086_AX:
             return &(machine->regs.x.ax);
-        case CX:
+        case V8086_CX:
             return &(machine->regs.x.cx);
-        case DX:
+        case V8086_DX:
             return &(machine->regs.x.dx);
-        case BX:
+        case V8086_BX:
             return &(machine->regs.x.bx);
-        case SP:
+        case V8086_SP:
             return &(machine->regs.x.sp);
-        case BP:
+        case V8086_BP:
             return &(machine->regs.x.bp);
-        case SI:
+        case V8086_SI:
             return &(machine->regs.x.si);
-        case DI:
+        case V8086_DI:
             return &(machine->regs.x.di);
         default:
             return NULL;
@@ -58,21 +58,21 @@ uint32_t* get_dword_register(v8086* machine, uint8_t reg_field)
 {
     switch(reg_field)
     {
-        case EAX:
+        case V8086_EAX:
             return &(machine->regs.d.eax);
-        case ECX:
+        case V8086_ECX:
             return &(machine->regs.d.ecx);
-        case EDX:
+        case V8086_EDX:
             return &(machine->regs.d.edx);
-        case EBX:
+        case V8086_EBX:
             return &(machine->regs.d.ebx);
-        case ESP:
+        case V8086_ESP:
             return &(machine->regs.d.esp);
-        case EBP:
+        case V8086_EBP:
             return &(machine->regs.d.ebp);
-        case ESI:
+        case V8086_ESI:
             return &(machine->regs.d.esi);
-        case EDI:
+        case V8086_EDI:
             return &(machine->regs.d.edi);
         default:
             return NULL;
@@ -99,17 +99,17 @@ uint16_t* select_segment_register(v8086* machine, segment_register_select select
 {
     switch(select)
     {
-        case CS:
+        case V8086_CS:
             return &(machine->sregs.cs);
-        case DS:
+        case V8086_DS:
             return &(machine->sregs.ds);
-        case SS:
+        case V8086_SS:
             return &(machine->sregs.ss);
-        case ES:
+        case V8086_ES:
             return &(machine->sregs.es);
-        case FS:
+        case V8086_FS:
             return &(machine->sregs.fs);
-        case GS:
+        case V8086_GS:
             return &(machine->sregs.gs);
         default:
             return NULL;
@@ -119,7 +119,7 @@ uint16_t* select_segment_register(v8086* machine, segment_register_select select
 int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint16_t* segment, uint32_t* offset)
 {
     uint16_t* segment_register = NULL;
-    if(machine->internal_state.segment_reg_select != DEFAULT)
+    if(machine->internal_state.segment_reg_select != V8086_DEFAULT)
         segment_register = select_segment_register(machine, machine->internal_state.segment_reg_select);
     else
     {
@@ -130,19 +130,19 @@ int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint1
             case 4:
             case 5:
             case 7:
-                segment_register = select_segment_register(machine, DS);
+                segment_register = select_segment_register(machine, V8086_DS);
                 break;
             case 6:
-                if((mod_rm >> 6u) == 0) segment_register = select_segment_register(machine, DS);
-                else segment_register = select_segment_register(machine, SS);
+                if((mod_rm >> 6u) == 0) segment_register = select_segment_register(machine, V8086_DS);
+                else segment_register = select_segment_register(machine, V8086_SS);
                 break;
             default:
-                segment_register = select_segment_register(machine, SS);
+                segment_register = select_segment_register(machine, V8086_SS);
                 break;
         }
     }
 
-    if(segment_register == NULL) return UNDEFINED_SEGMENT_REGISTER;
+    if(segment_register == NULL) return V8086_UNDEFINED_SEGMENT_REGISTER;
 
     *segment = *segment_register;
 
@@ -152,32 +152,32 @@ int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint1
             switch(mod_rm & 7u){
                 case 0:
                     *offset = machine->regs.x.bx + machine->regs.x.si;
-                    return OK;
+                    return V8086_OK;
                 case 1:
                     *offset = machine->regs.x.bx + machine->regs.x.di;
-                    return OK;
+                    return V8086_OK;
                 case 2:
                     *offset = machine->regs.x.bp + machine->regs.x.si;
-                    return OK;
+                    return V8086_OK;
                 case 3:
                     *offset = machine->regs.x.bp + machine->regs.x.di;
-                    return OK;
+                    return V8086_OK;
                 case 4:
                     *offset = machine->regs.x.si;
-                    return OK;
+                    return V8086_OK;
                 case 5:
                     *offset = machine->regs.x.di;
-                    return OK;
+                    return V8086_OK;
                 case 6:{
                     *offset = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + (machine->internal_state.IPOffset)));
                     machine->internal_state.IPOffset += 2;
-                    return OK;
+                    return V8086_OK;
                 }
                 case 7:
                     *offset = machine->regs.x.bx;
-                    return OK;
+                    return V8086_OK;
                 default:
-                    return BAD_RM;
+                    return V8086_BAD_RM;
             }
         case 1:{
             int8_t disp = (int8_t) read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
@@ -185,30 +185,30 @@ int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint1
             switch(mod_rm & 7u){
                 case 0:
                     *offset = machine->regs.x.bx + machine->regs.x.si + disp;
-                    return OK;
+                    return V8086_OK;
                 case 1:
                     *offset = machine->regs.x.bx + machine->regs.x.di + disp;
-                    return OK;
+                    return V8086_OK;
                 case 2:
                     *offset = machine->regs.x.bp + machine->regs.x.si + disp;
-                    return OK;
+                    return V8086_OK;
                 case 3:
                     *offset = machine->regs.x.bp + machine->regs.x.di + disp;
-                    return OK;
+                    return V8086_OK;
                 case 4:
                     *offset = machine->regs.x.si + disp;
-                    return OK;
+                    return V8086_OK;
                 case 5:
                     *offset = machine->regs.x.di + disp;
-                    return OK;
+                    return V8086_OK;
                 case 6:
                     *offset = machine->regs.x.bp + disp;
-                    return OK;
+                    return V8086_OK;
                 case 7:
                     *offset = machine->regs.x.bx + disp;
-                    return OK;
+                    return V8086_OK;
                 default:
-                    return BAD_RM;
+                    return V8086_BAD_RM;
             }
         }
         case 2:{
@@ -217,36 +217,36 @@ int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint1
             switch(mod_rm & 7u){
                 case 0:
                     *offset = machine->regs.x.bx + machine->regs.x.si + disp;
-                    return OK;
+                    return V8086_OK;
                 case 1:
                     *offset = machine->regs.x.bx + machine->regs.x.di + disp;
-                    return OK;
+                    return V8086_OK;
                 case 2:
                     *offset = machine->regs.x.bp + machine->regs.x.si + disp;
-                    return OK;
+                    return V8086_OK;
                 case 3:
                     *offset = machine->regs.x.bp + machine->regs.x.di + disp;
-                    return OK;
+                    return V8086_OK;
                 case 4:
                     *offset = machine->regs.x.si + disp;
-                    return OK;
+                    return V8086_OK;
                 case 5:
                     *offset = machine->regs.x.di + disp;
-                    return OK;
+                    return V8086_OK;
                 case 6:
                     *offset = machine->regs.x.bp + disp;
-                    return OK;
+                    return V8086_OK;
                 case 7:
                     *offset = machine->regs.x.bx + disp;
-                    return OK;
+                    return V8086_OK;
                 default:
-                    return BAD_RM;
+                    return V8086_BAD_RM;
             }
         }
         default:
-            return BAD_MOD;
+            return V8086_BAD_MOD;
     }
-    return UNKNOWN_ERROR;
+    return V8086_UNKNOWN_ERROR;
 }
 
 int16_t read_and_parse_sib(v8086* machine, uint8_t mod, const uint16_t* segment, uint32_t *offset)
@@ -283,7 +283,7 @@ int16_t read_and_parse_sib(v8086* machine, uint8_t mod, const uint16_t* segment,
             *offset = machine->regs.d.edi;
             break;
         default:
-            return BAD_INDEX;
+            return V8086_BAD_INDEX;
     }
     *offset <<= scale;
 
@@ -315,7 +315,7 @@ int16_t read_and_parse_sib(v8086* machine, uint8_t mod, const uint16_t* segment,
             else
             {
                 *offset += machine->regs.d.ebp;
-                segment = select_segment_register(machine, SS);
+                segment = select_segment_register(machine, V8086_SS);
             }
             break;
         case 6:
@@ -325,9 +325,9 @@ int16_t read_and_parse_sib(v8086* machine, uint8_t mod, const uint16_t* segment,
             *offset += machine->regs.d.edi;
             break;
         default:
-            return BAD_BASE;
+            return V8086_BAD_BASE;
     }
-    return OK;
+    return V8086_OK;
 }
 
 int16_t calculate_segment_offset_from_mode_32(v8086 *machine, uint8_t mod_rm, uint16_t *segment, uint32_t *offset) {
@@ -370,7 +370,7 @@ int16_t calculate_segment_offset_from_mode_32(v8086 *machine, uint8_t mod_rm, ui
                     *offset = machine->regs.d.edi;
                     break;
                 default:
-                    return BAD_RM;
+                    return V8086_BAD_RM;
             }
             break;
         case 1:
@@ -396,7 +396,7 @@ int16_t calculate_segment_offset_from_mode_32(v8086 *machine, uint8_t mod_rm, ui
                     break;
                 case 5:{
                     *offset = machine->regs.d.ebp + disp;
-                    segment_register = select_segment_register(machine, SS);
+                    segment_register = select_segment_register(machine, V8086_SS);
                     break;
                 }
                 case 6:
@@ -406,7 +406,7 @@ int16_t calculate_segment_offset_from_mode_32(v8086 *machine, uint8_t mod_rm, ui
                     *offset = machine->regs.d.edi + disp;
                     break;
                 default:
-                    return BAD_RM;
+                    return V8086_BAD_RM;
             }
             break;
         }
@@ -432,7 +432,7 @@ int16_t calculate_segment_offset_from_mode_32(v8086 *machine, uint8_t mod_rm, ui
                     break;
                 case 5:{
                     *offset = machine->regs.d.ebp + disp;
-                    segment_register = select_segment_register(machine, SS);
+                    segment_register = select_segment_register(machine, V8086_SS);
                     break;
                 }
                 case 6:
@@ -442,18 +442,18 @@ int16_t calculate_segment_offset_from_mode_32(v8086 *machine, uint8_t mod_rm, ui
                     *offset = machine->regs.d.edi + disp;
                     break;
                 default:
-                    return BAD_RM;
+                    return V8086_BAD_RM;
             }
             break;
         }
         default:
-            return BAD_MOD;
+            return V8086_BAD_MOD;
     }
 
-    if(machine->internal_state.segment_reg_select != DEFAULT)
+    if(machine->internal_state.segment_reg_select != V8086_DEFAULT)
         segment_register = select_segment_register(machine, machine->internal_state.segment_reg_select);
     else if(segment_register == NULL)
-        segment_register = select_segment_register(machine, DS);
+        segment_register = select_segment_register(machine, V8086_DS);
 
     *segment = *segment_register;
     return 0;

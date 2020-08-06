@@ -27,11 +27,11 @@ void v8086_set_8086_instruction_set(v8086* machine)
     ASSIGN_OPCODE(0x1eu, push_ds);
     ASSIGN_OPCODE(0x1fu, pop_ds);
     GROUP_OF_OPCODES(0x20u, 0x25u, and);
-    //RESERVED TO SEG=ES PREFIX
+    //RESERVED TO SEG=V8086_ES PREFIX
     ASSIGN_NULL(0x26u);
     ASSIGN_OPCODE(0x27u, daa);
     GROUP_OF_OPCODES(0x28u, 0x2du, sub);
-    //RESERVED TO SEG=CS PREFIX
+    //RESERVED TO SEG=V8086_CS PREFIX
     ASSIGN_NULL(0x2eu);
     ASSIGN_OPCODE(0x2fu, das);
     GROUP_OF_OPCODES(0x30u, 0x35u, xor);
@@ -136,7 +136,7 @@ void v8086_set_8086_instruction_set(v8086* machine)
         machine->operations_0fh[i] = NULL;
     }
 
-    machine->is_compatibility = IS8086;
+    machine->is_compatibility = V8086_IS8086;
 }
 
 void v8086_set_386_instruction_set(v8086* machine)
@@ -232,7 +232,7 @@ void v8086_set_386_instruction_set(v8086* machine)
     ASSIGN_0FH_OPCODE(0xbeu, movsx); // BYTE MOVSX
     ASSIGN_0FH_OPCODE(0xbfu, movsx); //BYTE MOVSX
 
-    machine->is_compatibility = IS386;
+    machine->is_compatibility = V8086_IS386;
 }
 
 v8086* v8086_create_machine()
@@ -253,21 +253,21 @@ int16_t v8086_call_function(v8086* machine)
     while(!(machine->IP.w.ip == 0xFFFF && machine->sregs.cs == 0xFFFF))
     {
         int16_t status = parse_and_execute_instruction(machine);
-        if(status != OK) return status;
+        if(status != V8086_OK) return status;
     }
-    return OK;
+    return V8086_OK;
 }
 
 int16_t v8086_call_int(v8086* machine, int16_t num)
 {
-    if ((num < 0) || (num > 0xFF)) return BAD_INT_NUMBER;
+    if ((num < 0) || (num > 0xFF)) return V8086_BAD_INT_NUMBER;
     machine -> IP.w.ip = read_word_from_pointer(machine->Memory, get_absolute_address(0, num * 4));
     machine -> sregs.cs = read_word_from_pointer(machine->Memory, get_absolute_address(0, num * 4 + 2));
     push_word(machine, machine->regs.w.flags);
     push_word(machine, 0xFFFF);
     push_word(machine, 0xFFFF);
     int16_t x = v8086_call_function(machine);
-    if(x != OK) return x;
+    if(x != V8086_OK) return x;
     return num;
 }
 
@@ -283,10 +283,10 @@ int16_t parse_and_execute_instruction(v8086* machine)
     machine->internal_state.IPOffset = 0;
     machine->internal_state.operand_32_bit = 0;
     machine->internal_state.address_32_bit = 0;
-    machine->internal_state.segment_reg_select = DEFAULT;
-    machine->internal_state.rep_prefix = NONE;
+    machine->internal_state.segment_reg_select = V8086_DEFAULT;
+    machine->internal_state.rep_prefix = V8086_NONE_REPEAT;
 
-    int16_t status = OK;
+    int16_t status = V8086_OK;
 
     //Maybe opcode, an be also prefix
     uint8_t opcode;
@@ -299,7 +299,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     machine->internal_state.IPOffset += 1;
     
     //PREFIXES
-    //Segment Prefix CS DS ES SS
+    //Segment Prefix V8086_CS DS V8086_ES SS
     if((opcode & 0x7u) == 0x6 && ((opcode >> 5u) & 0x7u) == 0x1u) //001XX110 pattern where XX is number of segment
     {
         machine->internal_state.segment_reg_select = (opcode >> 3u) & 0x3u;
@@ -308,13 +308,13 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //Segment Prefix FS
     else if(opcode == 0x64)
     {
-        machine->internal_state.segment_reg_select = FS;
+        machine->internal_state.segment_reg_select = V8086_FS;
         goto decode; //continue parsing opcode;
     }
     //Segment Prefix GS
     else if(opcode == 0x65)
     {
-        machine->internal_state.segment_reg_select = GS;
+        machine->internal_state.segment_reg_select = V8086_GS;
         goto decode; //continue parsing opcode;
     }
     //Operand Size Prefix
@@ -332,13 +332,13 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //REPNE Prefix
     else if(opcode == 0xF2)
     {
-        machine->internal_state.rep_prefix = REPNE;
+        machine->internal_state.rep_prefix = V8086_REPNE;
         goto decode; //continue parsing opcode;
     }
     //REP/REPE Prefix
     else if(opcode == 0xF3)
     {
-        machine->internal_state.rep_prefix = REP_REPE;
+        machine->internal_state.rep_prefix = V8086_REP_REPE;
         goto decode; //continue parsing opcode;
     }
     //LOCK Prefix
@@ -350,7 +350,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     if(machine->operations[opcode] != NULL)
         status = machine->operations[opcode](machine, opcode);
     else
-        return UNDEFINED_OPCODE;
+        return V8086_UNDEFINED_OPCODE;
 
     machine->IP.w.ip += machine->internal_state.IPOffset;
     return status;

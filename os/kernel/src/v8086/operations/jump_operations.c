@@ -9,9 +9,9 @@ int16_t jump_short_relative(v8086* machine)
     machine->internal_state.IPOffset += 1;
     uint32_t tempIP = machine->IP.w.ip;
     tempIP += offset;
-    if((tempIP > 0xFFFF)) return RELATIVE_JMP_OVERFLOW;
+    if((tempIP > 0xFFFF)) return V8086_RELATIVE_JMP_OVERFLOW;
     machine->IP.w.ip = tempIP;
-    return OK;
+    return V8086_OK;
 }
 
 int16_t jump_long_relative(v8086* machine, uint8_t width)
@@ -27,16 +27,16 @@ int16_t jump_long_relative(v8086* machine, uint8_t width)
         offset = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 2;
     }
-    else return BAD_WIDTH;
+    else return V8086_BAD_WIDTH;
 
     uint32_t tempIP = machine->IP.w.ip;
     tempIP += offset;
     if(width == 16)
         tempIP &= 0xffffu;
 
-    if((tempIP > 0xFFFF)) return RELATIVE_JMP_OVERFLOW;
+    if((tempIP > 0xFFFF)) return V8086_RELATIVE_JMP_OVERFLOW;
     machine->IP.w.ip = tempIP;
-    return OK;
+    return V8086_OK;
 }
 
 int16_t jump_near_relative(v8086* machine)
@@ -44,7 +44,7 @@ int16_t jump_near_relative(v8086* machine)
     int16_t offset = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
     machine->internal_state.IPOffset += 2;
     machine->IP.w.ip += offset;
-    return OK;
+    return V8086_OK;
 }
 
 int16_t jump_far(v8086* machine)
@@ -56,7 +56,7 @@ int16_t jump_far(v8086* machine)
     machine->sregs.cs = newCS;
     machine->IP.w.ip = newIP;
     machine->internal_state.IPOffset = 0;
-    return OK;
+    return V8086_OK;
 }
 
 int16_t jump_on_condition(v8086* machine, uint8_t opcode, uint8_t width)
@@ -123,7 +123,7 @@ int16_t jump_on_condition(v8086* machine, uint8_t opcode, uint8_t width)
     {
         machine->internal_state.IPOffset += width/8;
     }
-    return OK;
+    return V8086_OK;
 }
 
 int16_t jump_short_relative_on_condition(v8086* machine, uint8_t opcode)
@@ -145,7 +145,7 @@ int16_t jump_short_relative_on_condition(v8086* machine, uint8_t opcode)
     {
         machine->internal_state.IPOffset += 1;
     }
-    return OK;
+    return V8086_OK;
 }
 
 int16_t perform_loop_loopne(v8086* machine, uint8_t opcode)
@@ -181,11 +181,11 @@ int16_t perform_loop_loopne(v8086* machine, uint8_t opcode)
             if(machine->regs.w.cx) jump = 1;
             break;
         default:
-            return UNKNOWN_ERROR;
+            return V8086_UNKNOWN_ERROR;
     }
 
     if(jump)
         machine->IP.w.ip += offset;
 
-    return OK;
+    return V8086_OK;
 }

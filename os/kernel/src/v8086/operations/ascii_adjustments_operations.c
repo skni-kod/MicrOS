@@ -23,7 +23,7 @@ int16_t adjust_after_add_sub(v8086* machine, bool sub)
         bit_clear(machine->regs.w.flags, 1u <<CARRY_FLAG_BIT);
     }
     machine->regs.h.al &= 0x0fu;
-    return OK;
+    return V8086_OK;
 }
 
 int16_t adjust_after_add_sub_packed(v8086* machine, bool sub)
@@ -52,7 +52,7 @@ int16_t adjust_after_add_sub_packed(v8086* machine, bool sub)
     bit_write(machine->regs.d.eflags, 1u <<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
     bit_write(machine-> regs.d.eflags, 1u <<ZERO_FLAG_BIT, machine->regs.h.al == 0); //ZERO FLAG
     bit_write(machine->regs.d.eflags, 1u <<SIGN_FLAG_BIT, machine->regs.h.al >> (7u)); //SIGN FLAG
-    return OK;
+    return V8086_OK;
 }
 
 int16_t adjust_after_mul_div(v8086* machine, bool div)
@@ -63,7 +63,7 @@ int16_t adjust_after_mul_div(v8086* machine, bool div)
     uint8_t tempAH = machine->regs.h.ah;
 
     if(!div) {
-        if(immediate == 0) return DIVISION_BY_ZERO;
+        if(immediate == 0) return V8086_DIVISION_BY_ZERO;
         machine->regs.h.ah = tempAL / immediate;
         machine->regs.h.al = tempAL % immediate;
     }
@@ -78,5 +78,5 @@ int16_t adjust_after_mul_div(v8086* machine, bool div)
     bit_write(machine-> regs.d.eflags, 1u <<ZERO_FLAG_BIT, machine->regs.h.al == 0); //ZERO FLAG
     bit_write(machine->regs.d.eflags, 1u <<SIGN_FLAG_BIT, machine->regs.h.al >> (7u)); //SIGN FLAG
 
-    return OK;
+    return V8086_OK;
 }

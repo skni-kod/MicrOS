@@ -26,9 +26,9 @@ int16_t perform_exchange(void* source, void* dest, uint8_t width)
             *((uint32_t*) dest) = temp;
             break;
         default:
-            return BAD_WIDTH;
+            return V8086_BAD_WIDTH;
     }
-    return OK;
+    return V8086_OK;
 }
 
 int16_t perform_exchange_rm(v8086* machine, uint8_t opcode)
@@ -41,8 +41,8 @@ int16_t perform_exchange_rm(v8086* machine, uint8_t opcode)
 
     void* source = get_variable_length_register(machine, get_reg(mod_rm), width);
     void* dest = get_memory_from_mode(machine, mod_rm, width);
-    if(source == NULL) return UNDEFINED_REGISTER;
-    if(dest == NULL) return UNABLE_GET_MEMORY;
+    if(source == NULL) return V8086_UNDEFINED_REGISTER;
+    if(dest == NULL) return V8086_UNABLE_GET_MEMORY;
     return perform_exchange(source, dest, width);
 }
 
@@ -50,8 +50,8 @@ int16_t perform_exchange_ax_register(v8086* machine, uint8_t opcode)
 {
     uint8_t width = 16;
     if(machine->internal_state.operand_32_bit) width = 32;
-    void* regA = get_variable_length_register(machine, EAX, width);
+    void* regA = get_variable_length_register(machine, V8086_EAX, width);
     void* regB = get_word_register(machine, opcode & 7u);
-    if((regA == NULL) || (regB == NULL)) return UNDEFINED_REGISTER;
+    if((regA == NULL) || (regB == NULL)) return V8086_UNDEFINED_REGISTER;
     return perform_exchange(regA, regB, width);
 }

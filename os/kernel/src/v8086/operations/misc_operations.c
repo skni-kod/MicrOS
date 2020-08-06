@@ -13,7 +13,7 @@ int16_t perform_group_4(v8086* machine)
     uint8_t width = 8;
 
     void* dest = get_memory_from_mode(machine, mod_rm, width);
-    if(dest == NULL) return UNABLE_GET_MEMORY;
+    if(dest == NULL) return V8086_UNABLE_GET_MEMORY;
     switch(get_reg(mod_rm))
     {
         case 0: //INC rm8
@@ -23,7 +23,7 @@ int16_t perform_group_4(v8086* machine)
             return  perform_dec(machine, dest, width);
             break;
         default:
-            return UNDEFINED_OPCODE;
+            return V8086_UNDEFINED_OPCODE;
     }
 }
 
@@ -35,7 +35,7 @@ int16_t perform_group_5(v8086* machine)
     if(machine->internal_state.operand_32_bit) width = 32;
 
     void* dest = get_memory_from_mode(machine, mod_rm, width);
-    if(dest == NULL) return UNABLE_GET_MEMORY;
+    if(dest == NULL) return V8086_UNABLE_GET_MEMORY;
     switch(get_reg(mod_rm))
     {
         case 0: //INC rm8
@@ -47,9 +47,9 @@ int16_t perform_group_5(v8086* machine)
             push_word(machine, machine->IP.w.ip);
             if(width == 16)
                 machine->IP.w.ip += *((uint16_t*) dest);
-            else return BAD_WIDTH;
+            else return V8086_BAD_WIDTH;
             machine->internal_state.IPOffset = 0;
-            return OK;
+            return V8086_OK;
         case 3: // Far absolute indirect call
             machine->IP.w.ip += machine->internal_state.IPOffset;
             push_word(machine, machine->sregs.cs);
@@ -57,26 +57,26 @@ int16_t perform_group_5(v8086* machine)
             machine->IP.w.ip = *((uint16_t*) dest);
             machine->sregs.cs = *(((uint16_t*)dest)+1);
             machine->internal_state.IPOffset = 0;
-            return OK;
+            return V8086_OK;
         case 4: //Near absolute indirect jmp
             if(width == 16)
                 machine->IP.w.ip += *((uint16_t*) dest);
-            else return BAD_WIDTH;
+            else return V8086_BAD_WIDTH;
             machine->internal_state.IPOffset = 0;
-            return OK;
+            return V8086_OK;
         case 5: //Far absolute indirect jmp
             machine->IP.w.ip = *((uint16_t*) dest);
             machine->sregs.cs = *(((uint16_t*)dest)+1);
             machine->internal_state.IPOffset = 0;
-            return OK;
+            return V8086_OK;
         case 6:
             if(width == 16) push_word(machine, *((uint16_t*)dest));
             else push_dword(machine, *((uint32_t*)dest));
-            return OK;
+            return V8086_OK;
         default:
-            return UNDEFINED_OPCODE;
+            return V8086_UNDEFINED_OPCODE;
     }
-    return UNKNOWN_ERROR;
+    return V8086_UNKNOWN_ERROR;
 }
 
 int16_t setting_and_clearing_flags(v8086* machine, uint8_t opcode)
@@ -104,8 +104,8 @@ int16_t setting_and_clearing_flags(v8086* machine, uint8_t opcode)
     else if(opcode == 0xfd)
         bit_set(machine->regs.w.flags, 1u <<DIRECTION_FLAG_BIT);
     else
-        return UNKNOWN_ERROR;
-    return OK;
+        return V8086_UNKNOWN_ERROR;
+    return V8086_OK;
 }
 
 int16_t check_bounds(v8086* machine)
@@ -124,7 +124,7 @@ int16_t check_bounds(v8086* machine)
         int16_t* lb = (int16_t*) bounds;
         int16_t* ub = ((int16_t*) bounds + 1);
 
-        if((*i < *lb) || (*i > *ub)) return BOUND_ERROR;
+        if((*i < *lb) || (*i > *ub)) return V8086_BOUND_ERROR;
     }
     else
     {
@@ -132,9 +132,9 @@ int16_t check_bounds(v8086* machine)
         int32_t* lb = (int32_t*) bounds;
         int32_t* ub = ((int32_t*) bounds + 1);
 
-        if((*i < *lb) || (*i > *ub)) return BOUND_ERROR;
+        if((*i < *lb) || (*i > *ub)) return V8086_BOUND_ERROR;
     }
-    return OK;
+    return V8086_OK;
 }
 
 int16_t set_byte(v8086* machine, uint8_t opcode)
@@ -196,5 +196,5 @@ int16_t set_byte(v8086* machine, uint8_t opcode)
     machine->internal_state.IPOffset += 1;
     uint8_t* memory = (uint8_t*) get_memory_from_mode(machine, mod_rm, 8);
     *memory = set_byte;
-    return OK;
+    return V8086_OK;
 }

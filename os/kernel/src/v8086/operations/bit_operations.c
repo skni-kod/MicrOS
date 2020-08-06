@@ -22,8 +22,8 @@ int16_t bit_test(v8086* machine, uint8_t width)
 
         bit_write(machine->regs.w.flags, 1u<<CARRY_FLAG_BIT, bit_get(*memory, 1u<<(*reg % 32u)));
     }
-    else return BAD_WIDTH;
-    return OK;
+    else return V8086_BAD_WIDTH;
+    return V8086_OK;
 }
 
 int16_t bit_test_set(v8086* machine, uint8_t width)
@@ -47,8 +47,8 @@ int16_t bit_test_set(v8086* machine, uint8_t width)
         bit_write(machine->regs.w.flags, 1u<<CARRY_FLAG_BIT, bit_get(*memory, 1u<<(*reg % 32u)));
         bit_set(*memory, 1u<<(*reg % 32u));
     }
-    else return BAD_WIDTH;
-    return OK;
+    else return V8086_BAD_WIDTH;
+    return V8086_OK;
 }
 
 int16_t bit_test_reset(v8086* machine, uint8_t width)
@@ -72,8 +72,8 @@ int16_t bit_test_reset(v8086* machine, uint8_t width)
         bit_write(machine->regs.w.flags, 1u<<CARRY_FLAG_BIT, bit_get(*memory, 1u<<(*reg % 32u)));
         bit_clear(*memory, 1u<<(*reg % 32u));
     }
-    else return BAD_WIDTH;
-    return OK;
+    else return V8086_BAD_WIDTH;
+    return V8086_OK;
 }
 
 int16_t bit_test_complement(v8086* machine, uint8_t width)
@@ -97,8 +97,8 @@ int16_t bit_test_complement(v8086* machine, uint8_t width)
         bit_write(machine->regs.w.flags, 1u<<CARRY_FLAG_BIT, bit_get(*memory, 1u<<(*reg % 32u)));
         bit_flip(*memory, 1u<<(*reg % 32u));
     }
-    else return BAD_WIDTH;
-    return OK;
+    else return V8086_BAD_WIDTH;
+    return V8086_OK;
 }
 
 int16_t perform_group_8(v8086* machine, uint8_t width)
@@ -124,8 +124,8 @@ int16_t perform_group_8(v8086* machine, uint8_t width)
 
                 bit_write(machine->regs.w.flags, 1u<<CARRY_FLAG_BIT, bit_get(*memory, 1u<<(imm % 32u)));
             }
-            else return BAD_WIDTH;
-            return OK;
+            else return V8086_BAD_WIDTH;
+            return V8086_OK;
         case 5: // BTS rm, imm8
             if(width == 16)
             {
@@ -145,8 +145,8 @@ int16_t perform_group_8(v8086* machine, uint8_t width)
                 bit_write(machine->regs.w.flags, 1u<<CARRY_FLAG_BIT, bit_get(*memory, 1u<<(imm % 32u)));
                 bit_set(*memory, 1u<<(imm % 32u));
             }
-            else return BAD_WIDTH;
-            return OK;
+            else return V8086_BAD_WIDTH;
+            return V8086_OK;
         case 6: //BTR rm, imm8
             if(width == 16)
             {
@@ -166,8 +166,8 @@ int16_t perform_group_8(v8086* machine, uint8_t width)
                 bit_write(machine->regs.w.flags, 1u<<CARRY_FLAG_BIT, bit_get(*memory, 1u<<(imm % 32u)));
                 bit_clear(*memory, 1u<<(imm % 32u));
             }
-            else return BAD_WIDTH;
-            return OK;
+            else return V8086_BAD_WIDTH;
+            return V8086_OK;
         case 7: //BTC rm, imm8
             if(width == 16)
             {
@@ -187,10 +187,10 @@ int16_t perform_group_8(v8086* machine, uint8_t width)
                 bit_write(machine->regs.w.flags, 1u<<CARRY_FLAG_BIT, bit_get(*memory, 1u<<(imm % 32u)));
                 bit_flip(*memory, 1u<<(imm % 32u));
             }
-            else return BAD_WIDTH;
-            return OK;
+            else return V8086_BAD_WIDTH;
+            return V8086_OK;
         default:
-            return UNDEFINED_OPCODE;
+            return V8086_UNDEFINED_OPCODE;
     }
 }
 
@@ -207,7 +207,7 @@ int16_t bit_scan_forward(v8086* machine, uint8_t width)
         if(s == 0)
         {
             bit_set(machine->regs.w.flags, 1u<<ZERO_FLAG_BIT);
-            return OK;
+            return V8086_OK;
         }
         bit_clear(machine->regs.w.flags, 1u<<ZERO_FLAG_BIT);
         uint8_t temp = 0;
@@ -220,14 +220,14 @@ int16_t bit_scan_forward(v8086* machine, uint8_t width)
         if(s == 0)
         {
             bit_set(machine->regs.w.flags, 1u<<ZERO_FLAG_BIT);
-            return OK;
+            return V8086_OK;
         }
         bit_clear(machine->regs.w.flags, 1u<<ZERO_FLAG_BIT);
         uint8_t temp = 0;
         while(!bit_get(s, 1u<<temp)) temp++;
         *((uint32_t*) dest) = temp;
-    } else return BAD_WIDTH;
-    return OK;
+    } else return V8086_BAD_WIDTH;
+    return V8086_OK;
 }
 
 int16_t bit_scan_backward(v8086* machine, uint8_t width)
@@ -243,7 +243,7 @@ int16_t bit_scan_backward(v8086* machine, uint8_t width)
         if(s == 0)
         {
             bit_set(machine->regs.w.flags, 1u<<ZERO_FLAG_BIT);
-            return OK;
+            return V8086_OK;
         }
         bit_clear(machine->regs.w.flags, 1u<<ZERO_FLAG_BIT);
         uint8_t temp = width - 1;
@@ -256,12 +256,12 @@ int16_t bit_scan_backward(v8086* machine, uint8_t width)
         if(s == 0)
         {
             bit_set(machine->regs.w.flags, 1u<<ZERO_FLAG_BIT);
-            return OK;
+            return V8086_OK;
         }
         bit_clear(machine->regs.w.flags, 1u<<ZERO_FLAG_BIT);
         uint8_t temp = width - 1;
         while(!bit_get(s, 1u<<temp)) temp--;
         *((uint32_t*) dest) = temp;
-    } else return BAD_WIDTH;
-    return OK;
+    } else return V8086_BAD_WIDTH;
+    return V8086_OK;
 }

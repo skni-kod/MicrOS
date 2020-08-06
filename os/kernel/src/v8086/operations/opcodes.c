@@ -27,13 +27,13 @@ OPCODE_PROTO(add)
 OPCODE_PROTO(push_es)
 {
     push_word(machine, machine->sregs.es);
-    return OK;
+    return V8086_OK;
 }
 
 OPCODE_PROTO(pop_es)
 {
     machine->sregs.es = pop_word(machine);
-    return OK;
+    return V8086_OK;
 }
 
 OPCODE_PROTO(or)
@@ -44,7 +44,7 @@ OPCODE_PROTO(or)
 OPCODE_PROTO(push_cs)
 {
     push_word(machine, machine->sregs.cs);
-    return OK;
+    return V8086_OK;
 }
 
 OPCODE_PROTO(adc)
@@ -55,13 +55,13 @@ OPCODE_PROTO(adc)
 OPCODE_PROTO(push_ss)
 {
     push_word(machine, machine->sregs.ss);
-    return OK;
+    return V8086_OK;
 }
 
 OPCODE_PROTO(pop_ss)
 {
     machine->sregs.ss = pop_word(machine);
-    return OK;
+    return V8086_OK;
 }
 
 OPCODE_PROTO(sbb)
@@ -72,13 +72,13 @@ OPCODE_PROTO(sbb)
 OPCODE_PROTO(push_ds)
 {
     push_word(machine, machine->sregs.ds);
-    return OK;
+    return V8086_OK;
 }
 
 OPCODE_PROTO(pop_ds)
 {
     machine->sregs.ds = pop_word(machine);
-    return OK;
+    return V8086_OK;
 }
 
 OPCODE_PROTO(and)
@@ -174,7 +174,7 @@ OPCODE_PROTO(group1)
         case 7: //CMP
             return perform_arithmetic_or_logical_instruction_group(machine, recalculated_opcode, mod_rm, NO_CARRY, perform_cmp);
         default:
-            return BAD_REG;
+            return V8086_BAD_REG;
     }
 }
 
@@ -231,13 +231,13 @@ OPCODE_PROTO(far_call)
 OPCODE_PROTO(pushf)
 {
     push_word(machine, machine->regs.w.flags);
-    return OK;
+    return V8086_OK;
 }
 
 OPCODE_PROTO(popf)
 {
     machine->regs.w.flags = pop_word(machine);
-    return OK;
+    return V8086_OK;
 }
 
 OPCODE_PROTO(sahf)
@@ -316,12 +316,12 @@ OPCODE_PROTO(retn_imm)
 
 OPCODE_PROTO(les)
 {
-    return perform_load_far_pointer(machine, ES);
+    return perform_load_far_pointer(machine, V8086_ES);
 }
 
 OPCODE_PROTO(lds)
 {
-    return perform_load_far_pointer(machine, DS);
+    return perform_load_far_pointer(machine, V8086_DS);
 }
 
 OPCODE_PROTO(mov_rm_imm)
@@ -349,7 +349,7 @@ OPCODE_PROTO(interrupt)
     }
     else if(opcode == 0xce) //INTO
     {
-        if(!bit_get(machine->regs.w.flags, 1u << OVERFLOW_FLAG_BIT)) return OK;
+        if(!bit_get(machine->regs.w.flags, 1u << OVERFLOW_FLAG_BIT)) return V8086_OK;
         interrupt_number = 4;
     }
 
@@ -557,7 +557,7 @@ OPCODE_PROTO(two_byte_0fh){
     secondary_opcode = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
     machine->internal_state.IPOffset += 1;
 
-    if(machine->operations_0fh[secondary_opcode] == NULL) return UNDEFINED_OPCODE;
+    if(machine->operations_0fh[secondary_opcode] == NULL) return V8086_UNDEFINED_OPCODE;
 
     return machine->operations_0fh[secondary_opcode](machine, secondary_opcode);
 }
@@ -575,25 +575,25 @@ OPCODE_PROTO(setcc)
 OPCODE_PROTO(push_fs)
 {
     push_word(machine, machine->sregs.fs);
-    return OK;
+    return V8086_OK;
 }
 
 OPCODE_PROTO(pop_fs)
 {
     machine->sregs.fs = pop_word(machine);
-    return OK;
+    return V8086_OK;
 }
 
 OPCODE_PROTO(push_gs)
 {
     push_word(machine, machine->sregs.gs);
-    return OK;
+    return V8086_OK;
 }
 
 OPCODE_PROTO(pop_gs)
 {
     machine->sregs.gs = pop_word(machine);
-    return OK;
+    return V8086_OK;
 }
 
 OPCODE_PROTO(bt)
@@ -654,17 +654,17 @@ OPCODE_PROTO(imul_2_byte)
 
 OPCODE_PROTO(lss)
 {
-    return perform_load_far_pointer(machine, SS);
+    return perform_load_far_pointer(machine, V8086_SS);
 }
 
 OPCODE_PROTO(lfs)
 {
-    return perform_load_far_pointer(machine, FS);
+    return perform_load_far_pointer(machine, V8086_FS);
 }
 
 OPCODE_PROTO(lgs)
 {
-    return perform_load_far_pointer(machine, GS);
+    return perform_load_far_pointer(machine, V8086_GS);
 }
 
 OPCODE_PROTO(movzx)

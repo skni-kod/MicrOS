@@ -11,10 +11,10 @@ int16_t push_gpr(v8086* machine, uint8_t opcode)
     void* reg = NULL;
     if(machine->internal_state.operand_32_bit) width = 32;
     reg = get_variable_length_register(machine, opcode & 7u, width);
-    if(reg == NULL) return UNDEFINED_REGISTER;
+    if(reg == NULL) return V8086_UNDEFINED_REGISTER;
     if(width==16) push_word(machine, *((uint16_t*)reg));
     else push_dword(machine, *((uint32_t*)reg));
-    return OK;
+    return V8086_OK;
 }
 
 int16_t pop_gpr(v8086* machine, uint8_t opcode)
@@ -23,10 +23,10 @@ int16_t pop_gpr(v8086* machine, uint8_t opcode)
     void* reg = NULL;
     if(machine->internal_state.operand_32_bit) width = 32;
     reg = get_variable_length_register(machine, opcode & 7u, width);
-    if(reg == NULL) return UNDEFINED_REGISTER;
+    if(reg == NULL) return V8086_UNDEFINED_REGISTER;
     if(width==16) *((uint16_t*)reg) = pop_word(machine);
     else *((uint32_t*)reg) = pop_dword(machine);
-    return OK;
+    return V8086_OK;
 }
 
 int16_t pop_rm(v8086* machine)
@@ -41,7 +41,7 @@ int16_t pop_rm(v8086* machine)
         *((uint16_t*)dest) = pop_word(machine);
     else
         *((uint32_t*)dest) = pop_dword(machine);
-    return OK;
+    return V8086_OK;
 }
 
 int16_t push_all(v8086* machine)
@@ -69,7 +69,7 @@ int16_t push_all(v8086* machine)
         push_dword(machine, machine->regs.d.esi);
         push_dword(machine, machine->regs.d.edi);
     }
-    return OK;
+    return V8086_OK;
 }
 
 int16_t pop_all(v8086* machine)
@@ -98,7 +98,7 @@ int16_t pop_all(v8086* machine)
         machine->regs.d.ecx = pop_dword(machine);
         machine->regs.d.eax = pop_dword(machine);
     }
-    return OK;
+    return V8086_OK;
 }
 
 int16_t push_immediate(v8086* machine, uint8_t width)
@@ -108,23 +108,23 @@ int16_t push_immediate(v8086* machine, uint8_t width)
         uint8_t imm = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
         push_byte(machine, imm);
-        return OK;
+        return V8086_OK;
     }
     if(width == 16)
     {
         uint16_t imm = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 2;
         push_word(machine, imm);
-        return OK;
+        return V8086_OK;
     }
     if(width == 32)
     {
         uint32_t imm = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 4;
         push_dword(machine, imm);
-        return OK;
+        return V8086_OK;
     }
-    return BAD_WIDTH;
+    return V8086_BAD_WIDTH;
 }
 
 int16_t enter(v8086* machine, uint8_t width)
@@ -149,7 +149,7 @@ int16_t enter(v8086* machine, uint8_t width)
         push_word(machine, machine->regs.w.bp);
         temp_ebp = machine->regs.w.sp;
     }
-    else return BAD_WIDTH;
+    else return V8086_BAD_WIDTH;
 
     if(nesting_level > 0)
     {
@@ -180,7 +180,7 @@ int16_t enter(v8086* machine, uint8_t width)
         machine->regs.w.sp -= alloc_size;
     }
 
-    return OK;
+    return V8086_OK;
 }
 
 int16_t leave(v8086* machine, uint8_t width)
@@ -188,12 +188,12 @@ int16_t leave(v8086* machine, uint8_t width)
     if(width == 32) {
         machine->regs.d.esp = machine->regs.d.ebp;
         machine->regs.d.ebp = pop_dword(machine);
-        return OK;
+        return V8086_OK;
     }
     if(width == 16){
         machine -> regs.w.sp = machine->regs.w.sp;
         machine->regs.w.bp = pop_word(machine);
-        return OK;
+        return V8086_OK;
     }
-    return BAD_WIDTH;
+    return V8086_BAD_WIDTH;
 }

@@ -11,7 +11,7 @@ int16_t near_relative_call(v8086* machine)
     push_word(machine, machine->IP.w.ip);
     machine->IP.w.ip += immediate;
     machine->internal_state.IPOffset = 0;
-    return OK;
+    return V8086_OK;
 }
 
 int16_t far_call(v8086 *machine){
@@ -37,14 +37,14 @@ int16_t far_call(v8086 *machine){
     machine->IP.w.ip = newIP;
     machine->sregs.cs = newCS;
     machine->internal_state.IPOffset = 0;
-    return OK;
+    return V8086_OK;
 }
 
 int16_t near_ret(v8086* machine)
 {
     machine->IP.w.ip = pop_word(machine);
     machine->internal_state.IPOffset = 0;
-    return OK;
+    return V8086_OK;
 }
 
 int16_t near_ret_imm(v8086* machine)
@@ -54,7 +54,7 @@ int16_t near_ret_imm(v8086* machine)
     machine->IP.w.ip = pop_word(machine);
     machine->regs.w.sp += immediate;
     machine->internal_state.IPOffset = 0;
-    return OK;
+    return V8086_OK;
 }
 
 int16_t far_ret(v8086* machine)
@@ -62,7 +62,7 @@ int16_t far_ret(v8086* machine)
     machine->IP.w.ip = pop_word(machine);
     machine->sregs.cs = pop_word(machine);
     machine->internal_state.IPOffset = 0;
-    return OK;
+    return V8086_OK;
 }
 
 int16_t far_ret_imm(v8086* machine)
@@ -73,7 +73,7 @@ int16_t far_ret_imm(v8086* machine)
     machine->sregs.cs = pop_word(machine);
     machine->regs.w.sp += immediate;
     machine->internal_state.IPOffset = 0;
-    return OK;
+    return V8086_OK;
 }
 
 int16_t perform_interrupt(v8086* machine, uint8_t interrupt_number)
@@ -89,7 +89,7 @@ int16_t perform_interrupt(v8086* machine, uint8_t interrupt_number)
     machine->sregs.cs = newCS;
 
     machine->internal_state.IPOffset = 0;
-    return OK;
+    return V8086_OK;
 }
 
 int16_t perform_iret(v8086* machine)
@@ -99,5 +99,5 @@ int16_t perform_iret(v8086* machine)
     machine->regs.w.flags = pop_word(machine);
 
     machine->internal_state.IPOffset = 0;
-    return OK;
+    return V8086_OK;
 }

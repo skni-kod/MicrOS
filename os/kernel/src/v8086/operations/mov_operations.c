@@ -17,9 +17,9 @@ int16_t perform_mov(void* source, void* dest, uint8_t width) {
             *((uint32_t *) dest) = *((uint32_t *) source);
             break;
         default:
-            return BAD_WIDTH;
+            return V8086_BAD_WIDTH;
     }
-    return OK;
+    return V8086_OK;
 }
 
 int16_t perform_mov_rm(v8086* machine, uint8_t opcode)
@@ -32,8 +32,8 @@ int16_t perform_mov_rm(v8086* machine, uint8_t opcode)
         width = machine->internal_state.operand_32_bit ? 32 : 16;
     void* source = get_variable_length_register(machine, get_reg(mod_rm), width);
     void* dest = get_memory_from_mode(machine, mod_rm, width);
-    if(source == NULL) return UNDEFINED_REGISTER;
-    if(dest == NULL) return UNABLE_GET_MEMORY;
+    if(source == NULL) return V8086_UNDEFINED_REGISTER;
+    if(dest == NULL) return V8086_UNABLE_GET_MEMORY;
     switch (opcode)
     {
         case 0x88:
@@ -43,7 +43,7 @@ int16_t perform_mov_rm(v8086* machine, uint8_t opcode)
         case 0x8b:
             return perform_mov(dest, source, width);
         default:
-            return UNKNOWN_ERROR;
+            return V8086_UNKNOWN_ERROR;
     }
 }
 
@@ -55,15 +55,15 @@ int16_t perform_movzx_variable_length(void* source, void* dest, uint8_t source_w
             *((uint16_t *) dest) = *((uint8_t *) source);
         else if(dest_width == 32)
             *((uint32_t *) dest) = *((uint8_t *) source);
-        else return BAD_WIDTH;
+        else return V8086_BAD_WIDTH;
     }
     else if(source_width == 16)
     {
         if(dest_width == 32)
             *((uint32_t *) dest) = *((uint16_t *) source);
-        else return BAD_WIDTH;
-    } else return BAD_WIDTH;
-    return OK;
+        else return V8086_BAD_WIDTH;
+    } else return V8086_BAD_WIDTH;
+    return V8086_OK;
 }
 
 int16_t perform_movsx_variable_length(void* source, void* dest, uint8_t source_width, uint8_t dest_width)
@@ -74,15 +74,15 @@ int16_t perform_movsx_variable_length(void* source, void* dest, uint8_t source_w
             *((int16_t *) dest) = *((int8_t *) source);
         else if(dest_width == 32)
             *((int32_t *) dest) = *((int8_t *) source);
-        else return BAD_WIDTH;
+        else return V8086_BAD_WIDTH;
     }
     else if(source_width == 16)
     {
         if(dest_width == 32)
             *((int32_t *) dest) = *((int16_t *) source);
-        else return BAD_WIDTH;
-    } else return BAD_WIDTH;
-    return OK;
+        else return V8086_BAD_WIDTH;
+    } else return V8086_BAD_WIDTH;
+    return V8086_OK;
 }
 
 int16_t perform_movzx(v8086* machine, uint8_t opcode)
@@ -104,7 +104,7 @@ int16_t perform_movzx(v8086* machine, uint8_t opcode)
         void* source = get_memory_from_mode(machine, mod_rm, 16);
         return perform_movzx_variable_length(source, dest, 16, width);
     }
-    else return UNKNOWN_ERROR;
+    else return V8086_UNKNOWN_ERROR;
 }
 
 int16_t perform_movsx(v8086* machine, uint8_t opcode)
@@ -126,7 +126,7 @@ int16_t perform_movsx(v8086* machine, uint8_t opcode)
         void* source = get_memory_from_mode(machine, mod_rm, 16);
         return perform_movsx_variable_length(source, dest, 16, width);
     }
-    else return UNKNOWN_ERROR;
+    else return V8086_UNKNOWN_ERROR;
 }
 
 int16_t perform_mov_segment(v8086* machine, uint8_t opcode)
@@ -135,14 +135,14 @@ int16_t perform_mov_segment(v8086* machine, uint8_t opcode)
     machine->internal_state.IPOffset += 1;
     uint16_t* source = select_segment_register(machine, get_reg(mod_rm));
     uint16_t* dest = get_memory_from_mode(machine, mod_rm, 16);
-    if(source == NULL) return UNDEFINED_SEGMENT_REGISTER;
-    if(dest == NULL) return UNABLE_GET_MEMORY;
+    if(source == NULL) return V8086_UNDEFINED_SEGMENT_REGISTER;
+    if(dest == NULL) return V8086_UNABLE_GET_MEMORY;
 
     if(opcode == 0x8c)
         return perform_mov(source, dest, 16);
     else if(opcode == 0x8e)
         return perform_mov(dest, source, 16);
-    else return UNKNOWN_ERROR;
+    else return V8086_UNKNOWN_ERROR;
 }
 
 uint16_t perform_mov_gpr_imm(v8086* machine, uint8_t opcode)
@@ -150,10 +150,10 @@ uint16_t perform_mov_gpr_imm(v8086* machine, uint8_t opcode)
     uint8_t width;
     if(opcode >= 0xb0 && opcode <= 0xb7) width = 8;
     else if(opcode >= 0xb8 && opcode <= 0xbf) width = machine->internal_state.operand_32_bit ? 32 : 16;
-    else return UNKNOWN_ERROR;
+    else return V8086_UNKNOWN_ERROR;
     uint8_t reg_selector = (opcode >= 0xb8) ? (opcode - 0xb8u) & 0x7u : opcode & 0x7u;
     void* reg = get_variable_length_register(machine, reg_selector, width);
-    if(reg == NULL) return UNDEFINED_REGISTER;
+    if(reg == NULL) return V8086_UNDEFINED_REGISTER;
     void* imm = get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset), width);
     machine->internal_state.IPOffset += width / 8;
     return perform_mov(imm, reg, width);
@@ -168,7 +168,7 @@ uint16_t perform_mov_rm_imm(v8086* machine, uint8_t opcode)
         uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
         uint8_t* mem = get_memory_from_mode(machine, mod_rm, 8);
-        if(mem == NULL) return UNABLE_GET_MEMORY;
+        if(mem == NULL) return V8086_UNABLE_GET_MEMORY;
         *mem = immediate;
     }
     else
@@ -178,7 +178,7 @@ uint16_t perform_mov_rm_imm(v8086* machine, uint8_t opcode)
             uint32_t immediate = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
             machine->internal_state.IPOffset += 4;
             uint32_t* mem = get_memory_from_mode(machine, mod_rm, 32);
-            if(mem == NULL) return UNABLE_GET_MEMORY;
+            if(mem == NULL) return V8086_UNABLE_GET_MEMORY;
             *mem = immediate;
         }
         else
@@ -186,19 +186,19 @@ uint16_t perform_mov_rm_imm(v8086* machine, uint8_t opcode)
             uint16_t immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
             machine->internal_state.IPOffset += 2;
             uint16_t* mem = get_memory_from_mode(machine, mod_rm, 16);
-            if(mem == NULL) return UNABLE_GET_MEMORY;
+            if(mem == NULL) return V8086_UNABLE_GET_MEMORY;
             *mem = immediate;
         }
     }
-    return OK;
+    return V8086_OK;
 }
 
 int16_t perform_mov_moffset(v8086* machine, uint8_t opcode)
 {
     uint16_t offset = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
     machine->internal_state.IPOffset += 2;
-    uint16_t* segment = machine->internal_state.segment_reg_select == DEFAULT ? select_segment_register(machine, DS) : select_segment_register(machine, machine->internal_state.segment_reg_select);
-    if(segment == NULL) return UNDEFINED_SEGMENT_REGISTER;
+    uint16_t* segment = machine->internal_state.segment_reg_select == V8086_DEFAULT ? select_segment_register(machine, V8086_DS) : select_segment_register(machine, machine->internal_state.segment_reg_select);
+    if(segment == NULL) return V8086_UNDEFINED_SEGMENT_REGISTER;
     switch (opcode)
     {
         case 0xa0:
@@ -216,9 +216,9 @@ int16_t perform_mov_moffset(v8086* machine, uint8_t opcode)
             else write_word_to_pointer(machine->Memory, get_absolute_address(*segment, offset), machine->regs.x.ax);
             break;
         default:
-            return UNKNOWN_ERROR;
+            return V8086_UNKNOWN_ERROR;
     }
-    return OK;
+    return V8086_OK;
 }
 
 int16_t perform_lea(v8086* machine)
@@ -229,7 +229,7 @@ int16_t perform_lea(v8086* machine)
     uint16_t segment;
     uint32_t offset;
 
-    if((mod_rm >> 6u) > 3) return BAD_MOD;
+    if((mod_rm >> 6u) > 3) return V8086_BAD_MOD;
 
     int16_t r;
     if(machine->internal_state.address_32_bit)
@@ -242,16 +242,16 @@ int16_t perform_lea(v8086* machine)
     if(machine->internal_state.operand_32_bit)
     {
         uint32_t* reg = get_dword_register(machine, get_reg(mod_rm));
-        if(reg == NULL) return UNDEFINED_REGISTER;
+        if(reg == NULL) return V8086_UNDEFINED_REGISTER;
         *reg = offset;
     }
     else
     {
         uint16_t* reg = get_word_register(machine, get_reg(mod_rm));
-        if(reg == NULL) return UNDEFINED_REGISTER;
+        if(reg == NULL) return V8086_UNDEFINED_REGISTER;
         *reg = offset;
     }
-    return OK;
+    return V8086_OK;
 }
 
 int16_t convert_byte_to_word(v8086* machine)
@@ -260,7 +260,7 @@ int16_t convert_byte_to_word(v8086* machine)
         machine->regs.d.eax = ((int32_t)(machine->regs.w.ax));
     else
         machine->regs.w.ax = ((int16_t)(machine->regs.h.al));
-    return OK;
+    return V8086_OK;
 }
 
 int16_t convert_word_to_double(v8086* machine)
@@ -273,7 +273,7 @@ int16_t convert_word_to_double(v8086* machine)
         int32_t t = machine->regs.w.ax;
         machine->regs.w.dx = ((uint32_t)t >> 16u);
     }
-    return OK;
+    return V8086_OK;
 }
 
 int16_t store_flags(v8086* machine)
@@ -281,13 +281,13 @@ int16_t store_flags(v8086* machine)
     for(uint8_t i = 0; i < 8; i++)
         if(i != 1 && i != 3 && i != 5)
             bit_write(machine->regs.w.flags, 1u <<i, bit_get(machine->regs.h.ah, 1u <<i));
-    return OK;
+    return V8086_OK;
 }
 
 int16_t load_flags(v8086* machine)
 {
     machine->regs.h.ah = machine->regs.w.flags & 0xFFu;
-    return OK;
+    return V8086_OK;
 }
 
 int16_t perform_load_far_pointer(v8086* machine, segment_register_select segment_op)
@@ -297,9 +297,9 @@ int16_t perform_load_far_pointer(v8086* machine, segment_register_select segment
 
     uint16_t* segment_register;
     segment_register = select_segment_register(machine, segment_op);
-    if(segment_register == NULL) return UNDEFINED_SEGMENT_REGISTER;
+    if(segment_register == NULL) return V8086_UNDEFINED_SEGMENT_REGISTER;
     uint16_t* source = get_memory_from_mode(machine, mod_rm, 16);
-    if(source == NULL) return UNABLE_GET_MEMORY;
+    if(source == NULL) return V8086_UNABLE_GET_MEMORY;
 
     if(machine->internal_state.operand_32_bit)
     {
@@ -313,18 +313,18 @@ int16_t perform_load_far_pointer(v8086* machine, segment_register_select segment
         *dest = *source;
         *segment_register = *(source+1);
     }
-    return OK;
+    return V8086_OK;
 }
 
 int16_t perform_xlat(v8086* machine)
 {
     uint8_t tempAL = machine->regs.h.al;
     uint16_t* segment;
-    if(machine->internal_state.segment_reg_select != DEFAULT)
+    if(machine->internal_state.segment_reg_select != V8086_DEFAULT)
         segment = select_segment_register(machine, machine->internal_state.segment_reg_select);
     else
-        segment = select_segment_register(machine, DS);
-    if(segment == NULL) return UNDEFINED_SEGMENT_REGISTER;
+        segment = select_segment_register(machine, V8086_DS);
+    if(segment == NULL) return V8086_UNDEFINED_SEGMENT_REGISTER;
     machine->regs.h.al = read_byte_from_pointer(machine->Memory, get_absolute_address(*segment, machine->regs.w.bx + tempAL));
-    return OK;
+    return V8086_OK;
 }
