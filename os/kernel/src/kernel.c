@@ -35,6 +35,7 @@
 #include "terminal/terminal_manager.h"
 #include "cpu/cpuid/cpuid.h"
 #include "v8086/v8086.h"
+#include "gdb/gdb_stub.c"
 
 typedef struct _linesStruct
 {
@@ -361,11 +362,21 @@ void clear_bss()
     memset(bss_start_addr, 0, bss_length);
 }
 
+void turn_on_serial_debugging()
+{
+    serial_init(COM1_PORT, 1200, 8, 1, PARITY_NONE);
+    set_debug_traps();
+    breakpoint();
+}
+
 int kmain()
 {
     clear_bss();
 
     startup();
+
+    turn_on_serial_debugging();
+
     logger_log_info("Hello, World!");
     //startup_music_play();
     logger_log_ok("READY.");
