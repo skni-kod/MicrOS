@@ -239,13 +239,18 @@ v8086* v8086_create_machine()
 {
     v8086* machine = (v8086*) heap_kernel_alloc(sizeof(v8086), 0);
     if(machine == NULL) return NULL;
-    memset(machine, 0, sizeof(v8086));
-    machine->regs.x.flags = 0x2;
+    if(heap_kernel_verify_integrity())
+        return 1;
+    else 
+        return 0;
+    //*machine = zz;
+    //memset(machine, 0, sizeof(v8086));
+    /*machine->regs.x.flags = 0x2;
     machine->sregs.cs = 0xf000;
     machine->IP.w.ip = 0xfff0;
 	memcpy(machine->Memory, (void*)0xc0000000, 0x100000);
-    v8086_set_8086_instruction_set(machine);
-    return machine;
+    v8086_set_8086_instruction_set(machine);*/
+    //return machine;
 }
 
 int16_t v8086_call_function(v8086* machine)

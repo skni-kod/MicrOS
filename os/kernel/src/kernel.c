@@ -35,7 +35,6 @@
 #include "terminal/terminal_manager.h"
 #include "cpu/cpuid/cpuid.h"
 #include "v8086/v8086.h"
-#include "gdb/gdb_stub.c"
 
 typedef struct _linesStruct
 {
@@ -374,10 +373,9 @@ int kmain()
     clear_bss();
 
     startup();
-
-    turn_on_serial_debugging();
-
+  
     logger_log_info("Hello, World!");
+
     //startup_music_play();
     logger_log_ok("READY.");
     
@@ -387,7 +385,6 @@ int kmain()
     
     // create_terminal(&d);
     // create_terminal(&d);
-    
     uint32_t d = 0;
     for (int i = 0; i < 4; i++)
     {
@@ -402,27 +399,42 @@ int kmain()
         attach_process_to_terminal(ts[i].terminal_id, process_manager_get_process(p));
     }
     
+    
     vga_clear_screen();
+    
     switch_active_terminal(0);
-
-    //process_manager_run();
+    
+    //sprocess_manager_run();
+    
+    uint32_t eax = 0;
+    uint32_t edx = 0;
+    int16_t temp_flags;
+    __asm__ __volatile__(
+    "movl %%edx, %%eax; div %%ecx; pushfw; pop %%bx;"
+    : "=b" (temp_flags), "=a" (eax), "=d"(edx) : "d" (0x5000), "c" (0xa)
+    );
 
     v8086* v8086 = v8086_create_machine();
-    v8086_set_386_instruction_set(v8086);
+    logger_log_info("Wyszedłem z funkcji");
+    char str[100] = "";
+    itoa(v8086, str, 16);
+    vga_printstring(str);
+    /*turn_on_serial_debugging();
+    v8086_set_386_instruction_set(v8086);*/
 
     //filesystem_create_file("A:/DUMP.BIN");
     //bool dupa = filesystem_save_to_file("A:/DUMP.BIN", (char*) v8086->Memory + 0xC0000, 64*1024);
 
     //void (*ptr)() = (void*)(v8086_get_address_of_int(v8086, 0x10) + v8086->Memory);
 
-    v8086->regs.h.ah = 0x00;
-    v8086->regs.h.al = 0x13;
+    /*v8086->regs.h.ah = 0x00;
+    v8086->regs.h.al = 0x13;*/
     //int16_t status = v8086_call_int(v8086, 0x10);
     //__asm__ __volatile__(
     //"mov %%dx, %%ax; pushfw;"
     //: : "d" (v8086->regs.w.ax)
     //);
-    int16_t temp_flags;
+    /*int16_t temp_flags;
     __asm__ __volatile__(
     "movl %%edx, %%eax; div %%ecx; pushfw; pop %%bx;"
     : "=b" (temp_flags), "=a" (v8086->regs.d.eax), "=d"(v8086->regs.d.edx) : "d" (0x5000), "c" (0xa)
@@ -444,7 +456,7 @@ int kmain()
         itoa(mem, str, 16);
         vga_printstring(str);
         vga_printstring(" ");
-    }
+    }*/
     while (1);
     return 0;
 }
