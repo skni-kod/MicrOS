@@ -52,6 +52,8 @@ typedef enum _machine_status {
     V8086_RELATIVE_JMP_OVERFLOW = -14,
     V8086_BOUND_ERROR = -15,
     V8086_DIVISION_BY_ZERO = -16,
+    V8086_DIVISION_OVERFLOW = -17,
+    V8086_DEBUG_FILE_OVERFLOW = -99,
     V8086_UNKNOWN_ERROR = -69
 } machine_status;
 

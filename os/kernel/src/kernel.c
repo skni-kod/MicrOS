@@ -404,41 +404,28 @@ int kmain()
     
     switch_active_terminal(0);
     
-    //sprocess_manager_run();
-    
-    uint32_t eax = 0;
-    uint32_t edx = 0;
-    int16_t temp_flags;
-    __asm__ __volatile__(
-    "movl %%edx, %%eax; div %%ecx; pushfw; pop %%bx;"
-    : "=b" (temp_flags), "=a" (eax), "=d"(edx) : "d" (0x5000), "c" (0xa)
-    );
+    //process_manager_run();
 
     v8086* v8086 = v8086_create_machine();
-    logger_log_info("Wyszedłem z funkcji");
-    char str[100] = "";
-    itoa(v8086, str, 16);
-    vga_printstring(str);
-    /*turn_on_serial_debugging();
-    v8086_set_386_instruction_set(v8086);*/
+    v8086_set_386_instruction_set(v8086);
 
     //filesystem_create_file("A:/DUMP.BIN");
     //bool dupa = filesystem_save_to_file("A:/DUMP.BIN", (char*) v8086->Memory + 0xC0000, 64*1024);
+    if(filesystem_is_file("A:/DUMP.BIN"))
+        filesystem_delete_file("A:/DUMP.BIN");
+
+    if(filesystem_is_file("A:/CSIP.BIN")) {
+        filesystem_delete_file("A:/CSIP.BIN");
+    }
+
+    filesystem_create_file("A:/CSIP.BIN");
 
     //void (*ptr)() = (void*)(v8086_get_address_of_int(v8086, 0x10) + v8086->Memory);
 
-    /*v8086->regs.h.ah = 0x00;
-    v8086->regs.h.al = 0x13;*/
-    //int16_t status = v8086_call_int(v8086, 0x10);
-    //__asm__ __volatile__(
-    //"mov %%dx, %%ax; pushfw;"
-    //: : "d" (v8086->regs.w.ax)
-    //);
-    /*int16_t temp_flags;
-    __asm__ __volatile__(
-    "movl %%edx, %%eax; div %%ecx; pushfw; pop %%bx;"
-    : "=b" (temp_flags), "=a" (v8086->regs.d.eax), "=d"(v8086->regs.d.edx) : "d" (0x5000), "c" (0xa)
-    );
+    v8086->regs.h.ah = 0x00;
+    v8086->regs.h.al = 0x13;
+    int16_t status = v8086_call_int(v8086, 0x10);
+
     char str[100] = "";
     vga_printstring("IP: ");
     uint16_t IP = *(uint16_t*)(v8086->Memory + 0x10 * 4);
@@ -456,7 +443,7 @@ int kmain()
         itoa(mem, str, 16);
         vga_printstring(str);
         vga_printstring(" ");
-    }*/
+    }
     while (1);
     return 0;
 }

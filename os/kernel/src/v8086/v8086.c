@@ -1,6 +1,7 @@
 #include "v8086.h"
 #include "../memory/heap/heap.h"
 #include <string.h>
+#include <filesystems/filesystem.h>
 #include "../assembly/io.h"
 #include "./memory_operations.h"
 #include "./stack.h"
@@ -239,18 +240,13 @@ v8086* v8086_create_machine()
 {
     v8086* machine = (v8086*) heap_kernel_alloc(sizeof(v8086), 0);
     if(machine == NULL) return NULL;
-    if(heap_kernel_verify_integrity())
-        return 1;
-    else 
-        return 0;
-    //*machine = zz;
-    //memset(machine, 0, sizeof(v8086));
-    /*machine->regs.x.flags = 0x2;
+    memset(machine, 0, sizeof(v8086));
+    machine->regs.x.flags = 0x2;
     machine->sregs.cs = 0xf000;
     machine->IP.w.ip = 0xfff0;
 	memcpy(machine->Memory, (void*)0xc0000000, 0x100000);
-    v8086_set_8086_instruction_set(machine);*/
-    //return machine;
+    v8086_set_8086_instruction_set(machine);
+    return machine;
 }
 
 int16_t v8086_call_function(v8086* machine)
@@ -302,6 +298,14 @@ int16_t parse_and_execute_instruction(v8086* machine)
         int x = 0;
     }
     machine->internal_state.IPOffset += 1;
+    char str[5] = "";
+    itoa(machine->sregs.cs, str, 16);
+    bool s;
+    s = filesystem_append_to_file("A:/CSIP.BIN", str, 4);
+    if(!s) return V8086_DEBUG_FILE_OVERFLOW;
+    itoa(machine->IP.w.ip, str, 16);
+    s = filesystem_append_to_file("A:/CSIP.BIN", str, 4);
+    if(!s) return V8086_DEBUG_FILE_OVERFLOW;
     
     //PREFIXES
     //Segment Prefix V8086_CS DS V8086_ES SS
