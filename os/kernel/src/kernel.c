@@ -430,11 +430,14 @@ int kmain()
     vga_printstring("IP: ");
     uint16_t IP = *(uint16_t*)(v8086->Memory + 0x10 * 4);
     uint16_t CS = *(uint16_t*)(v8086->Memory + 0x10 * 4 + 2);
-    itoa(IP, str, 10);
+    itoa(status, str, 16);
+    vga_printstring(str);
+    vga_newline();
+    itoa(IP, str, 16);
     vga_printstring(str);
     vga_newline();
     vga_printstring("CS: ");
-    itoa(CS, str, 10);
+    itoa(CS, str, 16);
     vga_printstring(str);
     vga_newline();
     for(uint32_t i = CS * 16 + IP; i < (CS * 16 + IP + 16); i++)
