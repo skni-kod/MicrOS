@@ -9,6 +9,12 @@
 #include "./operations/internal_funcs.h"
 #include "./operations/arithmetic_operations.h"
 #include "./operations/opcodes.h"
+#include <stdio.h>
+#include "../debug_helpers/library/kernel_stdio.h"
+
+#ifdef DEBUG_V8086
+    #include "../drivers/serial/serial.h"
+#endif
 
 int16_t parse_and_execute_instruction(v8086* machine);
 
@@ -244,6 +250,9 @@ v8086* v8086_create_machine()
     machine->regs.x.flags = 0x2;
     machine->sregs.cs = 0xf000;
     machine->IP.w.ip = 0xfff0;
+    machine->sregs.ss = 0x0;
+    machine->regs.d.ebp = 0x7bff;
+    machine->regs.d.esp = 0x7bff;
 	memcpy(machine->Memory, (void*)0xc0000000, 0x100000);
     v8086_set_8086_instruction_set(machine);
     return machine;
@@ -289,23 +298,67 @@ int16_t parse_and_execute_instruction(v8086* machine)
 
     int16_t status = V8086_OK;
 
+    #ifdef DEBUG_V8086
+        serial_send_string(COM1_PORT, "REGS:\n");
+        char str[100] = "";
+        kernel_sprintf(str, "AL:%02X AH:%02X AX:%04X eAX:%08X\n", machine->regs.h.al, machine->regs.h.ah, machine->regs.x.ax, machine->regs.d.eax);
+        serial_send_string(COM1_PORT, str);
+        kernel_sprintf(str, "BL:%02X BH:%02X BX:%04X eBX:%08X\n", machine->regs.h.bl, machine->regs.h.bh, machine->regs.x.bx, machine->regs.d.ebx);
+        serial_send_string(COM1_PORT, str);
+        kernel_sprintf(str, "CL:%02X CH:%02X CX:%04X eCX:%08X\n", machine->regs.h.cl, machine->regs.h.ch, machine->regs.x.cx, machine->regs.d.ecx);
+        serial_send_string(COM1_PORT, str);
+        kernel_sprintf(str, "DL:%02X DH:%02X DX:%04X eDX:%08X\n", machine->regs.h.dl, machine->regs.h.dh, machine->regs.x.dx, machine->regs.d.edx);
+        serial_send_string(COM1_PORT, str);
+        kernel_sprintf(str, "DI:%04X eDI:%04X\n", machine->regs.h.di, machine->regs.d.edi);
+        serial_send_string(COM1_PORT, str);
+        kernel_sprintf(str, "SI:%04X eSI:%04X\n", machine->regs.h.si, machine->regs.d.esi);
+        serial_send_string(COM1_PORT, str);
+        kernel_sprintf(str, "FLAGS:%04X\n", machine->regs.w.flags);
+        serial_send_string(COM1_PORT, str);
+        serial_send_string(COM1_PORT, "SREGS:\n");
+        kernel_sprintf(str, "DS:%04X ES:%04X\n", machine->sregs.ds, machine->sregs.es);
+        serial_send_string(COM1_PORT, str);
+        kernel_sprintf(str, "FS:%04X GS:%04X\n", machine->sregs.fs, machine->sregs.gs);
+        serial_send_string(COM1_PORT, str);
+        serial_send_string(COM1_PORT, "STACK:\n");
+        kernel_sprintf(str, "BP:%04X eBP:%08X\n", machine->regs.h.bp, machine->regs.d.ebp);
+        serial_send_string(COM1_PORT, str);
+        kernel_sprintf(str, "SP:%04X eSP:%08X\n", machine->regs.h.sp, machine->regs.d.esp);
+        serial_send_string(COM1_PORT, str);
+        kernel_sprintf(str, "SS:%04X\n", machine->sregs.ss);
+        serial_send_string(COM1_PORT, str);
+        if((machine->regs.d.esp > 0x7bff) || (machine->sregs.ss != 0x0))
+            serial_send_string(COM1_PORT, "WEIRD STACK ADDRESS!\n");
+        else{
+            serial_send_string(COM1_PORT, "---\n");
+            for(uint32_t i=0x7bff; i <=machine->regs.d.esp; i-=2)
+            {
+                kernel_sprintf(str, "%02X %02X", read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.d.esp)), read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.d.esp - 1)));
+                serial_send_string(COM1_PORT, str);
+            }
+            serial_send_string(COM1_PORT, "---\n");
+        }
+        serial_send_string(COM1_PORT, "INSTRUCTION ADDRESS:\n");
+        kernel_sprintf(str, "CS:%04X\n IP:%04X", machine->IP.w.ip);
+        serial_send_string(COM1_PORT, str);
+    #endif
+
     //Maybe opcode, an be also prefix
     uint8_t opcode;
     decode: opcode = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
     uint32_t temp = get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset);
     uint8_t* ptr_to_opcode = get_byte_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
-    if(machine->IP.w.ip == 0x0f04u) {
-        int x = 0;
-    }
     machine->internal_state.IPOffset += 1;
-    char str[5] = "";
+    
+    
+    /*char str[5] = "";
     itoa(machine->sregs.cs, str, 16);
     bool s;
     s = filesystem_append_to_file("A:/CSIP.BIN", str, 4);
     if(!s) return V8086_DEBUG_FILE_OVERFLOW;
     itoa(machine->IP.w.ip, str, 16);
     s = filesystem_append_to_file("A:/CSIP.BIN", str, 4);
-    if(!s) return V8086_DEBUG_FILE_OVERFLOW;
+    if(!s) return V8086_DEBUG_FILE_OVERFLOW;*/
     
     //PREFIXES
     //Segment Prefix V8086_CS DS V8086_ES SS
@@ -362,5 +415,8 @@ int16_t parse_and_execute_instruction(v8086* machine)
         return V8086_UNDEFINED_OPCODE;
 
     machine->IP.w.ip += machine->internal_state.IPOffset;
+    #ifdef DEBUG_V8086
+        serial_send_string(COM1_PORT, "------------------------------------------\n");
+    #endif
     return status;
 }

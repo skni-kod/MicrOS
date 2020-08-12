@@ -414,11 +414,29 @@ int kmain()
     if(filesystem_is_file("A:/DUMP.BIN"))
         filesystem_delete_file("A:/DUMP.BIN");
 
-    if(filesystem_is_file("A:/CSIP.BIN")) {
-        filesystem_delete_file("A:/CSIP.BIN");
-    }
+    //if(filesystem_is_file("A:/SEG0x40.BIN"))
+    //    filesystem_delete_file("A:/SEG0x40.BIN");
 
-    filesystem_create_file("A:/CSIP.BIN");
+    filesystem_create_file("A:/DUMP.BIN");
+    bool dupa = filesystem_save_to_file("A:/DUMP.BIN", (char*) v8086->Memory + 0xC0000, 64*1024);
+
+    //filesystem_create_file("A:/SEG0x40.BIN");
+    //dupa = filesystem_save_to_file("A:/SEG0x40.BIN", (char*) v8086->Memory + 0x400, 64*1024); 
+
+    serial_init(COM1_PORT, 9600, 8, 1, PARITY_NONE);
+    keyboard_scan_ascii_pair kb;
+    vga_printstring("Press key to continue... (Sending Debug Informations via serial)");
+    while(!keyboard_get_key_from_buffer(&kb));
+    /*for(long long i = 0; i < 1024*1024; i++)
+    {
+        serial_send(COM1_PORT, *((char*) v8086->Memory + i));
+    }*/
+
+    //if(filesystem_is_file("A:/CSIP.BIN")) {
+    //filesystem_delete_file("A:/CSIP.BIN");
+    //}
+
+    //filesystem_create_file("A:/CSIP.BIN");
 
     //void (*ptr)() = (void*)(v8086_get_address_of_int(v8086, 0x10) + v8086->Memory);
 
