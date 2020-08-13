@@ -323,7 +323,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
         serial_send_string(COM1_PORT, "STACK:\n");
         kernel_sprintf(str, "BP:%04X eBP:%08X\n", machine->regs.h.bp, machine->regs.d.ebp);
         serial_send_string(COM1_PORT, str);
-        kernel_sprintf(str, "SP:%04X eSP:%08X\n", machine->regs.h.sp, machine->regs.d.esp);
+        kernel_sprintf(str, "SP:%04X eSP:%08X\n", machine->regs.w.sp, machine->regs.d.esp);
         serial_send_string(COM1_PORT, str);
         kernel_sprintf(str, "SS:%04X\n", machine->sregs.ss);
         serial_send_string(COM1_PORT, str);
@@ -331,15 +331,15 @@ int16_t parse_and_execute_instruction(v8086* machine)
             serial_send_string(COM1_PORT, "WEIRD STACK ADDRESS!\n");
         else{
             serial_send_string(COM1_PORT, "---\n");
-            for(uint32_t i=0x7bff; i <=machine->regs.d.esp; i-=2)
+            for(uint32_t i=0x7bff; i >= machine->regs.d.esp; i-=2)
             {
-                kernel_sprintf(str, "%02X %02X", read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.d.esp)), read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.d.esp - 1)));
+                kernel_sprintf(str, "%02X %02X\n", read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, i)), read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, i-1)));
                 serial_send_string(COM1_PORT, str);
             }
             serial_send_string(COM1_PORT, "---\n");
         }
         serial_send_string(COM1_PORT, "INSTRUCTION ADDRESS:\n");
-        kernel_sprintf(str, "CS:%04X\n IP:%04X", machine->IP.w.ip);
+        kernel_sprintf(str, "CS:%04X IP:%04X\n", machine->sregs.cs, machine->IP.w.ip);
         serial_send_string(COM1_PORT, str);
     #endif
 
