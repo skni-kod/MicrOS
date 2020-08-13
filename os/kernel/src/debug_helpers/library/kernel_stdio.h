@@ -1,7 +1,7 @@
-#ifndef STDIO_H
-#define STDIO_H
+#ifndef KERNEL_STDIO_H
+#define KERNEL_STDIO_H
 
-#include <stdio.h>
+#include "stdio.h"
 
 //! Size of the stream buffer
 #define BUFSIZ 1024 * 32
@@ -49,6 +49,10 @@ extern "C" {
 
 int kernel_setvbuf(FILE *stream, char *buffer, int mode, size_t size);
 int kernel_sprintf(char *str, const char *format, ...);
+int kernel_vfprintf(FILE *stream, const char *format, va_list arg);
+int kernel_fputc(int character, FILE *stream);
+size_t kernel_fwrite(const void *ptr, size_t size, size_t count, FILE *stream);
+int kernel_fflush(FILE *stream);
 
 FILE *__kernel_stdio_create_stream();
 
