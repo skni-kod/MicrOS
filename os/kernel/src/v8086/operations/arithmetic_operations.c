@@ -488,6 +488,8 @@ int16_t perform_test(v8086 *machine, void *source, void *dest, uint8_t width) {
     bit_write(machine->regs.d.eflags, 1u << PARITY_FLAG_BIT, (parrity) ? 1 : 0); //PARRITY FLAG
     bit_write(machine->regs.d.eflags, 1u << ZERO_FLAG_BIT, result == 0); //ZERO FLAG
     bit_write(machine->regs.d.eflags, 1u << SIGN_FLAG_BIT, result >> (width - 1u)); //SIGN FLAG
+    bit_clear(machine->regs.d.eflags, 1u << CARRY_FLAG_BIT);
+    bit_clear(machine->regs.d.eflags, 1u << OVERFLOW_FLAG_BIT);
     return V8086_OK;
 }
 

@@ -35,7 +35,7 @@ static inline uint16_t pop_word(v8086* machine)
 
 static inline uint32_t pop_dword(v8086* machine)
 {
-    uint16_t v = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.w.sp));
+    uint32_t v = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.w.sp));
     machine->regs.w.sp += 4;
     return v;
 }

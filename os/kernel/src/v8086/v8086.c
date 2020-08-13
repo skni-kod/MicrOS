@@ -309,9 +309,9 @@ int16_t parse_and_execute_instruction(v8086* machine)
         serial_send_string(COM1_PORT, str);
         kernel_sprintf(str, "DL:%02X DH:%02X DX:%04X eDX:%08X\n", machine->regs.h.dl, machine->regs.h.dh, machine->regs.x.dx, machine->regs.d.edx);
         serial_send_string(COM1_PORT, str);
-        kernel_sprintf(str, "DI:%04X eDI:%04X\n", machine->regs.h.di, machine->regs.d.edi);
+        kernel_sprintf(str, "DI:%04X eDI:%08X\n", machine->regs.h.di, machine->regs.d.edi);
         serial_send_string(COM1_PORT, str);
-        kernel_sprintf(str, "SI:%04X eSI:%04X\n", machine->regs.h.si, machine->regs.d.esi);
+        kernel_sprintf(str, "SI:%04X eSI:%08X\n", machine->regs.h.si, machine->regs.d.esi);
         serial_send_string(COM1_PORT, str);
         kernel_sprintf(str, "FLAGS:%04X\n", machine->regs.w.flags);
         serial_send_string(COM1_PORT, str);
@@ -327,16 +327,30 @@ int16_t parse_and_execute_instruction(v8086* machine)
         serial_send_string(COM1_PORT, str);
         kernel_sprintf(str, "SS:%04X\n", machine->sregs.ss);
         serial_send_string(COM1_PORT, str);
-        if((machine->regs.d.esp > 0x7bff) || (machine->sregs.ss != 0x0))
-            serial_send_string(COM1_PORT, "WEIRD STACK ADDRESS!\n");
-        else{
+        if((machine->regs.d.esp < 0x7bff) && (machine->sregs.ss == 0x0)){
             serial_send_string(COM1_PORT, "---\n");
-            for(uint32_t i=0x7bff; i >= machine->regs.d.esp; i-=2)
+            for(uint32_t i=0x7bff - 1; i >= machine->regs.d.esp; i-=1)
             {
-                kernel_sprintf(str, "%02X %02X\n", read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, i)), read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, i-1)));
+                kernel_sprintf(str, "%02X ",read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, i)));
                 serial_send_string(COM1_PORT, str);
+                if(!((0x7bff - i) % 2)) serial_send_string(COM1_PORT, "\n");
+                else if(i - 1 < machine->regs.d.esp) serial_send_string(COM1_PORT, "\n");
             }
             serial_send_string(COM1_PORT, "---\n");
+        }
+        else if((machine->regs.d.esp < 0x200) && (machine->sregs.ss == 0xeb62)){
+            serial_send_string(COM1_PORT, "---\n");
+            for(uint32_t i=0x200 - 1; i >= machine->regs.d.esp; i-=1)
+            {
+                kernel_sprintf(str, "%02X ",read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, i)));
+                serial_send_string(COM1_PORT, str);
+                if(!((0x200 - i) % 2)) serial_send_string(COM1_PORT, "\n");
+                else if(i - 1 < machine->regs.d.esp) serial_send_string(COM1_PORT, "\n");
+            }
+            serial_send_string(COM1_PORT, "---\n");
+        }
+        else{
+            serial_send_string(COM1_PORT, "WEIRD STACK ADDRESS!\n");
         }
         serial_send_string(COM1_PORT, "INSTRUCTION ADDRESS:\n");
         kernel_sprintf(str, "CS:%04X IP:%04X\n", machine->sregs.cs, machine->IP.w.ip);

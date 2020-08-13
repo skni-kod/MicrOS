@@ -70,7 +70,7 @@ struct DWORDREGS {
   uint32_t eax;
   uint16_t eflags;
   uint32_t esp;
-};
+} __attribute__((packed));
 
 struct WORDREGS {
   uint16_t di, _upper_di;
@@ -83,7 +83,7 @@ struct WORDREGS {
   uint16_t ax, _upper_ax;
   uint16_t flags;
   uint16_t sp, _upper_sp;
-};
+} __attribute__((packed));
 
 struct BYTEREGS {
   uint16_t di, _upper_di;
@@ -104,7 +104,7 @@ struct BYTEREGS {
   uint16_t _upper_ax;
   uint16_t flags;
   uint16_t sp, _upper_sp;
-};
+} __attribute__((packed));
 
 union REGS {		/* Compatible with DPMI structure, except cflag */
   struct DWORDREGS d;
@@ -124,12 +124,12 @@ struct SREGS {
 
 struct DWORDIP{
     uint32_t eip;
-};
+} __attribute__((packed));
 
 struct WORDIP {
     uint16_t ip;
     uint16_t _upper_ip;
-};
+} __attribute__((packed));
 
 union IP {
     struct DWORDIP d;
