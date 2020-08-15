@@ -165,9 +165,9 @@ uint16_t perform_mov_rm_imm(v8086* machine, uint8_t opcode)
     machine->internal_state.IPOffset += 1;
     if(opcode == 0xc6)
     {
+        uint8_t* mem = get_memory_from_mode(machine, mod_rm, 8);
         uint8_t immediate = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
-        uint8_t* mem = get_memory_from_mode(machine, mod_rm, 8);
         if(mem == NULL) return V8086_UNABLE_GET_MEMORY;
         *mem = immediate;
     }
@@ -175,17 +175,17 @@ uint16_t perform_mov_rm_imm(v8086* machine, uint8_t opcode)
     {
         if(machine->internal_state.operand_32_bit)
         {
+            uint32_t* mem = get_memory_from_mode(machine, mod_rm, 32);
             uint32_t immediate = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
             machine->internal_state.IPOffset += 4;
-            uint32_t* mem = get_memory_from_mode(machine, mod_rm, 32);
             if(mem == NULL) return V8086_UNABLE_GET_MEMORY;
             *mem = immediate;
         }
         else
         {
+            uint16_t* mem = get_memory_from_mode(machine, mod_rm, 16);
             uint16_t immediate = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
             machine->internal_state.IPOffset += 2;
-            uint16_t* mem = get_memory_from_mode(machine, mod_rm, 16);
             if(mem == NULL) return V8086_UNABLE_GET_MEMORY;
             *mem = immediate;
         }
