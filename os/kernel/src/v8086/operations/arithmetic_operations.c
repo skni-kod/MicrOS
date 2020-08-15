@@ -75,27 +75,6 @@ int16_t perform_and(v8086 *machine, void *dest, void *source, uint8_t width, uin
     bit_write(machine->regs.w.flags, 1u << ZERO_FLAG_BIT, bit_get(temp_flags, 1u << ZERO_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u << PARITY_FLAG_BIT, bit_get(temp_flags, 1u << PARITY_FLAG_BIT) != 0);
     return V8086_OK;
-    
-    /*uint32_t result = 0;
-    if (width == 8)
-        result = *((uint8_t *) dest) & *((uint8_t *) source);
-    else if (width == 16)
-        result = *((uint16_t *) dest) & *((uint16_t *) source);
-    else if (width == 32)
-        result = *((uint32_t *) dest) & *((uint32_t *) source);
-    else return V8086_BAD_WIDTH;
-    bit_write(machine->regs.d.eflags, 1u << CARRY_FLAG_BIT, 0); // CARRY FLAG
-    bit_write(machine->regs.d.eflags, 1u << OVERFLOW_FLAG_BIT, 0); // OVERFLOW FLAG
-    uint8_t parrity = result & 1u;
-    for (uint8_t i = 1; i < 8; i++) parrity ^= (result >> i) & 1u;
-    bit_write(machine->regs.d.eflags, 1u << PARITY_FLAG_BIT, (parrity) ? 1 : 0); //PARRITY FLAG
-    bit_write(machine->regs.d.eflags, 1u << ZERO_FLAG_BIT, result == 0); //ZERO FLAG
-    bit_write(machine->regs.d.eflags, 1u << SIGN_FLAG_BIT, (result >> (width - 1u)) & 1u); //SIGN FLAG
-    //AUX MARKED AS UNDEFINED IN INTEL DOCUMENTATION
-    if (width == 8) *((uint8_t *) dest) = result & 0xFFu;
-    else if (width == 16) *((uint16_t *) dest) = result & 0xFFFFu;
-    else if (width == 32) *((uint32_t *) dest) = result & 0xFFFFFFFF;
-    return V8086_OK;*/
 }
 
 int16_t perform_xor(v8086 *machine, void *dest, void *source, uint8_t width, uint32_t carry) {
