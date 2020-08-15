@@ -8,34 +8,20 @@
 #include "internal_funcs.h"
 
 int16_t perform_adding(v8086 *machine, void *dest, void *source, uint8_t width, uint32_t carry) {
-    uint64_t result = 0;
-    uint32_t dest_before; //for overflow flag checking
-    uint32_t source_before;
-    if (width == 8) {
-        dest_before = *((uint8_t *) dest);
-        source_before = *((uint8_t *) source);
-    } else if (width == 16) {
-        dest_before = *((uint16_t *) dest);
-        source_before = *((uint16_t *) source);
-    } else if (width == 32) {
-        dest_before = *((uint32_t *) dest);
-        source_before = *((uint32_t *) source);
-    } else return V8086_BAD_WIDTH;
-    result = dest_before + source_before + carry;
-    bit_write(machine->regs.d.eflags, 1u << CARRY_FLAG_BIT, (result >> width) ? 1 : 0); // CARRY FLAG
-    uint8_t parrity = result & 1u;
-    for (uint8_t i = 1; i < 8; i++) parrity ^= (result >> i) & 1u;
-    bit_write(machine->regs.d.eflags, 1u << PARITY_FLAG_BIT, (parrity) ? 1 : 0); //PARRITY FLAG
-    bit_write(machine->regs.d.eflags, 1u << AUX_CARRY_FLAG_BIT,
-              (((dest_before & 0xfu) + (source_before & 0xfu)) >> 4u) ? 1 : 0); //AUX CARRY FLAG
-    bit_write(machine->regs.d.eflags, 1u << ZERO_FLAG_BIT, result == 0); //ZERO FLAG
-    bit_write(machine->regs.d.eflags, 1u << SIGN_FLAG_BIT, (result >> (width - 1u)) & 1u); //SIGN FLAG
-    bit_write(machine->regs.d.eflags, 1u << OVERFLOW_FLAG_BIT,
-              ((result >> (width - 1u)) != (dest_before >> (width - 1u)))); //OVERFLOW FLAG
-    if (width == 8) *((uint8_t *) dest) = result & 0xFFu;
-    else if (width == 16) *((uint16_t *) dest) = result & 0xFFFFu;
-    else if (width == 32) *((uint32_t *) dest) = result & 0xFFFFFFFF;
+    uint16_t temp_flags = 0;
+    if (width == 8)
+        __asm__ __volatile__("clc; test %%edx, %%edx; jz calculate%=; stc; calculate%=:adcb %%cl, %%al; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint8_t *) dest)) : "a" (*((uint8_t *) dest)), "c" (*((uint8_t *) source)), "d" (carry));
+    else if (width == 16)
+        __asm__ __volatile__("clc; test %%edx, %%edx; jz calculate%=; stc; calculate%=:adcw %%cx, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t *) dest)) : "a" (*((uint16_t *) dest)), "c" (*((uint16_t *) source)), "d" (carry));
+    else if (width == 32)
+        __asm__ __volatile__("clc; test %%edx, %%edx; jz calculate%=; stc; calculate%=:adcl %%ecx, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t *) dest)) : "a" (*((uint32_t *) dest)), "c" (*((uint32_t *) source)), "d" (carry));
     else return V8086_BAD_WIDTH;
+    bit_write(machine->regs.w.flags, 1u << OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1u << OVERFLOW_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1u << CARRY_FLAG_BIT, bit_get(temp_flags, 1u << CARRY_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1u << SIGN_FLAG_BIT, bit_get(temp_flags, 1u << SIGN_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1u << ZERO_FLAG_BIT, bit_get(temp_flags, 1u << ZERO_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1u << PARITY_FLAG_BIT, bit_get(temp_flags, 1u << PARITY_FLAG_BIT) != 0);
+    bit_write(machine->regs.w.flags, 1u << AUX_CARRY_FLAG_BIT, bit_get(temp_flags, 1u << AUX_CARRY_FLAG_BIT) != 0);
     return V8086_OK;
 }
 
