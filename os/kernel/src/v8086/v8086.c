@@ -333,7 +333,10 @@ int16_t parse_and_execute_instruction(v8086* machine)
             {
                 kernel_sprintf(str, "%02X ",read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, i)));
                 serial_send_string(COM1_PORT, str);
-                if(!((0x7bff - i) % 2)) serial_send_string(COM1_PORT, "\n");
+                if(!((0x7bff - i) % 2)){
+                    kernel_sprintf(str, ":%02X\n", i);
+                    serial_send_string(COM1_PORT, str);
+                }
                 else if(i - 1 < machine->regs.d.esp) serial_send_string(COM1_PORT, "\n");
             }
             serial_send_string(COM1_PORT, "---\n");
@@ -344,7 +347,10 @@ int16_t parse_and_execute_instruction(v8086* machine)
             {
                 kernel_sprintf(str, "%02X ",read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, i)));
                 serial_send_string(COM1_PORT, str);
-                if(!((0x200 - i) % 2)) serial_send_string(COM1_PORT, "\n");
+                if(!((0x200 - i) % 2)){
+                    kernel_sprintf(str, ":%02X\n", i);
+                    serial_send_string(COM1_PORT, str);
+                }
                 else if(i - 1 < machine->regs.d.esp) serial_send_string(COM1_PORT, "\n");
             }
             serial_send_string(COM1_PORT, "---\n");
