@@ -90,8 +90,8 @@ void v8086_set_8086_instruction_set(v8086* machine)
     //NOT DEFINED IN 8086 processor
     ASSIGN_NULL(0xc0u);
     ASSIGN_NULL(0xc1u);
-    ASSIGN_OPCODE(0xc2u, retn);
-    ASSIGN_OPCODE(0xc3u, retn_imm);
+    ASSIGN_OPCODE(0xc2u, retn_imm);
+    ASSIGN_OPCODE(0xc3u, retn);
     ASSIGN_OPCODE(0xc4u, les);
     ASSIGN_OPCODE(0xc5u, lds);
     GROUP_OF_OPCODES(0xc6u, 0xc7u, mov_rm_imm);
