@@ -448,7 +448,7 @@ OPCODE_PROTO(outb_dx)
 
 OPCODE_PROTO(outw_dx)
 {
-    return perform_in_dx(machine, machine->internal_state.operand_32_bit ? 32 : 16);
+    return perform_out_dx(machine, machine->internal_state.operand_32_bit ? 32 : 16);
 }
 
 OPCODE_PROTO(set_flag)

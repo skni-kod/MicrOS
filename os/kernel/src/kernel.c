@@ -24,6 +24,8 @@
 #include "cpu/tss/tss.h"
 #include "drivers/dal/videocard/videocard.h"
 #include "drivers/vga/genericvga.h"
+#include "drivers/vga/modes/mode_13h/mode_13h.h"
+#include "drivers/vga/vga_gmode.h"
 #include "cpu/dma/dma.h"
 #include "drivers/harddisk/harddisk.h"
 #include "drivers/harddisk/ata/harddisk_ata.h"
@@ -35,6 +37,10 @@
 #include "terminal/terminal_manager.h"
 #include "cpu/cpuid/cpuid.h"
 #include "v8086/v8086.h"
+
+#ifdef TEST_V8086
+#include "v8086/tests/tests.h"
+#endif
 
 typedef struct _linesStruct
 {
@@ -406,8 +412,8 @@ int kmain()
     
     //process_manager_run();
 
-    v8086* v8086 = v8086_create_machine();
-    v8086_set_386_instruction_set(v8086);
+    union test_v8086* v8086 = v8086_create_machine();
+    v8086_set_386_instruction_set(&(v8086->machine));
 
     //filesystem_create_file("A:/DUMP.BIN");
     //bool dupa = filesystem_save_to_file("A:/DUMP.BIN", (char*) v8086->Memory + 0xC0000, 64*1024);
@@ -418,14 +424,14 @@ int kmain()
     //    filesystem_delete_file("A:/SEG0x40.BIN");
 
     filesystem_create_file("A:/DUMP.BIN");
-    bool dupa = filesystem_save_to_file("A:/DUMP.BIN", (char*) v8086->Memory + 0xC0000, 64*1024);
+    bool dupa = filesystem_save_to_file("A:/DUMP.BIN", (char*) v8086->machine.Memory + 0xC0000, 64*1024);
 
     //filesystem_create_file("A:/SEG0x40.BIN");
     //dupa = filesystem_save_to_file("A:/SEG0x40.BIN", (char*) v8086->Memory + 0x400, 64*1024); 
 
-    serial_init(COM1_PORT, 9600, 8, 1, PARITY_NONE);
+    serial_init(COM1_PORT, 921600, 8, 1, PARITY_NONE);
     keyboard_scan_ascii_pair kb;
-    vga_printstring("Press key to continue... (Sending Debug Informations via serial)");
+    vga_printstring("Press key to continue... (Sending Debug Informations via serial)\n");
     while(!keyboard_get_key_from_buffer(&kb));
     /*for(long long i = 0; i < 1024*1024; i++)
     {
@@ -440,16 +446,25 @@ int kmain()
 
     //void (*ptr)() = (void*)(v8086_get_address_of_int(v8086, 0x10) + v8086->Memory);
 
-    v8086->regs.h.ah = 0x00;
-    v8086->regs.h.al = 0x13;
+    #ifdef TEST_V8086
+    test_mod_16();
+    #endif
+
+    v8086->machine.regs.h.ah = 0x00;
+    v8086->machine.regs.h.al = 0x13;
     int16_t status = v8086_call_int(v8086, 0x10);
 
-    char str[100] = "";
-    vga_printstring("IP: ");
-    uint16_t IP = *(uint16_t*)(v8086->Memory + 0x10 * 4);
-    uint16_t CS = *(uint16_t*)(v8086->Memory + 0x10 * 4 + 2);
+    //mode13h_set_mode();
+    mode13h_clear_screen();
+    drawLenaIn13H();
+    
+    /*char str[100] = "";
     itoa(status, str, 16);
     vga_printstring(str);
+    vga_newline();
+    vga_printstring("IP: ");
+    uint16_t IP = *(uint16_t*)(v8086->machine.Memory + 0x10 * 4);
+    uint16_t CS = *(uint16_t*)(v8086->machine.Memory + 0x10 * 4 + 2);
     vga_newline();
     itoa(IP, str, 16);
     vga_printstring(str);
@@ -460,11 +475,13 @@ int kmain()
     vga_newline();
     for(uint32_t i = CS * 16 + IP; i < (CS * 16 + IP + 16); i++)
     {
-        uint8_t mem = v8086->Memory[i];
+        uint8_t mem = v8086->machine.Memory[i];
         itoa(mem, str, 16);
         vga_printstring(str);
         vga_printstring(" ");
-    }
+    }*/
+
+    
     while (1);
     return 0;
 }

@@ -18,7 +18,8 @@
 #define DIRECTION_FLAG_BIT 10u
 #define OVERFLOW_FLAG_BIT 11u
 
-#define DEBUG_V8086
+//#define DEBUG_V8086
+//#define TEST_V8086
 
 typedef enum _segment_register_select {
   V8086_ES, V8086_CS, V8086_SS, V8086_DS, V8086_FS, V8086_GS, V8086_DEFAULT
@@ -120,7 +121,7 @@ struct SREGS {
   uint16_t gs;
   uint16_t cs;
   uint16_t ss;
-};
+} __attribute__((packed));
 
 struct DWORDIP{
     uint32_t eip;
@@ -143,7 +144,7 @@ typedef struct _is{
   segment_register_select segment_reg_select;
   repeat_prefix rep_prefix;
   uint16_t IPOffset;
-} _internal_state;
+}__attribute__((packed)) _internal_state;
 
 typedef struct _v8086
 {
@@ -156,12 +157,20 @@ typedef struct _v8086
     int16_t (*operations[256]) (struct _v8086*, uint8_t);
     int16_t (*operations_0fh[256]) (struct _v8086*, uint8_t);
 
-} v8086;
+}__attribute__((packed)) v8086;
 
 
-v8086* v8086_create_machine();
-int16_t v8086_call_int(v8086* machine, int16_t num);
+union test_v8086
+{
+  struct _v8086 machine;
+  uint8_t bytes[sizeof(struct _v8086)];
+};
+
+
+union test_v8086* v8086_create_machine();
+void v8086_destroy_machine(union test_v8086* machine);
+int16_t v8086_call_int(union test_v8086* machine, int16_t num);
 void v8086_set_8086_instruction_set(v8086* machine);
 void v8086_set_386_instruction_set(v8086* machine);
-uint32_t v8086_get_address_of_int(v8086* machine, int16_t num);
+uint32_t v8086_get_address_of_int(union test_v8086* machine, int16_t num);
 #endif
