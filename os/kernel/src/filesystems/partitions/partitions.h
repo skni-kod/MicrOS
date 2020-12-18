@@ -10,6 +10,7 @@
 #include "drivers/harddisk/harddisk.h"
 #include "filesystems/fat/fat_header.h"
 #include "hdd_wrapper/hdd_wrapper.h"
+#include "partition_info.h"
 
 void partitions_init();
 void partitions_init_floppy();
@@ -19,5 +20,6 @@ partition *partitions_get_by_symbol(char symbol);
 int partitions_get_count();
 void partitions_get_symbols(char *symbol_array);
 filesystem_type partitions_get_filesystem_type(char *name);
+void partitions_get_info(char symbol, partition_info *info);
 
 #endif

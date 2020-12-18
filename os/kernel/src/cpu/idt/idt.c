@@ -224,7 +224,7 @@ void idt_unset(uint8_t index)
     idt_entries[index].present = 0;
 }
 
-void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)(interrupt_state *state))
+void idt_attach_interrupt_handler(uint8_t interrupt_number, bool (*handler)(interrupt_state *state))
 {
     for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
     {
@@ -237,7 +237,7 @@ void idt_attach_interrupt_handler(uint8_t interrupt_number, void (*handler)(inte
     }
 }
 
-void idt_detach_interrupt_handler(uint8_t interrupt_number, void (*handler)(interrupt_state *state))
+void idt_detach_interrupt_handler(uint8_t interrupt_number, bool (*handler)(interrupt_state *state))
 {
     for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
     {
@@ -292,7 +292,10 @@ void idt_global_int_handler(interrupt_state *state)
     {
         if (interrupt_handlers[i].interrupt_number == state->interrupt_number && interrupt_handlers[i].handler != 0)
         {
-            interrupt_handlers[i].handler(state);
+            if (interrupt_handlers[i].handler(state))
+            {
+                break;
+            }
         }
     }
 
@@ -305,7 +308,8 @@ void idt_global_int_handler(interrupt_state *state)
 
 void idt_global_exc_handler(exception_state *state)
 {
-    if (state->cs == 27)
+    bool allow_exception_in_kernel = state->interrupt_number == 1 || state->interrupt_number == 3;
+    if (allow_exception_in_kernel || state->cs == 27)
     {
         for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
         {
@@ -315,7 +319,12 @@ void idt_global_exc_handler(exception_state *state)
             }
         }
     }
-
+    
+    if (allow_exception_in_kernel)
+    {
+        return;
+    }
+    
     for (int i = 0; i < 32; i++)
     {
         if (exceptions[i].interrupt_number == state->interrupt_number)
@@ -342,7 +351,8 @@ void idt_global_exc_handler(exception_state *state)
     }
 }
 
-void idt_syscalls_interrupt_handler(interrupt_state *state)
+bool idt_syscalls_interrupt_handler(interrupt_state *state)
 {
     syscalls_manager_handler(state);
+    return false;
 }

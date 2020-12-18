@@ -1,0 +1,8 @@
+#ifndef CPUID_DEFINES_H
+#define CPUID_DEFINES_H
+
+#define CPUID_GETVENDORSTRING                           0
+#define CPUID_GETFEATURES_AND_ADDITIONAL_INFORMATION    1
+#define CPUID_GETTHREAD_CORE_CACHE_TOPOLOGY             4
+
+#endif

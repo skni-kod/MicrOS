@@ -9,15 +9,18 @@ void partitions_init()
     partitions_init_harddisks(HARDDISK_ATA_MASTER, HARDDISK_ATA_PRIMARY_BUS);
     partitions_init_harddisks(HARDDISK_ATA_SLAVE, HARDDISK_ATA_PRIMARY_BUS);
     partitions_init_harddisks(HARDDISK_ATA_MASTER, HARDDISK_ATA_SECONDARY_BUS);
-    partitions_init_harddisks(HARDDISK_ATA_SLAVE, HARDDISK_ATA_SECONDARY_BUS);
+    // partitions_init_harddisks(HARDDISK_ATA_SLAVE, HARDDISK_ATA_SECONDARY_BUS);
 }
 
 void partitions_init_floppy()
 {
-    if(fdc_is_present())
+    // NOTE: it doesn't work well, so assume for now that floppy controller is always present
+    // if(fdc_is_present())
     {
         floppy_init(18);
-        if(floppy_is_inserted())
+        
+        // NOTE: it doesn't work well, so assume for now that floppy is always inserted
+        // if(floppy_is_inserted())
         {
             partition *floppy_partition = (partition*)heap_kernel_alloc(sizeof(partition), 0);
             floppy_partition->type = filesystem_fat12;
@@ -30,10 +33,17 @@ void partitions_init_floppy()
             floppy_partition->first_sector = 0;
             
             memcpy(floppy_partition->header, floppy_do_operation_on_sector(0, 0, 1, true), 512);
-            kvector_add(&partitions, floppy_partition);
-            
             fat_generic_set_current_partition(floppy_partition);
-            fat_init();
+            
+            if (fat_init())
+            {
+                kvector_add(&partitions, floppy_partition);
+            }
+            else
+            {
+                heap_kernel_dealloc(floppy_partition->header);
+                heap_kernel_dealloc(floppy_partition);
+            }
         }
     }
 }
@@ -67,10 +77,16 @@ void partitions_init_harddisks(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_
                 hdd_partition->read_from_device = hdd_wrapper_read_sector;
                 hdd_partition->first_sector = fat_header_sector;
                 
-                kvector_add(&partitions, hdd_partition);
-                
                 fat_generic_set_current_partition(hdd_partition);
-                fat_init();
+                if (fat_init())
+                {
+                    kvector_add(&partitions, hdd_partition);
+                }
+                else
+                {
+                    heap_kernel_dealloc(hdd_partition->header);
+                    heap_kernel_dealloc(hdd_partition);
+                }
             }
         }
     }
@@ -131,4 +147,41 @@ filesystem_type partitions_get_filesystem_type(char *name)
     }
     
     return 0;
+}
+
+void partitions_get_info(char symbol, partition_info *info)
+{
+    partition *partition = partitions_get_by_symbol(symbol);
+    if (partition != 0)
+    {
+        switch (partition->device_type)
+        {
+            case device_type_floppy:
+            {
+                info->device_type = 0;
+                
+                char floppy_name[] = "SHUKA FLOPPY";
+                memcpy(info->device_name, floppy_name, sizeof(floppy_name));
+                
+                break;
+            }
+            
+            case device_type_harddisk:
+            {
+                int type = hdd_wrapper_get_type_by_device_number(partition->device_number);
+                int bus = hdd_wrapper_get_bus_by_device_number(partition->device_number);
+                
+                info->device_type = 1 + partition->device_number;
+                harddisk_get_disk_model_number_terminated(type, bus, info->device_name);
+                
+                break;
+            }
+            
+            case device_type_unknown:
+            {
+                // We have unsupported disk attached
+                break;
+            }
+        }
+    }
 }

@@ -121,6 +121,26 @@ FILE *stderr;
 extern "C" {
 #endif
 
+//! Remove file.
+/*
+    Deletes the file whose name is specified in \p filename.    
+    \param filename C string containing the name of the file to be deleted.<br>
+    Attention: MicrOS requires full file path. Use \p main parameter with path if you want remove file from program folder.
+    \return If the file is successfully deleted, a zero value is returned. On failure, a nonzero value is returned.
+*/
+int remove(const char *filename);
+
+//! Rename file.
+/*
+    Changes the name of the file or directory specified by \p oldname to \p newname.    
+    \param oldname C string containing the name of an existing file to be renamed and/or moved.<br>
+    Attention: MicrOS requires full file path. Use \p main parameter with path if you want work on file from program folder.
+    \param newname C string containing the name of an existing file to be renamed and/or moved.<br>
+    Attention: MicrOS requires here only new filename without leading path.
+    \return If the file is successfully renamed, a zero value is returned. On failure, a nonzero value is returned.
+*/
+int rename(const char *oldname, const char *newname);
+
 //! Open file.
 /*!
     Opens the file whose name is specified in the parameter filename and associates it with a stream that can be identified in future operations by the FILE pointer returned. The returned stream is fully buffered by default. 
@@ -355,6 +375,14 @@ int feof(FILE *stream);
     \return A non-zero value is returned in the case that the error indicator associated with the stream is set. Otherwise, zero is returned.
 */
 int ferror(FILE *stream);
+
+//! Print error message.
+/*
+    Interprets the value of \p errno as an error message, and prints it to \p stderr
+    (the standard error output stream, usually the console), optionally preceding it with the custom message specified in \p str.
+    \param str C string containing a custom message to be printed before the error message itself.
+*/
+void perror(const char *str);
 
 //! Write formatted data to string
 /*!
