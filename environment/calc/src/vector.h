@@ -6,8 +6,8 @@
 #include <stdio.h>
 #include <math.h>
 
-#ifndef ARRAY_H
-#define ARRAY_H
+#ifndef VECTOR_H
+#define VECTOR_H
 
 typedef enum type_
 {
