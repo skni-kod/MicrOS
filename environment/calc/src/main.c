@@ -1,18 +1,16 @@
-#define _CRT_SECURE_NO_WARNINGS
-#define _USE_MATH_DEFINES
-#include "array.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+#include "vector.h"
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
-	Array* main = initArray();
-	int x = 343;
-	Object* obj = initObject(&x, Int);
-	convertToDouble(obj);
-	printObject(obj);
+	Vector *vec = VectorInit();
+	Object *tmp = ObjectInit("HelloWord!", String);
 
+	StringAppend(tmp, " and happy new Year!");
+	VectorAppend(vec, tmp, true);
+	VectorAppend(vec, ObjectInit("Hello my Friend!", String), false);
+	VectorPrint(vec);
+
+	VectorDestroy(vec);
+	ObjectDelete(tmp);
 	return 0;
 }

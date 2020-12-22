@@ -1,15 +1,20 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define _USE_MATH_DEFINES
-#include "../array.h"
+#include "../vector.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 
-/* Returns length of pointed data */
-size_t getDataSize(const void* data, Type type) {
+/* Returns size of pointed data */
+size_t ObjectDataSize(const void *data, Type type)
+{
 
-    switch (type) {
+    if (data == NULL)
+        return 0;
+
+    switch (type)
+    {
     case String:
         return (sizeof(char) * (strlen(data) + 1));
     case Int:
@@ -17,8 +22,8 @@ size_t getDataSize(const void* data, Type type) {
     case Double:
         return (sizeof(double));
     case Pointer:
-        return (sizeof(void*));
+        return (sizeof(void *));
     default:
-        return -1;
+        return 0;
     }
 }
