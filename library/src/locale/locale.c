@@ -1,5 +1,8 @@
 #include "../locale.h"
 
+lconv *locale_state;
+char *locale_name;
+
 void __locale_delete_char_field_value(char *field)
 {
     if (field != NULL)
