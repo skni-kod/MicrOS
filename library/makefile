@@ -1,5 +1,5 @@
-GCC := /opt/cross/bin/i386-elf-gcc
-AR := /opt/cross/bin/i386-elf-ar
+GCC := /opt/cross/bin/i686-elf-gcc
+AR := /opt/cross/bin/i686-elf-ar
 NASM := "../tools/nasm"
 
 SRC_DIR := src

@@ -1,4 +1,4 @@
-GCC := /opt/cross/bin/i386-elf-gcc
+GCC := /opt/cross/bin/i686-elf-gcc
 NASM := "../../Tools/nasm"
 
 SRC_DIR := src
