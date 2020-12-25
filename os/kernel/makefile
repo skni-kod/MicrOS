@@ -1,5 +1,5 @@
-GCC := /opt/cross/bin/i686-elf-gcc
-OBJCOPY := /opt/cross/i686-elf/bin/objcopy
+GCC := /opt/cross/bin/i386-elf-gcc
+OBJCOPY := /opt/cross/i386-elf/bin/objcopy
 NASM := "../../tools/nasm"
 
 SRC_DIR := src
