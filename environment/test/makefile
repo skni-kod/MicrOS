@@ -1,36 +1,27 @@
 GCC := /opt/cross/bin/i386-elf-gcc
-AR := /opt/cross/bin/i386-elf-ar
-NASM := "../tools/nasm"
 
 SRC_DIR := src
 OBJ_DIR := obj
 BIN_DIR := bin
-OUTPUT_FILE := $(BIN_DIR)/libc.a
+OUTPUT_FILE := $(BIN_DIR)/test.elf
 
 C_SOURCES := $(shell find $(SRC_DIR) -name "*.c")
 C_OBJECTS := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(C_SOURCES))
 
 ASM_SOUCES := $(shell find $(SRC_DIR) -name "*.asm")
-ASM_OBJECTS := $(patsubst $(SRC_DIR)/%.asm,$(OBJ_DIR)/%.o,$(ASM_SOUCES))
+ASM_OBJECTS := $(ASM_SOUCES:%.asm=$(OBJ_DIR)/%.o)
 
 DEPS := $(C_OBJECTS:.o=.d)
 
-GCC_COMPILE_FLAGS := -ffreestanding -Wall -Wextra -Wno-unused-parameter -Wno-packed-bitfield-compat -Wno-implicit-fallthrough
-
-# ifeq ($(MODE),release)
-# GCC_COMPILE_FLAGS += -O2
-# GCC_LINK_FLAGS += -s -DNDEBUG
-# else
-# GCC_COMPILE_FLAGS += -O0 -ggdb3
-# endif
+GCC_COMPILE_FLAGS := -I../../library/src -ffreestanding -Wall -Wextra -Wno-unused-parameter -Wno-packed-bitfield-compat
+GCC_LINK_FLAGS := -L../../library/bin -lc -lgcc -nostdlib
 
 GCC_COMPILE_FLAGS += -O0 -ggdb3
-
 
 $(OUTPUT_FILE): $(C_OBJECTS) $(ASM_OBJECTS)
 	@echo "=== Linking output file $(OUTPUT_FILE) ==="
 	@mkdir -p '$(@D)'
-	@$(AR) rcs $(OUTPUT_FILE) $(C_OBJECTS) $(ASM_OBJECTS)
+	@$(GCC) $(C_OBJECTS) -o $(OUTPUT_FILE) $(GCC_LINK_FLAGS)
 	@echo "=== $(OUTPUT_FILE) done ==="
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
