@@ -12,15 +12,11 @@ int __stringAppendChar(Object *object, char c)
     }
 
     size_t size = sizeof(char) + object->Size;
-    void *tmp = NULL;
-    tmp = malloc(size);
-    if (tmp != NULL)
+    object->Data = realloc(object->Data, size);
+    if (object->Data != NULL)
     {
-        strcpy(tmp, object->Data);
-        *(char *)(tmp + ((size / sizeof(char)) - 1)) = '\0';
-        *(char *)(tmp + ((size / sizeof(char)) - 2)) = c;
-        free(object->Data);
-        object->Data = tmp;
+        *(char *)(object->Data + ((size / sizeof(char)) - 1)) = '\0';
+        *(char *)(object->Data + ((size / sizeof(char)) - 2)) = c;
         object->Size = size;
         return 1;
     }
@@ -44,14 +40,10 @@ int __stringAppendCharPointer(Object *object, char *str)
     }
 
     size_t size = sizeof(char) * strlen(str) + object->Size;
-    void *tmp = NULL;
-    tmp = malloc(size);
-    if (tmp != NULL)
+    object->Data = realloc(object->Data, size);
+    if (object->Data != NULL)
     {
-        strcpy(tmp, object->Data);
-        strcat(tmp, str);
-        free(object->Data);
-        object->Data = tmp;
+        strcat(object->Data, str);
         object->Size = size;
         return strlen(str);
     }

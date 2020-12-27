@@ -152,11 +152,6 @@ Object *__objectInitCharPointer(char *data)
         return NULL;
 
     size_t stringSize = strlen(data) + 1;
-    if (stringSize < 1)
-    {
-        __objectReportError(-2);
-        return NULL;
-    }
 
     Object *obj = __objectInit(stringSize, String);
     memcpy(obj->Data, data, stringSize);

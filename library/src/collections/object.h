@@ -28,6 +28,12 @@ typedef struct
   Type Type;
 } Object;
 
+typedef enum
+{
+  TrimLeading,
+  TrimTailing
+} TrimMode;
+
 //! Print error
 /*!
     Print error information to standard output;
@@ -200,5 +206,29 @@ bool ObjectToString(Object *object);
                                              : __stringAppendChar, \
                                                char *              \
                                              : __stringAppendCharPointer)(OBJECT, VALUE)
+
+//! StringTrim
+/*!
+    Makes string stored in object in which all leading/trailing occurrences of specified\
+    character from the current string are removed.
+    \param object Pointer to object
+    \param data Removed char
+    \param mode Leading/Tailing
+    \return Numer of removed characters
+*/
+int StringTrim(Object *object, const char data, TrimMode mode);
+
+//! StringCut
+/*!
+    Cut content of string in specified range.
+    if count is greater than 0, it cuts specified amount of characters on to the right,
+    if count is less than 0, it cuts specified amount of characters on to the left
+    of the position in the string specified by index
+    \param object Pointer to object
+    \param index Specified place in string
+    \param amount Amount of removed characters
+    \return Numer of removed characters
+*/
+int StringCut(Object *object, const unsigned int index, const int amount);
 
 #endif //OBJECT_H
