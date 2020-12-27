@@ -6,7 +6,7 @@
 #include <stdarg.h>
 #include "../stdio.h"
 #include "../stdlib.h"
-#include "../stdlib.h"
+#include "../string.h"
 
 typedef enum
 {
@@ -28,6 +28,12 @@ typedef struct
   Type Type;
 } Object;
 
+//! Print error
+/*!
+    Print error information to standard output;
+    \param errorCode Error code
+    \return Nothing
+*/
 void __objectReportError(const int errorCode);
 //Init
 Object *__objectInit(size_t typeSize, Type type);
@@ -62,12 +68,33 @@ bool __objectSetULongPointer(Object *object, unsigned long *data);
 bool __objectSetChar(Object *object, char data);
 bool __objectSetCharPointer(Object *object, char *data);
 bool __objectSetPointer(Object *object, void *data);
-//
+//! Check if pointer valid
+/*!
+    \param data Pointer  
+    \return Returns true when pointer is valid
+*/
 bool __objectCheckPointer(void *data);
+//! Print value stored in object
+/*!
+    Print value stored in object to standard output;
+    \param object Pointer to object  
+    \return Nothing
+*/
 void ObjectPrint(Object *object);
+//! Delete object from memory
+/*!
+    Delete object from memory
+    \param object Pointer to object  
+    \return When succeeds, returns true
+*/
 bool ObjectDelete(Object *object);
-/*
-    Initialize new data object, with specified value
+
+//! Initialize new object with specified value
+/*!
+    Get pointer to new object that stores passed value.
+    Supported data types: int, unsigned int, float, double, long, unsigned long, char, void*
+    \param VALUE Value stored in object. Can be passed both ways.
+    \return Pointer to new object.
 */
 #define ObjectInit(VALUE) _Generic((VALUE),                     \
                                    float                        \
@@ -101,6 +128,14 @@ bool ObjectDelete(Object *object);
                                      void *                     \
                                    : __objectInitPointer)(VALUE)
 
+//! Set data to specified object
+/*!
+    Set new value stored in exisiting object
+    Supported data types: int, unsigned int, float, double, long, unsigned long, char, void*
+    \param OBJECT Pointer to object it's value set
+    \param VALUE Value stored in object. Can be passed both ways.
+    \return When succeeds, returns true
+*/
 #define ObjectSet(OBJECT, VALUE) _Generic((OBJECT, VALUE),            \
                                           float                       \
                                           : __objectSetFloat,         \
@@ -132,4 +167,38 @@ bool ObjectDelete(Object *object);
                                           : __objectSetCharPointer,   \
                                             void *                    \
                                           : __objectSetPointer)(OBJECT, VALUE)
+
+int __stringAppendChar(Object *object, char c);
+int __stringAppendCharPointer(Object *object, char *str);
+//! Reverse string
+/*!
+    Reverse string stored in object
+    \param OBJECT Pointer to object
+    \return Returns true when succeeds
+*/
+bool StringReverse(Object *object);
+
+//! Convert data stored in object to String type
+/*!
+     Convert data stored in object to String type
+    \param object Pointer to object  
+    \return When succeeds, returns true
+*/
+bool ObjectToString(Object *object);
+
+//! Append value to string
+/*!
+    Append value to object that stores string
+    \param OBJECT Pointer to object
+    \param STRING Value append to string
+    \return Number of appended characters
+*/
+#define StringAppend(OBJECT, VALUE) _Generic((OBJECT, VALUE),      \
+                                             int                   \
+                                             : __stringAppendChar, \
+                                               char                \
+                                             : __stringAppendChar, \
+                                               char *              \
+                                             : __stringAppendCharPointer)(OBJECT, VALUE)
+
 #endif //OBJECT_H

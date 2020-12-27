@@ -9,6 +9,7 @@
     -3  - Null pointer 
     -4  - Undefined function
     -5  - Invalid type casting
+    -6  - Invalid value passed
 */
 void __objectReportError(int errorCode)
 {
@@ -29,6 +30,9 @@ void __objectReportError(int errorCode)
         break;
     case -5:
         printf("Invalid type casting\n");
+        break;
+    case -6:
+        printf("Invalid value passed\n");
         break;
     default:
         break;

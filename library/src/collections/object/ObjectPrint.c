@@ -29,7 +29,10 @@ void ObjectPrint(Object *object)
         printf("(ULong)->%lu\n", *(unsigned long *)(object->Data));
         break;
     case String:
-        printf("(String){%zu}->%s\n", (size_t)(object->Size), (char *)(object->Data));
+        if ((size_t)(object->Size) > 1)
+            printf("(String){%zu}->%s\n", (size_t)(object->Size), (char *)(object->Data));
+        else
+            printf("(String)->String is empty\n");
         break;
     case Pointer:
         printf("(Pointer)->%p\n", (void *)(object->Data));
