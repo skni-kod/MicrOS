@@ -152,10 +152,10 @@ int8_t __harddisk_ata_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_
         for(int i = 0; i < 256; i++)
         {
             // Write 256 16-bit values.
-            io_out_word(io_port, buffer[i]);
-            // Cache flush.
-            io_out_byte(io_port + HARDDISK_IO_COMMAND_REGISTER_OFFSET, 0xE7);
+            io_out_word(io_port, buffer[i]); 
         }
+        // Cache flush.
+        io_out_byte(io_port + HARDDISK_IO_COMMAND_REGISTER_OFFSET, 0xE7);
         __harddisk_400ns_delay(control_port);
         return 1;
     }

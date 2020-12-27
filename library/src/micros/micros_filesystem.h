@@ -73,7 +73,7 @@ extern "C" {
     \param file_info Structure which will be filled.
     \return True if file exists and structure has been filled, otherwise false.
 */
-bool micros_filesystem_get_file_info(char *path, micros_filesystem_file_info *file_info);
+bool micros_filesystem_get_file_info(const char *path, micros_filesystem_file_info *file_info);
 
 
 //! Gets information about the directory with path specified in parameter
@@ -83,7 +83,7 @@ bool micros_filesystem_get_file_info(char *path, micros_filesystem_file_info *fi
     \param directory_info Structure which will be filled.
     \return True if directory exists and structure has been filled, otherwise false.
 */
-bool micros_filesystem_get_directory_info(char *path, micros_filesystem_directory_info *directory_info);
+bool micros_filesystem_get_directory_info(const char *path, micros_filesystem_directory_info *directory_info);
 
 //! Reads content from the file
 /*!
@@ -94,7 +94,7 @@ bool micros_filesystem_get_directory_info(char *path, micros_filesystem_director
     \param length Requested size of the read data.
     \return True if file was found and data was read, otherwise false.
 */
-bool micros_filesystem_read_file(char *path, uint8_t *buffer, uint32_t start_index, uint32_t length);
+bool micros_filesystem_read_file(const char *path, uint8_t *buffer, const uint32_t start_index, const uint32_t length);
 
 //! Gets entries count in the directory
 /*!
@@ -102,16 +102,16 @@ bool micros_filesystem_read_file(char *path, uint8_t *buffer, uint32_t start_ind
     \param path Path to the directory.
     \return Entries count.
 */
-uint32_t micros_filesystem_get_entries_count_in_directory(char *path);
+uint32_t micros_filesystem_get_entries_count_in_directory(const char *path);
 
 //! Gets pathes of the entries in the directory 
 /*!
     Gets pathes of the entries in the directory and stores them in the passed buffer.
     \param path Path to the directory.
-    \param path Buffer where the pathes will be stored.
+    \param entries Buffer where the pathes will be stored.
     \return True if the target directory was found, otherwise false.
 */
-bool micros_filesystem_get_entries_in_directory(char *path, char **entries);
+bool micros_filesystem_get_entries_in_directory(const char *path, char **entries);
 
 //! Check if the specified entry is a file 
 /*!
@@ -119,7 +119,7 @@ bool micros_filesystem_get_entries_in_directory(char *path, char **entries);
     \param path Path to the entry.
     \return True if the specified entry is a directory, otherwise false.
 */
-bool micros_filesystem_is_file(char *path);
+bool micros_filesystem_is_file(const char *path);
 
 //! Check if the specified entry is a directory 
 /*!
@@ -127,7 +127,7 @@ bool micros_filesystem_is_file(char *path);
     \param path Path to the entry.
     \return True if the specified entry is a directory, otherwise false.
 */
-bool micros_filesystem_is_directory(char *path);
+bool micros_filesystem_is_directory(const char *path);
 
 //! Creates file 
 /*!
@@ -135,7 +135,7 @@ bool micros_filesystem_is_directory(char *path);
     \param path Path to the new file.
     \return True if the file has been creates with success, otherwise false.
 */
-bool micros_filesystem_create_file(char *path);
+bool micros_filesystem_create_file(const char *path);
 
 //! Creates directory 
 /*!
@@ -143,7 +143,7 @@ bool micros_filesystem_create_file(char *path);
     \param path Path to the new directory.
     \return True if the directory has been creates with success, otherwise false.
 */
-bool micros_filesystem_create_directory(char *path);
+bool micros_filesystem_create_directory(const char *path);
 
 //! Deletes file 
 /*!
@@ -151,7 +151,7 @@ bool micros_filesystem_create_directory(char *path);
     \param path Path to the file.
     \return True if the file has been deleted with success, otherwise false.
 */
-bool micros_filesystem_delete_file(char *path);
+bool micros_filesystem_delete_file(const char *path);
 
 //! Deletes directory 
 /*!
@@ -159,7 +159,7 @@ bool micros_filesystem_delete_file(char *path);
     \param path Path to the directory.
     \return True if the directory has been deleted with success, otherwise false.
 */
-bool micros_filesystem_delete_directory(char *path);
+bool micros_filesystem_delete_directory(const char *path);
 
 //! Renames file 
 /*!
@@ -168,7 +168,7 @@ bool micros_filesystem_delete_directory(char *path);
     \param new_name New name of the file (Without leading path).
     \return True if the file has been renamed with success, otherwise false.
 */
-bool micros_filesystem_rename_file(char *path, char *new_name);
+bool micros_filesystem_rename_file(const char *path, const char *new_name);
 
 //! Renames directory 
 /*!
@@ -177,7 +177,7 @@ bool micros_filesystem_rename_file(char *path, char *new_name);
     \param new_name New name of the directory (Without leading path).
     \return True if the directory has been renamed with success, otherwise false.
 */
-bool micros_filesystem_rename_directory(char *path, char *new_name);
+bool micros_filesystem_rename_directory(const char *path, const char *new_name);
 
 //! Saves content stored in the buffer to the specified file 
 /*!
@@ -187,7 +187,7 @@ bool micros_filesystem_rename_directory(char *path, char *new_name);
     \param size Buffer size.
     \return True if the content has been saved with success, otherwise false.
 */
-bool micros_filesystem_save_to_file(char *path, char *buffer, int size);
+bool micros_filesystem_save_to_file(const char *path, const char *buffer, const int size);
 
 //! Appends content stored in the buffer to the end of the specified file 
 /*!
@@ -197,7 +197,7 @@ bool micros_filesystem_save_to_file(char *path, char *buffer, int size);
     \param size Buffer size.
     \return True if the content has been saved with success, otherwise false.
 */
-bool micros_filesystem_append_to_file(char *path, char *buffer, int size);
+bool micros_filesystem_append_to_file(const char *path, const char *buffer, const int size);
 
 //! Checks if file with the specified path exists 
 /*!
@@ -205,7 +205,7 @@ bool micros_filesystem_append_to_file(char *path, char *buffer, int size);
     \param path Path to the file.
     \return True if the file exists, otherwise false.
 */
-bool micros_filesystem_file_exists(char *path);
+bool micros_filesystem_file_exists(const char *path);
 
 //! Checks if directory with the specified path exists 
 /*!
@@ -213,7 +213,7 @@ bool micros_filesystem_file_exists(char *path);
     \param path Path to the directory.
     \return True if the directory exists, otherwise false.
 */
-bool micros_filesystem_directory_exists(char *path);
+bool micros_filesystem_directory_exists(const char *path);
 
 //! Gets free space on the specified partition
 /*!
@@ -221,7 +221,7 @@ bool micros_filesystem_directory_exists(char *path);
     \param partition_symbol Partition symbol.
     \return Free space in bytes.
 */
-int micros_filesystem_get_free_space(char partition_symbol);
+int micros_filesystem_get_free_space(const char partition_symbol);
 
 //! Gets total space on the specified partition
 /*!
@@ -229,7 +229,7 @@ int micros_filesystem_get_free_space(char partition_symbol);
     \param partition_symbol Partition symbol.
     \return Total space in bytes.
 */
-int micros_filesystem_get_total_space(char partition_symbol);
+int micros_filesystem_get_total_space(const char partition_symbol);
 
 #ifdef __cplusplus
 }

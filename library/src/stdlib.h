@@ -1,18 +1,105 @@
 #ifndef STDLIB_H
 #define STDLIB_H
 
-#define RAND_MAX INT32_MAX
-
 #include <stdint.h>
 #include "string.h"
 #include "time.h"
 #include "micros.h"
 
-unsigned int seed;
+extern unsigned int seed;
+
+//! Maximum value returned by rand
+#define RAND_MAX INT32_MAX
+
+//! Success termination code
+#define EXIT_SUCCESS 0
+
+//! Failure termination code
+#define EXIT_FAILURE -1
+
+//! Structure to represent the result value of an integral division.
+/*! Structure to represent the result value of an integral division performed by function \p div. */
+typedef struct div_t
+{
+    //! Represents the quotient.
+    int quot;
+    //! Represents the remainder.
+    int rem;
+} div_t;
+
+//! Structure to represent the result value of an integral division.
+/*! Structure to represent the result value of an integral division performed by function \p ldiv. */
+typedef struct ldiv_t
+{
+    //! Represents the quotient.
+    long int quot;
+    //! Represents the remainder.
+    long int rem;
+} ldiv_t;
+
+//! Structure to represent the result value of an integral division.
+/*! Structure to represent the result value of an integral division performed by function \p lldiv. */
+typedef struct lldiv_t
+{
+    //! Represents the quotient.
+    long long int quot;
+    //! Represents the remainder.
+    long long int rem;
+} lldiv_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+//! Absolute value
+/*
+    Returns the absolute value of parameter \p n.
+    \param n Integral value.
+    \return The absolute value of n.
+*/
+int abs(int n);
+
+//! Absolute value
+/*
+    Returns the absolute value of parameter \p n.
+    \param n Integral value.
+    \return The absolute value of n.
+*/
+long int labs(long int n);
+
+//! Absolute value
+/*
+    Returns the absolute value of parameter \p n.
+    \param n Integral value.
+    \return The absolute value of n.
+*/
+long long int llabs(long long int n);
+
+//! Integral division.
+/*
+    Returns the integral quotient and remainder of the division of \p numer by \p denom.
+    \param numer Number to divide.
+    \param denom Divider.
+    \return Struct with quotient and remainder.
+*/
+div_t div(int numer, int denom);
+
+//! Integral division.
+/*
+    Returns the integral quotient and remainder of the division of \p numer by \p denom.
+    \param numer Number to divide.
+    \param denom Divider.
+    \return Struct with quotient and remainder.
+*/
+ldiv_t ldiv(long int numer, long int denom);
+
+//! Integral division.
+/*
+    Returns the integral quotient and remainder of the division of \p numer by \p denom.
+    \param numer Number to divide.
+    \param denom Divider.
+    \return Struct with quotient and remainder.
+*/
+lldiv_t lldiv(long long int numer, long long int denom);
 
 //! Convert string to integer
 /*
@@ -20,7 +107,23 @@ extern "C" {
     \param string C-string beginning with the representation of an integral number.
     \return On success, the function returns the converted integral number as an int value.
  */
-int32_t atoi(const char *string);
+int atoi(const char *string);
+
+//! Convert string to integer
+/*
+    Parses the C-string str interpreting its content as an integral number, which is returned as a value of type long int.
+    \param string C-string beginning with the representation of an integral number.
+    \return On success, the function returns the converted integral number as an int value.
+ */
+long int atol(const char *string);
+
+//! Convert string to integer
+/*
+    Parses the C-string str interpreting its content as an integral number, which is returned as a value of type long long int.
+    \param string C-string beginning with the representation of an integral number.
+    \return On success, the function returns the converted integral number as an int value.
+ */
+long long int atoll(const char *string);
 
 //! Convert integer to string (non-standard function)
 /*
@@ -98,6 +201,30 @@ int rand();
  */
 void srand(unsigned int new_seed);
 
+//! Sorts an array.
+/*
+    Sorts the \p num elements of the array pointed to by \p base, each element \p size bytes long, using the \p compar function to determine the order.
+    \param base Pointer to the first object of the array to be sorted.
+    \param num Number of elements in the array pointed to by \p base.
+    \param size Size in bytes of each element in the array.
+    \param compar Pointer to a function that compares two elements.
+*/
+void qsort(void *base, size_t num, size_t size, int (*compar)(const void *, const void*));
+
+//! Binary search in array.
+/*
+    Searches the given \p key in the array pointed to by \p base (which is formed by num elements, each of size bytes),
+    and returns a void* pointer to a matching element, if found.
+    \param key Pointer to the object that serves as key for the search.
+    \param base Pointer to the first object of the array where the search is performed.
+    \param num Number of elements in the array pointed to by \p base.
+    \param size Size in bytes of each element in the array.
+    \param compar Pointer to a function that compares two elements.
+    \return A pointer to an entry in the array that matches the search \p key. If there are more than one matching elements,
+    this may point to any of them. If key is not found, a null pointer is returned. 
+*/
+void* bsearch(const void* key, const void* base, size_t num, size_t size, int (*compar)(const void*,const void*));
+
 //! Abort current process
 /*
     Aborts the current process, producing an abnormal program termination.
@@ -110,6 +237,34 @@ void abort();
     \param status Status code.
  */
 void exit(int status);
+
+//! Get environment string.
+/*
+    etrieves a C-string containing the value of the environment variable whose \p name is specified as argument.
+    \param name Name of the requested variable.
+    \return A C-string with the value of the requested environment variable, or a null pointer if such environment variable does not exist.
+ */
+char* getenv(const char* name);
+
+// Helpers
+
+//! Swap two elements. Used by \p qsort().
+/*
+    \param first Pointer to the first object to be swapped.
+    \param second Pointer to the first object to be swapped.
+    \param size Size of element in bytes.
+*/
+void __stdlib_swap(void *first, void *second, size_t size);
+
+//! Sort and return position of key. Used by \p qsort().
+/*
+    \param base Pointer to the first object of the array to be sorted.
+    \param num Number of elements in the array pointed to by \p base.
+    \param size Size in bytes of each element in the array.
+    \param compar Pointer to a function that compares two elements.
+    \return Index of key
+*/
+int __stdlib_partition(void* base, size_t num, size_t size, int (*compar)(const void *, const void*));
 
 #ifdef __cplusplus
 }

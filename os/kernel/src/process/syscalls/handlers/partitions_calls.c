@@ -9,3 +9,8 @@ void syscall_partitions_get_symbols(interrupt_state *state)
 {
     partitions_get_symbols((char *)state->registers.ebx);
 }
+
+void syscall_partitions_get_info(interrupt_state *state)
+{
+    partitions_get_info((char)state->registers.ebx, (partition_info *)state->registers.ecx);
+}

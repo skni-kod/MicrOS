@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+bool show_threads;
+
 void draw_process_tree(micros_process_user_info *processes, uint32_t root_id, uint32_t level, uint32_t count);
 void print_total_process_count(int process_count);
 void draw_bar(uint32_t filled_entries, uint32_t total_entries);
@@ -20,7 +22,7 @@ int main(int argc, char *argv[])
     {
         micros_console_clear();
 
-        printf("TASKS v1.1 @ MicrOS\n");
+        printf("TASKS v1.2 @ MicrOS\n");
         printf("\n");
 
         uint32_t processes_count = micros_process_get_processes_count();
@@ -33,8 +35,12 @@ int main(int argc, char *argv[])
         for (uint32_t i = 0; i < processes_count; i++)
         {
             micros_process_user_info *process = &processes[i];
-            total_cpu_usage += process->cpu_usage;
-            total_memory_usage += process->memory_usage;
+            
+            if (!process->is_thread)
+            {
+                total_cpu_usage += process->cpu_usage;
+                total_memory_usage += process->memory_usage;
+            }
         }
 
         micros_physical_memory_stats memory_stats;
@@ -45,14 +51,23 @@ int main(int argc, char *argv[])
 
         printf("\n");
 
-        draw_process_tree(processes, 0, 0, processes_count);
+        for (uint32_t i = 0; i < processes_count; i++)
+        {
+            micros_process_user_info *process = &processes[i];
+            if (process->parent_id == 0)
+            {
+                draw_process_tree(processes, process->id, 0, processes_count);
+            }
+        }
+        
         print_total_process_count(processes_count);
 
         printf("\n\n");
         print_memory_stats(&memory_stats);
         
         printf("\n\n\n\n");
-        printf("                               Press ESC to exit");
+        printf("                          Press T to show/hide threads\n");
+        printf("                               Press ESC to exit\n");
 
         free(processes);
         micros_process_current_process_sleep(1500);
@@ -66,6 +81,10 @@ int main(int argc, char *argv[])
             {
                 break;
             }
+            else if(pressed_key.scancode == key_t)
+            {
+                show_threads = !show_threads;
+            }
         }
     }
     
@@ -74,7 +93,7 @@ int main(int argc, char *argv[])
 }
 
 void draw_process_tree(micros_process_user_info *processes, uint32_t root_id, uint32_t level, uint32_t count)
-{
+{    
     micros_process_user_info *root_process = NULL;
     for (uint32_t i = 0; i < count; i++)
     {
@@ -83,6 +102,11 @@ void draw_process_tree(micros_process_user_info *processes, uint32_t root_id, ui
         {
             root_process = &processes[i];
         }
+    }
+    
+    if (!show_threads && root_process->is_thread)
+    {
+        return;
     }
 
     if (level != 0)
@@ -152,7 +176,14 @@ void draw_memory_usage_bar(micros_physical_memory_stats *memory_stats, uint32_t 
 
 void print_process_info(micros_process_user_info *process_info)
 {
-    printf("%s - ID: %d", process_info->name, process_info->id);
+    if (show_threads)
+    {
+        printf("[%s] %s - ID: %d", process_info->is_thread ? "T" : "P", process_info->name, process_info->id);
+    }
+    else
+    {
+        printf("%s - ID: %d", process_info->name, process_info->id);
+    }
 
     if (process_info->id != process_info->parent_id)
     {

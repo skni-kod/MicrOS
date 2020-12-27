@@ -95,6 +95,32 @@ int8_t mode11h_set_mode()
     video_card_set_draw_circle_func(&mode11h_draw_circle);
     video_card_set_draw_rectangle_func(&mode11h_draw_rectangle);
     video_card_set_clear_screen_func(&mode11h_clear_screen);
+
+    video_card_set_print_char_func(NULL);
+	video_card_set_print_char_color_func(NULL);
+	video_card_set_print_string_func(NULL);
+	video_card_set_print_string_color_func(NULL);
+	video_card_set_set_char_func(NULL);
+	video_card_set_get_char_func(NULL);
+	video_card_set_set_color_func(NULL);
+	video_card_set_get_color_func(NULL);
+	video_card_set_set_char_and_color_func(NULL);
+	video_card_set_get_char_and_color_func(NULL);
+	video_card_set_set_cursor_pos_func(NULL);
+	video_card_set_get_cursor_pos_func(NULL);
+	video_card_set_turn_cursor_on_func(NULL);
+	video_card_set_turn_cursor_off_func(NULL);
+
+    video_card_set_print_char_external_buffer(NULL);
+	video_card_set_print_char_color_external_buffer(NULL);
+	video_card_set_print_string_external_buffer(NULL);
+	video_card_set_print_string_color_external_buffer(NULL);
+	video_card_set_set_char_external_buffer(NULL);
+	video_card_set_get_char_external_buffer(NULL);
+	video_card_set_set_color_external_buffer(NULL);
+	video_card_set_get_color_external_buffer(NULL);
+	video_card_set_set_char_and_color_external_buffer(NULL);
+	video_card_set_get_char_and_color_external_buffer(NULL);
     return 0x11;
 }
 
@@ -248,4 +274,64 @@ int8_t mode11h_clear_screen_buffered()
     if(!buffer_turned_on_11h) return -1;
     memset(mode11h_buffer, 0, 64*1024);
     return 0;
+}
+
+int8_t mode11h_draw_pixel_external_buffer(uint8_t* buffer, uint16_t mode, int8_t color, uint16_t x, uint16_t y){
+    if((x>=MODE11H_WIDTH) || (y >=MODE11H_HEIGHT))
+        return -1;
+    unsigned int offset = (y * MODE11H_WIDTH + x)/8;
+	unsigned bit_no = x % 8;
+	bit_write(buffer[offset], 1<<(7-bit_no), (color % 2));
+    return 0;
+}
+int8_t mode11h_draw_line_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by){
+    if(ax == bx) return -1;
+    int32_t dx = (int32_t)bx - ax;
+    int32_t dy = (int32_t)by - ay;
+    if(_abs(dx) >= _abs(dy))
+    {
+        float a = dy/(float)(dx);
+        float b = ay - a * ax;
+        if(ax > bx)
+            for(int x = bx; x <= ax; ++x)
+                mode11h_draw_pixel_external_buffer(buffer, mode, color, x, a * x + b);
+        else
+            for(int x = ax; x <= bx; ++x)
+                mode11h_draw_pixel_external_buffer(buffer, mode, color, x, a * x + b);
+    }
+    else
+    {
+        float a = dx/(float)(dy);
+        float b = ax - a * ay;
+        if(ay > by)
+            for(int y = by; y <= ay; ++ y)
+                mode11h_draw_pixel_external_buffer(buffer, mode, color, a * y + b, y);
+        else
+            for(int y = ay; y <= by; ++ y)
+                mode11h_draw_pixel_external_buffer(buffer, mode, color, a * y + b, y);
+    }
+    return 0;
+}
+int8_t mode11h_draw_circle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t x, uint16_t y, uint16_t radius){
+    return -1;
+}
+int8_t mode11h_draw_rectangle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by){
+    return -1;
+}
+int8_t mode11h_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y)
+{
+    memset(buffer, 0, MODE11H_WIDTH * MODE11H_HEIGHT / 8);
+    return 0;
+}
+
+int8_t mode11h_swap_external_buffer(uint8_t* buffer, uint16_t mode)
+{
+    memcpy(VGA_VRAM, buffer, MODE11H_WIDTH * MODE11H_HEIGHT / 8);
+    return 0;
+}
+uint8_t* mode11h_create_external_buffer(uint16_t mode)
+{
+    uint8_t* ptr = heap_kernel_alloc(MODE11H_HEIGHT * MODE11H_WIDTH / 8, 0);
+    memset(ptr, 0, MODE11H_HEIGHT * MODE11H_WIDTH / 8);
+    return ptr;
 }

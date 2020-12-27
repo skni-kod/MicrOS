@@ -100,10 +100,10 @@ typedef struct lconv
 } lconv;
 
 //! Current locale state.
-lconv *locale_state;
+extern lconv *locale_state;
 
 //! Current locale name.
-char *locale_name;
+extern char *locale_name;
 
 #ifdef __cplusplus
 extern "C" {

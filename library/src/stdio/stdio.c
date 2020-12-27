@@ -1,5 +1,9 @@
 #include "../stdio.h"
 
+FILE *stdin;
+FILE *stdout;
+FILE *stderr;
+
 FILE *__stdio_create_stream()
 {
     FILE *stream = malloc(sizeof(FILE));

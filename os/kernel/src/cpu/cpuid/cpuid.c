@@ -63,7 +63,7 @@ uint32_t cpuid_get_highest_function_parameter()
 char* cpuid_get_vendor_string(char* buffer)
 {
     // Copy vendor string to buffer
-    for(int i = 0; i < sizeof(__cpuid_vendor_string); i++)
+    for(int i = 0; i < (int)sizeof(__cpuid_vendor_string); i++)
     {
         buffer[i] = __cpuid_vendor_string[i];
     }
