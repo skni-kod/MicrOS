@@ -10,6 +10,8 @@
     -4  - Undefined function
     -5  - Invalid type casting
     -6  - Invalid value passed
+    -7  - Value overflow
+    -8  - Negative to unsigned cast 
 */
 void __objectReportError(int errorCode)
 {
@@ -33,6 +35,12 @@ void __objectReportError(int errorCode)
         break;
     case -6:
         printf("Invalid value passed\n");
+        break;
+    case -7:
+        printf("Value overflow\n");
+        break;
+    case -8:
+        printf("Negative to unsigned cast \n");
         break;
     default:
         break;

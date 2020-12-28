@@ -18,28 +18,29 @@ int StringCut(Object *object, const unsigned int index, const int amount)
     }
 
     unsigned int rangeBegin = 0, rangeEnd = 0;
-    if (amount > 0)
-    {
-        rangeBegin = (index - amount + 1) > 0 ? (index - abs(amount) + 1) : 0;
-        rangeEnd = index > (object->Size - 2) ? (object->Size - 2) : index;
-    }
     if (amount < 0)
     {
+        rangeBegin = (index - abs(amount) + 1) > 0 ? (index - abs(amount) + 1) : 0;
+        rangeEnd = index > (object->Size - 2) ? (object->Size - 2) : index;
+    }
+    if (amount > 0)
+    {
         rangeBegin = index > (object->Size - 2) ? (object->Size - 2) : index;
-        rangeEnd = (index + abs(amount) - 1) > (object->Size - 2) ? (object->Size - 2) : (index + abs(amount) - 1);
+        rangeEnd = (index + amount - 1) > (object->Size - 2) ? (object->Size - 2) : (index + amount - 1);
     }
 
     Object *tmp = ObjectInit("");
     char tmpChar[2] = "";
     int count = 0;
-    for (unsigned int i = 0; i < (object->Size - 1); i++)
+    for (size_t i = 0; i < (object->Size - 1); i++)
     {
         if (!(i >= rangeBegin && i <= rangeEnd))
         {
             tmpChar[0] = ((char *)object->Data)[i];
             StringAppend(tmp, tmpChar);
-            count++;
         }
+        else
+            count++;
     }
 
     ObjectSet(object, (char *)tmp->Data);

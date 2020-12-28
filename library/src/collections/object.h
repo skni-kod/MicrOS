@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdarg.h>
+#include <limits.h>
 #include "../stdio.h"
 #include "../stdlib.h"
 #include "../string.h"
@@ -174,8 +175,38 @@ bool ObjectDelete(Object *object);
                                             void *                    \
                                           : __objectSetPointer)(OBJECT, VALUE)
 
-int __stringAppendChar(Object *object, char c);
-int __stringAppendCharPointer(Object *object, char *str);
+//! Convert data stored in object to integer
+/*!
+    Convert data stored in object to integer
+    \param object Pointer to object  
+    \return When succeeds, returns true
+*/
+bool ObjectToInt(Object *object);
+
+//! Convert data stored in object to unsigned integer
+/*!
+    Convert data stored in object to unsigned integer
+    \param object Pointer to object  
+    \return When succeeds, returns true
+*/
+bool ObjectToUInt(Object *object);
+
+//! Convert data stored in object to long
+/*!
+    Convert data stored in object to long
+    \param object Pointer to object  
+    \return When succeeds, returns true
+*/
+bool ObjectToLong(Object *object);
+
+//! Convert data stored in object to unsigned long
+/*!
+    Convert data stored in object to unsigned long
+    \param object Pointer to object  
+    \return When succeeds, returns true
+*/
+bool ObjectToULong(Object *object);
+
 //! Reverse string
 /*!
     Reverse string stored in object
@@ -191,6 +222,9 @@ bool StringReverse(Object *object);
     \return When succeeds, returns true
 */
 bool ObjectToString(Object *object);
+
+int __stringAppendChar(Object *object, char c);
+int __stringAppendCharPointer(Object *object, char *str);
 
 //! Append value to string
 /*!
@@ -230,5 +264,13 @@ int StringTrim(Object *object, const char data, TrimMode mode);
     \return Numer of removed characters
 */
 int StringCut(Object *object, const unsigned int index, const int amount);
+
+//! StringLast
+/*!
+    Get index of last non zero character in string
+    \param object Pointer to object
+    \return Index of last non zero character in string
+*/
+int StringLast(Object *object);
 
 #endif //OBJECT_H

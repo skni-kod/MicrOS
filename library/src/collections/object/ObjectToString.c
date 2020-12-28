@@ -69,8 +69,7 @@ bool ObjectToString(Object *object)
 
         if (!valueSign)
             value *= -1;
-        char *tmpChar = malloc(sizeof(char) * 2);
-        *(char *)(tmpChar + 1) = '\0';
+        char tmpChar[2] = {'\0', '\0'};
         while (true)
         {
             *tmpChar = '0' + (value % 10);
@@ -79,9 +78,6 @@ bool ObjectToString(Object *object)
             if (value == 0)
                 break;
         }
-
-        free(tmpChar);
-        tmpChar = NULL;
         //Leading sign
         if (!valueSign)
             StringAppend(tmp, "-");
@@ -214,4 +210,7 @@ bool ObjectToString(Object *object)
         StringTrim(object, '0', TrimTailing);
         return true;
     }
+
+    __objectReportError(-4);
+    return false;
 }

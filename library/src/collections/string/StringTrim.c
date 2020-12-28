@@ -13,29 +13,33 @@ int StringTrim(Object *object, const char data, TrimMode mode)
 
     if (mode == TrimTailing)
     {
-        for (int i = (int)(object->Size - 2); i-- >= 0;)
+        int count = 0;
+        while (object->Size - 1)
         {
-            if (((char *)object->Data)[i] == data)
-                StringCut(object, (object->Size - 2), 1);
-            else
+            if (((char *)object->Data)[StringLast(object)] == data)
             {
-                StringCut(object, (object->Size - 2), 1);
-                break;
+                StringCut(object, StringLast(object), 1);
+                count++;
             }
+            else
+                break;
         }
+        return count;
     }
 
     if (mode == TrimLeading)
     {
-        for (int i = 0; i <= (int)(object->Size - 2); i++)
+        int count = 0;
+        while (object->Size - 1)
         {
-            if (((char *)object->Data)[i] == data)
-                StringCut(object, 0, -1);
-            else
+            if (((char *)object->Data)[0] == data)
             {
-                StringCut(object, 0, -2);
-                break;
+                StringCut(object, 0, 1);
+                count++;
             }
+            else
+                break;
         }
+        return count;
     }
 }
