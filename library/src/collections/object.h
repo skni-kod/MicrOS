@@ -207,6 +207,22 @@ bool ObjectToLong(Object *object);
 */
 bool ObjectToULong(Object *object);
 
+//! Convert data stored in object to float
+/*!
+    Convert data stored in object to float
+    \param object Pointer to object  
+    \return When succeeds, returns true
+*/
+bool ObjectToFloat(Object *object);
+
+//! Convert data stored in object to double
+/*!
+    Convert data stored in object to double
+    \param object Pointer to object  
+    \return When succeeds, returns true
+*/
+bool ObjectToDouble(Object *object);
+
 //! Reverse string
 /*!
     Reverse string stored in object
