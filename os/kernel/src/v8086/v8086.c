@@ -17,7 +17,7 @@
     #include "../drivers/vga/vga.h"
     //#define DEBUG_V8086_TEXT
     //#define DEBUG_V8086_BIN
-    #define DEBUG_V8086_INTERACTIVE
+    //#define DEBUG_V8086_INTERACTIVE
 #endif
 
 int16_t parse_and_execute_instruction(union test_v8086* machine);
@@ -57,6 +57,53 @@ void send_sregs(union test_v8086* machine)
     send_reg_16(machine->machine.sregs.gs);
     send_reg_16(machine->machine.sregs.cs);
     send_reg_16(machine->machine.sregs.ss);
+}
+
+void read_regs(union test_v8086* machine)
+{
+    machine->machine.regs.d.edi = read_reg_32();
+    machine->machine.regs.d.esi = read_reg_32();
+    machine->machine.regs.d.ebp = read_reg_32();
+    machine->machine.regs.d.cflag = read_reg_32();
+    machine->machine.regs.d.ebx = read_reg_32();
+    machine->machine.regs.d.edx = read_reg_32();
+    machine->machine.regs.d.ecx = read_reg_32();
+    machine->machine.regs.d.eax = read_reg_32();
+    machine->machine.regs.d.eflags = read_reg_16();
+    machine->machine.regs.d.esp = read_reg_32();
+}
+
+void read_sregs(union test_v8086* machine)
+{
+    machine->machine.sregs.es = read_reg_16();
+    machine->machine.sregs.ds = read_reg_16();
+    machine->machine.sregs.fs = read_reg_16();
+    machine->machine.sregs.gs = read_reg_16();
+    machine->machine.sregs.cs = read_reg_16();
+    machine->machine.sregs.ss = read_reg_16();
+}
+
+uint16_t read_reg_16()
+{
+    uint16_t value;
+    value = (uint16_t)serial_receive(COM1_PORT);
+    value |= (uint16_t)serial_receive(COM1_PORT) << 8; 
+    return value;
+}
+
+uint8_t read_reg_8()
+{
+    return serial_receive(COM1_PORT);
+}
+
+uint32_t read_reg_32()
+{
+    uint32_t value;
+    value = (uint32_t)serial_receive(COM1_PORT);
+    value |= (uint32_t)serial_receive(COM1_PORT) << 8;
+    value |= (uint32_t)serial_receive(COM1_PORT) << 16;
+    value |= (uint32_t)serial_receive(COM1_PORT) << 24; 
+    return value;
 }
 
 #endif

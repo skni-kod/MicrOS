@@ -5,8 +5,6 @@
 
 #ifdef TEST_V8086
 
-void test_mod_16();
-
 #endif
 
 #endif

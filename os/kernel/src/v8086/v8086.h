@@ -18,8 +18,8 @@
 #define DIRECTION_FLAG_BIT 10u
 #define OVERFLOW_FLAG_BIT 11u
 
-//#define DEBUG_V8086
-//#define TEST_V8086
+#define DEBUG_V8086
+#define TEST_V8086
 
 typedef enum _segment_register_select {
   V8086_ES, V8086_CS, V8086_SS, V8086_DS, V8086_FS, V8086_GS, V8086_DEFAULT
@@ -173,4 +173,17 @@ int16_t v8086_call_int(union test_v8086* machine, int16_t num);
 void v8086_set_8086_instruction_set(v8086* machine);
 void v8086_set_386_instruction_set(v8086* machine);
 uint32_t v8086_get_address_of_int(union test_v8086* machine, int16_t num);
+
+#ifdef DEBUG_V8086
+  void send_reg_32(uint32_t reg);
+  void send_reg_16(uint16_t reg);
+  void send_regs(union test_v8086* machine);
+  void send_sregs(union test_v8086* machine);
+  int16_t parse_and_execute_instruction(union test_v8086* machine);
+  uint8_t read_reg_8();
+  uint16_t read_reg_16();
+  uint32_t read_reg_32();
+  void read_regs(union test_v8086* machine);
+  void read_sregs(union test_v8086* machine);
+#endif
 #endif

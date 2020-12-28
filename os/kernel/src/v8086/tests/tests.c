@@ -7,96 +7,104 @@
 #include "string.h"
 #include "../../debug_helpers/library/kernel_stdio.h"
 
-char* effective_addresses[3][8] = {
-    {"[BX+SI]", "[BX+DI]", "[BP+SI]", "[BP+DI]", "[SI]", "[DI]", "disp16", "[BX]"},
-    {"[BX+SI]+disp8", "[BX+DI]+disp8", "[BP+SI]+disp8", "[BP+DI]+disp8", "[SI]+disp8", "[DI]+disp8", "[BP]+disp8", "[BX]+disp8"},
-    {"[BX+SI]+disp16", "[BX+DI]+disp16", "[BP+SI]+disp16", "[BP+DI]+disp16", "[SI]+disp16", "[DI]+disp16", "[BP]+disp16", "[BX]+disp16"}
-};
 
-#define test_mod_16_func(width) void test_mod_16_width_##width(v8086* machine){\
-    uint##width##_t* memory_##width;\
-    uint##width##_t* expected_memory_##width;\
-    machine->IP.w.ip = 0; \
-    machine->sregs.cs = 0; \
-    machine->regs.x.bx = 0; \
-    machine->regs.x.bp = 0; \
-    machine->regs.x.si = 0; \
-    machine->regs.x.di = 0; \
-    char str[100] = ""; \
-    for(uint16_t mod_rm=0; mod_rm < 192; mod_rm++) \
-    { \
-        char* effective_address = effective_addresses[mod_rm >> 6][mod_rm & 7]; \
-        uint16_t cumulative_offset = 0; \
-        uint8_t bp_on_road = 0; \
-        if(strstr(effective_address, "BX") != NULL) \
-        { \
-            uint16_t offset = 98; \
-            machine->regs.x.bx = offset; \
-            cumulative_offset += offset; \
-        } \
-        if(strstr(effective_address, "BP") != NULL) \
-        { \
-            uint16_t offset = 56; \
-            machine->regs.x.bp = offset; \
-            cumulative_offset += offset; \
-            bp_on_road = 1; \
-        } \
-        if(strstr(effective_address, "SI") != NULL) \
-        { \
-            uint16_t offset = 15; \
-            machine->regs.x.si = offset; \
-            cumulative_offset += offset; \
-        } \
-        if(strstr(effective_address, "DI") != NULL) \
-        { \
-            uint16_t offset = 32; \
-            machine->regs.x.di = offset; \
-            cumulative_offset += offset; \
-        } \
-        if(strstr(effective_address, "disp8") != NULL) \
-        { \
-            int16_t offset = 69; \
-            machine->Memory[0] = offset; \
-            cumulative_offset += offset; \
-        } \
-        if(strstr(effective_address, "disp16") != NULL) \
-        { \
-            uint16_t offset = 1520; \
-            machine->Memory[0] = offset & 0xff; \
-            machine->Memory[1] = offset >> 8; \
-            cumulative_offset += offset; \
-        } \
-        memory_##width = (uint##width##_t*)get_memory_from_mode(machine, mod_rm, width); \
-        expected_memory_##width = (uint##width##_t*)(machine->Memory + cumulative_offset + (bp_on_road ? machine->sregs.ss:machine->sregs.ds) * 0x10);\
-        machine->internal_state.IPOffset = 0; \
-        machine->regs.x.bx = 0; \
-        machine->regs.x.bp = 0; \
-        machine->regs.x.si = 0; \
-        machine->regs.x.di = 0; \
-        if(memory_##width != expected_memory_##width){ \
-            kernel_sprintf(str, "ERROR for mode %x and width %d\n", mod_rm, width); \
-            serial_send_string(COM1_PORT, str); \
-        } \
-        else{ \
-            kernel_sprintf(str, "OK for mode %x and width %d\n", mod_rm, width); \
-            serial_send_string(COM1_PORT, str); \
-        } \
-    } \
-}
-
-test_mod_16_func(8)
-test_mod_16_func(16)
-test_mod_16_func(32)
-
-void test_mod_16()
+void interactive_tests()
 {
-    v8086* machine = v8086_create_machine();
-
-    test_mod_16_width_8(machine);
-    test_mod_16_width_16(machine);
-    test_mod_16_width_32(machine);
-
-    v8086_destroy_machine(machine);
+    union test_v8086* machine = v8086_create_machine();
+    while(true)
+        {
+            char d[100];
+            vga_printstring("Waiting for commands!\n");
+            char debug_operation = serial_receive(COM1_PORT);
+            vga_printstring("Recived Byte: \n");
+            vga_printchar(debug_operation);
+            vga_printchar(' ');
+            itoa(debug_operation, d, 10);
+            vga_printstring(d);
+            vga_newline();
+            if(debug_operation == 0) // EXIT
+                break;
+            else if(debug_operation == 1) // SEND REGS
+                send_regs(machine);
+            else if(debug_operation == 2) // SEND SREGS
+                send_sregs(machine);
+            else if(debug_operation == 3) // READ BYTE
+            {
+                uint16_t seg;
+                uint16_t off;
+                seg = read_reg_16();
+                off = read_reg_16();
+                uint8_t mem = read_byte_from_pointer(machine->machine.Memory, get_absolute_address(seg, off));
+                serial_send(COM1_PORT, mem);
+            }
+            else if(debug_operation == 4) // READ WORD
+            {
+                uint16_t seg;
+                uint16_t off;
+                seg = read_reg_16();
+                off = read_reg_16();
+                uint16_t mem = read_word_from_pointer(machine->machine.Memory, get_absolute_address(seg, off));
+                send_reg_16(mem);
+            }
+            else if(debug_operation == 5) // READ DWORD
+            {
+                uint16_t seg;
+                uint16_t off;
+                seg = read_reg_16();
+                off = read_reg_16();
+                uint32_t mem = read_dword_from_pointer(machine->machine.Memory, get_absolute_address(seg, off));
+                send_reg_32(mem);
+            }
+            else if(debug_operation == 6) // GET IP
+            {
+                send_reg_16(machine->machine.IP.w.ip);
+            }
+            else if(debug_operation == 7) // READ MEM
+            {
+                for(int i = 0; i < 0x100000; i++)
+                    serial_send(COM1_PORT,machine->machine.Memory[i]);
+            } 
+            else if(debug_operation == 8) // READ SEG
+            {
+                uint16_t seg = read_reg_16();        
+                for(int i = 0; i < 64 * 1024; i++)
+                    serial_send(COM1_PORT,machine->machine.Memory[seg * 0x10 + i]);              
+            }
+            else if(debug_operation == 9)
+            {
+                machine->machine.IP.w.ip = read_reg_16();
+            }
+            else if(debug_operation == 10)
+            {
+                read_regs(machine);
+            }
+            else if(debug_operation == 11)
+            {
+                read_sregs(machine);
+            }
+            else if(debug_operation == 12)
+            {
+                uint32_t seg = read_reg_16();
+                uint32_t off = read_reg_16();
+                uint8_t length = read_reg_8();
+                uint32_t addr = seg * 0x10 + off;
+                for(int i = addr; i < addr + length; i++)
+                {
+                    machine->machine.Memory[i] = serial_receive(COM1_PORT);
+                }
+            }
+            else if(debug_operation == 13)
+            {
+                int16_t result = parse_and_execute_instruction(machine);
+                serial_send(COM1_PORT, result >> 8);
+                serial_send(COM1_PORT, result & 0xFF);
+            }
+            else{
+                vga_printstring("Unknown byte: ");
+                vga_printchar(debug_operation);
+                vga_newline();
+            }
+        }
 }
 
 #endif
