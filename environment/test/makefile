@@ -1,5 +1,4 @@
 GCC := /opt/cross/bin/i386-elf-gcc
-
 SRC_DIR := src
 OBJ_DIR := obj
 BIN_DIR := bin

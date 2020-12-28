@@ -70,6 +70,7 @@ bool ObjectToString(Object *object)
         if (!valueSign)
             value *= -1;
         char *tmpChar = malloc(sizeof(char) * 2);
+        *(char *)(tmpChar + 1) = '\0';
         while (true)
         {
             *tmpChar = '0' + (value % 10);

@@ -11,7 +11,7 @@ void ObjectPrint(Object *object)
     switch (object->Type)
     {
     case Float:
-        printf("(Float)->%f\n", *(float *)(object->Data));
+        printf("(Float)->%f\n", *(float *)object->Data);
         break;
     case Double:
         printf("(Double)->%lf\n", *(double *)(object->Data));

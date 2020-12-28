@@ -46,7 +46,8 @@ unsigned int _unsigned_number_len(u64 n, int base)
 
 unsigned int _fnumber_len(long double n)
 {
-    if (n == 0)
+    if (n < 1 && n > -1)
+        //if (n == 0)
         return 1;
     return floor(log10(fabs(n))) + 1;
 }
