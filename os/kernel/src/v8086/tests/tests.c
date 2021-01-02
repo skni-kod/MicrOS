@@ -4,8 +4,10 @@
 #include "stdint.h"
 #include "../mod_rm_parsing.h"
 #include "../drivers/serial/serial.h"
+#include "../drivers/vga/vga.h"
 #include "string.h"
 #include "../../debug_helpers/library/kernel_stdio.h"
+#include "../memory_operations.h"
 
 
 void interactive_tests()

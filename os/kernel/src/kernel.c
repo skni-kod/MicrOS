@@ -447,16 +447,17 @@ int kmain()
     //void (*ptr)() = (void*)(v8086_get_address_of_int(v8086, 0x10) + v8086->Memory);
 
     #ifdef TEST_V8086
-    test_mod_16();
+    //test_mod_16();
+    interactive_tests();
     #endif
 
-    v8086->machine.regs.h.ah = 0x00;
-    v8086->machine.regs.h.al = 0x13;
-    int16_t status = v8086_call_int(v8086, 0x10);
+    //v8086->machine.regs.h.ah = 0x00;
+    //v8086->machine.regs.h.al = 0x13;
+    //int16_t status = v8086_call_int(v8086, 0x10);
 
     //mode13h_set_mode();
-    mode13h_clear_screen();
-    drawLenaIn13H();
+    //mode13h_clear_screen();
+    //drawLenaIn13H();
     
     /*char str[100] = "";
     itoa(status, str, 16);

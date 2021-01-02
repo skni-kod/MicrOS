@@ -1,12 +1,11 @@
-SeaBIOS (version rel-1.11.2-0-gf9626ccb91-prebuilt.qemu-project.org)
-BUILD: gcc: (GCC) 4.8.5 20150623 (Red Hat 4.8.5-28) binutils: version 2.27-28.base.el7_5.1
+SeaBIOS (version rel-1.14.0-0-g155821a1990b-prebuilt.qemu.org)
+BUILD: gcc: (GCC) 4.8.5 20150623 (Red Hat 4.8.5-39) binutils: version 2.27-43.base.el7_8.1
 No Xen hypervisor found.
 Running on QEMU (i440fx)
-RamSize: 0x28000000 [cmos]
-Relocating init from 0x000d77f0 to 0x27fab680 (size 84208)
 Found QEMU fw_cfg
 QEMU fw_cfg DMA interface supported
-RamBlock: addr 0x0000000000000000 len 0x0000000028000000 [e820]
+qemu/e820: addr 0x0000000000000000 len 0x0000000028000000 [RAM]
+Relocating init from 0x000d4bf0 to 0x27fa9460 (size 92944)
 Moving pm_base to 0x600
 === PCI bus & bridge init ===
 PCI: pci_bios_init_bus_rec bus = 0x0
@@ -34,37 +33,43 @@ PCI: init bdf=00:02.0 id=1234:1111
 PCI: init bdf=00:03.0 id=8086:100e
 PCI: Using 00:02.0 for primary VGA
 Found 1 cpu(s) max supported 1 cpu(s)
-Copying PIR from 0x27fbfca4 to 0x000f5a20
-Copying MPTABLE from 0x00006e44/27fa2690 to 0x000f5940
-Copying SMBIOS entry point from 0x00006e44 to 0x000f5780
+Copying PIR from 0x27fbfc8c to 0x000f5b90
+Copying MPTABLE from 0x00006d30/27fa03f0 to 0x000f5ab0
+Copying SMBIOS entry point from 0x00006d30 to 0x000f58f0
+table(50434146)=0x27fe1404 (via rsdt)
+ACPI: parse DSDT at 0x27fe0040 (len 5060)
 Scan for VGA option rom
 Running option rom at c000:0003
-Start SeaVGABIOS (version rel-1.11.2-0-gf9626ccb91-prebuilt.qemu-project.org)
-VGABUILD: gcc: (GCC) 4.8.5 20150623 (Red Hat 4.8.5-28) binutils: version 2.27-28.base.el7_5.1
+Start SeaVGABIOS (version rel-1.14.0-0-g155821a1990b-prebuilt.qemu.org)
+VGABUILD: gcc: (GCC) 4.8.5 20150623 (Red Hat 4.8.5-39) binutils: version 2.27-43.base.el7_8.1
 enter vga_post:
    a=00000010  b=0000ffff  c=00000000  d=0000ffff ds=0000 es=f000 ss=0000
-  si=00000000 di=00005df0 bp=00000000 sp=00006d6e cs=f000 ip=d02a  f=0000
+  si=00000000 di=00005f60 bp=00000000 sp=00006ca6 cs=f000 ip=d07a  f=0000
 VBE DISPI: bdf 00:02.0, bar 0
 VBE DISPI: lfb_addr=fd000000, size 16 MB
-Attempting to allocate 512 bytes lowmem via pmm call to f000:d0e1
+Attempting to allocate 512 bytes lowmem via pmm call to f000:d137
 pmm call arg1=0
-VGA stack allocated at eb620
+VGA stack allocated at eac40
 Turning on vga text mode console
 set VGA mode 3
-SeaBIOS (version rel-1.11.2-0-gf9626ccb91-prebuilt.qemu-project.org)
+SeaBIOS (version rel-1.14.0-0-g155821a1990b-prebuilt.qemu.org)
 Searching bootorder for: /pci@i0cf8/isa@1/fdc@03f0/floppy@0
-ATA controller 1 at 1f0/3f4/c040 (irq 14 dev 9)
-ATA controller 2 at 170/374/c048 (irq 15 dev 9)
+ATA controller 1 at 1f0/3f4/0 (irq 14 dev 9)
+ATA controller 2 at 170/374/0 (irq 15 dev 9)
+Searching bootorder for: HALT
 Found 1 lpt ports
 Found 1 serial ports
+PS2 keyboard initialized
 ata0-0: QEMU HARDDISK ATA-7 Hard-Disk (100 MiBytes)
 Searching bootorder for: /pci@i0cf8/*@1,1/drive@0/disk@0
+Searching bios-geometry for: /pci@i0cf8/*@1,1/drive@0/disk@0
 DVD/CD [ata1-0: QEMU DVD-ROM ATAPI-4 DVD/CD]
 Searching bootorder for: /pci@i0cf8/*@1,1/drive@1/disk@0
-PS2 keyboard initialized
+Searching bios-geometry for: /pci@i0cf8/*@1,1/drive@1/disk@0
+Device reports MEDIUM NOT PRESENT
 All threads complete.
 Scan for option roms
-Running option rom at c980:0003
+Running option rom at ca00:0003
 pmm call arg1=1
 pmm call arg1=0
 pmm call arg1=1
@@ -72,9 +77,9 @@ pmm call arg1=0
 Searching bootorder for: /pci@i0cf8/*@3
 Searching bootorder for: /rom@genroms/kvmvapic.bin
 Searching bootorder for: HALT
-drive 0x000f56b0: PCHS=203/16/63 translation=large LCHS=203/16/63 s=204800
-Running option rom at ca80:0003
-Space available for UMB: cd000-ea800, f52a0-f5650
+drive 0x000f5830: PCHS=203/16/63 translation=large LCHS=203/16/63 s=204800
+Running option rom at cb00:0003
+Space available for UMB: cd800-ea000, f5410-f57d0
 Returned 131072 bytes of ZoneHigh
 e820 map has 6 items:
   0: 0000000000000000 - 000000000009fc00 = 1 RAM
@@ -87,4 +92,3 @@ enter handle_19:
   NULL
 Booting from Floppy...
 Booting from 0000:7c00
-set VGA mode 13
