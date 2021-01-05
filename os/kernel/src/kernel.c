@@ -328,12 +328,6 @@ void startup()
         vga_printstring_color(itoa(dev->prog_if, buff, 16), &col);
         vga_printchar('\n');
     }
-    pci_dev *dev = get_device(0);
-    log_info(itoa(dev->vendor_id, buff, 16));
-    log_info(itoa(dev->header_type, buff, 16));
-    log_info(itoa(dev->class_code, buff, 16));
-    log_info(itoa(dev->subclass, buff, 16));
-    log_info(itoa(dev->prog_if, buff, 16));
 
     //fat_init();
     //logger_log_ok("FAT12");
