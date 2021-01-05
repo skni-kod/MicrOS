@@ -66,13 +66,13 @@ void print_processor_status()
     strcat(buff2, buff);
     logger_log_info(buff2);
 
-    if(cores > 1)
+    if (cores > 1)
     {
         logger_log_warning("But only one core is used :v");
         logger_log_info("For future SKNI members: add support for more cores");
     }
 
-    for(int i = 0; i < cpuid_get_valid_number_cache_entries(); i++)
+    for (int i = 0; i < cpuid_get_valid_number_cache_entries(); i++)
     {
         cpuid_cache_struct cache = cpuid_get_cache_data(i);
 
@@ -80,21 +80,21 @@ void print_processor_status()
         itoa(cache.level, buff, 10);
         strcat(buff2, buff);
 
-        switch(cache.type)
+        switch (cache.type)
         {
-            case DATA_CACHE:
-                strcat(buff2, ", type: data, size: ");
-                break;
-            case INSTRUCTION_CACHE:
-                strcat(buff2, ", type: instruction, size: ");
-                break;
-            case UNIFIED_CACHE:
-                strcat(buff2, ", type: unified, size: ");
-                break;
+        case DATA_CACHE:
+            strcat(buff2, ", type: data, size: ");
+            break;
+        case INSTRUCTION_CACHE:
+            strcat(buff2, ", type: instruction, size: ");
+            break;
+        case UNIFIED_CACHE:
+            strcat(buff2, ", type: unified, size: ");
+            break;
         }
 
         uint32_t size = cache.size / 1024;
-        if(size < 1024)
+        if (size < 1024)
         {
             itoa(size, buff, 10);
             strcat(buff2, buff);
@@ -117,13 +117,13 @@ void print_processor_status()
     \param bus Type of bus for hard disk.
     \param name Name for hard disk eg. "Primary Master", that is printed during boot to specify disk.
  */
-void print_harddisk_details(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, char* name)
+void print_harddisk_details(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, char *name)
 {
     char buff[50];
     char buff2[100];
     HARDDISK_STATE state = harddisk_get_state(type, bus);
 
-    if(state == HARDDISK_ATA_PRESENT)
+    if (state == HARDDISK_ATA_PRESENT)
     {
         strcpy(buff2, name);
         strcat(buff2, ": ATA device");
@@ -155,7 +155,7 @@ void print_harddisk_details(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYP
         strcat(buff2, " MB");
         logger_log_info(buff2);
 
-        if(harddisk_get_is_removable_media_device(type, bus) == true)
+        if (harddisk_get_is_removable_media_device(type, bus) == true)
         {
             logger_log_info("Removable media: true");
         }
@@ -164,7 +164,7 @@ void print_harddisk_details(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYP
             logger_log_info("Removable media: false");
         }
     }
-    else if(state == HARDDISK_ATAPI_PRESENT)
+    else if (state == HARDDISK_ATAPI_PRESENT)
     {
         strcpy(buff2, name);
         strcat(buff2, ": ATAPI device");
@@ -185,7 +185,7 @@ void print_harddisk_details(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYP
         strcat(buff2, buff);
         logger_log_info(buff2);
 
-        if(harddisk_get_is_removable_media_device(type, bus) == true)
+        if (harddisk_get_is_removable_media_device(type, bus) == true)
         {
             logger_log_info("Removable media: true");
         }
@@ -194,7 +194,7 @@ void print_harddisk_details(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYP
             logger_log_info("Removable media: false");
         }
     }
-    else if(state == HARDDISK_NOT_PRESENT)
+    else if (state == HARDDISK_NOT_PRESENT)
     {
         strcpy(buff2, name);
         strcat(buff2, ": not detected");
@@ -233,7 +233,7 @@ void startup()
     cpuid_init();
     logger_log_ok("Procesor");
     print_processor_status();
-    
+
     //Loading Generic VGA Driver
     generic_vga_driver_init();
     logger_log_ok("Loaded DAL, and Generic VGA Driver");
@@ -263,11 +263,11 @@ void startup()
         fdc_init();
         logger_log_ok("Floppy Disc Controller");
     }
-    
+
     harddisk_init();
     logger_log_ok("Hard Disks");
     print_harddisks_status();
-    
+
     partitions_init();
     logger_log_ok("Partitions");
 
@@ -286,7 +286,7 @@ void startup()
     signals_manager_init();
     logger_log_ok("Signals manager");
 
-    /*pci_init();
+    pci_init();
     logger_log_ok("PCI");
     logger_log_info("Number of devices: ");
     uint8_t nd = pci_get_number_of_devices();
@@ -328,15 +328,16 @@ void startup()
         vga_printstring_color(itoa(dev->prog_if, buff, 16), &col);
         vga_printchar('\n');
     }
-    pci_dev* dev = get_device(0);
+    pci_dev *dev = get_device(0);
     log_info(itoa(dev->vendor_id, buff, 16));
     log_info(itoa(dev->header_type, buff, 16));
     log_info(itoa(dev->class_code, buff, 16));
     log_info(itoa(dev->subclass, buff, 16));
-    log_info(itoa(dev->prog_if, buff, 16));*/
+    log_info(itoa(dev->prog_if, buff, 16));
+
     //fat_init();
     //logger_log_ok("FAT12");
-    
+
     init_terminal_manager();
     logger_log_ok("Terminal manager");
 
@@ -368,31 +369,31 @@ int kmain()
     logger_log_info("Hello, World!");
     //startup_music_play();
     logger_log_ok("READY.");
-    
+
     //while (1);
-    
+
     logger_log_ok("Loading shells...");
-    
+
     // create_terminal(&d);
     // create_terminal(&d);
-    
+
     uint32_t d = 0;
     for (int i = 0; i < 4; i++)
     {
         char args[16];
         itoa(i, args, 10);
-        
+
         uint32_t p = process_manager_create_process("A:/ENV/SHELL.ELF", args, 0, false);
         create_terminal(&d);
-    
+
         uint32_t terminal_number = i;
-        const terminal_struct* ts = get_terminals(&terminal_number);
+        const terminal_struct *ts = get_terminals(&terminal_number);
         attach_process_to_terminal(ts[i].terminal_id, process_manager_get_process(p));
     }
-    
+
     vga_clear_screen();
     switch_active_terminal(0);
-    
+
     // terminal_manager_print_string(p, "CIASTKO");
     // p = process_manager_create_process("A:/ENV/SHELL.ELF", "", 1000, false);
     // attach_process_to_terminal(ts[0].terminal_id, process_manager_get_process(p));
@@ -405,11 +406,12 @@ int kmain()
     process_manager_run();
     //destroy_active_terminal();
 
-    while (1);
+    while (1)
+        ;
     // {
     //     sleep(5000);
     //     next_terminal();
-    //     
+    //
     // }
     //    ;
     /*char buff[50];
