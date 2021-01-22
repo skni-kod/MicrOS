@@ -44,6 +44,7 @@ void rtl8139_init()
 
     rtl8139_device.tx_cur = 0;
 
+    //PCI bus mastering
     uint32_t pci_command_reg = pci_rtl8139_device.command;
     if (!(pci_command_reg & TOK))
     {
@@ -65,9 +66,9 @@ void rtl8139_init()
     // Allocate receive buffer
     rtl8139_device.rx_buffer = heap_kernel_alloc(RX_BUFFER_SIZE, 0);
     memset(rtl8139_device.rx_buffer, 0x0, RX_BUFFER_SIZE);
-    io_out_long(rtl8139_device.io_base + RXBUF, rtl8139_device.rx_buffer + 0xC0000000);
+    io_out_long(rtl8139_device.io_base + RXBUF, rtl8139_device.rx_buffer - 0xC0000000);
 
-    // Set TransmitterOK and ReceiverOK to HIGH
+    // Set TransmitterOK and ReceiveOK to HIGH
     io_out_word(rtl8139_device.io_base + INTRMASK, 0x0005);
 
     // (1 << 7) is the WRAP bit, 0xf is AB+AM+APM+AAP
@@ -78,7 +79,9 @@ void rtl8139_init()
 
     // Enable interruptions
     uint32_t irq_num = pci_rtl8139_device.interrupt_line;
-    idt_attach_interrupt_handler(32 + irq_num, rtl8139_irq_handler);
+    idt_attach_interrupt_handler(irq_num, rtl8139_irq_handler);
+
+    pic_enable_irq(irq_num + 11);
 
     rtl8139_read_mac_addr();
 
@@ -99,21 +102,24 @@ void rtl8139_init()
 
     //Finally we can tell that - We did it!
     logger_log_ok(logInfo);
+    char tmp[64] = "HelloWorld!";
+    rtl8139_send_packet(tmp, 64);
+    rtl8139_send_packet(tmp, 64);
 }
 
-void rtl8139_irq_handler(pci_in_data *data)
+void rtl8139_irq_handler(interrupt_state *state)
 {
     //Get status of device
     uint16_t status = io_in_word(rtl8139_device.io_base + INTRSTATUS);
 
     if (status & TOK)
     {
-        //logger_log_info("Packet sent");
+        logger_log_info("Packet sent");
     }
     if (status & ROK)
     {
-        //logger_log_info("Packet received");
-        //receive_packet();
+        logger_log_info("Packet received");
+        rtl8139_receive_packet();
     }
 
     io_out_word(rtl8139_device.io_base + INTRSTATUS, 0x5);
@@ -135,4 +141,54 @@ void rtl8139_get_mac_addr(uint8_t *buffer)
     }
 
     memcpy(buffer, rtl8139_device.mac_addr, 6);
+}
+
+void rtl8139_receive_packet()
+{
+    uint16_t *t = (uint16_t *)(rtl8139_device.rx_buffer + current_packet_ptr);
+    // Skip packet header, get packet length
+    uint16_t packet_length = *(t + 1);
+
+    // Skip, packet header and packet length, now t points to the packet data
+    t = t + 2;
+
+    //Copy received to heap
+    void *packet = heap_kernel_alloc(packet_length, 0);
+    memcpy(packet, t, packet_length);
+    //TODO: PACKET HANDLING
+
+    current_packet_ptr = (current_packet_ptr + packet_length + 4 + 3) & RX_READ_POINTER_MASK;
+
+    if (current_packet_ptr > RX_BUFFER_SIZE)
+        current_packet_ptr -= RX_BUFFER_SIZE;
+
+    io_out_word(rtl8139_device.io_base + CAPR, current_packet_ptr - 0x10);
+}
+
+void rtl8139_send_packet(void *data, uint32_t len)
+{
+    void *transfer_data = 0x7000;
+    memcpy(transfer_data, data, len);
+    void *phys_addr = transfer_data;
+
+    io_out_long(rtl8139_device.io_base + TSAD_array[rtl8139_device.tx_cur], phys_addr);
+    io_out_long(rtl8139_device.io_base + TSD_array[rtl8139_device.tx_cur], len);
+
+    while (true)
+    {
+        //TODO:Transmit FIFO Underrun
+        //Wait for TOK flag
+        //TODO: TRANSMISSION TIMEOUT, packet queue
+        if (io_in_long(rtl8139_device.io_base + TSD_array[rtl8139_device.tx_cur]) & TX_TOK)
+            break;
+    }
+
+    //Switch buffer
+    rtl8139_device.tx_cur++;
+    if (rtl8139_device.tx_cur > 3)
+    {
+        rtl8139_device.tx_cur = 0;
+    }
+
+    //TODO: DEALLOC BUFFER
 }

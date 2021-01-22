@@ -4,6 +4,7 @@
 #include "../../pci/pci.h"
 #include "../../../assembly/io.h"
 #include "../../../logger/logger.h"
+#include "../../../cpu/idt/idt.h"
 #include <stdlib.h>
 
 #define DEVICE_VENDOR_ID 0x10EC
@@ -22,7 +23,7 @@
 enum RTL8139_registers
 {
     MAG0 = 0x00,      // Ethernet hardware address MAC
-    MAR0 = 0x08,      // Subnet mask
+    MAR0 = 0x08,      // Multicast
     TXSTATUS0 = 0x10, // TX status (4x32bit)
     TXADDR0 = 0x20,   // TX descriptors (4x32bit)
     RXBUF = 0x30,
@@ -92,7 +93,7 @@ void rtl8139_receive_packet();
 /*!
     Manages interruptions of device
 */
-void rtl8139_irq_handler(pci_in_data *data);
+void rtl8139_irq_handler(interrupt_state *state);
 
 //! rtl8139_read_mac_addr
 /*!
