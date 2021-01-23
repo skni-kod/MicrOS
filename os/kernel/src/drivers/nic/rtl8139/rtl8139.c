@@ -5,6 +5,9 @@ rtl8139_dev_t rtl8139_device = {0};
 
 uint32_t current_packet_ptr;
 
+uint32_t sent_count = 0;
+uint32_t received_count = 0;
+
 //! Transmit start address of descritor (device has 4 descriptors)
 uint8_t TSAD_array[4] = {0x20, 0x24, 0x28, 0x2C};
 
@@ -33,10 +36,7 @@ void rtl8139_init()
     }
 
     if (pci_rtl8139_device.vendor_id == 0)
-    {
-        logger_log_info("NIC not found\n");
         return;
-    }
 
     //Now setup registers, and memory
     rtl8139_device.bar_type = pci_rtl8139_device.base_addres_0 & (0x1);
@@ -55,9 +55,7 @@ void rtl8139_init()
     //Software reset
     io_out_byte(rtl8139_device.io_base + CHIPCMD, 0x10);
     while ((io_in_byte(rtl8139_device.io_base + CHIPCMD) & 0x10) != 0)
-    {
         ;
-    }
 
     //Set Active buffer to first
     rtl8139_device.tx_cur = 0;
@@ -79,13 +77,11 @@ void rtl8139_init()
     // (1 << 7) is the WRAP bit, 0xf is AB+AM+APM+AAP
     io_out_long(rtl8139_device.io_base + RXCONFIG, 0xf | (1 << 7));
 
-    //Enable interruptions
+    //TODO: Interruptions
     //Set TransmitterOK and ReceiveOK to HIGH
-    //TODO: ALL IRQ MASK
-    io_out_word(rtl8139_device.io_base + INTRMASK, 0xffff);
+    io_out_word(rtl8139_device.io_base + INTRMASK, 0x5);
 
     uint32_t irq_num = pci_rtl8139_device.interrupt_line;
-
     pic_enable_irq(irq_num);
     idt_attach_interrupt_handler(irq_num, rtl8139_irq_handler);
 
@@ -122,17 +118,19 @@ void rtl8139_init()
 
 void rtl8139_irq_handler()
 {
-    logger_log_info("INTERRUPRD:");
+    logger_log_info("NIC Interrupt");
     //Get status of device
     uint16_t status = io_in_word(rtl8139_device.io_base + INTRSTATUS);
 
     if (status & TOK)
     {
         logger_log_info("Packet sent");
+        sent_count++;
     }
     if (status & ROK)
     {
         logger_log_info("Packet received");
+        received_count++;
         rtl8139_receive_packet();
     }
 
@@ -209,4 +207,14 @@ void rtl8139_send_packet(void *data, uint32_t len)
     }
 
     //TODO: DEALLOC BUFFER
+}
+
+uint32_t rtl8139_get_sent_count()
+{
+    return sent_count;
+}
+
+uint32_t rtl8139_get_received_count()
+{
+    return received_count;
 }
