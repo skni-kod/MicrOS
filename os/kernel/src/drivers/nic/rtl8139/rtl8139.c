@@ -21,7 +21,8 @@ void rtl8139_init()
 
     // First get the network device using PCI
     // PCI must be initialized!
-    for (int i = 0; i < pci_get_number_of_devices(); i++)
+    int i = 0;
+    for (; i < pci_get_number_of_devices(); i++)
     {
         pci_device *dev = pci_get_device(i);
         if (dev->vendor_id == DEVICE_VENDOR_ID && dev->device_id == DEVICE_ID)
@@ -42,15 +43,11 @@ void rtl8139_init()
     rtl8139_device.io_base = pci_rtl8139_device.base_addres_0 & (~0x3);
     rtl8139_device.mem_base = pci_rtl8139_device.base_addres_0 & (~0xf);
 
-    rtl8139_device.tx_cur = 0;
-
     //PCI bus mastering
-    uint32_t pci_command_reg = pci_rtl8139_device.command;
-    if (!(pci_command_reg & TOK))
-    {
-        pci_command_reg |= TOK;
-        io_out_byte(pci_rtl8139_device.command, pci_command_reg);
-    }
+    io_out_long(PCI_CONFIG_ADDRESS, pci_get_device_desc(i, 1));
+    uint32_t __tmp = io_in_long(PCI_CONFIG_DATA);
+    __tmp |= 0x4;
+    io_out_long(PCI_CONFIG_DATA, __tmp);
 
     //Power on device
     io_out_byte(rtl8139_device.io_base + CONFIG1, 0x0);
@@ -62,26 +59,41 @@ void rtl8139_init()
         ;
     }
 
+    //Set Active buffer to first
+    rtl8139_device.tx_cur = 0;
+
+    // Set ReceiverEnable and TransmitterEnable to HIGH
+    io_out_byte(rtl8139_device.io_base + CHIPCMD, 0x0C);
+
+    //Set Transmit and Receive Configuration Registers
+    io_out_long(rtl8139_device.io_base + TXCONFIG, 0x03000700);
+    io_out_long(rtl8139_device.io_base + RXCONFIG, 0x0300070A);
+
+    //RECEIVE BUFFER
     //TODO: MEMORY ALLOCATION IS OK ?
     // Allocate receive buffer
     rtl8139_device.rx_buffer = heap_kernel_alloc(RX_BUFFER_SIZE, 0);
     memset(rtl8139_device.rx_buffer, 0x0, RX_BUFFER_SIZE);
     io_out_long(rtl8139_device.io_base + RXBUF, rtl8139_device.rx_buffer - 0xC0000000);
 
-    // Set TransmitterOK and ReceiveOK to HIGH
-    io_out_word(rtl8139_device.io_base + INTRMASK, 0x0005);
-
     // (1 << 7) is the WRAP bit, 0xf is AB+AM+APM+AAP
     io_out_long(rtl8139_device.io_base + RXCONFIG, 0xf | (1 << 7));
 
-    // Set ReceiverEnable and TransmitterEnable to HIGH
-    io_out_byte(rtl8139_device.io_base + CHIPCMD, 0x0C);
+    //Enable interruptions
+    //Set TransmitterOK and ReceiveOK to HIGH
+    //TODO: ALL IRQ MASK
+    io_out_word(rtl8139_device.io_base + INTRMASK, 0xffff);
 
-    // Enable interruptions
     uint32_t irq_num = pci_rtl8139_device.interrupt_line;
+
+    pic_enable_irq(irq_num);
     idt_attach_interrupt_handler(irq_num, rtl8139_irq_handler);
 
-    pic_enable_irq(irq_num + 11);
+    // io_out_long(PCI_CONFIG_ADDRESS, pci_get_device_desc(i, 15));
+    // __tmp = io_in_long(PCI_CONFIG_DATA);
+    // __tmp &= 0xFFFFFFF00;
+    // __tmp |= irq_num + 32;
+    // io_out_long(PCI_CONFIG_DATA, __tmp);
 
     rtl8139_read_mac_addr();
 
@@ -102,13 +114,15 @@ void rtl8139_init()
 
     //Finally we can tell that - We did it!
     logger_log_ok(logInfo);
+
+    //Send exmaple message
     char tmp[64] = "HelloWorld!";
-    rtl8139_send_packet(tmp, 64);
     rtl8139_send_packet(tmp, 64);
 }
 
-void rtl8139_irq_handler(interrupt_state *state)
+void rtl8139_irq_handler()
 {
+    logger_log_info("INTERRUPRD:");
     //Get status of device
     uint16_t status = io_in_word(rtl8139_device.io_base + INTRSTATUS);
 
@@ -172,7 +186,11 @@ void rtl8139_send_packet(void *data, uint32_t len)
     void *phys_addr = transfer_data;
 
     io_out_long(rtl8139_device.io_base + TSAD_array[rtl8139_device.tx_cur], phys_addr);
-    io_out_long(rtl8139_device.io_base + TSD_array[rtl8139_device.tx_cur], len);
+
+    uint32_t status = 0;
+    status |= len & 0x1FFF; // 0-12: Length
+    status |= 0 << 13;      // 13: OWN bit
+    io_out_long(rtl8139_device.io_base + TSD_array[rtl8139_device.tx_cur], status);
 
     while (true)
     {

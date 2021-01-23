@@ -3,7 +3,9 @@
 #include "logger/logger.h"
 #include <stdlib.h>
 
-static pci_device devices[32];
+static pci_device devices[PCI_DEVICE_COUNT];
+static pci_device_descriptor devices_desc[PCI_DEVICE_COUNT];
+
 pci_in_data d;
 pci_device dev;
 
@@ -11,29 +13,13 @@ uint8_t number_of_devices = 0;
 
 void pci_init()
 {
-    // TODO: Check if these commented lines are necessary.
-    /*d.enable = 1;
-    for(uint16_t bus = 0; bus < 256; bus++)
-    {
-        d.bus_num = bus;
-        for(uint8_t device=0; device < 32; device++)
-        {
-            d.device_num = device;
-            get_device_info(&d, &devices[number_of_devices]);
-            if(devices[number_of_devices].vendor_id != (uint16_t)0xFFFF)
-            {
-                number_of_devices++;
-            }
-            if(number_of_devices >= 32)
-                return;
-        }
-    }*/
     pci_check_all_buses();
 }
 
 uint32_t pci_get_register(pci_in_data *data)
 {
     io_out_long(PCI_CONFIG_ADDRESS, data->bits);
+    uint32_t tmp = io_in_long(PCI_CONFIG_DATA);
     return io_in_long(PCI_CONFIG_DATA);
 }
 
@@ -91,6 +77,7 @@ void pci_check_device(uint16_t bus, uint16_t dev)
     if (temp.vendor_id == (uint16_t)0xFFFF)
         return;
     pci_insert_device(&temp);
+    pci_add_descriptor(&data);
     pci_check_bridge(&temp);
     if ((temp.header_type & 0x80) != 0)
     {
@@ -101,6 +88,7 @@ void pci_check_device(uint16_t bus, uint16_t dev)
             if (temp.vendor_id != 0xFFFF)
             {
                 pci_insert_device(&temp);
+                pci_add_descriptor(&data);
                 pci_check_bridge(&temp);
             }
         }
@@ -136,4 +124,18 @@ void pci_check_all_buses()
             pci_check_bus(i);
         }
     }
+}
+
+void pci_add_descriptor(pci_in_data *dev)
+{
+    for (int i = 0; i < 16; i++)
+    {
+        dev->register_num = i;
+        devices_desc[number_of_devices - 1].registers[i] = dev->bits;
+    }
+}
+
+uint32_t pci_get_device_desc(uint8_t dev_index, uint8_t reg_index)
+{
+    return devices_desc[dev_index].registers[reg_index];
 }

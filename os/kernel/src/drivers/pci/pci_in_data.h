@@ -1,7 +1,8 @@
 #ifndef PCI_IN_DATA
 #define PCI_IN_DATA
 
-typedef union pci_in_data {
+typedef union pci_in_data
+{
     uint32_t bits;
     struct
     {

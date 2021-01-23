@@ -93,7 +93,7 @@ void rtl8139_receive_packet();
 /*!
     Manages interruptions of device
 */
-void rtl8139_irq_handler(interrupt_state *state);
+void rtl8139_irq_handler();
 
 //! rtl8139_read_mac_addr
 /*!
