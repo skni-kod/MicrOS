@@ -290,6 +290,10 @@ void idt_global_int_handler(interrupt_state *state)
 
     for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
     {
+        if (state->interrupt_number > 40 && state->interrupt_number < 50)
+        {
+            int x = 2;
+        }
         if (interrupt_handlers[i].interrupt_number == state->interrupt_number && interrupt_handlers[i].handler != 0)
         {
             if (interrupt_handlers[i].handler(state))

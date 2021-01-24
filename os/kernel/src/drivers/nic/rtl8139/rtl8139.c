@@ -44,10 +44,9 @@ void rtl8139_init()
     rtl8139_device.mem_base = pci_rtl8139_device.base_addres_0 & (~0xf);
 
     //PCI bus mastering
-    io_out_long(PCI_CONFIG_ADDRESS, pci_get_device_desc(i, 1));
-    uint32_t __tmp = io_in_long(PCI_CONFIG_DATA);
-    __tmp |= 0x4;
-    io_out_long(PCI_CONFIG_DATA, __tmp);
+    uint32_t pci_bus_config = pci_io_in(&pci_rtl8139_device, 1);
+    pci_bus_config |= 0x4;
+    pci_io_out(&pci_rtl8139_device, 1, pci_bus_config);
 
     //Power on device
     io_out_byte(rtl8139_device.io_base + CONFIG1, 0x0);
@@ -116,7 +115,7 @@ void rtl8139_init()
     rtl8139_send_packet(tmp, 64);
 }
 
-void rtl8139_irq_handler()
+bool rtl8139_irq_handler()
 {
     logger_log_info("NIC Interrupt");
     //Get status of device
@@ -135,6 +134,7 @@ void rtl8139_irq_handler()
     }
 
     io_out_word(rtl8139_device.io_base + INTRSTATUS, 0x5);
+    return true;
 }
 
 void rtl8139_read_mac_addr()

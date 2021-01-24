@@ -4,7 +4,6 @@
 #include <stdlib.h>
 
 static pci_device devices[PCI_DEVICE_COUNT];
-static pci_device_descriptor devices_desc[PCI_DEVICE_COUNT];
 
 pci_in_data d;
 pci_device dev;
@@ -19,7 +18,6 @@ void pci_init()
 uint32_t pci_get_register(pci_in_data *data)
 {
     io_out_long(PCI_CONFIG_ADDRESS, data->bits);
-    uint32_t tmp = io_in_long(PCI_CONFIG_DATA);
     return io_in_long(PCI_CONFIG_DATA);
 }
 
@@ -28,7 +26,8 @@ void pci_get_device_info(pci_in_data *data, pci_device *info)
     for (int i = 0; i <= 0xF; i++)
     {
         data->register_num = i;
-        (*info).bits_32[i] = pci_get_register(data);
+        io_out_long(PCI_CONFIG_ADDRESS, data->bits);
+        (*info).bits_32[i] = io_in_long(PCI_CONFIG_DATA);
         if (((*info).bits_16[i] == 0xFFFF) && (i == 0))
             break;
     }
@@ -44,10 +43,12 @@ uint8_t pci_get_number_of_devices()
     return number_of_devices;
 }
 
-void pci_insert_device(pci_device *dev)
+void pci_insert_device(pci_device *dev, pci_in_data *data)
 {
     for (int i = 0; i < 16; i++)
     {
+        data->register_num = i;
+        devices[number_of_devices].descriptors[i] = data->bits;
         devices[number_of_devices].bits_32[i] = dev->bits_32[i];
     }
     number_of_devices++;
@@ -76,8 +77,7 @@ void pci_check_device(uint16_t bus, uint16_t dev)
 
     if (temp.vendor_id == (uint16_t)0xFFFF)
         return;
-    pci_insert_device(&temp);
-    pci_add_descriptor(&data);
+    pci_insert_device(&temp, &data);
     pci_check_bridge(&temp);
     if ((temp.header_type & 0x80) != 0)
     {
@@ -87,8 +87,7 @@ void pci_check_device(uint16_t bus, uint16_t dev)
             pci_get_device_info(&data, &temp);
             if (temp.vendor_id != 0xFFFF)
             {
-                pci_insert_device(&temp);
-                pci_add_descriptor(&data);
+                pci_insert_device(&temp, &data);
                 pci_check_bridge(&temp);
             }
         }
@@ -126,16 +125,14 @@ void pci_check_all_buses()
     }
 }
 
-void pci_add_descriptor(pci_in_data *dev)
+void pci_io_out(pci_device *dev, uint8_t desc_index, uint32_t value)
 {
-    for (int i = 0; i < 16; i++)
-    {
-        dev->register_num = i;
-        devices_desc[number_of_devices - 1].registers[i] = dev->bits;
-    }
+    io_out_long(PCI_CONFIG_ADDRESS, dev->descriptors[desc_index]);
+    io_out_long(PCI_CONFIG_DATA, value);
 }
 
-uint32_t pci_get_device_desc(uint8_t dev_index, uint8_t reg_index)
+uint32_t pci_io_in(pci_device *dev, uint8_t desc_index)
 {
-    return devices_desc[dev_index].registers[reg_index];
+    io_out_long(PCI_CONFIG_ADDRESS, dev->descriptors[desc_index]);
+    return io_in_long(PCI_CONFIG_DATA);
 }
