@@ -5,7 +5,7 @@ paging_table_entry *page_tables = (paging_table_entry *)PAGE_TABLES_ADDRESS;
 
 void paging_init()
 {
-    //paging_remove_identity();
+    paging_remove_identity();
     paging_add_stack_guard();
 }
 
