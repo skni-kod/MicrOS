@@ -6,6 +6,7 @@
 #include "../../../logger/logger.h"
 #include "../../../cpu/idt/idt.h"
 #include "../../serial/serial.h"
+#include "../../../network/net_device.h"
 #include <stdlib.h>
 
 #define DEVICE_VENDOR_ID 0x10EC
@@ -62,12 +63,6 @@ enum RTL8139_registers
     PARA7C = 0x7C, // Magic transceiver parameter register
 };
 
-typedef struct tx_desc
-{
-    uint32_t phys_addr;
-    uint32_t packet_size;
-} tx_desc_t;
-
 typedef struct rtl8139_dev
 {
     uint8_t bar_type;
@@ -83,11 +78,20 @@ typedef struct rtl8139_dev
 /*!
     Initialize network card driver 
     Requires initialized PCI driver
+    If device not present, returns 0, if yes pointer to dev mac address
 */
-void rtl8139_init();
+bool rtl8139_init(net_device_t *net_dev);
 
-void rtl8139_send_packet(void *data, uint32_t len);
+//! rtl8139_send_packet
+/*
+    Send data, with desired length
+*/
+void rtl8139_send_packet(net_packet_t *packet);
 
+//! rtl8139_receive_packet
+/*
+    Receive packet
+*/
 void rtl8139_receive_packet();
 
 //! rtl8139_irq_handler

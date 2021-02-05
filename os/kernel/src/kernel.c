@@ -29,7 +29,7 @@
 #include "drivers/harddisk/ata/harddisk_ata.h"
 #include "drivers/harddisk/harddisk_identify_device_data.h"
 #include "filesystems/partitions/partitions.h"
-#include "drivers/nic/rtl8139/rtl8139.h"
+#include "network/network_manager.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
@@ -286,6 +286,8 @@ void startup()
 
     signals_manager_init();
     logger_log_ok("Signals manager");
+
+    pci_init();
     //
     // logger_log_ok("PCI");
     // logger_log_info("Number of devices: ");
@@ -332,9 +334,10 @@ void startup()
     //fat_init();
     //logger_log_ok("FAT12");
 
-    pci_init();
-    //RTL8139 INIT
-    rtl8139_init();
+    ///    Networking
+    if (network_manager_init())
+        logger_log_ok("Network manager");
+    //    Networking
 
     init_terminal_manager();
     logger_log_ok("Terminal manager");
