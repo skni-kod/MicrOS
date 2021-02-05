@@ -92,10 +92,34 @@ void rtl8139_init()
 
     //Set TransmitterOK and ReceiveOK to HIGH
     io_out_word(rtl8139_device.io_base + INTRSTATUS, 0x0);
-    io_out_word(rtl8139_device.io_base + INTRMASK, 0xffff);
+    io_out_word(rtl8139_device.io_base + INTRMASK, 0xff);
+    uint32_t irq_num = pci_rtl8139_device.interrupt_line;
+    pic_enable_irq(irq_num);
+    idt_attach_interrupt_handler(irq_num, rtl8139_irq_handler);
 
     //Finally we can tell that - We did it!
     logger_log_ok(logInfo);
+}
+
+bool rtl8139_irq_handler()
+{
+    //Get status of device
+    uint16_t status = io_in_word(rtl8139_device.io_base + INTRSTATUS);
+
+    logger_log_info("Hey! I've got something for you");
+
+    if (status & TOK)
+        sent_count++;
+
+    if (status & ROK)
+    {
+        received_count++;
+        rtl8139_receive_packet();
+    }
+
+    io_out_word(rtl8139_device.io_base + INTRSTATUS, 0x5);
+
+    return true;
 }
 
 void rtl8139_read_mac_addr()
@@ -160,8 +184,6 @@ void rtl8139_send_packet(void *data, uint32_t len)
             break;
     }
 
-    heap_kernel_dealloc(transfer_data);
-
     //Switch buffer
     rtl8139_device.tx_cur++;
     if (rtl8139_device.tx_cur > 3)
@@ -170,6 +192,7 @@ void rtl8139_send_packet(void *data, uint32_t len)
     }
 
     //TODO: DEALLOC BUFFER
+    heap_kernel_dealloc(transfer_data);
 }
 
 uint32_t rtl8139_get_sent_count()

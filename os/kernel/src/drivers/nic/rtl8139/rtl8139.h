@@ -5,6 +5,7 @@
 #include "../../../assembly/io.h"
 #include "../../../logger/logger.h"
 #include "../../../cpu/idt/idt.h"
+#include "../../serial/serial.h"
 #include <stdlib.h>
 
 #define DEVICE_VENDOR_ID 0x10EC

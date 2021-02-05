@@ -16,6 +16,7 @@
 #include "cpu/pic/pic.h"
 #include "cpu/panic/panic_screen.h"
 #include "drivers/keyboard/keyboard.h"
+#include "../../drivers/serial/serial.h"
 
 void idt_init();
 void idt_set(uint8_t index, uint32_t (*handler)(interrupt_state *state), bool user_interrupt);

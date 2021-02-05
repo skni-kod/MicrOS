@@ -286,9 +286,6 @@ void startup()
 
     signals_manager_init();
     logger_log_ok("Signals manager");
-
-    pci_init();
-
     //
     // logger_log_ok("PCI");
     // logger_log_info("Number of devices: ");
@@ -335,6 +332,7 @@ void startup()
     //fat_init();
     //logger_log_ok("FAT12");
 
+    pci_init();
     //RTL8139 INIT
     rtl8139_init();
 
@@ -394,18 +392,7 @@ int kmain()
     vga_clear_screen();
     switch_active_terminal(0);
 
-    // terminal_manager_print_string(p, "CIASTKO");
-    // p = process_manager_create_process("A:/ENV/SHELL.ELF", "", 1000, false);
-    // attach_process_to_terminal(ts[0].terminal_id, process_manager_get_process(p));
-    // terminal_manager_print_string(p, "KARMEL");
-    // p = process_manager_create_process("A:/ENV/SHELL.ELF", "", 1000, false);
-    // attach_process_to_terminal(ts[1].terminal_id, process_manager_get_process(p));
-    // terminal_manager_print_string(p, "CZEKOLAAAAAAAAADA!");
-    //terminal_manager_print_string(ts[1].active_process->id, "KARMAEL");
-    //terminal_manager_print_string(ts[2].active_process->id, "CZEKOLADA!");
     process_manager_run();
-    //destroy_active_terminal();
-
     while (1)
         ;
     // {
