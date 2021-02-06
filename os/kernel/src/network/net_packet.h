@@ -1,3 +1,7 @@
+/*
+    @JakubPrzystasz
+    Created: 06.02.2021
+*/
 #ifndef net_packet
 #define net_packet
 

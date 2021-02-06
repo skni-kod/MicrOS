@@ -1,3 +1,7 @@
+/*
+    @JakubPrzystasz
+    Created: 06.02.2021
+*/
 #include "rtl8139.h"
 
 pci_device pci_rtl8139_device = {0};

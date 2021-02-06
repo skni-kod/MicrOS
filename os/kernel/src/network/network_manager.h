@@ -1,3 +1,7 @@
+/*
+    @JakubPrzystasz
+    Created: 06.02.2021
+*/
 #ifndef network_manager
 #define network_manager
 
@@ -11,12 +15,36 @@
 */
 bool network_manager_init();
 
-//! __network_manager_packet_received
+//! network_manager_send_packet
+/*
+    Send packet
+*/
+void netwok_manager_send_packet(net_packet_t *packet);
+
+//! network_manager_receive_packet
 /*
     Function triggers when packet incomes to OS,
     given packet must be on heap
 */
 void network_manager_receive_packet(net_packet_t *packet);
+
+//! network_manager_process_packet
+/*
+    Process incoming packet
+*/
+void network_manager_process_packet(net_packet_t *packet);
+
+//! network_manager_bytes_sent
+/*
+    Returns number of bytes sent over Ethernet
+*/
+uint64_t network_manager_bytes_sent(void);
+
+//! network_manager_bytes_received
+/*
+    Returns number of bytes received over Ethernet
+*/
+uint64_t network_manager_bytes_received(void);
 
 //! __network_manager_print_device_info
 /*

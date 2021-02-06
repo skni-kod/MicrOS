@@ -1,6 +1,21 @@
+/*
+    @JakubPrzystasz
+    Created: 06.02.2021
+*/
+
 #include "network_manager.h"
 
 kvector *net_devices;
+uint64_t bytes_sent_count = 0;
+uint64_t bytes_received_count = 0;
+
+//TODO:
+/*
+    When some day, multithreading will be on the agenda
+    there is some tasks to do:
+    - enable buffering TX and RX
+    - put rx/tx packet routine to another thread
+*/
 
 bool network_manager_init()
 {
@@ -26,6 +41,25 @@ bool network_manager_init()
     return true;
 }
 
+void netwok_manager_send_packet(net_packet_t *packet)
+{
+    for (uint8_t i = 0; i < net_devices->count; i++)
+    {
+        //Add packet to device RX queue
+        if (__network_manager_compare_mac_address(((net_device_t *)(net_devices->data[i]))->mac_address, packet->device_mac))
+        {
+            //TODO: ADD BUFFERING
+            //buffers will be necessary, when we use multithreading
+            //kvector_add(((net_device_t *)(net_devices->data[i]))->rx_queue, packet);
+            //when all processes are sequential, there is no need to use buffers
+            //just send packet
+            ((net_device_t *)(net_devices->data[i]))->send_packet(packet);
+            bytes_sent_count += packet->packet_length;
+            break;
+        }
+    }
+}
+
 void network_manager_receive_packet(net_packet_t *packet)
 {
     for (uint8_t i = 0; i < net_devices->count; i++)
@@ -33,10 +67,30 @@ void network_manager_receive_packet(net_packet_t *packet)
         //Add packet to device RX queue
         if (__network_manager_compare_mac_address(((net_device_t *)(net_devices->data[i]))->mac_address, packet->device_mac))
         {
-            kvector_add(((net_device_t *)(net_devices->data[i]))->rx_queue, packet);
+            //TODO: ADD BUFFERING
+            //buffers will be necessary, when we use multithreading
+            //kvector_add(((net_device_t *)(net_devices->data[i]))->rx_queue, packet);
+            //just process an packet
+            network_manager_process_packet(packet);
+            bytes_received_count += packet->packet_length;
             break;
         }
     }
+}
+
+void network_manager_process_packet(net_packet_t *packet)
+{
+    logger_log_info("DUPA");
+}
+
+uint64_t network_manager_bytes_sent()
+{
+    return bytes_sent_count;
+}
+
+uint64_t network_manager_bytes_received()
+{
+    return bytes_received_count;
 }
 
 void __network_manager_print_device_info(net_device_t *device)

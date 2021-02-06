@@ -259,7 +259,7 @@ void startup()
     logger_log_ok("DMA");
 
     // NOTE: it doesn't work well, so assume for now that floppy controller is always present
-    // if(fdc_is_present())
+    //if (fdc_is_present())
     {
         fdc_init();
         logger_log_ok("Floppy Disc Controller");
