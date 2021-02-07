@@ -74,12 +74,26 @@ void pic_enable_irq(uint8_t interrupt_number)
 
 void pic_disable_irq(uint8_t interrupt_number)
 {
-	uint16_t current_mask = io_in_byte(SLAVE_PIC_DATA) << 8 |
-							io_in_byte(MASTER_PIC_DATA);
-	current_mask |= 1 << interrupt_number;
+	//If interrupt number correpsonds to master
+	if (interrupt_number < 8)
+	{
+		uint8_t mask = io_in_byte(MASTER_PIC_DATA);
+		mask |= (1 << interrupt_number);
+		io_out_byte(MASTER_PIC_DATA, mask);
+		//exit function
+		return;
+	}
 
-	io_out_byte(MASTER_PIC_DATA, (uint8_t)current_mask);
-	io_out_byte(SLAVE_PIC_DATA, (uint8_t)(current_mask >> 8));
+	//If interrupt number corresponds to slave
+	//take care of unmasking slave in master
+	if (interrupt_number > 7 && interrupt_number < 16)
+	{
+		uint8_t mask = io_in_byte(SLAVE_PIC_DATA);
+		interrupt_number -= 8;
+		mask |= (1 << interrupt_number);
+		io_out_byte(SLAVE_PIC_DATA, mask);
+		return;
+	}
 }
 
 void pic_handle_irq(uint8_t interrupt_number)
@@ -114,7 +128,6 @@ void pic_handle_irq(uint8_t interrupt_number)
 		}
 	}
 
-	io_disable_interrupts();
 	pic_send_eoi(interrupt_number);
 }
 

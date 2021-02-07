@@ -298,8 +298,10 @@ void idt_global_int_handler(interrupt_state *state)
             break;
         }
     }
-
-    if (process_manager_handler != 0)
+	
+	io_disable_interrupts();
+    
+	if (process_manager_handler != 0)
         process_manager_handler(state);
 }
 
