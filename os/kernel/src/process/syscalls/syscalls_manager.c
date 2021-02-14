@@ -22,7 +22,7 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0x14, syscall_terminal_get_cursor_position);
     syscalls_manager_attach_handler(0x15, syscall_terminal_clear);
     syscalls_manager_attach_handler(0x16, syscall_terminal_set_cursor_visibility);
-    
+
     syscalls_manager_attach_handler(0x17, syscall_generic_vga_set_video_mode);
     syscalls_manager_attach_handler(0x18, syscall_generic_vga_is_text_mode);
     syscalls_manager_attach_handler(0x19, syscall_generic_vga_get_current_video_mode);
@@ -83,16 +83,16 @@ void syscalls_manager_init()
 
     // 0xAX - Memory
     syscalls_manager_attach_handler(0xA0, syscall_memory_get_physical_memory_stats);
-    
+
     // 0xBX - Partitions
     syscalls_manager_attach_handler(0xB0, syscall_partitions_get_count);
     syscalls_manager_attach_handler(0xB1, syscall_partitions_get_symbols);
     syscalls_manager_attach_handler(0xB2, syscall_partitions_get_info);
-    
+
     // 0xCX - Power
     syscalls_manager_attach_handler(0xC0, syscall_power_reboot);
     syscalls_manager_attach_handler(0xC1, syscall_power_shutdown);
-    
+
     // 0xDX - Serial
     syscalls_manager_attach_handler(0xD0, syscall_serial_init);
     syscalls_manager_attach_handler(0xD1, syscall_serial_is_busy);
@@ -100,6 +100,9 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0xD3, syscall_serial_send);
     syscalls_manager_attach_handler(0xD4, syscall_serial_send_string);
     syscalls_manager_attach_handler(0xD5, syscall_serial_receive);
+
+    // 0xFX - Network
+    //syscalls_manager_attach_handler(0xF0, network_send_packet);
 }
 
 void syscalls_manager_attach_handler(uint8_t function_number, void (*handler)(interrupt_state *state))

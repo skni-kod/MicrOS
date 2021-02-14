@@ -58,6 +58,9 @@ void netwok_manager_send_packet(net_packet_t *packet)
             break;
         }
     }
+
+    ///REMEMBER TO FREE MEMORY
+    heap_kernel_dealloc(packet);
 }
 
 void network_manager_receive_packet(net_packet_t *packet)
@@ -76,11 +79,23 @@ void network_manager_receive_packet(net_packet_t *packet)
             break;
         }
     }
+
+    ///REMEMBER TO FREE MEMORY
+    heap_kernel_dealloc(packet);
 }
 
 void network_manager_process_packet(net_packet_t *packet)
 {
-    logger_log_info("DUPA");
+    ethernet_frame_t frame = *(ethernet_frame_t *)packet->packet_data;
+    frame.type = __uint16_flip(frame.type);
+    void *data_ptr = packet->packet_data + sizeof(ethernet_frame_t);
+
+    switch (frame.type)
+    {
+    case ARP_PROTOCOL_TYPE:
+        arp_process_packet((arp_packet_t *)data_ptr);
+        break;
+    };
 }
 
 uint64_t network_manager_bytes_sent()

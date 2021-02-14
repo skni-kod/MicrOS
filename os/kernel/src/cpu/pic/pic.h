@@ -74,7 +74,7 @@ void pic_send_eoi(uint8_t interrupt_number);
 /*
     Returns Master and slave register values first 8 bits for master, and next for slave
 */
-static uint16_t __pic_get_irq_reg(uint8_t ocw3);
+uint16_t __pic_get_irq_reg(uint8_t ocw3);
 
 //! pic_get_irr
 /* 

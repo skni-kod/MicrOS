@@ -127,8 +127,6 @@ void pic_handle_irq(uint8_t interrupt_number)
 			}
 		}
 	}
-
-	pic_send_eoi(interrupt_number);
 }
 
 void pic_send_eoi(uint8_t interrupt_number)
@@ -139,7 +137,7 @@ void pic_send_eoi(uint8_t interrupt_number)
 	io_out_byte(MASTER_PIC_COMMAND, PIC_EOI);
 }
 
-static uint16_t __pic_get_irq_reg(uint8_t ocw3)
+uint16_t __pic_get_irq_reg(uint8_t ocw3)
 {
 	io_out_byte(MASTER_PIC_COMMAND, ocw3);
 	io_out_byte(SLAVE_PIC_COMMAND, ocw3);

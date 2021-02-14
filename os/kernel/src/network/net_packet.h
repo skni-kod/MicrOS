@@ -14,4 +14,12 @@ typedef struct net_packet
     uint8_t device_mac[6];
 } net_packet_t;
 
+typedef struct ethernet_frame
+{
+    uint8_t dst_mac_addr[6];
+    uint8_t src_mac_addr[6];
+    uint16_t type;
+    uint8_t data[];
+} __attribute__((packed)) ethernet_frame_t;
+
 #endif

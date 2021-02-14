@@ -5,14 +5,15 @@ extern harddisk_states harddisk_current_states;
 
 void harddisk_init()
 {
-    harddisk_current_states.primary_master = (HARDDISK_STATE)__harddisk_check_presence(HARDDISK_ATA_MASTER, HARDDISK_ATA_PRIMARY_BUS, &harddisk_current_states);
-    harddisk_current_states.primary_slave = (HARDDISK_STATE)__harddisk_check_presence(HARDDISK_ATA_SLAVE, HARDDISK_ATA_PRIMARY_BUS, &harddisk_current_states);
-    harddisk_current_states.secondary_master = (HARDDISK_STATE)__harddisk_check_presence(HARDDISK_ATA_MASTER, HARDDISK_ATA_SECONDARY_BUS, &harddisk_current_states);
-    harddisk_current_states.secondary_slave = (HARDDISK_STATE)__harddisk_check_presence(HARDDISK_ATA_SLAVE, HARDDISK_ATA_SECONDARY_BUS, &harddisk_current_states);
     pic_enable_irq(15);
     pic_enable_irq(14);
     idt_attach_interrupt_handler(15, harddisk_handle_irq);
     idt_attach_interrupt_handler(14, harddisk_handle_irq);
+
+    harddisk_current_states.primary_master = (HARDDISK_STATE)__harddisk_check_presence(HARDDISK_ATA_MASTER, HARDDISK_ATA_PRIMARY_BUS, &harddisk_current_states);
+    harddisk_current_states.primary_slave = (HARDDISK_STATE)__harddisk_check_presence(HARDDISK_ATA_SLAVE, HARDDISK_ATA_PRIMARY_BUS, &harddisk_current_states);
+    harddisk_current_states.secondary_master = (HARDDISK_STATE)__harddisk_check_presence(HARDDISK_ATA_MASTER, HARDDISK_ATA_SECONDARY_BUS, &harddisk_current_states);
+    harddisk_current_states.secondary_slave = (HARDDISK_STATE)__harddisk_check_presence(HARDDISK_ATA_SLAVE, HARDDISK_ATA_SECONDARY_BUS, &harddisk_current_states);
 }
 
 harddisk_states harddisk_get_states()

@@ -8,6 +8,8 @@
 #include "../klibrary/kvector.h"
 #include "../drivers/nic/rtl8139/rtl8139.h"
 #include "net_device.h"
+#include "protocols/protocols.h"
+#include "network_utils.h"
 
 //! network_manager_init
 /*

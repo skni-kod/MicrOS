@@ -141,13 +141,11 @@ void rtl8139_receive_packet()
     //Get packet length by skipping packet header
     uint32_t packet_length = *(packet + 1);
 
-    // Skip, packet header and packet length, now t points to the packet data
-
     //Copy received data to heap
     void *packet_data = heap_kernel_alloc(packet_length, 0);
     memcpy(packet_data, packet + 2, packet_length);
 
-    //Add packet to packets queue, os will handle this
+    //Add packet to packets queue
     net_packet_t *out = heap_kernel_alloc(sizeof(net_packet_t), 0);
     out->packet_data = packet_data;
     out->packet_length = packet_length;
@@ -168,9 +166,9 @@ void rtl8139_send_packet(net_packet_t *packet)
 {
     void *data = heap_kernel_alloc(packet->packet_length, 0);
     memcpy(data, packet->packet_data, packet->packet_length);
-    void *phys_addr = (uint32_t)data - (0xC0000000);
+    void *phys_addr = (void *)((uint32_t)data - (0xC0000000));
 
-    io_out_long(rtl8139_device.io_base + TSAD_array[rtl8139_device.tx_cur], phys_addr);
+    io_out_long(rtl8139_device.io_base + TSAD_array[rtl8139_device.tx_cur], (uint32_t)phys_addr);
 
     uint32_t status = 0;
     status |= packet->packet_length & 0x1FFF; // 0-12: Length
