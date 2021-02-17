@@ -11,6 +11,8 @@
 #define ARP_PROTOCOL_TYPE 0x0806
 #define ARP_OPCODE_REQUEST 0x1
 #define ARP_OPCODE_REPLY 0x2
+#define ARP_HW_TYPE 0x1
+#define ARP_PR_TYPE 0x0800
 
 typedef struct arp_packet
 {

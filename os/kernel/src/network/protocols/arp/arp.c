@@ -13,18 +13,22 @@ void arp_process_packet(arp_packet_t *packet, uint8_t *device_mac)
     //Handle ARP request
     if (packet->opcode == ARP_OPCODE_REQUEST)
     {
-        uint32_t response_len = sizeof(ethernet_frame_t) + sizeof(arp_packet_t) - sizeof(void *);
-
         arp_packet_t response;
         response.opcode = __uint16_flip(ARP_OPCODE_REPLY);
-        response.hardware_type = __uint16_flip(0x1);
-        response.protocol_type = __uint16_flip(0x0800);
-        response.hardware_length = __uint16_flip(MAC_ADDRESS_LENGTH);
-        response.protocol_type = __uint16_flip(IPv4_ADDRESS_LENGTH);
+        response.hardware_type = __uint16_flip(ARP_HW_TYPE);
+        response.protocol_type = __uint16_flip(ARP_PR_TYPE);
+        response.hardware_length = MAC_ADDRESS_LENGTH;
+        response.protocol_length = IPv4_ADDRESS_LENGTH;
+
+        memcpy(response.src_hw, device_mac, MAC_ADDRESS_SIZE);
+        memcpy(response.dst_hw, packet->src_hw, MAC_ADDRESS_SIZE);
+
+        memcpy(response.src_pr, packet->dst_pr, IPv4_ADDRESS_SIZE);
+        memcpy(response.dst_pr, packet->src_pr, IPv4_ADDRESS_SIZE);
 
         ethernet_frame_t *eth_frame = network_manager_make_frame(device_mac, packet->src_hw, ARP_PROTOCOL_TYPE);
         eth_frame->data = (uint8_t *)&response;
-        network_manager_send_ethernet_frame(eth_frame, response_len);
+        network_manager_send_ethernet_frame(eth_frame, sizeof(arp_packet_t));
         heap_kernel_dealloc(eth_frame);
     }
 

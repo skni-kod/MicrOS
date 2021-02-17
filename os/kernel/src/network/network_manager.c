@@ -144,8 +144,8 @@ bool network_manager_send_ethernet_frame(ethernet_frame_t *frame, uint32_t data_
     void *data = heap_kernel_alloc(sizeof(ethernet_frame_t) + data_len, 0);
 
     net_packet_t packet;
-    packet.packet_length = data_len;
-    memcpy(packet.device_mac, frame->src_mac_addr, MAC_ADDR_SIZE);
+    packet.packet_length = data_len + sizeof(ethernet_frame_t) - sizeof(void *);
+    memcpy(packet.device_mac, frame->src_mac_addr, MAC_ADDRESS_SIZE);
     packet.packet_data = data;
 
     uint8_t offset = sizeof(ethernet_frame_t) - sizeof(void *);
@@ -161,8 +161,8 @@ ethernet_frame_t *network_manager_make_frame(uint8_t *src_hw, uint8_t *dst_hw, u
 {
     ethernet_frame_t *frame = heap_kernel_alloc(sizeof(ethernet_frame_t), 0);
 
-    memcpy(frame->src_mac_addr, src_hw, MAC_ADDR_SIZE);
-    memcpy(frame->dst_mac_addr, dst_hw, MAC_ADDR_SIZE);
+    memcpy(frame->src_mac_addr, src_hw, MAC_ADDRESS_SIZE);
+    memcpy(frame->dst_mac_addr, dst_hw, MAC_ADDRESS_SIZE);
 
     frame->type = __uint16_flip(type);
 
