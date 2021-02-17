@@ -31,4 +31,10 @@ uint32_t __uint32_flip(uint32_t value);
 */
 bool __compare_mac_address(uint8_t *first, uint8_t *second);
 
+//! __compare_ip_address
+/*
+    Returns true if given ip adresses are equal
+*/
+bool __compare_ip_address(uint8_t *first, uint8_t *second);
+
 #endif

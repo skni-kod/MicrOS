@@ -45,3 +45,17 @@ bool __compare_mac_address(uint8_t *first, uint8_t *second)
 
     return true;
 }
+
+bool __compare_ip_address(uint8_t *first, uint8_t *second)
+{
+    if (first == 0 || second == 0)
+        return false;
+
+    for (char i = 0; i < 4; i++)
+    {
+        if (*(first + i) != *(second + i))
+            return false;
+    }
+
+    return true;
+}

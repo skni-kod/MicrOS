@@ -5,4 +5,6 @@
 
 void sleep(uint32_t ms);
 
+uint32_t get_time();
+
 #endif

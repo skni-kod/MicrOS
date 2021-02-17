@@ -83,6 +83,7 @@ void network_manager_receive_packet(net_packet_t *packet)
     }
 
     //packets are on heap, so free memory
+    heap_kernel_dealloc(packet->packet_data);
     heap_kernel_dealloc(packet);
 }
 
@@ -93,10 +94,14 @@ void network_manager_process_packet(net_packet_t *packet)
     //last is offset of data ptr;
     void *data_ptr = packet->packet_data + sizeof(ethernet_frame_t) - sizeof(uint8_t *);
 
+    uint8_t test[4] = {9, 9, 9, 9};
+
     switch (frame.type)
     {
     case ARP_PROTOCOL_TYPE:
         arp_process_packet((arp_packet_t *)data_ptr, packet->device_mac);
+
+        arp_find_entry(test);
         break;
     };
 }

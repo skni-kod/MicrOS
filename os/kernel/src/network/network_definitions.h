@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 #include "../klibrary/kvector.h"
+#include "../klibrary/ktime.h"
 
 #define MAC_ADDRESS_LENGTH 6
 #define IPv4_ADDRESS_LENGTH 4

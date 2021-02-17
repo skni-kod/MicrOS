@@ -14,4 +14,17 @@
 */
 void arp_process_packet(arp_packet_t *packet, uint8_t *device_mac);
 
+// !arp_add_entry
+/*
+    Add arp entry to vector
+*/
+void arp_add_entry(uint8_t *mac_address, uint8_t *ip_address);
+
+// !arp_find_entry
+/*
+    Find entry in arp table, if entry does not exists, sends ARP request.
+    Timeout: 10 seconds
+*/
+uint8_t *arp_find_entry(uint8_t *ip_address);
+
 #endif
