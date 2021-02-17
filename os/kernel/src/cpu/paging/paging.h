@@ -3,6 +3,7 @@
 
 #define KERNEL_PAGE_DIRECTORY_ADDRESS 0xC0006000
 #define PAGE_TABLES_ADDRESS 0xC1100000
+#define DMA_ADDRESS_OFFSET 0xC0000000
 
 #include <stdint.h>
 #include <stdbool.h>

@@ -34,19 +34,24 @@ bool network_manager_init()
         tmp->tx_queue = heap_kernel_alloc(sizeof(kvector), 0);
         kvector_init(tmp->rx_queue);
         kvector_init(tmp->tx_queue);
-        __network_manager_print_device_info(tmp);
         kvector_add(net_devices, tmp);
+        //Hardcode IPv4 address
+        tmp->ipv4_address[0] = 10;
+        tmp->ipv4_address[1] = 0;
+        tmp->ipv4_address[2] = 2;
+        tmp->ipv4_address[3] = 15;
+        __network_manager_print_device_info(tmp);
     }
 
     return true;
 }
 
-void netwok_manager_send_packet(net_packet_t *packet)
+void network_manager_send_packet(net_packet_t *packet)
 {
     for (uint8_t i = 0; i < net_devices->count; i++)
     {
         //Add packet to device RX queue
-        if (__network_manager_compare_mac_address(((net_device_t *)(net_devices->data[i]))->mac_address, packet->device_mac))
+        if (__compare_mac_address(((net_device_t *)(net_devices->data[i]))->mac_address, packet->device_mac))
         {
             //TODO: ADD BUFFERING
             //buffers will be necessary, when we use multithreading
@@ -58,9 +63,6 @@ void netwok_manager_send_packet(net_packet_t *packet)
             break;
         }
     }
-
-    ///REMEMBER TO FREE MEMORY
-    heap_kernel_dealloc(packet);
 }
 
 void network_manager_receive_packet(net_packet_t *packet)
@@ -68,7 +70,7 @@ void network_manager_receive_packet(net_packet_t *packet)
     for (uint8_t i = 0; i < net_devices->count; i++)
     {
         //Add packet to device RX queue
-        if (__network_manager_compare_mac_address(((net_device_t *)(net_devices->data[i]))->mac_address, packet->device_mac))
+        if (__compare_mac_address(((net_device_t *)(net_devices->data[i]))->mac_address, packet->device_mac))
         {
             //TODO: ADD BUFFERING
             //buffers will be necessary, when we use multithreading
@@ -80,7 +82,7 @@ void network_manager_receive_packet(net_packet_t *packet)
         }
     }
 
-    ///REMEMBER TO FREE MEMORY
+    //packets are on heap, so free memory
     heap_kernel_dealloc(packet);
 }
 
@@ -88,12 +90,13 @@ void network_manager_process_packet(net_packet_t *packet)
 {
     ethernet_frame_t frame = *(ethernet_frame_t *)packet->packet_data;
     frame.type = __uint16_flip(frame.type);
-    void *data_ptr = packet->packet_data + sizeof(ethernet_frame_t);
+    //last is offset of data ptr;
+    void *data_ptr = packet->packet_data + sizeof(ethernet_frame_t) - sizeof(uint8_t *);
 
     switch (frame.type)
     {
     case ARP_PROTOCOL_TYPE:
-        arp_process_packet((arp_packet_t *)data_ptr);
+        arp_process_packet((arp_packet_t *)data_ptr, packet->device_mac);
         break;
     };
 }
@@ -106,6 +109,64 @@ uint64_t network_manager_bytes_sent()
 uint64_t network_manager_bytes_received()
 {
     return bytes_received_count;
+}
+
+uint8_t *network_manager_verify_ipv4_address(uint8_t *ipv4_address)
+{
+    for (uint8_t i = 0; i < net_devices->count; i++)
+    {
+        net_device_t *dev = *(net_devices->data + i);
+        uint8_t flag = 1;
+
+        for (uint8_t octet = 0; octet < IPv4_ADDRESS_LENGTH; octet++)
+        {
+            if (dev->ipv4_address[octet] != ipv4_address[octet])
+            {
+                flag = 0;
+                break;
+            }
+        }
+
+        //Found NIC with valid IPv4
+        if (flag)
+        {
+            uint8_t *ret = heap_kernel_alloc(sizeof(uint8_t) * MAC_ADDRESS_LENGTH, 0);
+            memcpy(ret, dev->mac_address, sizeof(uint8_t) * MAC_ADDRESS_LENGTH);
+            return ret;
+        }
+    }
+
+    return 0;
+}
+
+bool network_manager_send_ethernet_frame(ethernet_frame_t *frame, uint32_t data_len)
+{
+    void *data = heap_kernel_alloc(sizeof(ethernet_frame_t) + data_len, 0);
+
+    net_packet_t packet;
+    packet.packet_length = data_len;
+    memcpy(packet.device_mac, frame->src_mac_addr, MAC_ADDR_SIZE);
+    packet.packet_data = data;
+
+    uint8_t offset = sizeof(ethernet_frame_t) - sizeof(void *);
+    memcpy(data, frame, offset);
+    memcpy(data + offset, frame->data, data_len);
+
+    network_manager_send_packet(&packet);
+    heap_kernel_dealloc(data);
+    return true;
+}
+
+ethernet_frame_t *network_manager_make_frame(uint8_t *src_hw, uint8_t *dst_hw, uint16_t type)
+{
+    ethernet_frame_t *frame = heap_kernel_alloc(sizeof(ethernet_frame_t), 0);
+
+    memcpy(frame->src_mac_addr, src_hw, MAC_ADDR_SIZE);
+    memcpy(frame->dst_mac_addr, dst_hw, MAC_ADDR_SIZE);
+
+    frame->type = __uint16_flip(type);
+
+    return frame;
 }
 
 void __network_manager_print_device_info(net_device_t *device)
@@ -128,15 +189,4 @@ void __network_manager_print_device_info(net_device_t *device)
     }
 
     logger_log_info(logInfo);
-}
-
-bool __network_manager_compare_mac_address(uint8_t *first, uint8_t *second)
-{
-    for (char i = 0; i < 6; i++)
-    {
-        if (*(first + i) != *(second + i))
-            return false;
-    }
-
-    return true;
 }

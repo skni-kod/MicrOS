@@ -1,6 +1,7 @@
 /*
     @JakubPrzystasz
     Created: 06.02.2021
+    Modify: 15.02.2021
 */
 #include "rtl8139.h"
 
@@ -73,9 +74,14 @@ bool rtl8139_init(net_device_t *net_dev)
     // Allocate receive buffer
     rtl8139_device.rx_buffer = heap_kernel_alloc(RX_BUFFER_SIZE, 0);
     memset(rtl8139_device.rx_buffer, 0x0, RX_BUFFER_SIZE);
-    io_out_long(rtl8139_device.io_base + RXBUF, (uint32_t)rtl8139_device.rx_buffer - 0xC0000000);
+    io_out_long(rtl8139_device.io_base + RXBUF, (uint32_t)rtl8139_device.rx_buffer - DMA_ADDRESS_OFFSET);
 
     // (1 << 7) is the WRAP bit, 0xf is AB+AM+APM+AAP
+    //WRAP
+    //AB - broadcast packets
+    //AM - multicast
+    //APM - physical match
+    //AAP - all packets
     io_out_long(rtl8139_device.io_base + RXCONFIG, 0xf | (1 << 7));
 
     //Set TransmitterOK and ReceiveOK to HIGH
@@ -87,7 +93,8 @@ bool rtl8139_init(net_device_t *net_dev)
 
     rtl8139_read_mac_addr();
 
-    strcpy(net_dev->device_name, "RTL8139 NIC");
+    net_dev->device_name = heap_kernel_alloc(strlen(DEVICE_NAME) + 1, 0);
+    strcpy(net_dev->device_name, DEVICE_NAME);
     memcpy(net_dev->mac_address, rtl8139_device.mac_addr, sizeof(uint8_t) * 6);
     net_dev->send_packet = &rtl8139_send_packet;
     net_dev->sent_count = &rtl8139_get_sent_count;
@@ -127,9 +134,7 @@ void rtl8139_read_mac_addr()
 void rtl8139_get_mac_addr(uint8_t *buffer)
 {
     if (buffer == 0)
-    {
         return;
-    }
 
     memcpy(buffer, rtl8139_device.mac_addr, 6);
 }
@@ -166,7 +171,7 @@ void rtl8139_send_packet(net_packet_t *packet)
 {
     void *data = heap_kernel_alloc(packet->packet_length, 0);
     memcpy(data, packet->packet_data, packet->packet_length);
-    void *phys_addr = (void *)((uint32_t)data - (0xC0000000));
+    void *phys_addr = (void *)((uint32_t)data - DMA_ADDRESS_OFFSET);
 
     io_out_long(rtl8139_device.io_base + TSAD_array[rtl8139_device.tx_cur], (uint32_t)phys_addr);
 

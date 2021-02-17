@@ -31,3 +31,17 @@ uint32_t __uint32_flip(uint32_t value)
     };
     return (bytes[0]) << 24 | (bytes[1] << 16) | (bytes[2] << 8) | (bytes[3]);
 }
+
+bool __compare_mac_address(uint8_t *first, uint8_t *second)
+{
+    if (first == 0 || second == 0)
+        return false;
+
+    for (char i = 0; i < 6; i++)
+    {
+        if (*(first + i) != *(second + i))
+            return false;
+    }
+
+    return true;
+}

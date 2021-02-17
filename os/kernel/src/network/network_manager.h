@@ -5,9 +5,9 @@
 #ifndef network_manager
 #define network_manager
 
-#include "../klibrary/kvector.h"
 #include "../drivers/nic/rtl8139/rtl8139.h"
-#include "net_device.h"
+
+#include "network_definitions.h"
 #include "protocols/protocols.h"
 #include "network_utils.h"
 
@@ -19,9 +19,9 @@ bool network_manager_init();
 
 //! network_manager_send_packet
 /*
-    Send packet
+    Send packet, it can be just "HelloWorld!"
 */
-void netwok_manager_send_packet(net_packet_t *packet);
+void network_manager_send_packet(net_packet_t *packet);
 
 //! network_manager_receive_packet
 /*
@@ -48,16 +48,28 @@ uint64_t network_manager_bytes_sent(void);
 */
 uint64_t network_manager_bytes_received(void);
 
+//! network_manager_verify_ipv4_address
+/*
+    Returns MAC address of NIC that has IPv4 address passed in arg
+*/
+uint8_t *network_manager_verify_ipv4_address(uint8_t *ipv4_address);
+
+//! network_manager_send_ethernet_frame
+/*
+    Send ethernet frame
+*/
+bool network_manager_send_ethernet_frame(ethernet_frame_t *frame, uint32_t data_len);
+
+//! network_manager_make_frame
+/*
+    Make ethernet frame, with specified data and type
+*/
+ethernet_frame_t *network_manager_make_frame(uint8_t *src_hw, uint8_t *dst_hw, uint16_t type);
+
 //! __network_manager_print_device_info
 /*
     Print device info
 */
 void __network_manager_print_device_info(net_device_t *device);
-
-//! __network_manager_compare_mac_address
-/*
-    Returns true if given MAC adresses are equal
-*/
-bool __network_manager_compare_mac_address(uint8_t *first, uint8_t *second);
 
 #endif

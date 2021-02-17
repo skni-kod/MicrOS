@@ -8,6 +8,8 @@
 #include "harddisk_detection.h"
 #include "ata/harddisk_ata.h"
 #include "atapi/harddisk_atapi.h"
+#include "../../cpu/pic/pic.h"
+#include "../../cpu/idt/idt.h"
 
 //! Initialization of hard disk driver.
 /*!
