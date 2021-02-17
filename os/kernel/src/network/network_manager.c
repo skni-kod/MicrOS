@@ -94,14 +94,10 @@ void network_manager_process_packet(net_packet_t *packet)
     //last is offset of data ptr;
     void *data_ptr = packet->packet_data + sizeof(ethernet_frame_t) - sizeof(uint8_t *);
 
-    uint8_t test[4] = {9, 9, 9, 9};
-
     switch (frame.type)
     {
     case ARP_PROTOCOL_TYPE:
         arp_process_packet((arp_packet_t *)data_ptr, packet->device_mac);
-
-        arp_find_entry(test);
         break;
     };
 }
@@ -172,6 +168,17 @@ ethernet_frame_t *network_manager_make_frame(uint8_t *src_hw, uint8_t *dst_hw, u
     frame->type = __uint16_flip(type);
 
     return frame;
+}
+
+net_device_t *network_manager_get_nic()
+{
+    if (net_devices == 0)
+        return 0;
+
+    if (net_devices->count == 0)
+        return 0;
+
+    return net_devices->data[0];
 }
 
 void __network_manager_print_device_info(net_device_t *device)

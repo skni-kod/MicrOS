@@ -59,3 +59,27 @@ bool __compare_ip_address(uint8_t *first, uint8_t *second)
 
     return true;
 }
+
+void __set_mac_addr(uint8_t *mac_addr, uint8_t oct1, uint8_t oct2, uint8_t oct3, uint8_t oct4, uint8_t oct5, uint8_t oct6)
+{
+    if (mac_addr == 0)
+        return;
+
+    mac_addr[0] = oct1;
+    mac_addr[1] = oct2;
+    mac_addr[2] = oct3;
+    mac_addr[3] = oct4;
+    mac_addr[4] = oct5;
+    mac_addr[5] = oct6;
+}
+
+void __set_ipv4_addr(uint8_t *ip_addr, uint8_t oct1, uint8_t oct2, uint8_t oct3, uint8_t oct4)
+{
+    if (ip_addr == 0)
+        return;
+
+    ip_addr[0] = oct1;
+    ip_addr[1] = oct2;
+    ip_addr[2] = oct3;
+    ip_addr[3] = oct4;
+}

@@ -66,6 +66,12 @@ bool network_manager_send_ethernet_frame(ethernet_frame_t *frame, uint32_t data_
 */
 ethernet_frame_t *network_manager_make_frame(uint8_t *src_hw, uint8_t *dst_hw, uint16_t type);
 
+//! network_manager_get_machine_ip
+/*
+    Returns main NIC
+*/
+net_device_t *network_manager_get_nic();
+
 //! __network_manager_print_device_info
 /*
     Print device info
