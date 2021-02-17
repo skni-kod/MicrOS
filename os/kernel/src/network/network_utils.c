@@ -3,13 +3,8 @@
 uint8_t __uint8_flip(uint8_t value)
 {
     uint8_t out = 0;
-    for (uint8_t i = 0; i < 8; i++)
-    {
-        out = out << 1;
-
-        out |= ((value >> i) & 0x01);
-    }
-
+    out = value << 4;
+    out |= value >> 4;
     return out;
 }
 
