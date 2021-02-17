@@ -80,7 +80,41 @@ uint8_t *arp_find_entry(uint8_t *ip_address)
     {
         ptr = ((arp_entry_t *)arp_table->data[i]);
         if (__compare_ip_address(ip_address, ptr->ip_address))
-            return ptr->mac_address;
+        {
+            uint8_t *ret = heap_kernel_alloc(MAC_ADDRESS_SIZE, 0);
+            memcpy(ret, ptr->mac_address, MAC_ADDRESS_SIZE);
+            return ret;
+        }
+    }
+
+    return 0;
+}
+
+uint8_t *arp_get_entry(uint8_t *ip_address)
+{
+    if (ip_address == 0)
+        return 0;
+
+    uint8_t *ret = arp_find_entry(ip_address);
+
+    if (ret != 0)
+        return ret;
+
+    uint32_t request_time = get_time();
+
+    arp_send_request(ip_address);
+
+    while (true)
+    {
+        if ((get_time() - request_time) >= ARP_TIMEOUT)
+            break;
+        if ((get_time() - request_time) % ARP_RETRY_INTERVAL == 0)
+        {
+            ret = arp_find_entry(ip_address);
+            if (ret != 0)
+                return ret;
+            arp_send_request(ip_address);
+        }
     }
 
     return 0;

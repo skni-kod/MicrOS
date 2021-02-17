@@ -36,10 +36,7 @@ bool network_manager_init()
         kvector_init(tmp->tx_queue);
         kvector_add(net_devices, tmp);
         //Hardcode IPv4 address
-        tmp->ipv4_address[0] = 10;
-        tmp->ipv4_address[1] = 0;
-        tmp->ipv4_address[2] = 2;
-        tmp->ipv4_address[3] = 15;
+        __set_ipv4_addr(tmp->ipv4_address, 10, 0, 2, 15);
         __network_manager_print_device_info(tmp);
     }
 

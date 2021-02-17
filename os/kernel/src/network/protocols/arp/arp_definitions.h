@@ -1,6 +1,7 @@
 /*
     @JakubPrzystasz
     Created: 13.02.2021
+    Modify: 17.02.2021
 */
 #ifndef network_arp_definitions
 #define network_arp_definitions
@@ -16,6 +17,9 @@
 
 #define ARP_ENTRY_DYNAMIC 0x1
 #define ARP_ENTRY_STATIC 0x2
+
+#define ARP_TIMEOUT 5000
+#define ARP_RETRY_INTERVAL 200
 
 typedef struct arp_packet
 {

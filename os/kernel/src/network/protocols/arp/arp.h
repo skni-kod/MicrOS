@@ -1,6 +1,7 @@
 /*
     @JakubPrzystasz
     Created: 12.02.2021
+    Modify: 17.02.2021
 */
 #ifndef arp_protocol
 #define arp_protocol
@@ -26,7 +27,17 @@ void arp_add_entry(uint8_t *mac_address, uint8_t *ip_address);
 */
 uint8_t *arp_find_entry(uint8_t *ip_address);
 
+//! arp_get_entry
+/*
+    Returns MAC address of desired IP.
+    If not present in arp table, sends request, and waits up to ARP_TIMEOUT
+*/
+uint8_t *arp_get_entry(uint8_t *ip_address);
+
 //! arp_send_request
+/*
+    Send ARP request
+*/
 void arp_send_request(uint8_t *ip_address);
 
 #endif
