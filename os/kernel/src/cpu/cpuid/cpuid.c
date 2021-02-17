@@ -7,7 +7,7 @@ typedef union magic_union
     unsigned char value2[4];
 } magic_union;
 
-//! 0 if CPUID is not available, abything otherwise
+//! 0 if CPUID is not available, anything otherwise
 uint32_t __cpuid_available;
 
 // EAX 0x0
@@ -28,11 +28,11 @@ uint8_t cpuid_init()
         {
         __cpuid(CPUID_GETVENDORSTRING, __cpuid_0x00h.value);
         __cpuid_get_manufacturer_string();
-        if(__cpuid_0x00h.fields.highest_function_parameter >= 1)
+        if(__cpuid_0x00h.fields.highest_function_parameter >= CPUID_GETFEATURES_AND_ADDITIONAL_INFORMATION)
         {
             __cpuid(CPUID_GETFEATURES_AND_ADDITIONAL_INFORMATION, __cpuid_0x01h.value);
         }
-        if(__cpuid_0x00h.fields.highest_function_parameter >= 4)
+        if(__cpuid_0x00h.fields.highest_function_parameter >= CPUID_GETTHREAD_CORE_CACHE_TOPOLOGY)
         {
             // We must clear ECX registry as it's index value.
             for(int i = 0; i < 10; i++)
