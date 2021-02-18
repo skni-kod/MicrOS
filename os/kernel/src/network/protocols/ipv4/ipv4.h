@@ -16,4 +16,10 @@
 */
 void ipv4_process_packet(ipv4_packet_t *packet, uint8_t *device_mac);
 
+//! __ipv4_flip_values
+/*
+    Flip literal values
+*/
+void __ipv4_flip_values(ipv4_packet_t *packet);
+
 #endif

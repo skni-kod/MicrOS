@@ -40,4 +40,10 @@ uint8_t *arp_get_entry(uint8_t *ip_address);
 */
 void arp_send_request(uint8_t *ip_address);
 
+//! __arp_flip_values
+/*
+    Flip literal value
+*/
+void __arp_flip_values(arp_packet_t *packet);
+
 #endif

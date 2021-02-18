@@ -8,17 +8,17 @@ void arp_process_packet(arp_packet_t *packet, uint8_t *device_mac)
     if (!__compare_mac_address(network_manager_verify_ipv4_address(packet->dst_pr), device_mac))
         return;
 
-    packet->hardware_type = __uint16_flip(packet->hardware_type);
-    packet->protocol_type = __uint16_flip(packet->protocol_type);
-    packet->opcode = __uint16_flip(packet->opcode);
+    __arp_flip_values(packet);
 
     //Handle ARP request
     if (packet->opcode == ARP_OPCODE_REQUEST)
     {
         arp_packet_t response;
-        response.opcode = __uint16_flip(ARP_OPCODE_REPLY);
-        response.hardware_type = __uint16_flip(ARP_HW_TYPE);
-        response.protocol_type = __uint16_flip(ARP_PR_TYPE);
+        response.opcode = ARP_OPCODE_REPLY;
+        response.hardware_type = ARP_HW_TYPE;
+        response.protocol_type = ARP_PR_TYPE;
+        __arp_flip_values(&response);
+
         response.hardware_length = MAC_ADDRESS_LENGTH;
         response.protocol_length = IPv4_ADDRESS_LENGTH;
 
@@ -127,9 +127,11 @@ void arp_send_request(uint8_t *ip_address)
         return;
 
     arp_packet_t request;
-    request.opcode = __uint16_flip(ARP_OPCODE_REQUEST);
-    request.hardware_type = __uint16_flip(ARP_HW_TYPE);
-    request.protocol_type = __uint16_flip(ARP_PR_TYPE);
+    request.opcode = ARP_OPCODE_REQUEST;
+    request.hardware_type = ARP_HW_TYPE;
+    request.protocol_type = ARP_PR_TYPE;
+    __arp_flip_values(&request);
+
     request.hardware_length = MAC_ADDRESS_LENGTH;
     request.protocol_length = IPv4_ADDRESS_LENGTH;
 
@@ -147,4 +149,14 @@ void arp_send_request(uint8_t *ip_address)
     eth_frame->data = (uint8_t *)&request;
     network_manager_send_ethernet_frame(eth_frame, sizeof(arp_packet_t));
     heap_kernel_dealloc(eth_frame);
+}
+
+void __arp_flip_values(arp_packet_t *packet)
+{
+    if (packet != 0)
+    {
+        packet->opcode = __uint16_flip(packet->opcode);
+        packet->hardware_type = __uint16_flip(packet->hardware_type);
+        packet->protocol_type = __uint16_flip(packet->protocol_type);
+    }
 }
