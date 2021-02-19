@@ -151,25 +151,25 @@ int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint1
         case 0:
             switch(mod_rm & 7u){
                 case 0:
-                    *offset = machine->regs.x.bx + machine->regs.x.si;
+                    *offset = (uint16_t)(machine->regs.x.bx + machine->regs.x.si);
                     return V8086_OK;
                 case 1:
-                    *offset = machine->regs.x.bx + machine->regs.x.di;
+                    *offset = (uint16_t)(machine->regs.x.bx + machine->regs.x.di);
                     return V8086_OK;
                 case 2:
-                    *offset = machine->regs.x.bp + machine->regs.x.si;
+                    *offset = (uint16_t)(machine->regs.x.bp + machine->regs.x.si);
                     return V8086_OK;
                 case 3:
-                    *offset = machine->regs.x.bp + machine->regs.x.di;
+                    *offset = (uint16_t)(machine->regs.x.bp + machine->regs.x.di);
                     return V8086_OK;
                 case 4:
-                    *offset = machine->regs.x.si;
+                    *offset = (uint16_t)(machine->regs.x.si);
                     return V8086_OK;
                 case 5:
-                    *offset = machine->regs.x.di;
+                    *offset = (uint16_t)(machine->regs.x.di);
                     return V8086_OK;
                 case 6:{
-                    *offset = read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + (machine->internal_state.IPOffset)));
+                    *offset = (uint16_t)(read_word_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + (machine->internal_state.IPOffset))));
                     machine->internal_state.IPOffset += 2;
                     return V8086_OK;
                 }
@@ -184,28 +184,28 @@ int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint1
             machine->internal_state.IPOffset += 1;
             switch(mod_rm & 7u){
                 case 0:
-                    *offset = machine->regs.x.bx + machine->regs.x.si + disp;
+                    *offset = (uint16_t)(machine->regs.x.bx + machine->regs.x.si + disp);
                     return V8086_OK;
                 case 1:
-                    *offset = machine->regs.x.bx + machine->regs.x.di + disp;
+                    *offset = (uint16_t)(machine->regs.x.bx + machine->regs.x.di + disp);
                     return V8086_OK;
                 case 2:
-                    *offset = machine->regs.x.bp + machine->regs.x.si + disp;
+                    *offset = (uint16_t)(machine->regs.x.bp + machine->regs.x.si + disp);
                     return V8086_OK;
                 case 3:
-                    *offset = machine->regs.x.bp + machine->regs.x.di + disp;
+                    *offset = (uint16_t)(machine->regs.x.bp + machine->regs.x.di + disp);
                     return V8086_OK;
                 case 4:
-                    *offset = machine->regs.x.si + disp;
+                    *offset = (uint16_t)(machine->regs.x.si + disp);
                     return V8086_OK;
                 case 5:
-                    *offset = machine->regs.x.di + disp;
+                    *offset = (uint16_t)(machine->regs.x.di + disp);
                     return V8086_OK;
                 case 6:
-                    *offset = machine->regs.x.bp + disp;
+                    *offset = (uint16_t)(machine->regs.x.bp + disp);
                     return V8086_OK;
                 case 7:
-                    *offset = machine->regs.x.bx + disp;
+                    *offset = (uint16_t)(machine->regs.x.bx + disp);
                     return V8086_OK;
                 default:
                     return V8086_BAD_RM;
@@ -216,28 +216,28 @@ int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint1
             machine->internal_state.IPOffset += 2;
             switch(mod_rm & 7u){
                 case 0:
-                    *offset = machine->regs.x.bx + machine->regs.x.si + disp;
+                    *offset = (uint16_t)(machine->regs.x.bx + machine->regs.x.si + disp);
                     return V8086_OK;
                 case 1:
-                    *offset = machine->regs.x.bx + machine->regs.x.di + disp;
+                    *offset = (uint16_t)(machine->regs.x.bx + machine->regs.x.di + disp);
                     return V8086_OK;
                 case 2:
-                    *offset = machine->regs.x.bp + machine->regs.x.si + disp;
+                    *offset = (uint16_t)(machine->regs.x.bp + machine->regs.x.si + disp);
                     return V8086_OK;
                 case 3:
-                    *offset = machine->regs.x.bp + machine->regs.x.di + disp;
+                    *offset = (uint16_t)(machine->regs.x.bp + machine->regs.x.di + disp);
                     return V8086_OK;
                 case 4:
-                    *offset = machine->regs.x.si + disp;
+                    *offset = (uint16_t)(machine->regs.x.si + disp);
                     return V8086_OK;
                 case 5:
-                    *offset = machine->regs.x.di + disp;
+                    *offset = (uint16_t)(machine->regs.x.di + disp);
                     return V8086_OK;
                 case 6:
-                    *offset = machine->regs.x.bp + disp;
+                    *offset = (uint16_t)(machine->regs.x.bp + disp);
                     return V8086_OK;
                 case 7:
-                    *offset = machine->regs.x.bx + disp;
+                    *offset = (uint16_t)(machine->regs.x.bx + disp);
                     return V8086_OK;
                 default:
                     return V8086_BAD_RM;
@@ -249,7 +249,7 @@ int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint1
     return V8086_UNKNOWN_ERROR;
 }
 
-int16_t read_and_parse_sib(v8086* machine, uint8_t mod, const uint16_t* segment, uint32_t *offset)
+int16_t read_and_parse_sib(v8086* machine, uint8_t mod, uint16_t** segment, uint32_t *offset)
 {
     uint8_t sib = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
     machine->internal_state.IPOffset += 1;
@@ -302,6 +302,7 @@ int16_t read_and_parse_sib(v8086* machine, uint8_t mod, const uint16_t* segment,
             break;
         case 4:
             *offset += machine->regs.d.esp;
+            *segment = select_segment_register(machine, V8086_SS);
             break;
         case 5:
             if (mod == 0)
@@ -315,7 +316,7 @@ int16_t read_and_parse_sib(v8086* machine, uint8_t mod, const uint16_t* segment,
             else
             {
                 *offset += machine->regs.d.ebp;
-                segment = select_segment_register(machine, V8086_SS);
+                *segment = select_segment_register(machine, V8086_SS);
             }
             break;
         case 6:
@@ -353,7 +354,7 @@ int16_t calculate_segment_offset_from_mode_32(v8086 *machine, uint8_t mod_rm, ui
                     *offset = machine->regs.d.ebx;
                     break;
                 case 4: // SIB
-                    read_and_parse_sib(machine, mod, segment_register, offset);
+                    read_and_parse_sib(machine, mod, &segment_register, offset);
                     break;
                 case 5:{
                     uint32_t disp = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs,
@@ -391,7 +392,10 @@ int16_t calculate_segment_offset_from_mode_32(v8086 *machine, uint8_t mod_rm, ui
                     *offset = machine->regs.d.ebx + disp;
                     break;
                 case 4: // SIB
-                    read_and_parse_sib(machine, mod, segment_register, offset);
+                    machine->internal_state.IPOffset -= 1;
+                    read_and_parse_sib(machine, mod, &segment_register, offset);
+                    disp = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+                    machine->internal_state.IPOffset += 1;
                     *offset += disp;
                     break;
                 case 5:{
@@ -427,7 +431,10 @@ int16_t calculate_segment_offset_from_mode_32(v8086 *machine, uint8_t mod_rm, ui
                     *offset = machine->regs.d.ebx + disp;
                     break;
                 case 4: // SIB
-                    read_and_parse_sib(machine, mod, segment_register, offset);
+                    machine->internal_state.IPOffset -= 4;
+                    read_and_parse_sib(machine, mod, &segment_register, offset);
+                    disp = read_dword_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+                    machine->internal_state.IPOffset += 4;
                     *offset += disp;
                     break;
                 case 5:{

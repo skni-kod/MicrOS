@@ -448,16 +448,34 @@ int kmain()
 
     #ifdef TEST_V8086
     //test_mod_16();
-    interactive_tests();
+    //interactive_tests();
     #endif
 
     //v8086->machine.regs.h.ah = 0x00;
     //v8086->machine.regs.h.al = 0x13;
-    //int16_t status = v8086_call_int(v8086, 0x10);
+    //v8086->machine.regs.h.al = 0x6a;
+    
+    v8086->machine.regs.x.ax = 0x4f03;
+    int16_t status = v8086_call_int(v8086, 0x10);
+
+    char str[100] = "";
+    if(v8086->machine.regs.x.ax == 0x004f)
+    {
+        itoa(v8086->machine.regs.x.bx, str, 16);
+        vga_printstring(str);
+        vga_newline();
+    }
+    else{
+        vga_printstring("DUPA!");
+    }
+
+    v8086->machine.regs.x.ax = 0x4f02;
+    v8086->machine.regs.x.bx = 0x11b;
+    status = v8086_call_int(v8086, 0x10);
 
     //mode13h_set_mode();
     //mode13h_clear_screen();
-    //drawLenaIn13H();
+    drawLenaIn13H();
     
     /*char str[100] = "";
     itoa(status, str, 16);

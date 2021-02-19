@@ -63,7 +63,12 @@ void read_regs(union test_v8086* machine)
 {
     machine->machine.regs.d.edi = read_reg_32();
     machine->machine.regs.d.esi = read_reg_32();
+    
     machine->machine.regs.d.ebp = read_reg_32();
+    //char x[100];
+    //kernel_sprintf(x, "%x\n", read_reg_32());
+    //kernel_sprintf(x, "%x\n", machine->machine.regs.d.ebp);
+    //vga_printstring(x);
     machine->machine.regs.d.cflag = read_reg_32();
     machine->machine.regs.d.ebx = read_reg_32();
     machine->machine.regs.d.edx = read_reg_32();
@@ -71,6 +76,8 @@ void read_regs(union test_v8086* machine)
     machine->machine.regs.d.eax = read_reg_32();
     machine->machine.regs.d.eflags = read_reg_16();
     machine->machine.regs.d.esp = read_reg_32();
+    //kernel_sprintf(x, "%x\n", machine->machine.regs.d.esp);
+    //vga_printstring(x);
 }
 
 void read_sregs(union test_v8086* machine)
@@ -87,7 +94,7 @@ uint16_t read_reg_16()
 {
     uint16_t value;
     value = (uint16_t)serial_receive(COM1_PORT);
-    value |= (uint16_t)serial_receive(COM1_PORT) << 8; 
+    value |= ((uint16_t)serial_receive(COM1_PORT) & 0xFF) << 8; 
     return value;
 }
 
@@ -99,10 +106,10 @@ uint8_t read_reg_8()
 uint32_t read_reg_32()
 {
     uint32_t value;
-    value = (uint32_t)serial_receive(COM1_PORT);
-    value |= (uint32_t)serial_receive(COM1_PORT) << 8;
-    value |= (uint32_t)serial_receive(COM1_PORT) << 16;
-    value |= (uint32_t)serial_receive(COM1_PORT) << 24; 
+    value = ((uint32_t)serial_receive(COM1_PORT) & 0xFF);
+    value |= ((uint32_t)serial_receive(COM1_PORT) & 0xFF) << 8;
+    value |= ((uint32_t)serial_receive(COM1_PORT) & 0xFF) << 16;
+    value |= ((uint32_t)serial_receive(COM1_PORT) & 0xFF) << 24; 
     return value;
 }
 

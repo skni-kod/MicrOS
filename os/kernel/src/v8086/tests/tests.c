@@ -101,6 +101,18 @@ void interactive_tests()
                 serial_send(COM1_PORT, result >> 8);
                 serial_send(COM1_PORT, result & 0xFF);
             }
+            else if(debug_operation == 14)
+            {
+                char x[20];
+                for(long i = 0; i < 0x100000; i++)
+                {
+                    machine->machine.Memory[i] = serial_receive(COM1_PORT);
+                    if((i % 0x100) == 0){
+                        kernel_sprintf(x, "%x\n", i);
+                        vga_printstring(x);
+                    }
+                }
+            }
             else{
                 vga_printstring("Unknown byte: ");
                 vga_printchar(debug_operation);
