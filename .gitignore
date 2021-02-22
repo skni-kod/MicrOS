@@ -64,3 +64,4 @@ cloc.bat
 .idea/vcs.xml
 .idea/MicrOS.iml
 .idea/misc.xml
+debug.log

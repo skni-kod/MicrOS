@@ -160,30 +160,23 @@ typedef struct _v8086
 }__attribute__((packed)) v8086;
 
 
-union test_v8086
-{
-  struct _v8086 machine;
-  uint8_t bytes[sizeof(struct _v8086)];
-};
-
-
-union test_v8086* v8086_create_machine();
-void v8086_destroy_machine(union test_v8086* machine);
-int16_t v8086_call_int(union test_v8086* machine, int16_t num);
+v8086* v8086_create_machine();
+void v8086_destroy_machine(v8086* machine);
+int16_t v8086_call_int(v8086* machine, int16_t num);
 void v8086_set_8086_instruction_set(v8086* machine);
 void v8086_set_386_instruction_set(v8086* machine);
-uint32_t v8086_get_address_of_int(union test_v8086* machine, int16_t num);
+uint32_t v8086_get_address_of_int(v8086* machine, int16_t num);
 
 #ifdef DEBUG_V8086
   void send_reg_32(uint32_t reg);
   void send_reg_16(uint16_t reg);
-  void send_regs(union test_v8086* machine);
-  void send_sregs(union test_v8086* machine);
-  int16_t parse_and_execute_instruction(union test_v8086* machine);
+  void send_regs(v8086* machine);
+  void send_sregs(v8086* machine);
+  int16_t parse_and_execute_instruction(v8086* machine);
   uint8_t read_reg_8();
   uint16_t read_reg_16();
   uint32_t read_reg_32();
-  void read_regs(union test_v8086* machine);
-  void read_sregs(union test_v8086* machine);
+  void read_regs(v8086* machine);
+  void read_sregs(v8086* machine);
 #endif
 #endif

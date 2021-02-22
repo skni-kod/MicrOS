@@ -12,7 +12,7 @@
 
 void interactive_tests()
 {
-    union test_v8086* machine = v8086_create_machine();
+    v8086* machine = v8086_create_machine();
     while(true)
         {
             char d[100];
@@ -36,7 +36,7 @@ void interactive_tests()
                 uint16_t off;
                 seg = read_reg_16();
                 off = read_reg_16();
-                uint8_t mem = read_byte_from_pointer(machine->machine.Memory, get_absolute_address(seg, off));
+                uint8_t mem = read_byte_from_pointer(machine->Memory, get_absolute_address(seg, off));
                 serial_send(COM1_PORT, mem);
             }
             else if(debug_operation == 4) // READ WORD
@@ -45,7 +45,7 @@ void interactive_tests()
                 uint16_t off;
                 seg = read_reg_16();
                 off = read_reg_16();
-                uint16_t mem = read_word_from_pointer(machine->machine.Memory, get_absolute_address(seg, off));
+                uint16_t mem = read_word_from_pointer(machine->Memory, get_absolute_address(seg, off));
                 send_reg_16(mem);
             }
             else if(debug_operation == 5) // READ DWORD
@@ -54,27 +54,27 @@ void interactive_tests()
                 uint16_t off;
                 seg = read_reg_16();
                 off = read_reg_16();
-                uint32_t mem = read_dword_from_pointer(machine->machine.Memory, get_absolute_address(seg, off));
+                uint32_t mem = read_dword_from_pointer(machine->Memory, get_absolute_address(seg, off));
                 send_reg_32(mem);
             }
             else if(debug_operation == 6) // GET IP
             {
-                send_reg_16(machine->machine.IP.w.ip);
+                send_reg_16(machine->IP.w.ip);
             }
             else if(debug_operation == 7) // READ MEM
             {
                 for(int i = 0; i < 0x100000; i++)
-                    serial_send(COM1_PORT,machine->machine.Memory[i]);
+                    serial_send(COM1_PORT,machine->Memory[i]);
             } 
             else if(debug_operation == 8) // READ SEG
             {
                 uint16_t seg = read_reg_16();        
                 for(int i = 0; i < 64 * 1024; i++)
-                    serial_send(COM1_PORT,machine->machine.Memory[seg * 0x10 + i]);              
+                    serial_send(COM1_PORT,machine->Memory[seg * 0x10 + i]);              
             }
             else if(debug_operation == 9)
             {
-                machine->machine.IP.w.ip = read_reg_16();
+                machine->IP.w.ip = read_reg_16();
             }
             else if(debug_operation == 10)
             {
@@ -92,7 +92,7 @@ void interactive_tests()
                 uint32_t addr = seg * 0x10 + off;
                 for(int i = addr; i < addr + length; i++)
                 {
-                    machine->machine.Memory[i] = serial_receive(COM1_PORT);
+                    machine->Memory[i] = serial_receive(COM1_PORT);
                 }
             }
             else if(debug_operation == 13)
@@ -106,7 +106,7 @@ void interactive_tests()
                 char x[20];
                 for(long i = 0; i < 0x100000; i++)
                 {
-                    machine->machine.Memory[i] = serial_receive(COM1_PORT);
+                    machine->Memory[i] = serial_receive(COM1_PORT);
                     if((i % 0x100) == 0){
                         kernel_sprintf(x, "%x\n", i);
                         vga_printstring(x);

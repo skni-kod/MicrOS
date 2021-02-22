@@ -20,7 +20,7 @@
     //#define DEBUG_V8086_INTERACTIVE
 #endif
 
-int16_t parse_and_execute_instruction(union test_v8086* machine);
+int16_t parse_and_execute_instruction(v8086* machine);
 
 #ifdef DEBUG_V8086
 void send_reg_32(uint32_t reg)
@@ -35,59 +35,59 @@ void send_reg_16(uint16_t reg)
         serial_send(COM1_PORT, ((reg) >> (i*8)) & 0xff);
 }
 
-void send_regs(union test_v8086* machine)
+void send_regs(v8086* machine)
 {
-    send_reg_32(machine->machine.regs.d.edi);
-    send_reg_32(machine->machine.regs.d.esi);
-    send_reg_32(machine->machine.regs.d.ebp);
-    send_reg_32(machine->machine.regs.d.cflag);
-    send_reg_32(machine->machine.regs.d.ebx);
-    send_reg_32(machine->machine.regs.d.edx);
-    send_reg_32(machine->machine.regs.d.ecx);
-    send_reg_32(machine->machine.regs.d.eax);
-    send_reg_16(machine->machine.regs.d.eflags);
-    send_reg_32(machine->machine.regs.d.esp);
+    send_reg_32(machine->regs.d.edi);
+    send_reg_32(machine->regs.d.esi);
+    send_reg_32(machine->regs.d.ebp);
+    send_reg_32(machine->regs.d.cflag);
+    send_reg_32(machine->regs.d.ebx);
+    send_reg_32(machine->regs.d.edx);
+    send_reg_32(machine->regs.d.ecx);
+    send_reg_32(machine->regs.d.eax);
+    send_reg_16(machine->regs.d.eflags);
+    send_reg_32(machine->regs.d.esp);
 }
 
-void send_sregs(union test_v8086* machine)
+void send_sregs(v8086* machine)
 {
-    send_reg_16(machine->machine.sregs.es);
-    send_reg_16(machine->machine.sregs.ds);
-    send_reg_16(machine->machine.sregs.fs);
-    send_reg_16(machine->machine.sregs.gs);
-    send_reg_16(machine->machine.sregs.cs);
-    send_reg_16(machine->machine.sregs.ss);
+    send_reg_16(machine->sregs.es);
+    send_reg_16(machine->sregs.ds);
+    send_reg_16(machine->sregs.fs);
+    send_reg_16(machine->sregs.gs);
+    send_reg_16(machine->sregs.cs);
+    send_reg_16(machine->sregs.ss);
 }
 
-void read_regs(union test_v8086* machine)
+void read_regs(v8086* machine)
 {
-    machine->machine.regs.d.edi = read_reg_32();
-    machine->machine.regs.d.esi = read_reg_32();
+    machine->regs.d.edi = read_reg_32();
+    machine->regs.d.esi = read_reg_32();
     
-    machine->machine.regs.d.ebp = read_reg_32();
+    machine->regs.d.ebp = read_reg_32();
     //char x[100];
     //kernel_sprintf(x, "%x\n", read_reg_32());
-    //kernel_sprintf(x, "%x\n", machine->machine.regs.d.ebp);
+    //kernel_sprintf(x, "%x\n", machine->regs.d.ebp);
     //vga_printstring(x);
-    machine->machine.regs.d.cflag = read_reg_32();
-    machine->machine.regs.d.ebx = read_reg_32();
-    machine->machine.regs.d.edx = read_reg_32();
-    machine->machine.regs.d.ecx = read_reg_32();
-    machine->machine.regs.d.eax = read_reg_32();
-    machine->machine.regs.d.eflags = read_reg_16();
-    machine->machine.regs.d.esp = read_reg_32();
-    //kernel_sprintf(x, "%x\n", machine->machine.regs.d.esp);
+    machine->regs.d.cflag = read_reg_32();
+    machine->regs.d.ebx = read_reg_32();
+    machine->regs.d.edx = read_reg_32();
+    machine->regs.d.ecx = read_reg_32();
+    machine->regs.d.eax = read_reg_32();
+    machine->regs.d.eflags = read_reg_16();
+    machine->regs.d.esp = read_reg_32();
+    //kernel_sprintf(x, "%x\n", machine->regs.d.esp);
     //vga_printstring(x);
 }
 
-void read_sregs(union test_v8086* machine)
+void read_sregs(v8086* machine)
 {
-    machine->machine.sregs.es = read_reg_16();
-    machine->machine.sregs.ds = read_reg_16();
-    machine->machine.sregs.fs = read_reg_16();
-    machine->machine.sregs.gs = read_reg_16();
-    machine->machine.sregs.cs = read_reg_16();
-    machine->machine.sregs.ss = read_reg_16();
+    machine->sregs.es = read_reg_16();
+    machine->sregs.ds = read_reg_16();
+    machine->sregs.fs = read_reg_16();
+    machine->sregs.gs = read_reg_16();
+    machine->sregs.cs = read_reg_16();
+    machine->sregs.ss = read_reg_16();
 }
 
 uint16_t read_reg_16()
@@ -339,30 +339,30 @@ void v8086_set_386_instruction_set(v8086* machine)
     machine->is_compatibility = V8086_IS386;
 }
 
-union test_v8086* v8086_create_machine()
+v8086* v8086_create_machine()
 {
-    union test_v8086* machine = (union test_v8086*) heap_kernel_alloc(sizeof(union test_v8086), 0);
+    v8086* machine = (v8086*) heap_kernel_alloc(sizeof(v8086), 0);
     if(machine == NULL) return NULL;
-    memset(machine, 0, sizeof(union test_v8086));
-    machine->machine.regs.x.flags = 0x2;
-    machine->machine.sregs.cs = 0xf000;
-    machine->machine.IP.w.ip = 0xfff0;
-    machine->machine.sregs.ss = 0x0;
-    machine->machine.regs.d.ebp = 0x7bff;
-    machine->machine.regs.d.esp = 0x7bff;
-	memcpy(machine->machine.Memory, (void*)0xc0000000, 0x100000);
+    memset(machine, 0, sizeof(v8086));
+    machine->regs.x.flags = 0x2;
+    machine->sregs.cs = 0xf000;
+    machine->IP.w.ip = 0xfff0;
+    machine->sregs.ss = 0x0;
+    machine->regs.d.ebp = 0x7bff;
+    machine->regs.d.esp = 0x7bff;
+	memcpy(machine->Memory, (void*)0xc0000000, 0x100000);
     v8086_set_8086_instruction_set(machine);
     return machine;
 }
 
-void v8086_destroy_machine(union test_v8086* machine)
+void v8086_destroy_machine(v8086* machine)
 {
     heap_kernel_dealloc(machine);
 }
 
-int16_t v8086_call_function(union test_v8086* machine)
+int16_t v8086_call_function(v8086* machine)
 {
-    while(!(machine->machine.IP.w.ip == 0xFFFF && machine->machine.sregs.cs == 0xFFFF))
+    while(!(machine->IP.w.ip == 0xFFFF && machine->sregs.cs == 0xFFFF))
     {
         int16_t status = parse_and_execute_instruction(machine);
         if(status != V8086_OK) return status;
@@ -370,12 +370,12 @@ int16_t v8086_call_function(union test_v8086* machine)
     return V8086_OK;
 }
 
-int16_t v8086_call_int(union test_v8086* machine, int16_t num)
+int16_t v8086_call_int(v8086* machine, int16_t num)
 {
     if ((num < 0) || (num > 0xFF)) return V8086_BAD_INT_NUMBER;
-    machine -> machine. IP.w.ip = read_word_from_pointer(machine->machine.Memory, get_absolute_address(0, num * 4));
-    machine -> machine. sregs.cs = read_word_from_pointer(machine->machine.Memory, get_absolute_address(0, num * 4 + 2));
-    push_word(machine, machine->machine.regs.w.flags);
+    machine->IP.w.ip = read_word_from_pointer(machine->Memory, get_absolute_address(0, num * 4));
+    machine->sregs.cs = read_word_from_pointer(machine->Memory, get_absolute_address(0, num * 4 + 2));
+    push_word(machine, machine->regs.w.flags);
     push_word(machine, 0xFFFF);
     push_word(machine, 0xFFFF);
     int16_t x = v8086_call_function(machine);
@@ -383,20 +383,20 @@ int16_t v8086_call_int(union test_v8086* machine, int16_t num)
     return num;
 }
 
-uint32_t v8086_get_address_of_int(union test_v8086* machine, int16_t num)
+uint32_t v8086_get_address_of_int(v8086* machine, int16_t num)
 {
-    uint32_t ip = read_word_from_pointer(machine->machine.Memory, get_absolute_address(0, num * 4));
-    uint32_t cs = read_word_from_pointer(machine->machine.Memory, get_absolute_address(0, num * 4 + 2));
+    uint32_t ip = read_word_from_pointer(machine->Memory, get_absolute_address(0, num * 4));
+    uint32_t cs = read_word_from_pointer(machine->Memory, get_absolute_address(0, num * 4 + 2));
     return cs * 0x10 + ip;
 }
 
-int16_t parse_and_execute_instruction(union test_v8086* machine)
+int16_t parse_and_execute_instruction(v8086* machine)
 {
-    machine->machine.internal_state.IPOffset = 0;
-    machine->machine.internal_state.operand_32_bit = 0;
-    machine->machine.internal_state.address_32_bit = 0;
-    machine->machine.internal_state.segment_reg_select = V8086_DEFAULT;
-    machine->machine.internal_state.rep_prefix = V8086_NONE_REPEAT;
+    machine->internal_state.IPOffset = 0;
+    machine->internal_state.operand_32_bit = 0;
+    machine->internal_state.address_32_bit = 0;
+    machine->internal_state.segment_reg_select = V8086_DEFAULT;
+    machine->internal_state.rep_prefix = V8086_NONE_REPEAT;
 
     int16_t status = V8086_OK;
 
@@ -467,7 +467,7 @@ int16_t parse_and_execute_instruction(union test_v8086* machine)
         #endif
 
         #ifdef DEBUG_V8086_BIN
-        for(uint32_t i = 0; i < sizeof(union test_v8086); i++)
+        for(uint32_t i = 0; i < sizeof(v8086); i++)
         {
             serial_send(COM1_PORT, machine->bytes[i]);
         }
@@ -499,7 +499,7 @@ int16_t parse_and_execute_instruction(union test_v8086* machine)
                 seg |= serial_receive(COM1_PORT);
                 off = (uint16_t)serial_receive(COM1_PORT) << 8;
                 off |= serial_receive(COM1_PORT);
-                uint8_t mem = read_byte_from_pointer(machine->machine.Memory, get_absolute_address(seg, off));
+                uint8_t mem = read_byte_from_pointer(machine->Memory, get_absolute_address(seg, off));
                 serial_send(COM1_PORT, mem);
             }
             else if(debug_operation == 4)
@@ -510,7 +510,7 @@ int16_t parse_and_execute_instruction(union test_v8086* machine)
                 seg |= serial_receive(COM1_PORT);
                 off = (uint16_t)serial_receive(COM1_PORT) << 8;
                 off |= serial_receive(COM1_PORT);
-                uint16_t mem = read_word_from_pointer(machine->machine.Memory, get_absolute_address(seg, off));
+                uint16_t mem = read_word_from_pointer(machine->Memory, get_absolute_address(seg, off));
                 send_reg_16(mem);
             }
             else if(debug_operation == 5)
@@ -521,17 +521,17 @@ int16_t parse_and_execute_instruction(union test_v8086* machine)
                 seg |= serial_receive(COM1_PORT);
                 off = (uint16_t)serial_receive(COM1_PORT) << 8;
                 off |= serial_receive(COM1_PORT);
-                uint32_t mem = read_dword_from_pointer(machine->machine.Memory, get_absolute_address(seg, off));
+                uint32_t mem = read_dword_from_pointer(machine->Memory, get_absolute_address(seg, off));
                 send_reg_32(mem);
             }
             else if(debug_operation == 6)
             {
-                send_reg_16(machine->machine.IP.w.ip);
+                send_reg_16(machine->IP.w.ip);
             }
             else if(debug_operation == 7)
             {
                 for(int i = 0; i < 0x100000; i++)
-                    serial_send(COM1_PORT,machine->machine.Memory[i]);
+                    serial_send(COM1_PORT,machine->Memory[i]);
             } 
             else if(debug_operation == 8)
             {
@@ -539,7 +539,7 @@ int16_t parse_and_execute_instruction(union test_v8086* machine)
                 seg = (uint16_t)serial_receive(COM1_PORT) << 8;
                 seg |= serial_receive(COM1_PORT);         
                 for(int i = 0; i < 64 * 1024; i++)
-                    serial_send(COM1_PORT,machine->machine.Memory[seg * 0x10 + i]);              
+                    serial_send(COM1_PORT,machine->Memory[seg * 0x10 + i]);              
             }
             else{
                 vga_printstring("Unknown byte: ");
@@ -552,10 +552,10 @@ int16_t parse_and_execute_instruction(union test_v8086* machine)
 
     //Maybe opcode, an be also prefix
     uint8_t opcode;
-    decode: opcode = read_byte_from_pointer(machine->machine.Memory, get_absolute_address(machine->machine.sregs.cs, machine->machine.IP.w.ip + machine->machine.internal_state.IPOffset));
-    uint32_t temp = get_absolute_address(machine->machine.sregs.cs, machine->machine.IP.w.ip + machine->machine.internal_state.IPOffset);
-    uint8_t* ptr_to_opcode = get_byte_pointer(machine->machine.Memory, get_absolute_address(machine->machine.sregs.cs, machine->machine.IP.w.ip + machine->machine.internal_state.IPOffset));
-    machine->machine.internal_state.IPOffset += 1;
+    decode: opcode = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    uint32_t temp = get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset);
+    uint8_t* ptr_to_opcode = get_byte_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
+    machine->internal_state.IPOffset += 1;
     
     
     /*char str[5] = "";
@@ -571,43 +571,43 @@ int16_t parse_and_execute_instruction(union test_v8086* machine)
     //Segment Prefix V8086_CS DS V8086_ES SS
     if((opcode & 0x7u) == 0x6 && ((opcode >> 5u) & 0x7u) == 0x1u) //001XX110 pattern where XX is number of segment
     {
-        machine->machine.internal_state.segment_reg_select = (opcode >> 3u) & 0x3u;
+        machine->internal_state.segment_reg_select = (opcode >> 3u) & 0x3u;
         goto decode; //continue parsing opcode;
     }
     //Segment Prefix FS
     else if(opcode == 0x64)
     {
-        machine->machine.internal_state.segment_reg_select = V8086_FS;
+        machine->internal_state.segment_reg_select = V8086_FS;
         goto decode; //continue parsing opcode;
     }
     //Segment Prefix GS
     else if(opcode == 0x65)
     {
-        machine->machine.internal_state.segment_reg_select = V8086_GS;
+        machine->internal_state.segment_reg_select = V8086_GS;
         goto decode; //continue parsing opcode;
     }
     //Operand Size Prefix
     else if(opcode == 0x66)
     {
-        machine->machine.internal_state.operand_32_bit = 1;
+        machine->internal_state.operand_32_bit = 1;
         goto decode; //continue parsing opcode;
     }
     //Address Szie Prefix
     else if(opcode == 0x67)
     {
-        machine->machine.internal_state.address_32_bit = 1;
+        machine->internal_state.address_32_bit = 1;
         goto decode;
     }
     //REPNE Prefix
     else if(opcode == 0xF2)
     {
-        machine->machine.internal_state.rep_prefix = V8086_REPNE;
+        machine->internal_state.rep_prefix = V8086_REPNE;
         goto decode; //continue parsing opcode;
     }
     //REP/REPE Prefix
     else if(opcode == 0xF3)
     {
-        machine->machine.internal_state.rep_prefix = V8086_REP_REPE;
+        machine->internal_state.rep_prefix = V8086_REP_REPE;
         goto decode; //continue parsing opcode;
     }
     //LOCK Prefix
@@ -616,12 +616,12 @@ int16_t parse_and_execute_instruction(union test_v8086* machine)
         goto decode; //ommit prefix, contniue parsinf opcode; 
     }
 
-    if(machine->machine.operations[opcode] != NULL)
-        status = machine->machine.operations[opcode](&(machine->machine), opcode);
+    if(machine->operations[opcode] != NULL)
+        status = machine->operations[opcode](machine, opcode);
     else
         return V8086_UNDEFINED_OPCODE;
 
-    machine->machine.IP.w.ip += machine->machine.internal_state.IPOffset;
+    machine->IP.w.ip += machine->internal_state.IPOffset;
     #ifdef DEBUG_V8086
         #ifdef DEBUG_V8086_TEXT
         serial_send_string(COM1_PORT, "------------------------------------------\n");

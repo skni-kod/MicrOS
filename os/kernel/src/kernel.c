@@ -37,6 +37,7 @@
 #include "terminal/terminal_manager.h"
 #include "cpu/cpuid/cpuid.h"
 #include "v8086/v8086.h"
+#include "drivers/vbe/vbe.h"
 
 #ifdef TEST_V8086
 #include "v8086/tests/tests.h"
@@ -411,96 +412,42 @@ int kmain()
     switch_active_terminal(0);
     
     //process_manager_run();
-
-    union test_v8086* v8086 = v8086_create_machine();
-    v8086_set_386_instruction_set(&(v8086->machine));
-
-    //filesystem_create_file("A:/DUMP.BIN");
-    //bool dupa = filesystem_save_to_file("A:/DUMP.BIN", (char*) v8086->Memory + 0xC0000, 64*1024);
-    if(filesystem_is_file("A:/DUMP.BIN"))
-        filesystem_delete_file("A:/DUMP.BIN");
-
-    //if(filesystem_is_file("A:/SEG0x40.BIN"))
-    //    filesystem_delete_file("A:/SEG0x40.BIN");
-
-    filesystem_create_file("A:/DUMP.BIN");
-    bool dupa = filesystem_save_to_file("A:/DUMP.BIN", (char*) v8086->machine.Memory + 0xC0000, 64*1024);
-
-    //filesystem_create_file("A:/SEG0x40.BIN");
-    //dupa = filesystem_save_to_file("A:/SEG0x40.BIN", (char*) v8086->Memory + 0x400, 64*1024); 
-
-    serial_init(COM1_PORT, 921600, 8, 1, PARITY_NONE);
     keyboard_scan_ascii_pair kb;
     vga_printstring("Press key to continue... (Sending Debug Informations via serial)\n");
     while(!keyboard_get_key_from_buffer(&kb));
-    /*for(long long i = 0; i < 1024*1024; i++)
+
+    char buff[100];
+    VBE_initialize();
+    VBEStatus status = VBE_check_existance_of_VESA();
+    if(status != VBE_OK)
     {
-        serial_send(COM1_PORT, *((char*) v8086->Memory + i));
-    }*/
-
-    //if(filesystem_is_file("A:/CSIP.BIN")) {
-    //filesystem_delete_file("A:/CSIP.BIN");
-    //}
-
-    //filesystem_create_file("A:/CSIP.BIN");
-
-    //void (*ptr)() = (void*)(v8086_get_address_of_int(v8086, 0x10) + v8086->Memory);
-
-    #ifdef TEST_V8086
-    //test_mod_16();
-    //interactive_tests();
-    #endif
-
-    //v8086->machine.regs.h.ah = 0x00;
-    //v8086->machine.regs.h.al = 0x13;
-    //v8086->machine.regs.h.al = 0x6a;
-    
-    v8086->machine.regs.x.ax = 0x4f03;
-    int16_t status = v8086_call_int(v8086, 0x10);
-
-    char str[100] = "";
-    if(v8086->machine.regs.x.ax == 0x004f)
-    {
-        itoa(v8086->machine.regs.x.bx, str, 16);
-        vga_printstring(str);
+        vga_printstring("Problems with VBE: \n");
+        vga_printstring(itoa(status, buff, 10));
         vga_newline();
     }
-    else{
-        vga_printstring("DUPA!");
+    svga_information* svga_info_ptr;
+    status = VBE_get_svga_information(&svga_info_ptr);
+    if(status == VBE_OK){
+        vga_printstring(svga_info_ptr->signature);
+        vga_newline();
+        vga_printstring(svga_info_ptr->producent_text);
+        vga_newline();
+        itoa(svga_info_ptr->vesa_standard_number, buff, 16);
+        vga_printstring(buff);
+        vga_newline();
+        itoa(svga_info_ptr->number_of_modes, buff, 10);
+        vga_printstring(buff);
+        vga_newline();
+        for(int i=0; i < svga_info_ptr->number_of_modes; i++)
+        {
+            itoa(svga_info_ptr->mode_array[i], buff, 16);
+            vga_printstring(buff);
+            vga_printstring(", ");
+        }
     }
-
-    v8086->machine.regs.x.ax = 0x4f02;
-    v8086->machine.regs.x.bx = 0x11b;
-    status = v8086_call_int(v8086, 0x10);
-
-    //mode13h_set_mode();
-    //mode13h_clear_screen();
-    drawLenaIn13H();
-    
-    /*char str[100] = "";
-    itoa(status, str, 16);
-    vga_printstring(str);
-    vga_newline();
-    vga_printstring("IP: ");
-    uint16_t IP = *(uint16_t*)(v8086->machine.Memory + 0x10 * 4);
-    uint16_t CS = *(uint16_t*)(v8086->machine.Memory + 0x10 * 4 + 2);
-    vga_newline();
-    itoa(IP, str, 16);
-    vga_printstring(str);
-    vga_newline();
-    vga_printstring("CS: ");
-    itoa(CS, str, 16);
-    vga_printstring(str);
-    vga_newline();
-    for(uint32_t i = CS * 16 + IP; i < (CS * 16 + IP + 16); i++)
-    {
-        uint8_t mem = v8086->machine.Memory[i];
-        itoa(mem, str, 16);
-        vga_printstring(str);
-        vga_printstring(" ");
-    }*/
-
-    
+    else{
+        vga_printstring("DUPA\n");
+    }
     while (1);
     return 0;
 }
