@@ -5,7 +5,7 @@
 #include "mov_operations.h"
 #include "internal_funcs.h"
 
-int16_t perform_mov(v8086* machine, void* source, void* dest, uint8_t width) {
+int16_t perform_mov(v8086* machine, void* source, void* dest, uint8_t width, uint8_t flags_affected) {
     switch (width) {
         case 8:
             *((uint8_t *) dest) = *((uint8_t *) source);
@@ -20,12 +20,14 @@ int16_t perform_mov(v8086* machine, void* source, void* dest, uint8_t width) {
             return V8086_BAD_WIDTH;
     }
 
-    bit_clear(machine->regs.w.flags, 1u << OVERFLOW_FLAG_BIT);
-    bit_clear(machine->regs.w.flags, 1u << CARRY_FLAG_BIT);
-    bit_clear(machine->regs.w.flags, 1u << SIGN_FLAG_BIT);
-    bit_clear(machine->regs.w.flags, 1u << ZERO_FLAG_BIT);
-    bit_clear(machine->regs.w.flags, 1u << PARITY_FLAG_BIT);
-    bit_clear(machine->regs.w.flags, 1u << AUX_CARRY_FLAG_BIT);
+    if(flags_affected){
+        bit_clear(machine->regs.w.flags, 1u << OVERFLOW_FLAG_BIT);
+        bit_clear(machine->regs.w.flags, 1u << CARRY_FLAG_BIT);
+        bit_clear(machine->regs.w.flags, 1u << SIGN_FLAG_BIT);
+        bit_clear(machine->regs.w.flags, 1u << ZERO_FLAG_BIT);
+        bit_clear(machine->regs.w.flags, 1u << PARITY_FLAG_BIT);
+        bit_clear(machine->regs.w.flags, 1u << AUX_CARRY_FLAG_BIT);
+    }
 
     return V8086_OK;
 }
@@ -46,10 +48,10 @@ int16_t perform_mov_rm(v8086* machine, uint8_t opcode)
     {
         case 0x88:
         case 0x89:
-            return perform_mov(machine, source, dest, width);
+            return perform_mov(machine, source, dest, width, 0);
         case 0x8a:
         case 0x8b:
-            return perform_mov(machine, dest, source, width);
+            return perform_mov(machine, dest, source, width, 0);
         default:
             return V8086_UNKNOWN_ERROR;
     }
@@ -147,9 +149,9 @@ int16_t perform_mov_segment(v8086* machine, uint8_t opcode)
     if(dest == NULL) return V8086_UNABLE_GET_MEMORY;
 
     if(opcode == 0x8c)
-        return perform_mov(machine, source, dest, 16);
+        return perform_mov(machine, source, dest, 16, 0);
     else if(opcode == 0x8e)
-        return perform_mov(machine, dest, source, 16);
+        return perform_mov(machine, dest, source, 16, 0);
     else return V8086_UNKNOWN_ERROR;
 }
 
@@ -164,7 +166,7 @@ uint16_t perform_mov_gpr_imm(v8086* machine, uint8_t opcode)
     if(reg == NULL) return V8086_UNDEFINED_REGISTER;
     void* imm = get_variable_length_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset), width);
     machine->internal_state.IPOffset += width / 8;
-    return perform_mov(machine, imm, reg, width);
+    return perform_mov(machine, imm, reg, width, 0);
 }
 
 uint16_t perform_mov_rm_imm(v8086* machine, uint8_t opcode)

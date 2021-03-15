@@ -416,9 +416,14 @@ int kmain()
     vga_printstring("Press key to continue... (Sending Debug Informations via serial)\n");
     while(!keyboard_get_key_from_buffer(&kb));
 
+    serial_init(COM1_PORT, 921600, 8, 1, PARITY_NONE);
+
     char buff[100];
     VBE_initialize();
-    VBEStatus status = VBE_check_existance_of_VESA();
+    
+    //svga_mode_information mode_info;
+    //VBE_get_vesa_mode_information(&mode_info, 0x105);
+    /*VBEStatus status = VBE_check_existance_of_VESA();
     if(status != VBE_OK)
     {
         vga_printstring("Problems with VBE: \n");
@@ -432,22 +437,63 @@ int kmain()
         vga_newline();
         vga_printstring(svga_info_ptr->producent_text);
         vga_newline();
+        vga_printstring("VESA VERSION: ");
         itoa(svga_info_ptr->vesa_standard_number, buff, 16);
         vga_printstring(buff);
         vga_newline();
+        vga_printstring("VESA NUMBER OF MODES: ");
         itoa(svga_info_ptr->number_of_modes, buff, 10);
         vga_printstring(buff);
         vga_newline();
+        uint16_t mode_number = 0;
+        uint32_t max_width = 0;
+        uint32_t max_height = 0;
+        uint16_t max_bit_per_pixel = 0;
         for(int i=0; i < svga_info_ptr->number_of_modes; i++)
+        //for(int i=0x11b; i < 0x11c; i++)
         {
-            itoa(svga_info_ptr->mode_array[i], buff, 16);
-            vga_printstring(buff);
-            vga_printstring(", ");
+            svga_mode_information mode_info;
+            status = VBE_get_vesa_mode_information(&mode_info, svga_info_ptr->mode_array[i]);
+            if(status != VBE_OK){
+                itoa(svga_info_ptr->mode_array[i], buff, 16);
+                vga_printstring("Unable to get SVGA MODE INFORMATION: ");
+                vga_printstring(buff);
+                vga_newline();
+                while(!keyboard_get_key_from_buffer(&kb));
+            }
+            else{
+                if((max_width * max_height) <= ((uint32_t)mode_info.mode_width * (uint32_t)mode_info.mode_height))
+                {
+                    if(max_bit_per_pixel <= mode_info.bits_per_pixel){
+                        mode_number = svga_info_ptr->mode_array[i];
+                        max_width = mode_info.mode_width;
+                        max_height = mode_info.mode_height;
+                        max_bit_per_pixel = mode_info.bits_per_pixel;
+                    }
+                }
+            }
         }
+        vga_printstring("BEST MODE: ");
+        itoa(mode_number, buff, 16);
+        vga_printstring(buff);
+        vga_newline();
+        vga_printstring("MAX WIDTH: ");
+        itoa(max_width, buff, 10);
+        vga_printstring(buff);
+        vga_newline();
+        vga_printstring("MAX HEIGHT: ");
+        itoa(max_height, buff, 10);
+        vga_printstring(buff);
+        vga_newline();
+        vga_printstring("BITS PER COLOR: ");
+        itoa(max_bit_per_pixel, buff, 10);
+        vga_printstring(buff);
+        vga_newline();
+
     }
     else{
-        vga_printstring("DUPA\n");
-    }
+        vga_printstring("Unable to get SVGA INFORMATION\n");
+    }*/
     while (1);
     return 0;
 }
