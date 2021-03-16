@@ -139,3 +139,31 @@ VBEStatus VBE_get_current_video_mode(uint16_t* mode_number)
     *mode_number = machine->regs.x.bx;
     return VBE_OK;
 }
+
+VBEStatus VBE_return_save_restore_state_buffer_size(uint16_t requested_states, uint16_t* buffer_block_number)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f04;
+    machine->regs.h.dl = 0x00;
+    machine->regs.x.cx = requested_states;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    *buffer_block_number = machine->regs.x.bx;
+    return VBE_OK;
+}
+
+VBEStatus VBE_save_restore_state(bool save, uint16_t requested_states, uint16_t buffer_pointer)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f04;
+    machine->regs.h.dl = save? 0x01 : 0x02;
+    machine->regs.x.cx = requested_states;
+    machine->sregs.bx = buffer_pointer;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    return VBE_OK;
+}

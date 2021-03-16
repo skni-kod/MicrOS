@@ -51,5 +51,7 @@ VBEStatus VBE_get_vesa_mode_information(svga_mode_information* infromation_struc
 VBEStatus VBE_destroy_svga_information(svga_information* svga_information_ptr);
 VBEStatus VBE_set_video_mode(uint16_t mode_number, bool clear_screen);
 VBEStatus VBE_get_current_video_mode(uint16_t* mode_number);
+VBEStatus VBE_return_save_restore_state_buffer_size(uint16_t requested_states, uint16_t* buffer_block_number);
+VBEStatus VBE_save_restore_state(bool save, uint16_t requested_states, uint16_t buffer_pointer);
 
 #endif
