@@ -167,3 +167,34 @@ VBEStatus VBE_save_restore_state(bool save, uint16_t requested_states, uint16_t 
     if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
     return VBE_OK;
 }
+
+VBEStatus VBE_get_logical_scan_line_length(bool get_maximum_length, uint16_t* bytes_per_line, uint16_t* actual_pixel_in_line, uint16_t* maximum_scan_lines_number)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f06;
+    machine->regs.h.bl = get_maximum_length? 0x03: 0x01;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    *bytes_per_line = machine->regs.x.bx;
+    *actual_pixel_in_line = machine->regs.x.cx;
+    *maximum_scan_lines_number = machine->regs.x.dx;
+    return VBE_OK;
+}
+
+VBEStatus VBE_set_logical_scan_line_length(bool in_pixels, uint16_t length,uint16_t* bytes_per_line, uint16_t* actual_pixel_in_line, uint16_t* maximum_scan_lines_number)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f06;
+    machine->regs.h.bl = in_pixels? 0x00: 0x02;
+    machine->regs.x.cx = length;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    *bytes_per_line = machine->regs.x.bx;
+    *actual_pixel_in_line = machine->regs.x.cx;
+    *maximum_scan_lines_number = machine->regs.x.dx;
+    return VBE_OK;
+}
