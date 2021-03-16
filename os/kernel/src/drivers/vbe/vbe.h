@@ -49,5 +49,7 @@ VBEStatus VBE_check_existance_of_VESA();
 VBEStatus VBE_get_svga_information(svga_information** information_struct_ptr);
 VBEStatus VBE_get_vesa_mode_information(svga_mode_information* infromation_struct, uint16_t mode_number);
 VBEStatus VBE_destroy_svga_information(svga_information* svga_information_ptr);
+VBEStatus VBE_set_video_mode(uint16_t mode_number, bool clear_screen);
+VBEStatus VBE_get_current_video_mode(uint16_t* mode_number);
 
 #endif

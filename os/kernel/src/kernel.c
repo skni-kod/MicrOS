@@ -420,7 +420,7 @@ int kmain()
 
     char buff[100];
     VBE_initialize();
-    
+    VBE_set_video_mode(0x18c, false);
     //svga_mode_information mode_info;
     //VBE_get_vesa_mode_information(&mode_info, 0x105);
     /*VBEStatus status = VBE_check_existance_of_VESA();
