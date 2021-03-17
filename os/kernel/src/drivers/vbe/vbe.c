@@ -270,3 +270,20 @@ VBEStatus VBE_get_dac_palette_format(uint8_t* curent_number_color_bits)
     *curent_number_color_bits = machine->regs.h.bh;
     return VBE_OK;
 }
+
+//set/get palette data
+
+VBEStatus VBE_get_protected_mode_interface(uint16_t* real_mode_table_segment, uint16_t* table_offset, uint16_t* table_length)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f06;
+    machine->regs.h.bl = 0x01;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    *real_mode_table_segment = machine->sregs.es;
+    *table_offset = machine->regs.x.di;
+    *table_length = machine->regs.x.cx;
+    return VBE_OK;
+}

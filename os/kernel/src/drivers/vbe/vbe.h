@@ -62,4 +62,6 @@ VBEStatus VBE_set_logical_scan_line_length(bool in_pixels, uint16_t length,uint1
 VBEStatus VBE_set_dac_palette_format(uint8_t primary_color_bits, uint8_t* curent_number_color_bits);
 VBEStatus VBE_get_dac_palette_format(uint8_t* curent_number_color_bits);
 
+VBEStatus VBE_get_protected_mode_interface(uint16_t* real_mode_table_segment, uint16_t* table_offset, uint16_t* table_length);
+
 #endif
