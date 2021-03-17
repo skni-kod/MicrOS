@@ -247,7 +247,7 @@ VBEStatus VBE_set_logical_scan_line_length(bool in_pixels, uint16_t length, uint
 VBEStatus VBE_set_dac_palette_format(uint8_t primary_color_bits, uint8_t* curent_number_color_bits)
 {
     if(!initialized) return VBE_NO_INITAILIZED;
-    machine->regs.x.ax = 0x4f06;
+    machine->regs.x.ax = 0x4f08;
     machine->regs.h.bl = 0x00;
     machine->regs.h.bh = primary_color_bits;
     int16_t status = v8086_call_int(machine, 0x10);
@@ -261,7 +261,7 @@ VBEStatus VBE_set_dac_palette_format(uint8_t primary_color_bits, uint8_t* curent
 VBEStatus VBE_get_dac_palette_format(uint8_t* curent_number_color_bits)
 {
     if(!initialized) return VBE_NO_INITAILIZED;
-    machine->regs.x.ax = 0x4f06;
+    machine->regs.x.ax = 0x4f08;
     machine->regs.h.bl = 0x01;
     int16_t status = v8086_call_int(machine, 0x10);
     if(status != 0x10) return VBE_INTERNAL_ERROR;
@@ -271,12 +271,11 @@ VBEStatus VBE_get_dac_palette_format(uint8_t* curent_number_color_bits)
     return VBE_OK;
 }
 
-//set/get palette data
 
 VBEStatus VBE_get_protected_mode_interface(uint16_t* real_mode_table_segment, uint16_t* table_offset, uint16_t* table_length)
 {
     if(!initialized) return VBE_NO_INITAILIZED;
-    machine->regs.x.ax = 0x4f06;
+    machine->regs.x.ax = 0x4f0a;
     machine->regs.h.bl = 0x01;
     int16_t status = v8086_call_int(machine, 0x10);
     if(status != 0x10) return VBE_INTERNAL_ERROR;
@@ -288,10 +287,10 @@ VBEStatus VBE_get_protected_mode_interface(uint16_t* real_mode_table_segment, ui
     return VBE_OK;
 }
 
-VBEStatus VBE_get_pixel_clock(uint16_t pixel_clock, uint16_t mode_number, uint16_t* closest_pixel_clock)
+VBEStatus VBE_get_set_pixel_clock(uint16_t pixel_clock, uint16_t mode_number, uint16_t* closest_pixel_clock)
 {
     if(!initialized) return VBE_NO_INITAILIZED;
-    machine->regs.x.ax = 0x4f06;
+    machine->regs.x.ax = 0x4f0b;
     machine->regs.h.bl = 0x00;
     machine->regs.d.ecx = pixel_clock;
     machine->regs.x.dx = mode_number;
