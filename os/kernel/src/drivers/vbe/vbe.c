@@ -287,3 +287,18 @@ VBEStatus VBE_get_protected_mode_interface(uint16_t* real_mode_table_segment, ui
     *table_length = machine->regs.x.cx;
     return VBE_OK;
 }
+
+VBEStatus VBE_get_pixel_clock(uint16_t pixel_clock, uint16_t mode_number, uint16_t* closest_pixel_clock)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f06;
+    machine->regs.h.bl = 0x00;
+    machine->regs.d.ecx = pixel_clock;
+    machine->regs.x.dx = mode_number;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    *closest_pixel_clock = machine->regs.d.ecx;
+    return VBE_OK;
+}

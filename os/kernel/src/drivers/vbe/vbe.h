@@ -63,5 +63,6 @@ VBEStatus VBE_set_dac_palette_format(uint8_t primary_color_bits, uint8_t* curent
 VBEStatus VBE_get_dac_palette_format(uint8_t* curent_number_color_bits);
 
 VBEStatus VBE_get_protected_mode_interface(uint16_t* real_mode_table_segment, uint16_t* table_offset, uint16_t* table_length);
+VBEStatus VBE_get_pixel_clock(uint16_t pixel_clock, uint16_t mode_number, uint16_t* closest_pixel_clock);
 
 #endif
