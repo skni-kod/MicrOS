@@ -160,13 +160,16 @@ VBEStatus VBE_save_restore_state(bool save, uint16_t requested_states, uint16_t 
     machine->regs.x.ax = 0x4f04;
     machine->regs.h.dl = save? 0x01 : 0x02;
     machine->regs.x.cx = requested_states;
-    machine->sregs.bx = buffer_pointer;
+    machine->sregs.es = buffer_pointer;
+    machine->regs.x.bx = 0x00;
     int16_t status = v8086_call_int(machine, 0x10);
     if(status != 0x10) return VBE_INTERNAL_ERROR;
     if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
     if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
     return VBE_OK;
 }
+
+
 
 VBEStatus VBE_get_logical_scan_line_length(bool get_maximum_length, uint16_t* bytes_per_line, uint16_t* actual_pixel_in_line, uint16_t* maximum_scan_lines_number)
 {
