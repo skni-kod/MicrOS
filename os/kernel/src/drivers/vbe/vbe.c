@@ -169,7 +169,47 @@ VBEStatus VBE_save_restore_state(bool save, uint16_t requested_states, uint16_t 
     return VBE_OK;
 }
 
+VBEStatus VBE_display_window_control_set_16bit(uint8_t window_number, uint8_t window_mem_number)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f05;
+    machine->regs.h.bh = 0x00;
+    machine->regs.h.bl = window_number;
+    machine->regs.x.dx = window_mem_number;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    return VBE_OK;
+}
 
+VBEStatus VBE_display_window_control_get_16bit(uint8_t window_number, uint8_t* window_mem_number)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f05;
+    machine->regs.h.bh = 0x01;
+    machine->regs.h.bl = window_number;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    *window_mem_number = machine->regs.x.dx;
+    return VBE_OK;
+}
+
+VBEStatus VBE_display_window_control_set_32bit(uint8_t window_number, uint8_t window_mem_number, uint16_t memory_selector)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.h.bh = 0x00;
+    machine->regs.h.bl = window_number;
+    machine->regs.x.dx = window_mem_number;
+    machine->sregs.es = memory_selector;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    return VBE_OK;
+}
 
 VBEStatus VBE_get_logical_scan_line_length(bool get_maximum_length, uint16_t* bytes_per_line, uint16_t* actual_pixel_in_line, uint16_t* maximum_scan_lines_number)
 {
@@ -186,7 +226,7 @@ VBEStatus VBE_get_logical_scan_line_length(bool get_maximum_length, uint16_t* by
     return VBE_OK;
 }
 
-VBEStatus VBE_set_logical_scan_line_length(bool in_pixels, uint16_t length,uint16_t* bytes_per_line, uint16_t* actual_pixel_in_line, uint16_t* maximum_scan_lines_number)
+VBEStatus VBE_set_logical_scan_line_length(bool in_pixels, uint16_t length, uint16_t* bytes_per_line, uint16_t* actual_pixel_in_line, uint16_t* maximum_scan_lines_number)
 {
     if(!initialized) return VBE_NO_INITAILIZED;
     machine->regs.x.ax = 0x4f06;

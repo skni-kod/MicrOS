@@ -53,6 +53,9 @@ VBEStatus VBE_set_video_mode(uint16_t mode_number, bool clear_screen);
 VBEStatus VBE_get_current_video_mode(uint16_t* mode_number);
 VBEStatus VBE_return_save_restore_state_buffer_size(uint16_t requested_states, uint16_t* buffer_block_number);
 VBEStatus VBE_save_restore_state(bool save, uint16_t requested_states, uint16_t buffer_pointer);
+VBEStatus VBE_display_window_control_set_16bit(uint8_t window_number, uint8_t window_mem_number);
+VBEStatus VBE_display_window_control_get_16bit(uint8_t window_number, uint8_t* window_mem_number);
+VBEStatus VBE_display_window_control_set_32bit(uint8_t window_number, uint8_t window_mem_number, uint16_t memory_selector);
 VBEStatus VBE_get_logical_scan_line_length(bool get_maximum_length, uint16_t* bytes_per_line, uint16_t* actual_pixel_in_line, uint16_t* maximum_scan_lines_number);
 VBEStatus VBE_set_logical_scan_line_length(bool in_pixels, uint16_t length,uint16_t* bytes_per_line, uint16_t* actual_pixel_in_line, uint16_t* maximum_scan_lines_number);
 
