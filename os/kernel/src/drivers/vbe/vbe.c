@@ -271,6 +271,38 @@ VBEStatus VBE_get_dac_palette_format(uint8_t* curent_number_color_bits)
     return VBE_OK;
 }
 
+VBEStatus VBE_get_set_palette_data_16bit(uint8_t action, uint8_t palette_registers_num, uint16_t first_palette_register, uint16_t palette_table)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f09;
+    machine->regs.h.bl = action;
+    machine->regs.x.cx = palette_registers_num;
+    machine->regs.x.dx = first_palette_register;
+    machine->sregs.es = palette_table;
+    machine->regs.x.di = 0x00;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    return VBE_OK;
+}
+
+VBEStatus VBE_get_set_palette_data_32bit(bool during_vertical_retrace, uint8_t palette_registers_num, uint16_t first_palette_register, uint16_t palette_table, uint16_t memory_selector)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f09;
+    machine->regs.h.bl = during_vertical_retrace? 0x80 : 0x00;
+    machine->regs.x.cx = palette_registers_num;
+    machine->regs.x.dx = first_palette_register;
+    machine->sregs.es = palette_table;
+    machine->regs.d.edi = 0x00;
+    machine->sregs.ds = memory_selector;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    return VBE_OK;
+}
 
 VBEStatus VBE_get_protected_mode_interface(uint16_t* real_mode_table_segment, uint16_t* table_offset, uint16_t* table_length)
 {
