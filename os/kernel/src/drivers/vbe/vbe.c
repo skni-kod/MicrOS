@@ -241,3 +241,32 @@ VBEStatus VBE_set_logical_scan_line_length(bool in_pixels, uint16_t length, uint
     *maximum_scan_lines_number = machine->regs.x.dx;
     return VBE_OK;
 }
+
+//set/get display start
+
+VBEStatus VBE_set_dac_palette_format(uint8_t primary_color_bits, uint8_t* curent_number_color_bits)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f06;
+    machine->regs.h.bl = 0x00;
+    machine->regs.h.bh = primary_color_bits;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    *curent_number_color_bits = machine->regs.h.bh;
+    return VBE_OK;
+}
+
+VBEStatus VBE_get_dac_palette_format(uint8_t* curent_number_color_bits)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f06;
+    machine->regs.h.bl = 0x01;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    *curent_number_color_bits = machine->regs.h.bh;
+    return VBE_OK;
+}

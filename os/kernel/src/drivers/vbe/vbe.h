@@ -59,4 +59,7 @@ VBEStatus VBE_display_window_control_set_32bit(uint8_t window_number, uint8_t wi
 VBEStatus VBE_get_logical_scan_line_length(bool get_maximum_length, uint16_t* bytes_per_line, uint16_t* actual_pixel_in_line, uint16_t* maximum_scan_lines_number);
 VBEStatus VBE_set_logical_scan_line_length(bool in_pixels, uint16_t length,uint16_t* bytes_per_line, uint16_t* actual_pixel_in_line, uint16_t* maximum_scan_lines_number);
 
+VBEStatus VBE_set_dac_palette_format(uint8_t primary_color_bits, uint8_t* curent_number_color_bits);
+VBEStatus VBE_get_dac_palette_format(uint8_t* curent_number_color_bits);
+
 #endif
