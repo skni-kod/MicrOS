@@ -420,10 +420,10 @@ int kmain()
 
     char buff[100];
     VBE_initialize();
-    VBE_set_video_mode(0x18c, false);
-    //svga_mode_information mode_info;
+    //VBE_set_video_mode(0x18c, false);
+    svga_mode_information mode_info;
     //VBE_get_vesa_mode_information(&mode_info, 0x105);
-    /*VBEStatus status = VBE_check_existance_of_VESA();
+    VBEStatus status = VBE_check_existance_of_VESA();
     if(status != VBE_OK)
     {
         vga_printstring("Problems with VBE: \n");
@@ -462,7 +462,15 @@ int kmain()
                 while(!keyboard_get_key_from_buffer(&kb));
             }
             else{
-                if((max_width * max_height) <= ((uint32_t)mode_info.mode_width * (uint32_t)mode_info.mode_height))
+                if(mode_info.mode_height == 200 && mode_info.mode_width == 320 && mode_info.bits_per_pixel == 24)
+                {
+                    mode_number = svga_info_ptr->mode_array[i];
+                        max_width = mode_info.mode_width;
+                        max_height = mode_info.mode_height;
+                        max_bit_per_pixel = mode_info.bits_per_pixel;
+                        break;
+                }
+                /*if((max_width * max_height) <= ((uint32_t)mode_info.mode_width * (uint32_t)mode_info.mode_height))
                 {
                     if(max_bit_per_pixel <= mode_info.bits_per_pixel){
                         mode_number = svga_info_ptr->mode_array[i];
@@ -470,7 +478,7 @@ int kmain()
                         max_height = mode_info.mode_height;
                         max_bit_per_pixel = mode_info.bits_per_pixel;
                     }
-                }
+                }*/
             }
         }
         vga_printstring("BEST MODE: ");
@@ -489,11 +497,38 @@ int kmain()
         itoa(max_bit_per_pixel, buff, 10);
         vga_printstring(buff);
         vga_newline();
-
+        VBE_get_vesa_mode_information(&mode_info, mode_number | (1 << 14));
+        itoa(mode_info.mode_attributes, buff, 16);
+        vga_printstring(buff);
+        vga_newline();
+        uint32_t off = VBE_get_word(0x0, 0x7E1E + 10);
+        uint32_t seg = VBE_get_word(0x0, 0x7E1E + 12);
+        VBEStatus x = VBE_set_video_mode(mode_number | (1 << 14), true);
+        VBE_get_vesa_mode_information(&mode_info, mode_number | (1 << 14));
+        off = VBE_get_word(0x0, 0x7E1E + 10);
+        seg = VBE_get_word(0x0, 0x7E1E + 12);
+        uint8_t* mem_buff = (uint8_t*)0xc0000000;
+        /*for(int i = 0; i < 320 * 240; i++)
+        {
+            //mem_buff[seg * 0x10 + off + i * 3] = 255;
+            //mem_buff[seg * 0x10 + off + i * 3 + 1] = 255;
+            //mem_buff[seg * 0x10 + off + i * 3 + 2] = 255;
+            mem_buff[0xA0000 + i * 3] = 255;
+            mem_buff[0xA0000 + i * 3 + 1] = 0;
+            mem_buff[0xA0000 + i * 3 + 2] = 0;
+        }*/
+        VBE_set_current_bank(0, mode_info.windows_size, mode_info.granularity);
+        for(int xx = 0; xx < 320; xx++)
+        {
+            for(int yy = 0; yy < 200; yy++)
+            {
+                VBE_draw_pixel_8_8_8(mode_info.mode_width, mode_info.mode_height, mode_info.windows_size, mode_info.granularity, xx, yy, 0, 0, 255);
+            }
+        }
     }
     else{
         vga_printstring("Unable to get SVGA INFORMATION\n");
-    }*/
+    }
     while (1);
     return 0;
 }
