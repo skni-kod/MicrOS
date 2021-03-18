@@ -4,6 +4,7 @@
 #include "vga.h"
 #include "filesystems/filesystem.h"
 #include "modes/mode_13h/mode_13h.h"
+#include "../vbe/vbe.h"
 
 #define peekb(S, O) *(unsigned char *)(16uL * (S) + (O))
 #define pokeb(S, O, V) *(unsigned char *)(16uL * (S) + (O)) = (V)
@@ -85,6 +86,27 @@ void drawLenaIn13H()
 		for(int y = 0; y < bh.Height; y++)
 			mode13h_draw_pixel(buffer[fh.BitmapOffset + (bh.Height * bh.Width - bh.Width - y*bh.Width) + x],x,y);
 
+	heap_kernel_dealloc(buffer);
+}
+
+void drawLenaIn10fH()
+{
+	filesystem_file_info info;
+	filesystem_get_file_info("A:/LENAD.BMP", &info);
+
+	uint8_t *buffer = heap_kernel_alloc(info.size, 0);
+	filesystem_read_file("A:/LENAD.BMP", buffer, 0, info.size);
+
+	OS2BMPFILEHEADER fh;
+	memcpy(&fh, buffer, sizeof(OS2BMPFILEHEADER));
+
+	OS21XBITMAPHEADER bh;
+	memcpy(&bh, buffer + sizeof(OS2BMPFILEHEADER), sizeof(OS21XBITMAPHEADER));
+
+	for(int x = 0; x < bh.Width; x++)
+		for(int y = 0; y < bh.Height; y++)
+			//mode13h_draw_pixel(buffer[fh.BitmapOffset + (bh.Height * bh.Width - bh.Width - y*bh.Width) + x],x,y);
+			VBE_draw_pixel_8_8_8(320, 240, 64, 64, x, y, buffer[fh.BitmapOffset + (x * 3) + (bh.Height - y - 1) * 3 * bh.Width + 2], buffer[fh.BitmapOffset + (x * 3) + (bh.Height - y - 1) * 3 * bh.Width + 1], buffer[fh.BitmapOffset + (x * 3) + (bh.Height - y - 1) * 3 * bh.Width]);
 	heap_kernel_dealloc(buffer);
 }
 

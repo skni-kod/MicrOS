@@ -20,6 +20,8 @@
     //#define DEBUG_V8086_INTERACTIVE
 #endif
 
+bool skipDebugging = false;
+
 int16_t parse_and_execute_instruction(v8086* machine);
 
 #ifdef DEBUG_V8086
@@ -111,6 +113,11 @@ uint32_t read_reg_32()
     value |= ((uint32_t)serial_receive(COM1_PORT) & 0xFF) << 16;
     value |= ((uint32_t)serial_receive(COM1_PORT) & 0xFF) << 24; 
     return value;
+}
+
+void setSkipDebugging(bool value)
+{
+    skipDebugging = value;
 }
 
 #endif
@@ -474,6 +481,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
         #endif
 
         #ifdef DEBUG_V8086_INTERACTIVE
+        if(!skipDebugging)
         while(true)
         {
             char d[100];

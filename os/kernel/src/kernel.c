@@ -418,8 +418,26 @@ int kmain()
 
     serial_init(COM1_PORT, 921600, 8, 1, PARITY_NONE);
 
+    #define FUN_1
+
+    #ifdef FUN_1
+        mode13h_set_mode();
+        drawLenaIn13H();
+    #endif
+
+    #ifdef FUN_2
+    v8086* machine = v8086_create_machine();
+    v8086_set_386_instruction_set(machine);
+    machine->regs.x.ax = 0x13;
+    v8086_call_int(machine, 0x10);
+    drawLenaIn13H();
+    #endif
+
+
+    #ifdef FUN_3
     char buff[100];
     VBE_initialize();
+    setSkipDebugging(true);
     //VBE_set_video_mode(0x18c, false);
     svga_mode_information mode_info;
     //VBE_get_vesa_mode_information(&mode_info, 0x105);
@@ -497,43 +515,30 @@ int kmain()
         itoa(max_bit_per_pixel, buff, 10);
         vga_printstring(buff);
         vga_newline();
-
-
-        VBE_get_vesa_mode_information(&mode_info, mode_number | (1 << 14));
-        itoa(mode_info.mode_attributes, buff, 16);
-        vga_printstring(buff);
-        vga_newline();
-        uint32_t off = VBE_get_word(0x0, 0x7E1E + 10);
-        uint32_t seg = VBE_get_word(0x0, 0x7E1E + 12);
-        VBEStatus x = VBE_set_video_mode(mode_number, true);
-        VBE_get_vesa_mode_information(&mode_info, mode_number);
-        off = VBE_get_word(0x0, 0x7E00 + 40);
-        seg = VBE_get_word(0x0, 0x7E00 + 42);
-        uint32_t address = VBE_get_dword(0x00, 0x7E00);
-        VBE_get_current_video_mode(&mode_number);
-        /*uint8_t* mem_buff = (uint8_t*)0xc0000000;
-        for(int i = 0; i < 320 * 240; i++)
-        {
-            //mem_buff[seg * 0x10 + off + i] = 255;
-            mem_buff[address + i] = 255;
-            //mem_buff[seg * 0x10 + off + i * 3 + 1] = 255;
-            //mem_buff[seg * 0x10 + off + i * 3 + 2] = 255;
-            //mem_buff[0xA0000 + i * 3] = 255;
-            //mem_buff[0xA0000 + i * 3 + 1] = 0;
-            //mem_buff[0xA0000 + i * 3 + 2] = 0;
-        }*/
-        VBE_set_current_bank(0);
-        for(int xx = 0; xx < 320; xx++)
-        {
-            for(int yy = 0; yy < 200; yy++)
-            {
-                VBE_draw_pixel_8_8_8(mode_info.mode_width, mode_info.mode_height, mode_info.windows_size, mode_info.granularity, xx, yy, 0, 0, 255);
-            }
         }
-    }
     else{
         vga_printstring("Unable to get SVGA INFORMATION\n");
     }
+    #endif
+    
+    #ifdef FUN_4
+        VBE_initialize();
+        VBEStatus x = VBE_set_video_mode(0x10f, true);
+        svga_mode_information mode_info;
+        VBE_get_vesa_mode_information(&mode_info, 0x10f);
+        VBE_set_current_bank(0);
+        for(int yy = 0; yy < 200; yy++)
+        for(int xx = 0; xx < 320; xx++)
+                VBE_draw_pixel_8_8_8(mode_info.mode_width, mode_info.mode_height, mode_info.windows_size, mode_info.granularity, xx, yy, 0, 0, 255);
+
+    #endif
+
+    #ifdef FUN_5
+        VBE_initialize();
+        VBEStatus x = VBE_set_video_mode(0x10f, true);
+        VBE_set_current_bank(0);
+        drawLenaIn10fH();
+    #endif
     while (1);
     return 0;
 }
