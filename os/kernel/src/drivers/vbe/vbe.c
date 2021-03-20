@@ -271,15 +271,20 @@ VBEStatus VBE_get_dac_palette_format(uint8_t* curent_number_color_bits)
     return VBE_OK;
 }
 
-VBEStatus VBE_get_set_palette_data_16bit(uint8_t action, uint8_t palette_registers_num, uint16_t first_palette_register, uint16_t palette_table)
+//table_size max value is 256
+VBEStatus VBE_set_palette_data_16bit(bool secondary_palette, uint8_t index, uint8_t palette_table[], uint16_t table_size)
 {
     if(!initialized) return VBE_NO_INITAILIZED;
     machine->regs.x.ax = 0x4f09;
-    machine->regs.h.bl = action;
-    machine->regs.x.cx = palette_registers_num;
-    machine->regs.x.dx = first_palette_register;
-    machine->sregs.es = palette_table;
-    machine->regs.x.di = 0x00;
+    machine->regs.h.bl = secondary_palette?0x02:0x00;
+    machine->regs.x.cx = table_size;
+    machine->regs.x.dx = index;
+    machine->sregs.es = 0x0000;
+    machine->regs.x.di = 0x7E00;
+    for(uint16_t i = 0; i<table_size; i++)
+    {
+        machine->Memory[0x00*10+0x7E00 + i] = palette_table[i];
+    }
     int16_t status = v8086_call_int(machine, 0x10);
     if(status != 0x10) return VBE_INTERNAL_ERROR;
     if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
@@ -287,16 +292,80 @@ VBEStatus VBE_get_set_palette_data_16bit(uint8_t action, uint8_t palette_registe
     return VBE_OK;
 }
 
-VBEStatus VBE_get_set_palette_data_32bit(bool during_vertical_retrace, uint8_t palette_registers_num, uint16_t first_palette_register, uint16_t palette_table, uint16_t memory_selector)
+VBEStatus VBE_set_during_vertical_retrace_palette_data_16bit(uint16_t index, uint8_t palette_table[], uint16_t table_size)
 {
     if(!initialized) return VBE_NO_INITAILIZED;
     machine->regs.x.ax = 0x4f09;
-    machine->regs.h.bl = during_vertical_retrace? 0x80 : 0x00;
-    machine->regs.x.cx = palette_registers_num;
-    machine->regs.x.dx = first_palette_register;
-    machine->sregs.es = palette_table;
-    machine->regs.d.edi = 0x00;
+    machine->regs.h.bl = 0x80;
+    machine->regs.x.cx = table_size;
+    machine->regs.x.dx = index;
+    machine->sregs.es = 0x0000;
+    machine->regs.x.di = 0x7E00;
+    for(uint16_t i = 0; i<table_size; i++)
+    {
+        machine->Memory[0x00*10+0x7E00 + i] = palette_table[i];
+    }
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    return VBE_OK;
+}
+
+VBEStatus VBE_get_palette_data_16bit(bool secondary_palette, uint16_t index, uint8_t palette_table[], uint16_t table_size)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f09;
+    machine->regs.h.bl = secondary_palette?0x03:0x01;
+    machine->regs.x.cx = table_size;
+    machine->regs.x.dx = index;
+    machine->sregs.es = 0x0000;
+    machine->regs.x.di = 0x7E00;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    for(uint16_t i = 0; i<table_size; i++)
+    {
+        palette_table[i] = machine->Memory[0x00 * 10 + 0x7E00 + i];
+    }
+    return VBE_OK;
+}
+
+VBEStatus VBE_set_palette_data_32bit(uint16_t index, uint8_t palette_table[], uint16_t table_size, uint16_t memory_selector)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.h.bl = 0x00;
+    machine->regs.x.cx = table_size;
+    machine->regs.x.dx = index;
+    machine->sregs.es = 0x0000;
+    machine->regs.d.edi = 0x7E00;
     machine->sregs.ds = memory_selector;
+    for(uint16_t i = 0; i<table_size; i++)
+    {
+        machine->Memory[0x00*10+0x7E00 + i] = palette_table[i];
+    }
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    return VBE_OK;
+}
+
+
+VBEStatus VBE_set_during_vertical_retrace_palette_data_32bit(uint16_t index, uint8_t palette_table[], uint16_t table_size, uint16_t memory_selector)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.h.bl = 0x80;
+    machine->regs.x.cx = table_size;
+    machine->regs.x.dx = index;
+    machine->sregs.es = 0x0000;
+    machine->regs.d.edi = 0x7E00;
+    machine->sregs.ds = memory_selector;
+    for(uint16_t i = 0; i<table_size; i++)
+    {
+        machine->Memory[0x00*10+0x7E00 + i] = palette_table[i];
+    }
     int16_t status = v8086_call_int(machine, 0x10);
     if(status != 0x10) return VBE_INTERNAL_ERROR;
     if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
