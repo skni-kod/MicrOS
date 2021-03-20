@@ -154,11 +154,26 @@ VBEStatus VBE_return_save_restore_state_buffer_size(uint16_t requested_states, u
     return VBE_OK;
 }
 
-VBEStatus VBE_save_restore_state(bool save, uint16_t requested_states, uint16_t buffer_pointer)
+VBEStatus VBE_save_state(uint16_t requested_states, uint16_t buffer_pointer)
 {
     if(!initialized) return VBE_NO_INITAILIZED;
     machine->regs.x.ax = 0x4f04;
-    machine->regs.h.dl = save? 0x01 : 0x02;
+    machine->regs.h.dl = 0x01;
+    machine->regs.x.cx = requested_states;
+    machine->sregs.es = buffer_pointer;
+    machine->regs.x.bx = 0x00;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    return VBE_OK;
+}
+
+VBEStatus VBE_restore_state(uint16_t requested_states, uint16_t buffer_pointer)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f04;
+    machine->regs.h.dl = 0x02;
     machine->regs.x.cx = requested_states;
     machine->sregs.es = buffer_pointer;
     machine->regs.x.bx = 0x00;
