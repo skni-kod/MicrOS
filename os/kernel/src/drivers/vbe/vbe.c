@@ -120,7 +120,7 @@ VBEStatus VBE_set_video_mode(uint16_t mode_number, bool clear_screen)
     if(!initialized) return VBE_NO_INITAILIZED;
     machine->regs.x.ax = 0x4f02;
     machine->regs.x.bx = mode_number & 0x7FFF;
-    if(clear_screen) machine->regs.x.bx | 0x8000;
+    if(clear_screen) machine->regs.x.bx = machine->regs.x.bx | 0x8000;
     int16_t status = v8086_call_int(machine, 0x10);
     if(status != 0x10) return VBE_INTERNAL_ERROR;
     if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
