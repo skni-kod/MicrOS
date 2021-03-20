@@ -226,11 +226,11 @@ VBEStatus VBE_display_window_control_set_32bit(uint8_t window_number, uint8_t wi
     return VBE_OK;
 }
 
-VBEStatus VBE_get_logical_scan_line_length(bool get_maximum_length, uint16_t* bytes_per_line, uint16_t* actual_pixel_in_line, uint16_t* maximum_scan_lines_number)
+VBEStatus VBE_get_logical_scan_line_length(uint16_t* bytes_per_line, uint16_t* actual_pixel_in_line, uint16_t* maximum_scan_lines_number)
 {
     if(!initialized) return VBE_NO_INITAILIZED;
     machine->regs.x.ax = 0x4f06;
-    machine->regs.h.bl = get_maximum_length? 0x03: 0x01;
+    machine->regs.h.bl = 0x01;
     int16_t status = v8086_call_int(machine, 0x10);
     if(status != 0x10) return VBE_INTERNAL_ERROR;
     if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
@@ -241,11 +241,42 @@ VBEStatus VBE_get_logical_scan_line_length(bool get_maximum_length, uint16_t* by
     return VBE_OK;
 }
 
-VBEStatus VBE_set_logical_scan_line_length(bool in_pixels, uint16_t length, uint16_t* bytes_per_line, uint16_t* actual_pixel_in_line, uint16_t* maximum_scan_lines_number)
+VBEStatus VBE_get_maximum_logical_scan_line_length(uint16_t* bytes_per_line, uint16_t* actual_pixel_in_line, uint16_t* maximum_scan_lines_number)
 {
     if(!initialized) return VBE_NO_INITAILIZED;
     machine->regs.x.ax = 0x4f06;
-    machine->regs.h.bl = in_pixels? 0x00: 0x02;
+    machine->regs.h.bl = 0x03;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    *bytes_per_line = machine->regs.x.bx;
+    *actual_pixel_in_line = machine->regs.x.cx;
+    *maximum_scan_lines_number = machine->regs.x.dx;
+    return VBE_OK;
+}
+
+VBEStatus VBE_set_logical_scan_line_length_in_pixels(uint16_t length, uint16_t* bytes_per_line, uint16_t* actual_pixel_in_line, uint16_t* maximum_scan_lines_number)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f06;
+    machine->regs.h.bl = 0x00;
+    machine->regs.x.cx = length;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    *bytes_per_line = machine->regs.x.bx;
+    *actual_pixel_in_line = machine->regs.x.cx;
+    *maximum_scan_lines_number = machine->regs.x.dx;
+    return VBE_OK;
+}
+
+VBEStatus VBE_set_logical_scan_line_length_in_bytes(uint16_t length, uint16_t* bytes_per_line, uint16_t* actual_pixel_in_line, uint16_t* maximum_scan_lines_number)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f06;
+    machine->regs.h.bl = 0x02;
     machine->regs.x.cx = length;
     int16_t status = v8086_call_int(machine, 0x10);
     if(status != 0x10) return VBE_INTERNAL_ERROR;
@@ -398,7 +429,6 @@ VBEStatus VBE_get_dac_palette_format(uint8_t* curent_number_color_bits)
     return VBE_OK;
 }
 
-//table_size max value is 256
 VBEStatus VBE_set_palette_data_16bit(bool secondary_palette, uint8_t index, uint8_t palette_table[], uint16_t table_size)
 {
     if(!initialized) return VBE_NO_INITAILIZED;
