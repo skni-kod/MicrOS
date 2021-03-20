@@ -58,7 +58,14 @@ VBEStatus VBE_display_window_control_get_16bit(uint8_t window_number, uint8_t* w
 VBEStatus VBE_display_window_control_set_32bit(uint8_t window_number, uint8_t window_mem_number, uint16_t memory_selector);
 VBEStatus VBE_get_logical_scan_line_length(bool get_maximum_length, uint16_t* bytes_per_line, uint16_t* actual_pixel_in_line, uint16_t* maximum_scan_lines_number);
 VBEStatus VBE_set_logical_scan_line_length(bool in_pixels, uint16_t length,uint16_t* bytes_per_line, uint16_t* actual_pixel_in_line, uint16_t* maximum_scan_lines_number);
-
+VBEStatus VBE_set_display_start_16bit(bool during_vertical_retrace, uint16_t first_line, uint16_t first_pixel_in_line);
+VBEStatus VBE_get_display_start_16bit(uint16_t* first_line, uint16_t* first_pixel_in_line);
+VBEStatus VBE_schedule_display_start_16bit(bool during_vertical_retrace, uint32_t display_start_address_byte);
+VBEStatus VBE_schedule_stereoscopic_display_start_16bit(bool during_vertical_retrace, uint32_t left_image_address_byte, uint32_t right_image_address_byte);
+VBEStatus VBE_get_scheduled_display_start_16bit(bool* flip_occured);
+VBEStatus VBE_enable_stereoscopic_mode();
+VBEStatus VBE_disable_stereoscopic_mode();
+VBEStatus VBE_set_display_start_32bit(bool during_vertical_retrace, uint16_t first_half_start_address, uint16_t second_half_start_address, uint16_t memory_selector);
 VBEStatus VBE_set_dac_palette_format(uint8_t primary_color_bits, uint8_t* curent_number_color_bits);
 VBEStatus VBE_get_dac_palette_format(uint8_t* curent_number_color_bits);
 VBEStatus VBE_set_palette_data_16bit(bool secondary_palette, uint8_t index, uint8_t palette_table[], uint16_t table_size);

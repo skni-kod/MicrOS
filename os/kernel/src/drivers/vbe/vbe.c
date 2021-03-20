@@ -242,7 +242,119 @@ VBEStatus VBE_set_logical_scan_line_length(bool in_pixels, uint16_t length, uint
     return VBE_OK;
 }
 
-//set/get display start
+VBEStatus VBE_set_display_start_16bit(bool during_vertical_retrace, uint16_t first_line, uint16_t first_pixel_in_line)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f07;
+    machine->regs.h.bh = 0x00;
+    machine->regs.h.bl = during_vertical_retrace?0x80:0x00;
+    machine->regs.x.cx = first_pixel_in_line;
+    machine->regs.x.dx = first_line;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    return VBE_OK;
+}
+
+VBEStatus VBE_get_display_start_16bit(uint16_t* first_line, uint16_t* first_pixel_in_line)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f07;
+    machine->regs.h.bh = 0x00;
+    machine->regs.h.bl = 0x01;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    *first_pixel_in_line = machine->regs.x.cx;
+    *first_line = machine->regs.x.dx;
+    return VBE_OK;
+}
+
+VBEStatus VBE_schedule_display_start_16bit(bool during_vertical_retrace, uint32_t display_start_address_byte)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f07;
+    machine->regs.h.bh = 0x00;
+    machine->regs.h.bl = during_vertical_retrace?0x082:0x02;
+    machine->regs.d.ecx = display_start_address_byte;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    return VBE_OK;
+}
+
+VBEStatus VBE_schedule_stereoscopic_display_start_16bit(bool during_vertical_retrace, uint32_t left_image_address_byte, uint32_t right_image_address_byte)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f07;
+    machine->regs.h.bh = 0x00;
+    machine->regs.h.bl = during_vertical_retrace?0x083:0x03;
+    machine->regs.d.ecx = left_image_address_byte;
+    machine->regs.d.edx = right_image_address_byte;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    return VBE_OK;
+}
+
+VBEStatus VBE_get_scheduled_display_start_16bit(bool* flip_occured)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f07;
+    machine->regs.h.bh = 0x00;
+    machine->regs.h.bl = 0x04;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    *flip_occured = machine->regs.x.cx==0?false:true;
+    return VBE_OK;
+}
+
+VBEStatus VBE_enable_stereoscopic_mode()
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f07;
+    machine->regs.h.bh = 0x00;
+    machine->regs.h.bl = 0x05;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    return VBE_OK;
+}
+
+VBEStatus VBE_disable_stereoscopic_mode()
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f07;
+    machine->regs.h.bh = 0x00;
+    machine->regs.h.bl = 0x06;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    return VBE_OK;
+}
+
+VBEStatus VBE_set_display_start_32bit(bool during_vertical_retrace, uint16_t first_half_start_address, uint16_t second_half_start_address, uint16_t memory_selector)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.h.bh = 0x00;
+    machine->regs.h.bl = during_vertical_retrace?0x80:0x00;
+    machine->regs.x.cx = first_half_start_address;
+    machine->regs.x.dx = second_half_start_address;
+    machine->sregs.es = memory_selector;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    return VBE_OK;
+}
 
 VBEStatus VBE_set_dac_palette_format(uint8_t primary_color_bits, uint8_t* curent_number_color_bits)
 {
