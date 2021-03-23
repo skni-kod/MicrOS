@@ -418,7 +418,7 @@ int kmain()
 
     serial_init(COM1_PORT, 921600, 8, 1, PARITY_NONE);
 
-    #define FUN_1
+    #define FUN_5
 
     #ifdef FUN_1
         mode13h_set_mode();
