@@ -2,6 +2,7 @@
 #define V8086_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define bit_get(p,m) ((p) & (m))
 #define bit_set(p,m) ((p) |= (m))
@@ -178,5 +179,6 @@ uint32_t v8086_get_address_of_int(v8086* machine, int16_t num);
   uint32_t read_reg_32();
   void read_regs(v8086* machine);
   void read_sregs(v8086* machine);
+  void setSkipDebugging(bool value);
 #endif
 #endif

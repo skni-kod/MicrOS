@@ -7,6 +7,8 @@
 
 v8086* machine = NULL;
 bool initialized = false;
+int currentBank = -1;
+uint8_t* mem_buff = (uint8_t*)0xc0000000 + 0xA0000;
 
 void VBE_initialize()
 {
@@ -107,6 +109,16 @@ VBEStatus VBE_get_vesa_mode_information(svga_mode_information* infromation_struc
     return VBE_OK;
 }
 
+uint16_t VBE_get_word(uint32_t seg, uint32_t offset)
+{
+    return read_word_from_pointer(machine->Memory, get_absolute_address(seg, offset));
+}
+
+uint32_t VBE_get_dword(uint32_t seg, uint32_t offset)
+{
+    return read_dword_from_pointer(machine->Memory, get_absolute_address(seg, offset));
+}
+
 VBEStatus VBE_destroy_svga_information(svga_information* svga_information_ptr)
 {
     heap_kernel_dealloc(svga_information_ptr->mode_array);
@@ -125,6 +137,7 @@ VBEStatus VBE_set_video_mode(uint16_t mode_number, bool clear_screen)
     if(status != 0x10) return VBE_INTERNAL_ERROR;
     if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
     if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    currentBank = -1;
     return VBE_OK;
 }
 
@@ -139,6 +152,44 @@ VBEStatus VBE_get_current_video_mode(uint16_t* mode_number)
     *mode_number = machine->regs.x.bx;
     return VBE_OK;
 }
+
+VBEStatus VBE_set_current_bank(uint32_t bank_number)
+{
+    if(bank_number != currentBank)
+    {
+        machine->regs.x.ax = 0x4f05;
+        machine->regs.x.bx = 0;
+        machine->regs.x.dx = bank_number;
+        setSkipDebugging(false);
+        int16_t status = v8086_call_int(machine, 0x10);
+        setSkipDebugging(true);
+        if(status != 0x10) return VBE_INTERNAL_ERROR;
+        if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+        if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+        /*machine->regs.x.ax = 0x4f05;
+        machine->regs.x.bx = 0;
+        machine->regs.x.dx = bank_number;
+        status = v8086_call_int(machine, 0x10);
+        if(status != 0x10) return VBE_INTERNAL_ERROR;
+        if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+        if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;*/
+        currentBank = bank_number;
+        return VBE_OK;
+    }
+    return VBE_OK;
+}
+
+void VBE_draw_pixel_8_8_8(uint32_t mode_width, uint32_t mode_height, uint32_t winsize, uint32_t granularity, uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b)
+{
+    uint32_t offset = (y * 3) * mode_width + (x * 3);
+    uint32_t position = offset / (granularity * 1024);
+    offset = offset - (granularity * 1024) * position;
+    VBEStatus status = VBE_set_current_bank(position);
+    mem_buff[offset] = b;
+    mem_buff[offset + 1] = g;
+    mem_buff[offset + 2] = r;
+}
+
 
 VBEStatus VBE_return_save_restore_state_buffer_size(uint16_t requested_states, uint16_t* buffer_block_number)
 {
