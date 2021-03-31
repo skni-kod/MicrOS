@@ -12,13 +12,14 @@
 #include "../../../cpu/idt/idt.h"
 #include "../../serial/serial.h"
 #include "../../../network/network_definitions.h"
+#include "../../../klibrary/kvector.h"
 #include <stdlib.h>
 
 #define DEVICE_VENDOR_ID 0x10EC
 #define DEVICE_ID 0x8139
 #define DEVICE_NAME "RTL8139 NIC"
 
-#define RX_BUFFER_SIZE 8192 + 16
+#define RX_BUFFER_SIZE 8192 + 16 + 1500
 
 #define CAPR 0x38
 #define RX_READ_POINTER_MASK (~3)

@@ -36,9 +36,17 @@ bool network_manager_init()
         kvector_init(tmp->tx_queue);
         kvector_add(net_devices, tmp);
         //Hardcode IPv4 address
-        __set_ipv4_addr(tmp->ipv4_address, 10, 0, 2, 15);
+        __set_ipv4_addr(tmp->ipv4_address, 10,0,2,15);
         __network_manager_print_device_info(tmp);
     }
+
+    // net_packet_t* test_packet = heap_kernel_alloc(sizeof(net_packet_t),0);
+    // memcpy(test_packet->device_mac,((net_device_t*)(net_devices->data[0]))->mac_address,MAC_ADDRESS_SIZE);
+    // char* data = heap_kernel_alloc(16,0);
+    // data = "Hello!";
+    // test_packet->packet_data = data;
+    // test_packet->packet_length = 16;
+    // network_manager_send_packet(test_packet);
 
     return true;
 }
@@ -90,7 +98,7 @@ void network_manager_process_packet(net_packet_t *packet)
     frame.type = __uint16_flip(frame.type);
     //last is offset of data ptr;
     void *data_ptr = packet->packet_data + sizeof(ethernet_frame_t) - sizeof(uint8_t *);
-
+    
     switch (frame.type)
     {
     case ARP_PROTOCOL_TYPE:

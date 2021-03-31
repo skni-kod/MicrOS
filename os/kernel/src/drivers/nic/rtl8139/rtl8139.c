@@ -9,7 +9,7 @@ pci_device pci_rtl8139_device = {0};
 rtl8139_dev_t rtl8139_device = {0};
 void (*receive_packet)(net_packet_t *);
 
-uint32_t current_packet_ptr;
+uint32_t current_packet_ptr = 0;
 uint32_t sent_count = 0;
 uint32_t received_count = 0;
 
@@ -76,7 +76,7 @@ bool rtl8139_init(net_device_t *net_dev)
     memset(rtl8139_device.rx_buffer, 0x0, RX_BUFFER_SIZE);
     io_out_long(rtl8139_device.io_base + RXBUF, (uint32_t)rtl8139_device.rx_buffer - DMA_ADDRESS_OFFSET);
 
-    // (1 << 7) is the WRAP bit, 0xf is AB+AM+APM+AAP
+    // (1 << 7) is the WRAP bit, 0xf is (promiscious) AB+AM+APM+AAP
     //WRAP
     //AB - broadcast packets
     //AM - multicast
@@ -156,7 +156,7 @@ void rtl8139_receive_packet()
     out->packet_length = packet_length;
     rtl8139_get_mac_addr(out->device_mac);
 
-    current_packet_ptr = (current_packet_ptr + packet_length + 4 + 3) & RX_READ_POINTER_MASK;
+    current_packet_ptr = (current_packet_ptr + packet_length + 7) & RX_READ_POINTER_MASK;
 
     if (current_packet_ptr > RX_BUFFER_SIZE)
         current_packet_ptr -= RX_BUFFER_SIZE;

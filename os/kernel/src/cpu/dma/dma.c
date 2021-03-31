@@ -16,8 +16,8 @@ void dma_init_transfer(uint8_t channel, bool read)
     io_out_byte(DMA_FLIP_FLOP_RESET_REGISTER, 0xff);
 
     // Set buffer to the specified address
-    io_out_byte(DMA_START_ADDRESS_REGISTER, (uint8_t)((uint32_t)(dma_buffer_address - 0xc0000000) & 0xff));
-    io_out_byte(DMA_START_ADDRESS_REGISTER, (uint8_t)((uint32_t)(dma_buffer_address - 0xc0000000) >> 8));
+    io_out_byte(DMA_START_ADDRESS_REGISTER, (uint8_t)((uint32_t)(dma_buffer_address - DMA_ADDRESS_OFFSET) & 0xff));
+    io_out_byte(DMA_START_ADDRESS_REGISTER, (uint8_t)((uint32_t)(dma_buffer_address - DMA_ADDRESS_OFFSET) >> 8));
 
     // Reset Flip-Flop register
     io_out_byte(DMA_FLIP_FLOP_RESET_REGISTER, 0xff);
