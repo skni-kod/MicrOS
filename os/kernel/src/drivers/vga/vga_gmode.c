@@ -89,6 +89,31 @@ void drawLenaIn13H()
 	heap_kernel_dealloc(buffer);
 }
 
+void drawLenaIn10fH_linear(uint8_t* color)
+{
+	filesystem_file_info info;
+	filesystem_get_file_info("A:/LENAD.BMP", &info);
+
+	uint8_t *buffer = heap_kernel_alloc(info.size, 0);
+	filesystem_read_file("A:/LENAD.BMP", buffer, 0, info.size);
+
+	OS2BMPFILEHEADER fh;
+	memcpy(&fh, buffer, sizeof(OS2BMPFILEHEADER));
+
+	OS21XBITMAPHEADER bh;
+	memcpy(&bh, buffer + sizeof(OS2BMPFILEHEADER), sizeof(OS21XBITMAPHEADER));
+
+	for(int x = 0; x < bh.Width; x++)
+		for(int y = 0; y < bh.Height; y++)
+			{
+				int i = 3*y * bh.Width + 3*x;
+				color[i] = buffer[fh.BitmapOffset + (x * 3) + (bh.Height - y - 1) * 3 * bh.Width];
+				color[i+1] = buffer[fh.BitmapOffset + (x * 3) + (bh.Height - y - 1) * 3 * bh.Width + 1];
+				color[i+2] = buffer[fh.BitmapOffset + (x * 3) + (bh.Height - y - 1) * 3 * bh.Width + 2];
+			}
+	heap_kernel_dealloc(buffer);
+}
+
 void drawLenaIn10fH()
 {
 	filesystem_file_info info;

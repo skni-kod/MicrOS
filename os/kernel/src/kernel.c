@@ -418,7 +418,7 @@ int kmain()
 
     serial_init(COM1_PORT, 921600, 8, 1, PARITY_NONE);
 
-    #define FUN_5
+    #define FUN_3
 
     #ifdef FUN_1
         mode13h_set_mode();
@@ -467,6 +467,7 @@ int kmain()
         uint32_t max_width = 0;
         uint32_t max_height = 0;
         uint16_t max_bit_per_pixel = 0;
+        uint32_t physBufforAddress = 0;
         for(int i=0; i < svga_info_ptr->number_of_modes; i++)
         //for(int i=0x11b; i < 0x11c; i++)
         {
@@ -480,6 +481,7 @@ int kmain()
                 while(!keyboard_get_key_from_buffer(&kb));
             }
             else{
+                physBufforAddress = mode_info.frame_buffor_phys_address;
                 if(mode_info.mode_height == 200 && mode_info.mode_width == 320 && mode_info.bits_per_pixel == 24)
                 {
                     mode_number = svga_info_ptr->mode_array[i];
@@ -515,7 +517,17 @@ int kmain()
         itoa(max_bit_per_pixel, buff, 10);
         vga_printstring(buff);
         vga_newline();
+        
+        if(physBufforAddress != 0)
+        {
+            VBEStatus x = VBE_set_video_mode(0x10f|(1<<14), true);
+            VBE_set_current_bank(0);
+            paging_map_page(physBufforAddress/0x400000, 12, false);
+            uint8_t* color = 12*0x400000 + 0xc00000000;
+            drawLenaIn10fH_linear(color);
+            paging_unmap_page(12);
         }
+    }
     else{
         vga_printstring("Unable to get SVGA INFORMATION\n");
     }

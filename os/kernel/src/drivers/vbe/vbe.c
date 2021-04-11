@@ -105,7 +105,19 @@ VBEStatus VBE_get_vesa_mode_information(svga_mode_information* infromation_struc
     infromation_struct->bank_size = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E1C));
     infromation_struct->page_count = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E1D));
     infromation_struct->reserved = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E1E));
+    infromation_struct->mask_size_red = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E1F));
+    infromation_struct->field_position_red = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E20));
+    infromation_struct->mask_size_green = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E21));
+    infromation_struct->field_position_green = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E22));
+    infromation_struct->mask_size_blue = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E23));
+    infromation_struct->field_position_blue = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E24));
+    infromation_struct->mask_size_direct_color = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E25));
+    infromation_struct->field_position_direct_color = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E26));
+    infromation_struct->direct_color_mode_info = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E27));
 
+    infromation_struct->frame_buffor_phys_address = read_dword_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E28));
+    infromation_struct->reserved1 = read_dword_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E2C));
+    infromation_struct->reserved2 = read_word_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E30));
     return VBE_OK;
 }
 
@@ -182,7 +194,8 @@ VBEStatus VBE_set_current_bank(uint32_t bank_number)
 void VBE_draw_pixel_8_8_8(uint32_t mode_width, uint32_t mode_height, uint32_t winsize, uint32_t granularity, uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b)
 {
     uint32_t offset = (y * 3) * mode_width + (x * 3);
-    uint32_t position = offset / (granularity * 1024);
+    //uint32_t position = (offset/(granularity * 1024));
+    uint32_t position = (offset/(granularity*1024)) * (winsize/granularity);
     offset = offset - (granularity * 1024) * position;
     VBEStatus status = VBE_set_current_bank(position);
     mem_buff[offset] = b;

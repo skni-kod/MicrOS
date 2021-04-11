@@ -35,6 +35,20 @@ typedef struct _svga_mode_information{
     uint8_t bank_size;
     uint8_t page_count;
     uint8_t reserved;
+    
+    uint8_t mask_size_red;
+    uint8_t field_position_red;
+    uint8_t mask_size_green;
+    uint8_t field_position_green;
+    uint8_t mask_size_blue;
+    uint8_t field_position_blue;
+    uint8_t mask_size_direct_color;
+    uint8_t field_position_direct_color;
+    uint8_t direct_color_mode_info;
+
+    uint32_t frame_buffor_phys_address;
+    uint32_t reserved1;
+    uint16_t reserved2;
 } svga_mode_information;
 
 typedef enum _VBEStatus{
