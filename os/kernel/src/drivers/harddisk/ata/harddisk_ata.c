@@ -179,7 +179,7 @@ int8_t __harddisk_ata_poll(uint16_t port)
             for(;;)
             {
                 result.value = io_in_byte(port);
-                if(result.fields.has_pio_data_to_transfer_or_ready_to_accept_pio_data == 1)
+                if(result.fields.has_pio_data_to_transfer_or_ready_to_accept_pio_data == 1 || result.fields.overlapped_mode_service_request == 1)
                 {
                     return 1;
                 }
