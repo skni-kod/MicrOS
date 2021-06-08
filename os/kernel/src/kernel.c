@@ -37,6 +37,7 @@
 #include "terminal/terminal_manager.h"
 #include "cpu/cpuid/cpuid.h"
 #include "v8086/v8086.h"
+#include "v8086/memory_operations.h"
 #include "drivers/vbe/vbe.h"
 
 #ifdef TEST_V8086
@@ -54,6 +55,8 @@ typedef struct _linesStruct
 
 char buff[50];
 linesStruct ssBuffer[64];
+
+v8086* v8086_machine;
 
 //! Prints processor details.
 /*! Used during boot to print informations about print processor.
@@ -375,6 +378,12 @@ void turn_on_serial_debugging()
     breakpoint();
 }
 
+void v8086_BIOS_timer_interrupt()
+{
+    timer_interrupt();
+    write_dword_to_pointer(v8086_machine->Memory, get_absolute_address(0x40, 0x6c), timer_get_system_clock());
+}
+
 int kmain()
 {
     clear_bss();
@@ -418,7 +427,16 @@ int kmain()
 
     serial_init(COM1_PORT, 921600, 8, 1, PARITY_NONE);
 
-    #define FUN_3
+    v8086_machine = v8086_create_machine();
+    v8086_set_386_instruction_set(v8086_machine);
+    //idt_attach_interrupt_handler(0, v8086_BIOS_timer_interrupt);
+    vga_printstring("Starting DOS Program\n");
+    int16_t stat = v8086_call_com_program(v8086_machine, "A:/TC.COM");
+    vga_printstring("OUT\n");
+    //memcpy((uint8_t*) 0xc0000000 + 0xb8000, v8086_machine->Memory + 0xb8000, 0xFFFF);
+    
+
+    #define FUN_9
 
     #ifdef FUN_1
         mode13h_set_mode();
@@ -482,15 +500,15 @@ int kmain()
             }
             else{
                 physBufforAddress = mode_info.frame_buffor_phys_address;
-                if(mode_info.mode_height == 200 && mode_info.mode_width == 320 && mode_info.bits_per_pixel == 24)
+                /*if(mode_info.mode_height == 200 && mode_info.mode_width == 320 && mode_info.bits_per_pixel == 24)
                 {
                     mode_number = svga_info_ptr->mode_array[i];
                         max_width = mode_info.mode_width;
                         max_height = mode_info.mode_height;
                         max_bit_per_pixel = mode_info.bits_per_pixel;
                         break;
-                }
-                /*if((max_width * max_height) <= ((uint32_t)mode_info.mode_width * (uint32_t)mode_info.mode_height))
+                }*/
+                if((max_width * max_height) <= ((uint32_t)mode_info.mode_width * (uint32_t)mode_info.mode_height))
                 {
                     if(max_bit_per_pixel <= mode_info.bits_per_pixel){
                         mode_number = svga_info_ptr->mode_array[i];
@@ -498,7 +516,7 @@ int kmain()
                         max_height = mode_info.mode_height;
                         max_bit_per_pixel = mode_info.bits_per_pixel;
                     }
-                }*/
+                }
             }
         }
         vga_printstring("BEST MODE: ");
@@ -538,7 +556,7 @@ int kmain()
         VBEStatus x = VBE_set_video_mode(0x10f, true);
         svga_mode_information mode_info;
         VBE_get_vesa_mode_information(&mode_info, 0x10f);
-        VBE_set_current_bank(0);
+        VBE_display_window_control_set_16bit(0, 0);
         for(int yy = 0; yy < 200; yy++)
         for(int xx = 0; xx < 320; xx++)
                 VBE_draw_pixel_8_8_8(mode_info.mode_width, mode_info.mode_height, mode_info.windows_size, mode_info.granularity, xx, yy, 0, 0, 255);
@@ -548,7 +566,7 @@ int kmain()
     #ifdef FUN_5
         VBE_initialize();
         VBEStatus x = VBE_set_video_mode(0x10f, true);
-        VBE_set_current_bank(0);
+        VBE_display_window_control_set_16bit(0, 0);
         drawLenaIn10fH();
     #endif
     while (1);

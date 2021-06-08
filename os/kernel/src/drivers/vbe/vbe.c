@@ -203,7 +203,6 @@ void VBE_draw_pixel_8_8_8(uint32_t mode_width, uint32_t mode_height, uint32_t wi
     mem_buff[offset + 2] = r;
 }
 
-
 VBEStatus VBE_return_save_restore_state_buffer_size(uint16_t requested_states, uint16_t* buffer_block_number)
 {
     if(!initialized) return VBE_NO_INITAILIZED;
@@ -255,7 +254,9 @@ VBEStatus VBE_display_window_control_set_16bit(uint8_t window_number, uint8_t wi
     machine->regs.h.bh = 0x00;
     machine->regs.h.bl = window_number;
     machine->regs.x.dx = window_mem_number;
+    setSkipDebugging(false);
     int16_t status = v8086_call_int(machine, 0x10);
+    setSkipDebugging(true);
     if(status != 0x10) return VBE_INTERNAL_ERROR;
     if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
     if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
@@ -622,4 +623,19 @@ VBEStatus VBE_get_set_pixel_clock(uint16_t pixel_clock, uint16_t mode_number, ui
     if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
     *closest_pixel_clock = machine->regs.d.ecx;
     return VBE_OK;
+}
+
+void VBE_draw_pixel_8_8_8(uint32_t mode_width, uint32_t mode_height, uint32_t winsize, uint32_t granularity, uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b)
+{
+    uint32_t offset = (y * 3) * mode_width + (x * 3);
+    uint32_t position = offset / (granularity * 1024);
+    offset = offset - (granularity * 1024) * position;
+    if(position != currentBank)
+    {
+        VBEStatus status = VBE_display_window_control_set_16bit(0, position);
+        currentBank = position;
+    }
+    mem_buff[offset] = b;
+    mem_buff[offset + 1] = g;
+    mem_buff[offset + 2] = r;
 }

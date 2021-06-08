@@ -299,7 +299,7 @@ int16_t perform_multiplication(v8086 *machine, void *source, uint8_t signed_mul,
         } else if (width == 16) {
             __asm__ __volatile__(
             "movw %%dx, %%ax; imul %%cx; pushfw; pop %%bx;"
-            : "=b" (temp_flags), "=a" (machine->regs.d.eax) : "d" (machine->regs.w.ax), "c" (*((uint16_t *) source))
+            : "=b" (temp_flags), "=a" (machine->regs.w.ax), "=d"(machine->regs.x.dx) : "d" (machine->regs.w.ax), "c" (*((uint16_t *) source))
             );
         } else if (width == 32) {
             __asm__ __volatile__(
@@ -316,7 +316,7 @@ int16_t perform_multiplication(v8086 *machine, void *source, uint8_t signed_mul,
         } else if (width == 16) {
             __asm__ __volatile__(
             "movw %%dx, %%ax; mul %%cx; pushfw; pop %%bx;"
-            : "=b" (temp_flags), "=a" (machine->regs.d.eax) : "d" (machine->regs.w.ax), "c" (*((uint16_t *) source))
+            : "=b" (temp_flags), "=a" (machine->regs.w.ax), "=d"(machine->regs.x.dx) : "d" (machine->regs.w.ax), "c" (*((uint16_t *) source))
             );
         } else if (width == 32) {
             __asm__ __volatile__(

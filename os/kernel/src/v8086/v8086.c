@@ -637,3 +637,27 @@ int16_t parse_and_execute_instruction(v8086* machine)
     #endif
     return status;
 }
+
+int16_t v8086_call_com_program(v8086* machine, char* programPath)
+{
+    filesystem_file_info info;
+	filesystem_get_file_info(programPath, &info);
+
+	uint8_t *buffer = machine->Memory + 0x7C00 + 0x100; //SEG 0x7C0, OFF: 0x100
+    filesystem_read_file(programPath, buffer, 0, info.size);
+
+    machine->sregs.cs = 0x7c0;
+    machine->sregs.ds = 0x7c0;
+    machine->sregs.es = 0x7c0;
+    machine->sregs.fs = 0x7c0;
+    machine->sregs.gs = 0x7c0;
+    machine->sregs.ss = 0x7c0;
+    machine->IP.w.ip = 0x100;
+    machine->regs.w.sp = 0xFFFE;
+
+    push_word(machine, machine->regs.w.flags);
+    push_word(machine, 0xFFFF);
+    push_word(machine, 0xFFFF);
+    int16_t x = v8086_call_function(machine);
+    return x;
+}

@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "../cpu/timer/timer.h"
 
 #define bit_get(p,m) ((p) & (m))
 #define bit_set(p,m) ((p) |= (m))
@@ -167,6 +168,7 @@ int16_t v8086_call_int(v8086* machine, int16_t num);
 void v8086_set_8086_instruction_set(v8086* machine);
 void v8086_set_386_instruction_set(v8086* machine);
 uint32_t v8086_get_address_of_int(v8086* machine, int16_t num);
+int16_t v8086_call_com_program(v8086* machine, char* programPath);
 
 #ifdef DEBUG_V8086
   void send_reg_32(uint32_t reg);

@@ -46,7 +46,7 @@ int16_t perform_group_5(v8086* machine)
             machine->IP.w.ip += machine->internal_state.IPOffset;
             push_word(machine, machine->IP.w.ip);
             if(width == 16)
-                machine->IP.w.ip += *((uint16_t*) dest);
+                machine->IP.w.ip = *((uint16_t*) dest);
             else return V8086_BAD_WIDTH;
             machine->internal_state.IPOffset = 0;
             return V8086_OK;
@@ -60,7 +60,7 @@ int16_t perform_group_5(v8086* machine)
             return V8086_OK;
         case 4: //Near absolute indirect jmp
             if(width == 16)
-                machine->IP.w.ip += *((uint16_t*) dest);
+                machine->IP.w.ip = *((uint16_t*) dest);
             else return V8086_BAD_WIDTH;
             machine->internal_state.IPOffset = 0;
             return V8086_OK;
