@@ -191,17 +191,7 @@ VBEStatus VBE_set_current_bank(uint32_t bank_number)
     return VBE_OK;
 }
 
-void VBE_draw_pixel_8_8_8(uint32_t mode_width, uint32_t mode_height, uint32_t winsize, uint32_t granularity, uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b)
-{
-    uint32_t offset = (y * 3) * mode_width + (x * 3);
-    //uint32_t position = (offset/(granularity * 1024));
-    uint32_t position = (offset/(granularity*1024)) * (winsize/granularity);
-    offset = offset - (granularity * 1024) * position;
-    VBEStatus status = VBE_set_current_bank(position);
-    mem_buff[offset] = b;
-    mem_buff[offset + 1] = g;
-    mem_buff[offset + 2] = r;
-}
+
 
 VBEStatus VBE_return_save_restore_state_buffer_size(uint16_t requested_states, uint16_t* buffer_block_number)
 {

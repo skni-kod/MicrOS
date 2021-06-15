@@ -86,7 +86,7 @@ int16_t jump_on_condition(v8086* machine, uint8_t opcode, uint8_t width)
             if(bit_get(machine->regs.x.flags, 1u <<CARRY_FLAG_BIT) || bit_get(machine->regs.x.flags, 1u <<ZERO_FLAG_BIT)) jump = 1;
             break;
         case 7: //JNBE or JA
-            if(!(bit_get(machine->regs.x.flags, 1u <<CARRY_FLAG_BIT) || bit_get(machine->regs.x.flags, 1u <<ZERO_FLAG_BIT))) jump = 1;
+            if(!bit_get(machine->regs.x.flags, 1u <<CARRY_FLAG_BIT) && !bit_get(machine->regs.x.flags, 1u <<ZERO_FLAG_BIT)) jump = 1;
             break;
         case 8: //JS
             if(bit_get(machine->regs.x.flags, 1u <<SIGN_FLAG_BIT)) jump = 1;
@@ -110,7 +110,7 @@ int16_t jump_on_condition(v8086* machine, uint8_t opcode, uint8_t width)
             if(bit_get(machine->regs.x.flags, 1u <<ZERO_FLAG_BIT) || !bit_get(machine->regs.x.flags, 1u <<SIGN_FLAG_BIT) != !bit_get(machine->regs.x.flags, 1u <<OVERFLOW_FLAG_BIT)) jump = 1;
             break;
         case 0xf: //JNLE or JG
-            if(bit_get(machine->regs.x.flags, 1u <<ZERO_FLAG_BIT) || !bit_get(machine->regs.x.flags, 1u <<SIGN_FLAG_BIT) == !bit_get(machine->regs.x.flags, 1u <<OVERFLOW_FLAG_BIT)) jump = 1;
+            if(!bit_get(machine->regs.x.flags, 1u <<ZERO_FLAG_BIT) && !bit_get(machine->regs.x.flags, 1u <<SIGN_FLAG_BIT) == !bit_get(machine->regs.x.flags, 1u <<OVERFLOW_FLAG_BIT)) jump = 1;
             break;
     }
 

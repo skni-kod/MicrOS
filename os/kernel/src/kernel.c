@@ -429,12 +429,30 @@ int kmain()
 
     v8086_machine = v8086_create_machine();
     v8086_set_386_instruction_set(v8086_machine);
+    v8086_machine->regs.x.ax = 0x3;
+    int dupa = v8086_call_int(v8086_machine, 0x10);
+
+    video_card_set_video_mode(0x3);
+
+    uint8_t pre_com[1024];
+    memcpy(pre_com, v8086_machine -> Memory, 1024); 
     //idt_attach_interrupt_handler(0, v8086_BIOS_timer_interrupt);
     vga_printstring("Starting DOS Program\n");
     int16_t stat = v8086_call_com_program(v8086_machine, "A:/TC.COM");
     vga_printstring("OUT\n");
+    uint8_t post_com[1024];
+    memcpy(post_com, v8086_machine -> Memory, 1024);
     //memcpy((uint8_t*) 0xc0000000 + 0xb8000, v8086_machine->Memory + 0xb8000, 0xFFFF);
     
+    for(int i =0; i<1024; i++){
+        uint8_t tmp[100];
+        if(post_com[i]!=pre_com[i]){
+            vga_printstring("Roznica: ");
+            itoa(i, tmp, 10);
+            vga_printstring(tmp);
+            vga_newline();
+        }
+    }
 
     #define FUN_9
 
