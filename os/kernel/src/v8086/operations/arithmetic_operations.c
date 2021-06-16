@@ -276,7 +276,7 @@ int16_t perform_neg(v8086 *machine, void *source, uint8_t width) {
     else if (width == 16)
             __asm__ __volatile__("negw %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t *) source)) : "a" (*((uint16_t *) source)));
     else if (width == 32)
-            __asm__ __volatile__("negl %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t *) source)) : "a" (*((uint16_t *) source)));
+            __asm__ __volatile__("negl %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t *) source)) : "a" (*((uint32_t *) source)));
     else return V8086_BAD_WIDTH;
     bit_write(machine->regs.w.flags, 1u << OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1u << OVERFLOW_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u << CARRY_FLAG_BIT, bit_get(temp_flags, 1u << CARRY_FLAG_BIT) != 0);

@@ -44,8 +44,9 @@ uint16_t perform_movs(v8086 *machine, uint8_t width) {
         }
     //} while(machine->internal_state.rep_prefix == V8086_REP_REPE && --(machine->regs.w.cx));
 
-    if(machine->internal_state.rep_prefix == V8086_REP_REPE && --(machine->regs.w.cx))
+    if(machine->internal_state.rep_prefix == V8086_REP_REPE )
     {
+        --(machine->regs.w.cx);
         machine->internal_state.IPOffset = 0;
     }
 
@@ -58,15 +59,18 @@ uint16_t perform_stos(v8086* machine, uint8_t width)
     void* source;
     void* dest;
     if(segment == NULL) return V8086_UNDEFINED_SEGMENT_REGISTER;
-    //if repeat and number of repats == 0 -> dont copy anything
-    if(machine->internal_state.rep_prefix == V8086_REP_REPE && machine->regs.w.cx == 0) return V8086_OK;
 
-    //do{
-        if(machine->internal_state.address_32_bit)
+    if(machine->internal_state.address_32_bit)
             dest = get_variable_length_pointer(machine->Memory, get_absolute_address(*segment, machine->regs.d.edi), width);
         else
             dest = get_variable_length_pointer(machine->Memory, get_absolute_address(*segment, machine->regs.w.di), width);
         source = get_variable_length_register(machine, V8086_AL, width);
+
+    //if repeat and number of repats == 0 -> dont copy anything
+    if(machine->internal_state.rep_prefix == V8086_REP_REPE && machine->regs.w.cx == 0) return V8086_OK;
+
+    //do{
+        
         if(source == NULL) return V8086_UNDEFINED_REGISTER;
         if(width == 8) *((uint8_t*) dest) = *((uint8_t*) source);
         else if(width == 16) *((uint16_t*) dest) = *((uint16_t*) source);
@@ -77,10 +81,14 @@ uint16_t perform_stos(v8086* machine, uint8_t width)
             machine->regs.d.edi += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -(width/8) : (width/8);
         else
             machine->regs.w.di += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -(width/8) : (width/8);
+
+
     //} while(machine->internal_state.rep_prefix == V8086_REP_REPE && --(machine->regs.w.cx));
-    if(machine->internal_state.rep_prefix == V8086_REP_REPE && --(machine->regs.w.cx))
+    if(machine->internal_state.rep_prefix == V8086_REP_REPE)
     {
-        machine->internal_state.IPOffset = 0;
+        --(machine->regs.w.cx);
+        //if (machine->regs.w.cx != 0)
+            machine->internal_state.IPOffset = 0;
     }
 
     return V8086_OK;
