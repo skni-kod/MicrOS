@@ -17,7 +17,7 @@
     #include "../drivers/vga/vga.h"
     //#define DEBUG_V8086_TEXT
     //#define DEBUG_V8086_BIN
-    #define DEBUG_V8086_INTERACTIVE
+    //#define DEBUG_V8086_INTERACTIVE
 #endif
 
 bool skipDebugging = false;

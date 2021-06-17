@@ -429,14 +429,14 @@ int kmain()
 
     v8086_machine = v8086_create_machine();
     v8086_set_386_instruction_set(v8086_machine);
-    v8086_machine->regs.x.ax = 0x3;
-    int dupa = v8086_call_int(v8086_machine, 0x10);
+    //v8086_machine->regs.x.ax = 0x3;
+    //int dupa = v8086_call_int(v8086_machine, 0x10);
 
-    video_card_set_video_mode(0x3);
+    //video_card_set_video_mode(0x3);
 
     uint8_t pre_com[1024];
     memcpy(pre_com, v8086_machine -> Memory, 1024); 
-    //idt_attach_interrupt_handler(0, v8086_BIOS_timer_interrupt);
+    idt_attach_interrupt_handler(0, v8086_BIOS_timer_interrupt);
     vga_printstring("Starting DOS Program\n");
     int16_t stat = v8086_call_com_program(v8086_machine, "A:/TC.COM");
     vga_printstring("OUT\n");
