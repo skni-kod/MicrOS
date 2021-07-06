@@ -233,18 +233,20 @@ void print_harddisks_status()
 void startup()
 {
     // Must be done before any VGA operation
+
+    volatile uint8_t* scr_ptr = (uint8_t *)(VGA_MODE_03H_BASE_ADDR);
+    int i = 0;
     gdt_init();
     paging_init();
-
     //Don't use VGA before calling VGA init
     vga_init(VGA_MODE_03H);
     logger_log_info("MicrOS is starting...");
     logger_log_ok("BASIC TEXT VGA Driver");
-
     cpuid_init();
+
     logger_log_ok("Procesor");
     print_processor_status();
-    
+
     //Loading Generic VGA Driver
     generic_vga_driver_init();
     logger_log_ok("Loaded DAL, and Generic VGA Driver");
@@ -258,6 +260,8 @@ void startup()
 
     pic_init();
     logger_log_ok("Programmable Interrupt Controller");
+
+    //while(1);
 
     idt_init();
     logger_log_ok("Interrupt Descriptor Table");
@@ -434,7 +438,7 @@ int kmain()
 
     //video_card_set_video_mode(0x3);
 
-    uint8_t pre_com[1024];
+    /*uint8_t pre_com[1024];
     memcpy(pre_com, v8086_machine -> Memory, 1024); 
     idt_attach_interrupt_handler(0, v8086_BIOS_timer_interrupt);
     vga_printstring("Starting DOS Program\n");
@@ -452,7 +456,14 @@ int kmain()
             vga_printstring(tmp);
             vga_newline();
         }
-    }
+    }*/
+
+    
+
+    vga_printchar('x');
+    uint32_t s = timer_get_system_clock();
+    while(timer_get_system_clock() - s < 10000);
+    vga_printchar('y');
 
     #define FUN_9
 
