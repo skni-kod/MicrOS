@@ -261,10 +261,10 @@ void startup()
     pic_init();
     logger_log_ok("Programmable Interrupt Controller");
 
-    //while(1);
 
     idt_init();
     logger_log_ok("Interrupt Descriptor Table");
+    
 
     timer_init();
     logger_log_ok("Timer");
@@ -424,15 +424,15 @@ int kmain()
     
     switch_active_terminal(0);
     
-    //process_manager_run();
+    process_manager_run();
     keyboard_scan_ascii_pair kb;
-    vga_printstring("Press key to continue... (Sending Debug Informations via serial)\n");
-    while(!keyboard_get_key_from_buffer(&kb));
+    //vga_printstring("Press key to continue... (Sending Debug Informations via serial)\n");
+    //while(!keyboard_get_key_from_buffer(&kb));
 
-    serial_init(COM1_PORT, 921600, 8, 1, PARITY_NONE);
+//    serial_init(COM1_PORT, 921600, 8, 1, PARITY_NONE);
 
-    v8086_machine = v8086_create_machine();
-    v8086_set_386_instruction_set(v8086_machine);
+//    v8086_machine = v8086_create_machine();
+  //  v8086_set_386_instruction_set(v8086_machine);
     //v8086_machine->regs.x.ax = 0x3;
     //int dupa = v8086_call_int(v8086_machine, 0x10);
 
