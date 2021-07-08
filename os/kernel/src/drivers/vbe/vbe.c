@@ -172,9 +172,7 @@ VBEStatus VBE_set_current_bank(uint32_t bank_number)
         machine->regs.x.ax = 0x4f05;
         machine->regs.x.bx = 0;
         machine->regs.x.dx = bank_number;
-        setSkipDebugging(false);
         int16_t status = v8086_call_int(machine, 0x10);
-        setSkipDebugging(true);
         if(status != 0x10) return VBE_INTERNAL_ERROR;
         if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
         if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
@@ -244,9 +242,7 @@ VBEStatus VBE_display_window_control_set_16bit(uint8_t window_number, uint8_t wi
     machine->regs.h.bh = 0x00;
     machine->regs.h.bl = window_number;
     machine->regs.x.dx = window_mem_number;
-    setSkipDebugging(false);
     int16_t status = v8086_call_int(machine, 0x10);
-    setSkipDebugging(true);
     if(status != 0x10) return VBE_INTERNAL_ERROR;
     if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
     if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;

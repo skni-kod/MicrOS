@@ -40,6 +40,8 @@
 #include "v8086/memory_operations.h"
 #include "drivers/vbe/vbe.h"
 
+#include "debug_helpers/library/kernel_stdio.h"
+
 #ifdef TEST_V8086
 #include "v8086/tests/tests.h"
 #endif
@@ -421,8 +423,8 @@ int kmain()
     
     switch_active_terminal(0);
     
-    process_manager_run();
-    keyboard_scan_ascii_pair kb;
+    //process_manager_run();
+    //keyboard_scan_ascii_pair kb;
     //vga_printstring("Press key to continue... (Sending Debug Informations via serial)\n");
     //while(!keyboard_get_key_from_buffer(&kb));
 
@@ -455,12 +457,84 @@ int kmain()
         }
     }*/
 
-    
+    v8086_machine = v8086_create_machine();
+    v8086_set_386_instruction_set(v8086_machine);
+    idt_attach_interrupt_handler(0, v8086_BIOS_timer_interrupt);
 
-    vga_printchar('x');
+    uint8_t result_text[80];
+    uint32_t list_timings[8];
+    uint8_t iiii = 0;
+    
+    v8086_machine->regs.h.ah = 0x0;
+    v8086_machine->regs.h.al = 0x07;
+    uint32_t start = timer_get_system_clock();
+    v8086_call_int(v8086_machine, 0x10);
+    uint32_t stop = timer_get_system_clock();
+    list_timings[iiii++] = stop - start;
+
+    v8086_machine->regs.h.ah = 0x0;
+    v8086_machine->regs.h.al = 0x13;
+    start = timer_get_system_clock();
+    v8086_call_int(v8086_machine, 0x10);
+    stop = timer_get_system_clock();
+    list_timings[iiii++] = stop - start;
+
+    v8086_machine->regs.h.ah = 0x0e;
+    v8086_machine->regs.h.al = 0x41;
+    v8086_machine->regs.h.bl = 0xf;
+    start = timer_get_system_clock();
+    v8086_call_int(v8086_machine, 0x10);
+    stop = timer_get_system_clock();
+    list_timings[iiii++] = stop - start;
+
+    v8086_machine->regs.h.ah = 0x0f;
+    start = timer_get_system_clock();
+    v8086_call_int(v8086_machine, 0x10);
+    stop = timer_get_system_clock();
+    list_timings[iiii++] = stop - start;
+
+    v8086_machine->regs.x.ax = 0x4f00;
+    v8086_machine->sregs.es = 0x0;
+    v8086_machine->regs.x.di = 0x7e00;
+    start = timer_get_system_clock();
+    v8086_call_int(v8086_machine, 0x10);
+    stop = timer_get_system_clock();
+    list_timings[iiii++] = stop - start;
+
+    v8086_machine->regs.x.ax = 0x4f01;
+    v8086_machine->sregs.es = 0x0;
+    v8086_machine->regs.x.di = 0x7e00;
+    v8086_machine->regs.x.cx = 0x13;
+    start = timer_get_system_clock();
+    v8086_call_int(v8086_machine, 0x10);
+    stop = timer_get_system_clock();
+    list_timings[iiii++] = stop - start;
+
+    v8086_machine->regs.x.ax = 0x4f02;
+    v8086_machine->regs.x.bx = 0x13;
+    start = timer_get_system_clock();
+    v8086_call_int(v8086_machine, 0x10);
+    stop = timer_get_system_clock();
+    list_timings[iiii++] = stop - start;
+
+    v8086_machine->regs.x.ax = 0x4f03;
+    start = timer_get_system_clock();
+    v8086_call_int(v8086_machine, 0x10);
+    stop = timer_get_system_clock();
+    list_timings[iiii++] = stop - start;
+
+    generic_vga_set_video_mode(0x07);
+    
+    for(int ii = 0; ii < 8; ii++){
+        kernel_sprintf(result_text, "FUNKCJA %d: %d", ii++, list_timings[ii]);
+        vga_printstring(buff);
+        vga_newline();
+    }
+
+    /*vga_printchar('x');
     uint32_t s = timer_get_system_clock();
     while(timer_get_system_clock() - s < 10000);
-    vga_printchar('y');
+    vga_printchar('y');*/
 
     #define FUN_9
 
@@ -522,7 +596,7 @@ int kmain()
                 vga_printstring("Unable to get SVGA MODE INFORMATION: ");
                 vga_printstring(buff);
                 vga_newline();
-                while(!keyboard_get_key_from_buffer(&kb));
+                //while(!keyboard_get_key_from_buffer(&kb));
             }
             else{
                 physBufforAddress = mode_info.frame_buffor_phys_address;
@@ -562,7 +636,7 @@ int kmain()
         vga_printstring(buff);
         vga_newline();
         
-        if(physBufforAddress != 0)
+        /*if(physBufforAddress != 0)
         {
             VBEStatus x = VBE_set_video_mode(0x10f|(1<<14), true);
             VBE_set_current_bank(0);
@@ -570,7 +644,7 @@ int kmain()
             uint8_t* color = 12*0x400000 + 0xc00000000;
             drawLenaIn10fH_linear(color);
             paging_unmap_page(12);
-        }
+        }*/
     }
     else{
         vga_printstring("Unable to get SVGA INFORMATION\n");

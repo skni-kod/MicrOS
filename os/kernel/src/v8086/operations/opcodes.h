@@ -136,7 +136,26 @@ OPCODE_PROTO(movsx);
 OPCODE_PROTO(bsf);
 OPCODE_PROTO(bsr);
 
+OPCODE_PROTO(prefix_cs);
 
+OPCODE_PROTO(prefix_ds);
 
+OPCODE_PROTO(prefix_es);
+
+OPCODE_PROTO(prefix_fs);
+
+OPCODE_PROTO(prefix_gs);
+
+OPCODE_PROTO(prefix_ss);
+
+OPCODE_PROTO(prefix_address_32);
+
+OPCODE_PROTO(prefix_operand_32);
+
+OPCODE_PROTO(prefix_repne);
+
+OPCODE_PROTO(prefix_rep_repe);
+
+OPCODE_PROTO(prefix_lock);
 
 #endif //MICROS_OPCODES_H

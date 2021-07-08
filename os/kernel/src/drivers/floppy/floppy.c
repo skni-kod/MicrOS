@@ -336,8 +336,6 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
             return false;
         }
 
-        sleep(100);
-
         // Read command status
         /*uint8_t st0 =*/ floppy_read_data();
         uint8_t st1 = floppy_read_data();

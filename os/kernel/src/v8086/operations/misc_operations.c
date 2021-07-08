@@ -18,10 +18,8 @@ int16_t perform_group_4(v8086* machine)
     {
         case 0: //INC rm8
             return perform_inc(machine, dest, width);
-            break;
         case 1: //DEC rm8
             return  perform_dec(machine, dest, width);
-            break;
         default:
             return V8086_UNDEFINED_OPCODE;
     }
@@ -76,7 +74,6 @@ int16_t perform_group_5(v8086* machine)
         default:
             return V8086_UNDEFINED_OPCODE;
     }
-    return V8086_UNKNOWN_ERROR;
 }
 
 int16_t setting_and_clearing_flags(v8086* machine, uint8_t opcode)

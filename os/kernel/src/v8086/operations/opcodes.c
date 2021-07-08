@@ -686,3 +686,79 @@ OPCODE_PROTO(bsr)
 {
     return bit_scan_backward(machine, machine->internal_state.operand_32_bit ? 32 : 16);
 }
+
+OPCODE_PROTO(prefix_cs)
+{
+    machine->internal_state.segment_reg_select = V8086_CS;
+    machine->internal_state.previous_byte_was_prefix = 1;
+    return V8086_OK;
+}
+
+OPCODE_PROTO(prefix_ds)
+{
+    machine->internal_state.segment_reg_select = V8086_DS;
+    machine->internal_state.previous_byte_was_prefix = 1;
+    return V8086_OK;
+}
+
+OPCODE_PROTO(prefix_es)
+{
+    machine->internal_state.segment_reg_select = V8086_ES;
+    machine->internal_state.previous_byte_was_prefix = 1;
+    return V8086_OK;
+}
+
+OPCODE_PROTO(prefix_fs)
+{
+    machine->internal_state.segment_reg_select = V8086_FS;
+    machine->internal_state.previous_byte_was_prefix = 1;
+    return V8086_OK;
+}
+
+OPCODE_PROTO(prefix_gs)
+{
+    machine->internal_state.segment_reg_select = V8086_GS;
+    machine->internal_state.previous_byte_was_prefix = 1;
+    return V8086_OK;
+}
+
+OPCODE_PROTO(prefix_ss)
+{
+    machine->internal_state.segment_reg_select = V8086_SS;
+    machine->internal_state.previous_byte_was_prefix = 1;
+    return V8086_OK;
+}
+
+OPCODE_PROTO(prefix_address_32)
+{
+    machine->internal_state.address_32_bit = 1;
+    machine->internal_state.previous_byte_was_prefix = 1;
+    return V8086_OK;
+}
+
+OPCODE_PROTO(prefix_operand_32)
+{
+    machine->internal_state.operand_32_bit = 1;
+    machine->internal_state.previous_byte_was_prefix = 1;
+    return V8086_OK;
+}
+
+OPCODE_PROTO(prefix_repne)
+{
+    machine->internal_state.rep_prefix = V8086_REPNE;
+    machine->internal_state.previous_byte_was_prefix = 1;
+    return V8086_OK;
+}
+
+OPCODE_PROTO(prefix_rep_repe)
+{
+    machine->internal_state.rep_prefix = V8086_REP_REPE;
+    machine->internal_state.previous_byte_was_prefix = 1;
+    return V8086_OK;
+}
+
+OPCODE_PROTO(prefix_lock)
+{
+    machine->internal_state.previous_byte_was_prefix = 1;
+    return V8086_OK;
+}

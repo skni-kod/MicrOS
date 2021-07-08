@@ -140,6 +140,7 @@ int16_t perform_rol(v8086 *machine, void *dest, uint8_t arg, uint8_t width) {
             __asm__ __volatile__("rolw %%cl, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t *) dest)) : "a" (*((uint16_t *) dest)), "c" (arg));
     else if (width == 32)
             __asm__ __volatile__("roll %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t *) dest)) : "a" (*((uint32_t *) dest)), "c" (arg));
+    else return V8086_BAD_WIDTH;
     if (arg == 1)
         bit_write(machine->regs.w.flags, 1u << OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1u << OVERFLOW_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u << CARRY_FLAG_BIT, bit_get(temp_flags, 1u << CARRY_FLAG_BIT) != 0);
@@ -375,7 +376,7 @@ int16_t perform_division(v8086 *machine, void *source, uint8_t signed_div, uint8
         if (width == 8) {
             if(*((int8_t *) source) == 0) 
                 return V8086_DIVISION_BY_ZERO;
-            int16_t temp = (int16_t) machine->regs.w.ax / *((int8_t *) source);
+            int16_t temp = (int16_t) machine->regs.w.ax / (int16_t)(*((int8_t *) source));
             if((temp > (int8_t)0x7f) || (temp < (int8_t)0x80)) return V8086_DIVISION_OVERFLOW;
             machine->regs.h.al = temp;
             machine->regs.h.ah = (int16_t) machine->regs.w.ax % *((int8_t *) source);
@@ -764,7 +765,6 @@ int16_t execute_group_3(v8086 *machine, uint8_t opcode) {
                 machine->internal_state.IPOffset += 4;
             }
             return perform_test(machine, &immediate, dest, width);
-            break;
         }
         case 2: //NOT
             if (width == 8)
@@ -775,7 +775,6 @@ int16_t execute_group_3(v8086 *machine, uint8_t opcode) {
                 *((uint32_t *) dest) = ~(*((uint32_t *) dest));
             else return V8086_BAD_WIDTH;
             return V8086_OK;
-            break;
         case 3: //NEG
             return perform_neg(machine, dest, width);
         case 4: //MUL

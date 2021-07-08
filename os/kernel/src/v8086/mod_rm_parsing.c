@@ -2,87 +2,10 @@
 #include <string.h>
 #include "memory_operations.h"
 
-uint8_t* get_byte_register(v8086* machine, uint8_t reg_field)
-{
-    switch(reg_field)
-    {
-        case V8086_AL:
-            return &(machine->regs.h.al);
-        case V8086_AH:
-            return &(machine->regs.h.ah);
-        case V8086_BL:
-            return &(machine->regs.h.bl);
-        case V8086_BH:
-            return &(machine->regs.h.bh);
-        case V8086_CL:
-            return &(machine->regs.h.cl);
-        case V8086_CH:
-            return &(machine->regs.h.ch);
-        case V8086_DL:
-            return &(machine->regs.h.dl);
-        case V8086_DH:
-            return &(machine->regs.h.dh);
-        default:
-            return NULL;
-    }
-    return NULL;
-}
-
-uint16_t* get_word_register(v8086* machine, uint8_t reg_field)
-{
-    switch(reg_field)
-    {
-        case V8086_AX:
-            return &(machine->regs.x.ax);
-        case V8086_CX:
-            return &(machine->regs.x.cx);
-        case V8086_DX:
-            return &(machine->regs.x.dx);
-        case V8086_BX:
-            return &(machine->regs.x.bx);
-        case V8086_SP:
-            return &(machine->regs.x.sp);
-        case V8086_BP:
-            return &(machine->regs.x.bp);
-        case V8086_SI:
-            return &(machine->regs.x.si);
-        case V8086_DI:
-            return &(machine->regs.x.di);
-        default:
-            return NULL;
-    }
-    return NULL;
-}
-
-uint32_t* get_dword_register(v8086* machine, uint8_t reg_field)
-{
-    switch(reg_field)
-    {
-        case V8086_EAX:
-            return &(machine->regs.d.eax);
-        case V8086_ECX:
-            return &(machine->regs.d.ecx);
-        case V8086_EDX:
-            return &(machine->regs.d.edx);
-        case V8086_EBX:
-            return &(machine->regs.d.ebx);
-        case V8086_ESP:
-            return &(machine->regs.d.esp);
-        case V8086_EBP:
-            return &(machine->regs.d.ebp);
-        case V8086_ESI:
-            return &(machine->regs.d.esi);
-        case V8086_EDI:
-            return &(machine->regs.d.edi);
-        default:
-            return NULL;
-    }
-    return NULL;
-}
-
 void* get_variable_length_register(v8086* machine, uint8_t reg_field, uint8_t width)
 {
-    switch (width)
+    return width == 8 ? (void*)get_byte_register(machine, reg_field) : (void*)get_dword_register(machine, reg_field);
+    /*switch (width)
     {
         case 8:
             return get_byte_register(machine, reg_field);
@@ -92,28 +15,7 @@ void* get_variable_length_register(v8086* machine, uint8_t reg_field, uint8_t wi
             return get_dword_register(machine, reg_field);
         default:
             return NULL;
-    }
-}
-
-uint16_t* select_segment_register(v8086* machine, segment_register_select select)
-{
-    switch(select)
-    {
-        case V8086_CS:
-            return &(machine->sregs.cs);
-        case V8086_DS:
-            return &(machine->sregs.ds);
-        case V8086_SS:
-            return &(machine->sregs.ss);
-        case V8086_ES:
-            return &(machine->sregs.es);
-        case V8086_FS:
-            return &(machine->sregs.fs);
-        case V8086_GS:
-            return &(machine->sregs.gs);
-        default:
-            return NULL;
-    }
+    }*/
 }
 
 int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint16_t* segment, uint32_t* offset)
@@ -123,7 +25,14 @@ int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint1
         segment_register = select_segment_register(machine, machine->internal_state.segment_reg_select);
     else
     {
-        switch (mod_rm & 7u)
+        if(((mod_rm & 7u) == 2) || ((mod_rm & 7u) == 3) || (((mod_rm & 7u) == 6) && ((mod_rm & 0xC0) == 0))){
+            segment_register = select_segment_register(machine, V8086_SS);
+        }
+        else{
+            segment_register = select_segment_register(machine, V8086_DS);
+        }
+        /*TODO: consider better optimization*/
+        /*switch (mod_rm & 7u)
         {
             case 0:
             case 1:
@@ -139,7 +48,7 @@ int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint1
             default:
                 segment_register = select_segment_register(machine, V8086_SS);
                 break;
-        }
+        }*/
     }
 
     if(segment_register == NULL) return V8086_UNDEFINED_SEGMENT_REGISTER;
@@ -246,7 +155,6 @@ int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint1
         default:
             return V8086_BAD_MOD;
     }
-    return V8086_UNKNOWN_ERROR;
 }
 
 int16_t read_and_parse_sib(v8086* machine, uint8_t mod, uint16_t** segment, uint32_t *offset)
@@ -471,27 +379,16 @@ void* get_memory_from_mode(v8086* machine, uint8_t mod_rm, uint8_t width)
     uint16_t segment;
     uint32_t offset;
 
-    switch(mod_rm >> 6u) //Parsing mod than parsing rm
+    if((mod_rm & 0xC0) < 0xC0)
     {
-        case 0:
-        case 1:
-        case 2:
-            if(machine->internal_state.address_32_bit)
-                calculate_segment_offset_from_mode_32(machine, mod_rm, &segment, &offset);
-            else
-                calculate_segment_offset_from_mode(machine, mod_rm, &segment, &offset);
-            return get_variable_length_pointer(machine->Memory, get_absolute_address(segment, offset), width);
-        case 3:
-            switch(width){
-                case 8:
-                    return get_byte_register(machine, mod_rm & 7u);
-                case 16:
-                    return get_word_register(machine, mod_rm & 7u);
-                case 32:
-                    return get_dword_register(machine, mod_rm & 7u);
-                default:
-                    return NULL;
-            }
+        if(machine->internal_state.address_32_bit)
+            calculate_segment_offset_from_mode_32(machine, mod_rm, &segment, &offset);
+        else
+            calculate_segment_offset_from_mode(machine, mod_rm, &segment, &offset);
+        return get_variable_length_pointer(machine->Memory, get_absolute_address(segment, offset), width);
+    }
+    else{
+        return get_variable_length_register(machine, mod_rm & 7u, width);
     }
     return NULL;
 }

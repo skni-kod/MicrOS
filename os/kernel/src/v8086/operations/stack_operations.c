@@ -108,9 +108,9 @@ int16_t push_immediate(v8086* machine, uint8_t width)
         int8_t imm = (int8_t)read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
         machine->internal_state.IPOffset += 1;
         if (machine -> internal_state.operand_32_bit )
-        push_dword(machine, imm);
+            push_dword(machine, imm);
         else
-        push_word(machine, imm);
+            push_word(machine, imm);
         return V8086_OK;
     }
     if(width == 16)
