@@ -1,4 +1,5 @@
 #include "floppy.h"
+#include "../../debug_helpers/library/kernel_stdio.h"
 
 volatile uint32_t floppy_sectors_per_track;
 volatile uint32_t time_of_last_activity = 0;
@@ -256,8 +257,11 @@ void floppy_disable_motor()
 uint8_t *floppy_read_sector(int device_number, int sector)
 {
     uint8_t head, track, true_sector;
+    //uint8_t x[80];
     floppy_lba_to_chs(sector, &head, &track, &true_sector);
-
+    /*kernel_sprintf(x, "%d, %d, %d", track, head, true_sector);
+    vga_printstring(x);
+    vga_newline();*/
     return floppy_do_operation_on_sector(head, track, true_sector, true);
 }
 
@@ -288,6 +292,7 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
 
         if (!floppy_seek(track, head))
         {
+            logger_log_warning("[FLOPPY] SEEK failed");
             sleep(10);
             continue;
         }
@@ -396,19 +401,19 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
                 if (!floppy_calibrate())
                 {
                     sleep(10);
-                
+                    logger_log_warning("[FLOPPY] Calibration failed");
 
                     if (i + 1 == 10)
                     {
                         return false;
-                    }else{break;}
+                    }
                 }
+                else{break;}
             }
 
             sleep(100);
             continue;
         }
-
         return st1 == 0 ? (uint8_t *)dma_get_buffer() : NULL;
     }
 
@@ -458,7 +463,7 @@ bool floppy_seek(uint8_t cylinder, uint8_t head)
 
 bool floppy_wait_for_interrupt()
 {
-    for(int i = 0; i < 10; i++)
+    /*for(int i = 0; i < 20; i++)
     {
         if(floppy_interrupt_flag)
         {
@@ -466,10 +471,24 @@ bool floppy_wait_for_interrupt()
             return true;
         }
         
-        sleep(1);
+        sleep(10);
     }
     
-    return false;
+    return false;*/
+    uint32_t before = timer_get_system_clock();
+
+    while(!floppy_interrupt_flag)
+    {
+        if(timer_get_system_clock() - before > 60000)
+        {
+            logger_log_error("[FLOPPY] Floppy wait for interrupt timeout (60s)");
+            return false;
+        }
+    }
+
+    floppy_interrupt_flag = false;
+    return true;
+
 }
 
 bool floppy_interrupt()
