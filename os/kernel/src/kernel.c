@@ -421,7 +421,6 @@ int kmain()
         attach_process_to_terminal(ts[i].terminal_id, process_manager_get_process(p));
     }
     
-    
     vga_clear_screen();
     
     switch_active_terminal(0);

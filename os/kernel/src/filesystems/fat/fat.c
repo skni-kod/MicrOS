@@ -395,6 +395,11 @@ uint8_t *fat_read_file_from_cluster(uint16_t initial_cluster, uint16_t cluster_o
     
         for (int i = 0; i < current_partition->header->sectors_per_cluster; i++)
         {
+            keyboard_scan_ascii_pair kb;
+            vga_newline();
+            vga_printstring("Loading files... Press any key to test next file");
+            vga_newline();
+            while(!keyboard_get_key_from_buffer(&kb));
             uint8_t *read_data = current_partition->read_from_device(current_partition->device_number, cluster_to_read + i);
             memcpy(buffer_ptr, read_data, current_partition->header->bytes_per_sector);
             
