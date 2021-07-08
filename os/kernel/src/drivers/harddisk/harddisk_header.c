@@ -5,7 +5,7 @@ harddisk_states harddisk_current_states;
 
 void __harddisk_400ns_delay(uint16_t port)
 {
-    for(int i = 0; i < 4; ++i)
+    for(int i = 0; i < 15; ++i)
     {
         io_in_byte(port + HARDDISK_CONTROL_ALTERNATE_STATUS_REGISTER_OFFSET);
     }

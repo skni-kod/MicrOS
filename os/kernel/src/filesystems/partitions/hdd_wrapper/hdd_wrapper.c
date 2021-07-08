@@ -53,6 +53,6 @@ void hdd_wrapper_write_sector(int device_number, int sector, uint8_t *content)
         case -2: logger_log_error("harddisk_read_sector returned -2 - parameters error"); break;
     }
     
-    uint32_t current_time = timer_get_system_clock();
-    while(timer_get_system_clock() - current_time < 15);
+    //uint32_t current_time = timer_get_system_clock();
+    //while(timer_get_system_clock() - current_time < 15);
 }
