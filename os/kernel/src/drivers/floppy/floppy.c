@@ -135,7 +135,7 @@ bool floppy_wait_until_ready()
             return true;
         }
 
-        sleep(1);
+        sleep(10);
     }
 
     return false;
@@ -274,6 +274,12 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
 {
     // Run floppy motor and wait some time
     floppy_enable_motor();
+    //sleep(500);
+
+    if(!read){
+        vga_printstring("JASNA DUPA");
+        while(1);
+    }
 
     for (int i = 0; i < 10; i++)
     {
@@ -310,7 +316,8 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
         uint8_t sectors_per_track = floppy_sectors_per_track;
 
         // Sectors per track
-        floppy_send_command(((sector + 1) >= sectors_per_track) ? sectors_per_track : (sector + 1));
+        //floppy_send_command(((sector + 1) >= sectors_per_track) ? sectors_per_track : (sector + 1));
+        floppy_send_command(sectors_per_track);
 
         // Length of gap (0x1B = floppy 3,5)
         floppy_send_command(0x1B);
@@ -323,6 +330,8 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
         {
             return false;
         }
+
+        sleep(100);
 
         // Read command status
         /*uint8_t st0 =*/ floppy_read_data();
@@ -387,11 +396,12 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
                 if (!floppy_calibrate())
                 {
                     sleep(10);
-                }
+                
 
-                if (i + 1 == 10)
-                {
-                    return false;
+                    if (i + 1 == 10)
+                    {
+                        return false;
+                    }else{break;}
                 }
             }
 

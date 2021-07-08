@@ -282,18 +282,20 @@ void startup()
     harddisk_init();
     logger_log_ok("Hard Disks");
     print_harddisks_status();
-    
-    partitions_init();
-    logger_log_ok("Partitions");
 
     keyboard_init();
     logger_log_ok("Keyboard");
+
+    partitions_init();
+    logger_log_ok("Partitions");
+
 
     timer_init();
     logger_log_ok("Timer");
 
     tss_init();
     logger_log_ok("TSS");
+
 
     syscalls_manager_init();
     logger_log_ok("Syscalls manager");
