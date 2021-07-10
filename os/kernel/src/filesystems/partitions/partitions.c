@@ -1,5 +1,4 @@
 #include "partitions.h"
-#include "../../drivers/vga/vga.h"
 #include <stdlib.h>
 
 kvector partitions;
@@ -7,11 +6,11 @@ kvector partitions;
 void partitions_init()
 {
     partitions_init_floppy();
-    //Temporary commented
-    //partitions_init_harddisks(HARDDISK_ATA_MASTER, HARDDISK_ATA_PRIMARY_BUS);
-    //partitions_init_harddisks(HARDDISK_ATA_SLAVE, HARDDISK_ATA_PRIMARY_BUS);
-    //partitions_init_harddisks(HARDDISK_ATA_MASTER, HARDDISK_ATA_SECONDARY_BUS);
-    // partitions_init_harddisks(HARDDISK_ATA_SLAVE, HARDDISK_ATA_SECONDARY_BUS);
+    
+    partitions_init_harddisks(HARDDISK_ATA_MASTER, HARDDISK_ATA_PRIMARY_BUS);
+    partitions_init_harddisks(HARDDISK_ATA_SLAVE, HARDDISK_ATA_PRIMARY_BUS);
+    partitions_init_harddisks(HARDDISK_ATA_MASTER, HARDDISK_ATA_SECONDARY_BUS);
+    partitions_init_harddisks(HARDDISK_ATA_SLAVE, HARDDISK_ATA_SECONDARY_BUS);
 }
 
 void partitions_init_floppy()
@@ -36,16 +35,7 @@ void partitions_init_floppy()
 
             
             memcpy(floppy_partition->header, floppy_do_operation_on_sector(0, 0, 1, true), 512);
-            char tmp[33];
-            for(int i=0; i<62; i++){
-                itoa(((uint8_t*)(floppy_partition->header))[i], tmp, 16);
-                vga_printstring(tmp);
-                vga_printchar(' ');
-                if ((i+1)%16==0) vga_newline();
-            }
-            vga_newline();
-            vga_printstring(floppy_partition->header->oem_identifier);
-            vga_newline();
+            ;
 
             //while(1);
             fat_generic_set_current_partition(floppy_partition);
