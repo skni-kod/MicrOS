@@ -390,6 +390,9 @@ void v8086_BIOS_timer_interrupt()
 
 int kmain()
 {
+    //uint16_t* vga_ptr = VGA_MODE_03H_BASE_ADDR;
+    //vga_ptr[0] = 0xf041;
+    //while(1);
     clear_bss();
 
     startup();
