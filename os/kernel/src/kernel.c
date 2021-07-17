@@ -466,11 +466,16 @@ int kmain()
     uint8_t iiii = 0;
     
     v8086_machine->regs.h.ah = 0x0;
-    v8086_machine->regs.h.al = 0x07;
+    v8086_machine->regs.h.al = 0x03;
     uint32_t start = timer_get_system_clock();
-    v8086_call_int(v8086_machine, 0x10);
+    int status = v8086_call_int(v8086_machine, 0x10);
     uint32_t stop = timer_get_system_clock();
     list_timings[iiii++] = stop - start;
+
+    //generic_vga_set_video_mode(0x03);
+
+    //vga_printstring("PIERDOLONA MAC!!!!");
+    //vga_newline();
 
     v8086_machine->regs.h.ah = 0x0;
     v8086_machine->regs.h.al = 0x13;
@@ -523,10 +528,23 @@ int kmain()
     stop = timer_get_system_clock();
     list_timings[iiii++] = stop - start;
 
-    generic_vga_set_video_mode(0x07);
-    
+    v8086_machine->regs.h.ah = 0x0;
+    v8086_machine->regs.h.al = 0x3;
+    v8086_call_int(v8086_machine, 0x10);
+
+    vga_clear_screen();
+    vga_color c;
+    c.color_without_blink.background=VGA_COLOR_BLACK;
+    c.color_without_blink.letter=VGA_COLOR_WHITE;
+    vga_set_color(0, 0, c);
+
     for(int ii = 0; ii < 8; ii++){
-        kernel_sprintf(result_text, "FUNKCJA %d: %d", ii++, list_timings[ii]);
+        //kernel_sprintf(result_text, "FUNKCJA %d: %d", ii, list_timings[ii]);
+        vga_printstring("FUNKCJA ");
+        itoa(ii, buff, 10);
+        vga_printstring(buff);
+        vga_printstring(": ");
+        itoa(list_timings[ii], buff, 10);
         vga_printstring(buff);
         vga_newline();
     }
