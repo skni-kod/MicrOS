@@ -423,7 +423,7 @@ int kmain()
     
     switch_active_terminal(0);
     
-    //process_manager_run();
+    process_manager_run();
     //keyboard_scan_ascii_pair kb;
     //vga_printstring("Press key to continue... (Sending Debug Informations via serial)\n");
     //while(!keyboard_get_key_from_buffer(&kb));
@@ -457,7 +457,7 @@ int kmain()
         }
     }*/
 
-    v8086_machine = v8086_create_machine();
+    /*v8086_machine = v8086_create_machine();
     v8086_set_386_instruction_set(v8086_machine);
     idt_attach_interrupt_handler(0, v8086_BIOS_timer_interrupt);
 
@@ -548,7 +548,7 @@ int kmain()
         vga_printstring(buff);
         vga_newline();
     }
-
+*/
     /*vga_printchar('x');
     uint32_t s = timer_get_system_clock();
     while(timer_get_system_clock() - s < 10000);

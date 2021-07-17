@@ -1,5 +1,4 @@
 #include "floppy.h"
-#include "../../debug_helpers/library/kernel_stdio.h"
 
 volatile uint32_t floppy_sectors_per_track;
 volatile uint32_t time_of_last_activity = 0;
@@ -280,10 +279,7 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
     floppy_enable_motor();
     //sleep(500);
 
-    if(!read){
-        vga_printstring("JASNA DUPA");
-        while(1);
-    }
+    
 
     for (int i = 0; i < 10; i++)
     {
@@ -321,8 +317,8 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
         uint8_t sectors_per_track = floppy_sectors_per_track;
 
         // Sectors per track
-        //floppy_send_command(((sector + 1) >= sectors_per_track) ? sectors_per_track : (sector + 1));
-        floppy_send_command(sectors_per_track);
+        floppy_send_command(((sector + 1) >= sectors_per_track) ? sectors_per_track : (sector + 1));
+        //floppy_send_command(sectors_per_track);
 
         // Length of gap (0x1B = floppy 3,5)
         floppy_send_command(0x1B);
