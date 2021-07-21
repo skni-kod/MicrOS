@@ -277,7 +277,7 @@ void startup()
     // NOTE: it doesn't work well, so assume for now that floppy controller is always present
     // if(fdc_is_present())
     {
-        fdc_init();
+        //fdc_init();
         logger_log_ok("Floppy Disc Controller");
     }
     
@@ -288,7 +288,7 @@ void startup()
     keyboard_init();
     logger_log_ok("Keyboard");
 
-    partitions_init();
+    //partitions_init();
     logger_log_ok("Partitions");
 
     tss_init();
@@ -409,7 +409,7 @@ int kmain()
     // create_terminal(&d);
     // create_terminal(&d);
     uint32_t d = 0;
-    for (int i = 0; i < 4; i++)
+    /*for (int i = 0; i < 4; i++)
     {
         char args[16];
         itoa(i, args, 10);
@@ -420,18 +420,18 @@ int kmain()
         uint32_t terminal_number = i;
         const terminal_struct* ts = get_terminals(&terminal_number);
         attach_process_to_terminal(ts[i].terminal_id, process_manager_get_process(p));
-    }
+    }*/
     
     vga_clear_screen();
     
-    switch_active_terminal(0);
+    //switch_active_terminal(0);
     
-    process_manager_run();
-    //keyboard_scan_ascii_pair kb;
-    //vga_printstring("Press key to continue... (Sending Debug Informations via serial)\n");
-    //while(!keyboard_get_key_from_buffer(&kb));
+    //process_manager_run();
+    keyboard_scan_ascii_pair kb;
+    vga_printstring("Press key to continue... (Sending Debug Informations via serial)\n");
+    while(!keyboard_get_key_from_buffer(&kb));
 
-//    serial_init(COM1_PORT, 921600, 8, 1, PARITY_NONE);
+    serial_init(COM1_PORT, 115200, 8, 1, PARITY_NONE);
 
 //    v8086_machine = v8086_create_machine();
   //  v8086_set_386_instruction_set(v8086_machine);
@@ -460,30 +460,26 @@ int kmain()
         }
     }*/
 
-    /*v8086_machine = v8086_create_machine();
+    v8086_machine = v8086_create_machine();
     v8086_set_386_instruction_set(v8086_machine);
     idt_attach_interrupt_handler(0, v8086_BIOS_timer_interrupt);
 
     uint8_t result_text[80];
     uint32_t list_timings[8];
+    int16_t statuses[8];
     uint8_t iiii = 0;
     
     v8086_machine->regs.h.ah = 0x0;
     v8086_machine->regs.h.al = 0x03;
     uint32_t start = timer_get_system_clock();
-    int status = v8086_call_int(v8086_machine, 0x10);
+    statuses[iiii] = v8086_call_int(v8086_machine, 0x10);
     uint32_t stop = timer_get_system_clock();
     list_timings[iiii++] = stop - start;
 
-    //generic_vga_set_video_mode(0x03);
-
-    //vga_printstring("PIERDOLONA MAC!!!!");
-    //vga_newline();
-
-    v8086_machine->regs.h.ah = 0x0;
+    /*v8086_machine->regs.h.ah = 0x0;
     v8086_machine->regs.h.al = 0x13;
     start = timer_get_system_clock();
-    v8086_call_int(v8086_machine, 0x10);
+    statuses[iiii] = v8086_call_int(v8086_machine, 0x10);
     stop = timer_get_system_clock();
     list_timings[iiii++] = stop - start;
 
@@ -491,13 +487,13 @@ int kmain()
     v8086_machine->regs.h.al = 0x41;
     v8086_machine->regs.h.bl = 0xf;
     start = timer_get_system_clock();
-    v8086_call_int(v8086_machine, 0x10);
+    statuses[iiii] = v8086_call_int(v8086_machine, 0x10);
     stop = timer_get_system_clock();
     list_timings[iiii++] = stop - start;
 
     v8086_machine->regs.h.ah = 0x0f;
     start = timer_get_system_clock();
-    v8086_call_int(v8086_machine, 0x10);
+    statuses[iiii] = v8086_call_int(v8086_machine, 0x10);
     stop = timer_get_system_clock();
     list_timings[iiii++] = stop - start;
 
@@ -505,7 +501,7 @@ int kmain()
     v8086_machine->sregs.es = 0x0;
     v8086_machine->regs.x.di = 0x7e00;
     start = timer_get_system_clock();
-    v8086_call_int(v8086_machine, 0x10);
+    statuses[iiii] = v8086_call_int(v8086_machine, 0x10);
     stop = timer_get_system_clock();
     list_timings[iiii++] = stop - start;
 
@@ -514,27 +510,28 @@ int kmain()
     v8086_machine->regs.x.di = 0x7e00;
     v8086_machine->regs.x.cx = 0x13;
     start = timer_get_system_clock();
-    v8086_call_int(v8086_machine, 0x10);
+    statuses[iiii] = v8086_call_int(v8086_machine, 0x10);
     stop = timer_get_system_clock();
     list_timings[iiii++] = stop - start;
 
     v8086_machine->regs.x.ax = 0x4f02;
     v8086_machine->regs.x.bx = 0x13;
     start = timer_get_system_clock();
-    v8086_call_int(v8086_machine, 0x10);
+    statuses[iiii] = v8086_call_int(v8086_machine, 0x10);
     stop = timer_get_system_clock();
     list_timings[iiii++] = stop - start;
 
     v8086_machine->regs.x.ax = 0x4f03;
     start = timer_get_system_clock();
-    v8086_call_int(v8086_machine, 0x10);
+    statuses[iiii] = v8086_call_int(v8086_machine, 0x10);
     stop = timer_get_system_clock();
     list_timings[iiii++] = stop - start;
 
     v8086_machine->regs.h.ah = 0x0;
     v8086_machine->regs.h.al = 0x3;
-    v8086_call_int(v8086_machine, 0x10);
+    v8086_call_int(v8086_machine, 0x10);*/
 
+    video_card_set_video_mode(0x3);
     vga_clear_screen();
     vga_color c;
     c.color_without_blink.background=VGA_COLOR_BLACK;
@@ -549,9 +546,11 @@ int kmain()
         vga_printstring(": ");
         itoa(list_timings[ii], buff, 10);
         vga_printstring(buff);
+        vga_printstring(" status: ");
+        itoa(statuses[ii], buff, 10);
+        vga_printstring(buff);
         vga_newline();
     }
-*/
     /*vga_printchar('x');
     uint32_t s = timer_get_system_clock();
     while(timer_get_system_clock() - s < 10000);

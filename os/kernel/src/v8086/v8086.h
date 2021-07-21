@@ -9,7 +9,7 @@
 #define bit_set(p,m) ((p) |= (m))
 #define bit_clear(p,m) ((p) &= ~(m))
 #define bit_flip(p,m) ((p) ^= (m))
-#define bit_write(p,m,v) (v ? bit_set(p,m) : bit_clear(p,m))
+#define bit_write(p,m,v) ((v) ? bit_set(p,m) : bit_clear(p,m))
 
 #define CARRY_FLAG_BIT 0u
 #define PARITY_FLAG_BIT 2u

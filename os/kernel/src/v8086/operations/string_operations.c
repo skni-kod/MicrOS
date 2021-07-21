@@ -225,7 +225,23 @@ uint16_t perform_cmps(v8086* machine, uint8_t width)
             dest = get_variable_length_pointer(machine->Memory, get_absolute_address(*dest_segment, machine->regs.d.edi), width);
         else
             dest = get_variable_length_pointer(machine->Memory, get_absolute_address(*dest_segment, machine->regs.w.di), width);
-        if(width == 8){
+
+        uint16_t temp_flags = 0;
+        if (width == 8)
+            __asm__ __volatile__("cmpb %%cl, %%al; pushfw; pop %%bx;" : "=b" (temp_flags) : "a" (*((uint8_t *) dest)), "c" (*((uint8_t *) source)));
+        else if (width == 16)
+            __asm__ __volatile__("cmpw %%cx, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags) : "a" (*((uint16_t *) dest)), "c" (*((uint16_t *) source)));
+        else if (width == 32)
+            __asm__ __volatile__("cmpl %%ecx, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags) : "a" (*((uint32_t *) dest)), "c" (*((uint32_t *) source)));
+        else return V8086_BAD_WIDTH;
+        bit_write(machine->regs.w.flags, 1u << OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1u << OVERFLOW_FLAG_BIT) != 0);
+        bit_write(machine->regs.w.flags, 1u << CARRY_FLAG_BIT, bit_get(temp_flags, 1u << CARRY_FLAG_BIT) != 0);
+        bit_write(machine->regs.w.flags, 1u << SIGN_FLAG_BIT, bit_get(temp_flags, 1u << SIGN_FLAG_BIT) != 0);
+        bit_write(machine->regs.w.flags, 1u << ZERO_FLAG_BIT, bit_get(temp_flags, 1u << ZERO_FLAG_BIT) != 0);
+        bit_write(machine->regs.w.flags, 1u << AUX_CARRY_FLAG_BIT, bit_get(temp_flags, 1u << AUX_CARRY_FLAG_BIT) != 0);
+        bit_write(machine->regs.w.flags, 1u << PARITY_FLAG_BIT, bit_get(temp_flags, 1u << PARITY_FLAG_BIT) != 0);
+
+        /*if(width == 8){
             dest_before = *((uint8_t*)dest);
             source_before = *((uint8_t*)source);
         } else if(width == 16){
@@ -245,6 +261,7 @@ uint16_t perform_cmps(v8086* machine, uint8_t width)
         bit_write(machine-> regs.d.eflags, 1u <<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
         bit_write(machine->regs.d.eflags, 1u <<SIGN_FLAG_BIT, result >> (width - 1u)); //SIGN FLAG
         bit_write(machine->regs.d.eflags, 1u <<OVERFLOW_FLAG_BIT, ((result >> (width - 1u)) != (dest_before >> (width - 1u)))); //OVERFLOW FLAG
+        */
 
         if(machine->internal_state.address_32_bit){
             machine->regs.d.esi += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -(width/8) : (width/8);
@@ -314,7 +331,23 @@ uint16_t perform_scas(v8086* machine, uint8_t width)
         else
             source = get_variable_length_pointer(machine->Memory, get_absolute_address(*source_segment, machine->regs.w.di), width);
         if(dest == NULL) return V8086_UNDEFINED_REGISTER;
-        if(width == 8){
+
+        uint16_t temp_flags = 0;
+        if (width == 8)
+                __asm__ __volatile__("cmpb %%cl, %%al; pushfw; pop %%bx;" : "=b" (temp_flags) : "a" (*((uint8_t *) dest)), "c" (*((uint8_t *) source)));
+        else if (width == 16)
+                __asm__ __volatile__("cmpw %%cx, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags) : "a" (*((uint16_t *) dest)), "c" (*((uint16_t *) source)));
+        else if (width == 32)
+                __asm__ __volatile__("cmpl %%ecx, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags) : "a" (*((uint32_t *) dest)), "c" (*((uint32_t *) source)));
+        else return V8086_BAD_WIDTH;
+        bit_write(machine->regs.w.flags, 1u << OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1u << OVERFLOW_FLAG_BIT) != 0);
+        bit_write(machine->regs.w.flags, 1u << CARRY_FLAG_BIT, bit_get(temp_flags, 1u << CARRY_FLAG_BIT) != 0);
+        bit_write(machine->regs.w.flags, 1u << SIGN_FLAG_BIT, bit_get(temp_flags, 1u << SIGN_FLAG_BIT) != 0);
+        bit_write(machine->regs.w.flags, 1u << ZERO_FLAG_BIT, bit_get(temp_flags, 1u << ZERO_FLAG_BIT) != 0);
+        bit_write(machine->regs.w.flags, 1u << AUX_CARRY_FLAG_BIT, bit_get(temp_flags, 1u << AUX_CARRY_FLAG_BIT) != 0);
+        bit_write(machine->regs.w.flags, 1u << PARITY_FLAG_BIT, bit_get(temp_flags, 1u << PARITY_FLAG_BIT) != 0);
+
+        /*if(width == 8){
             dest_before = *((uint8_t*)dest);
             source_before = *((uint8_t*)source);
         } else if(width == 16){
@@ -334,6 +367,7 @@ uint16_t perform_scas(v8086* machine, uint8_t width)
         bit_write(machine-> regs.d.eflags, 1u <<ZERO_FLAG_BIT, result == 0); //ZERO FLAG
         bit_write(machine->regs.d.eflags, 1u <<SIGN_FLAG_BIT, result >> (width - 1u)); //SIGN FLAG
         bit_write(machine->regs.d.eflags, 1u <<OVERFLOW_FLAG_BIT, ((result >> (width - 1u)) != (dest_before >> (width - 1u)))); //OVERFLOW FLAG
+        */
 
         if(machine->internal_state.address_32_bit)
             machine->regs.d.edi += bit_get(machine->regs.w.flags, 1u << DIRECTION_FLAG_BIT) ? -(width/8) : (width/8);

@@ -189,6 +189,7 @@ int16_t perform_shl(v8086 *machine, void *dest, uint8_t arg, uint8_t width) {
     else if (width == 32)
             __asm__ __volatile__("shll %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t *) dest)) : "a" (*((uint32_t *) dest)), "c" (arg));
     else return V8086_BAD_WIDTH;
+    if((arg & 0b11111) == 0) return 0;
     if (arg == 1)
         bit_write(machine->regs.w.flags, 1u << OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1u << OVERFLOW_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u << CARRY_FLAG_BIT, bit_get(temp_flags, 1u << CARRY_FLAG_BIT) != 0);
@@ -208,6 +209,7 @@ int16_t perform_shr(v8086 *machine, void *dest, uint8_t arg, uint8_t width) {
     else if (width == 32)
             __asm__ __volatile__("shrl %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t *) dest)) : "a" (*((uint32_t *) dest)), "c" (arg));
     else return V8086_BAD_WIDTH;
+    if((arg & 0b11111) == 0) return 0;
     if (arg == 1)
         bit_write(machine->regs.w.flags, 1u << OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1u << OVERFLOW_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u << CARRY_FLAG_BIT, bit_get(temp_flags, 1u << CARRY_FLAG_BIT) != 0);
@@ -228,6 +230,7 @@ int16_t perform_sar(v8086* machine, void* dest, uint8_t arg, uint8_t width)
     else if(width == 32)
             __asm__ __volatile__("sarl %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t*) dest)) : "a" (*((uint32_t*) dest)), "c" (arg));
     else return -1;
+    if((arg & 0b11111) == 0) return 0;
     if(arg == 1) bit_write(machine->regs.w.flags, 1u<<OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1u<<OVERFLOW_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u<<CARRY_FLAG_BIT, bit_get(temp_flags, 1u<<CARRY_FLAG_BIT) != 0);
     bit_write(machine->regs.w.flags, 1u<<SIGN_FLAG_BIT, bit_get(temp_flags, 1u<<SIGN_FLAG_BIT) != 0);
@@ -337,7 +340,7 @@ perform_multiplication_3_byte(v8086 *machine, void *dest, void *source, void *im
     uint16_t temp_flags;
     if (width == 16) {
         if (second_width == 8) {
-            int8_t a_imm = *((int8_t *) imm);
+            int16_t a_imm = *((int8_t *) imm);
             __asm__ __volatile__(
             "imul %%cx, %%dx; pushfw; pop %%bx;"
             : "=b" (temp_flags), "=d" (*((uint16_t *) dest)) : "d" (*((uint16_t *) source)), "c" (a_imm)
@@ -351,9 +354,9 @@ perform_multiplication_3_byte(v8086 *machine, void *dest, void *source, void *im
         } else return V8086_BAD_WIDTH;
     } else if (width == 32) {
         if (second_width == 8) {
-            int8_t a_imm = *((int8_t *) imm);
+            int32_t a_imm = *((int8_t *) imm);
             __asm__ __volatile__(
-            "imul %%cx, %%dx; pushfw; pop %%bx;"
+            "imul %%ecx, %%edx; pushfw; pop %%bx;"
             : "=b" (temp_flags), "=d" (*((uint32_t *) dest)) : "d" (*((uint32_t *) source)), "c" (a_imm)
             );
         } else if (second_width == 32) {
@@ -374,55 +377,55 @@ int16_t perform_division(v8086 *machine, void *source, uint8_t signed_div, uint8
     uint16_t temp_flags;
     if (signed_div) {
         if (width == 8) {
-            if(*((int8_t *) source) == 0) 
+            if(*((int8_t *) source) == 0)
                 return V8086_DIVISION_BY_ZERO;
             int16_t temp = (int16_t) machine->regs.w.ax / (int16_t)(*((int8_t *) source));
             if((temp > (int8_t)0x7f) || (temp < (int8_t)0x80)) return V8086_DIVISION_OVERFLOW;
-            machine->regs.h.al = temp;
             machine->regs.h.ah = (int16_t) machine->regs.w.ax % *((int8_t *) source);
+            machine->regs.h.al = temp;
         } else if (width == 16) {
-            if(*((uint16_t *) source) == 0) 
+            if(*((uint16_t *) source) == 0)
                 return V8086_DIVISION_BY_ZERO;
             int32_t dividend = ((uint32_t)(machine->regs.x.dx) << 16u) | machine->regs.x.ax;
             int32_t temp = dividend / *((int16_t *) source);
             if((temp > (int16_t)0x7fff) || (temp < (int16_t)0x8000)) return V8086_DIVISION_OVERFLOW;
-            machine->regs.x.ax = temp;
             machine->regs.x.dx = dividend % *((int16_t *) source);
+            machine->regs.x.ax = temp;
         } else if (width == 32) {
-            if(*((uint32_t *) source) == 0) 
+            if(*((uint32_t *) source) == 0)
                 return V8086_DIVISION_BY_ZERO;
             int64_t dividend = ((uint64_t)(machine->regs.d.edx) << 32u) | machine->regs.d.eax;
             int64_t temp = dividend / *((int32_t *) source);
             if((temp > (int32_t)0x7fffffff) || (temp < (int32_t)0x80000000)) return V8086_DIVISION_OVERFLOW;
-            machine->regs.d.eax = temp;
             machine->regs.d.edx = dividend % *((int32_t *) source);
+            machine->regs.d.eax = temp;
         } else return V8086_BAD_WIDTH;
     } else {
         if (width == 8) {
-            if(*((uint8_t *) source) == 0) 
+            if(*((uint8_t *) source) == 0)
                 return V8086_DIVISION_BY_ZERO;
             uint16_t temp = machine->regs.w.ax / *((uint8_t *) source);
             if(temp > 0xff) return V8086_DIVISION_OVERFLOW;
+            machine->regs.h.ah = ((uint16_t)machine->regs.w.ax % (*((uint8_t *) source)));
             machine->regs.h.al = temp;
-            machine->regs.h.ah = machine->regs.w.ax % *((uint8_t *) source);
         } else if (width == 16) {
-            if(*((uint16_t *) source) == 0) 
+            if(*((uint16_t *) source) == 0)
                 return V8086_DIVISION_BY_ZERO;
             uint32_t dividend = ((uint32_t)(machine->regs.x.dx) << 16u) | machine->regs.x.ax;
             uint32_t temp = dividend / *((uint16_t *) source);
             if(temp > 0xffff) return V8086_DIVISION_OVERFLOW;
-            machine->regs.x.ax = temp;
             machine->regs.x.dx = dividend % *((uint16_t *) source);
+            machine->regs.x.ax = temp;
         } else if (width == 32) {
             if(*((uint32_t *) source) == 0) {
-                
+
                 return V8086_DIVISION_BY_ZERO;
             }
             uint64_t dividend = ((uint64_t)(machine->regs.d.edx) << 32u) | machine->regs.d.eax;
             uint64_t temp = dividend / *((uint32_t *) source);
             if(temp > 0xffffffff) return V8086_DIVISION_OVERFLOW;
-            machine->regs.d.eax = temp;
             machine->regs.d.edx = dividend % *((uint32_t *) source);
+            machine->regs.d.eax = temp;
         } else return V8086_BAD_WIDTH;
     }
     return V8086_OK;

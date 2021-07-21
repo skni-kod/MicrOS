@@ -35,12 +35,12 @@ int16_t pop_rm(v8086* machine)
     machine->internal_state.IPOffset += 1;
     uint8_t width = 16;
     if(machine->internal_state.operand_32_bit) width = 32;
-
+    uint32_t temp = width == 16 ? pop_word(machine) : pop_dword(machine);
     void* dest = get_memory_from_mode(machine, mod_rm, width);
     if(width == 16)
-        *((uint16_t*)dest) = pop_word(machine);
+        *((uint16_t*)dest) = (uint16_t)temp;
     else
-        *((uint32_t*)dest) = pop_dword(machine);
+        *((uint32_t*)dest) = temp;
     return V8086_OK;
 }
 
