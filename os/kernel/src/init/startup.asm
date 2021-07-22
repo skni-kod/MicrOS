@@ -20,6 +20,18 @@
 
 jmp main
 
+; Function for displaying debug text in real mode
+realstr:
+    
+    mov ax, 0xb800
+    mov es, ax
+    mov ax, 0x0c41
+    mov ecx, 10
+    xor edi, edi
+    rep stosw
+
+    ret
+
 ; Entry frame: https://wiki.osdev.org/GDT
 gdt_begin:
 ; Null segment, reserved by CPU
@@ -90,6 +102,8 @@ gdt_description:
     dd gdt_begin
 
 main:
+    ;call realstr
+    ;hlt
     ; Load memory map before we will switch to the protected mode
     ; Buffer segment
     mov bx, 0x0000
@@ -99,10 +113,17 @@ main:
     mov bx, 0x5C00
     mov di, bx
 
+    
+
     call load_memory_map
+
+    ;call realstr
+    ;hlt 
 
     ; Load GDT table
     lgdt [dword gdt_description]
+
+    
 
     ; Set protected mode flag
     mov eax, cr0
@@ -325,5 +346,15 @@ enable_paging:
     nop
     nop
     .branch:
+
+    ret
+
+; Function for displaying debug text in protected mode
+protstr:
+    
+    mov edi, 0xb8000
+    mov ax, 0x0941
+    mov ecx, 10
+    rep stosw
 
     ret

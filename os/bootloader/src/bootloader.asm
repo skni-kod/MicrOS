@@ -14,6 +14,8 @@
 
 ; Jump to main and align to 3 bytes, we don't want to execute FAT12 header
 jmp Main
+
+; Function for displaying debug text in real mode
 nop
 
 ; FAT header
@@ -44,8 +46,10 @@ NonDataSectors                  dw 0x0000
 
 ; Entry point of bootloader
 Main:
+    
     ; Disable interrupts (will be enabled again during kernel initialization sequence)
     cli
+    
     
     ; Clear DF flag in EFLAGS register
     cld
@@ -74,34 +78,54 @@ Main:
     ; Save non data sectors count to memory
     call GetNonDataSectorsCount
     mov [NonDataSectors], cl
+    
+   
 
     ; Reset floppy before read
     call ResetFloppy
 
-    ; Load FAT12 non data sectors
-    ; Number of sectors to read
-    mov al, [NonDataSectors]
+    ;floppy_loop:
+        ; Load FAT12 non data sectors
+        ; Number of sectors to read
+        mov al, [NonDataSectors]
 
-    ; We don't want load first sector with bootloader again
-    dec al
+        ; We don't want load first sector with bootloader again
+        dec al
 
-    ; Sector number
-    mov cl, 1
+        ; Sector number
+        mov cl, 1
 
-    ; Segment
-    xor bx, bx
-    mov es, bx
+        ; Segment
+        xor bx, bx
+        mov es, bx
 
-    ; Offset
-    mov bx, 0x7E00
+        ; Offset
+        mov bx, 0x7E00
 
-    call LoadFloppyData
+        call LoadFloppyData
+
+    ;    cmp ah, 0x61
+    ;    je floppy_out
+
+    ;floppy_wait_keyboard:
+    ;    mov ah, 1
+    ;    int 0x16
+    ;    jz floppy_wait_keyboard
+    ;    mov ah, 0
+    ;    int 0x16
+    ;    cmp al, 'n'
+    ;    jne floppy_wait_keyboard
+    ;    jmp floppy_loop
+
+    ;floppy_out:
 
     ; Get kernel first sector and store it in ax register
     call GetFirstKernelSector
 
     ; Load all kernel sectors
     call LoadKernel
+
+ 
 
     ; Enter protected mode and jump to the loaded kernel
     call JumpToKernel
@@ -138,7 +162,7 @@ GetCHS:
     div cx
     push ax
     
-    inc dx
+    ;inc dx
     push dx
 
     ; [ebp - 6] = Head = Temp % (Number of Heads)
@@ -152,10 +176,15 @@ GetCHS:
     push ax
 
     ; Sector number
-    mov cl, [ebp - 4]
+    mov al, [ebp - 4]
 
     ; Track number
-    mov ch, [ebp - 8]
+    mov cx, [ebp - 8]
+    xchg ch, cl
+    ror cl, 1
+    ror cl, 1
+    or cl, al
+    inc cx
 
     ; Head number
     mov dh, [ebp - 6]
@@ -175,23 +204,48 @@ GetCHS:
 ;   - al - number of sectors read
 ;   - cf - 1 if successful, 0 if error
 LoadFloppyData:
+    push ebp
+    mov ebp, esp
+    
+    movzx si, al
+
     ; Function name: Read Disk Sectors
-    mov ah, 0x02
+    mov ax, 0x0201
 
     ; Get sector (cl), track (ch) and head (dh)
+    ; ax = [ebp - 2]
     push ax
+    ; bx = [ebp - 4]
     push bx
+    ; cx = [ebp - 6]
+    push cx
+
+loadfloppy_loop:
     mov bx, cx
     call GetCHS
-    pop bx
-    pop ax
-
+    mov ax, [ebp - 2]
+    mov bx, [ebp - 4]
+    
     ; Drive number
     mov dl, [INT13Scratchpad]
 
     int 0x13
-    ret
+    dec si
+    jz loadfloppy_exit
 
+    add bx, 0x200
+    mov [ebp - 4], bx
+    inc word [ebp - 6]
+    mov cx, [ebp - 6]
+    jmp loadfloppy_loop
+
+loadfloppy_exit:
+
+    mov esp, ebp
+    pop ebp
+
+    ret
+    
 ; Input: nothing
 ; Output:
 ;   cx - number of floppy sectors with metadata
@@ -222,7 +276,7 @@ GetNonDataSectorsCount:
 ;   ax - kernel first sector number
 GetFirstKernelSector:
     ; Set initial offset of non data sectors loaded into memory
-    mov ecx, 0x7E00
+    mov cx, 0x7E00
 
     ; Add size of both File Allocations Tables to get root directory offset
     mov al, [FileAllocationTables]
@@ -251,6 +305,28 @@ GetFirstKernelSector:
     ; Compare chars from both strings
     mov ax, [si]
     mov bx, [di]
+    ;DEBUG
+    ;push cx
+    
+    ;mov ch, 0x0c
+    ;mov cl, al
+
+    ;push ax
+    ;DispLoop:
+    ;xor ax, ax
+    ;mov ah, 1
+    ;int 0x16
+    ;jz DispLoop
+    ;mov ah, 0
+    ;int 0x16
+    ;cmp al, 'n'
+    ;jne DispLoop
+
+    ;mov [es: 0], cx
+
+    ;pop ax
+    ;pop cx
+;DEBUG END
     cmp ax, bx
 
     ; If chars aren't equal, go to next entry

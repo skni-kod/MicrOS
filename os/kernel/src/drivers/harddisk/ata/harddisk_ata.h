@@ -50,6 +50,6 @@ uint32_t __harddisk_ata_get_disk_space(const harddisk_identify_device_data *data
     \param port Port for do delay.
     \return 1 if ready, -1 if error
 */
-int8_t __harddisk_ata_poll(uint16_t control_port);
+int8_t __harddisk_ata_poll(uint16_t port);
 
 #endif

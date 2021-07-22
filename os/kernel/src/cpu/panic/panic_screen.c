@@ -46,14 +46,14 @@ void panic_screen_display_intro(exception_state *state, uint32_t code, const cha
     char buff[100];
     //if(vga_gmode_get_mode() != 0x3)
     //    set3Hvideo_mode();
-    if(!video_card_is_text_mode())
-        video_card_set_video_mode(0x3);
-    vga_clear_screen();
-    for (int i = 0; i < 20; i++)
-    {
-        vga_printstring(img[i]);
-        vga_printchar('\n');
-    }
+    //if(!video_card_is_text_mode())
+    //    video_card_set_video_mode(0x3);
+    //vga_clear_screen();
+    //for (int i = 0; i < 20; i++)
+    //{
+    //   vga_printstring(img[i]);
+    //    vga_printchar('\n');
+    //}
     vga_printstring("Robimy to z bolem serca, ale musimy Ciebie o tym poinformowac... Zjebalo sie.\n");
     vga_printstring(panic_screen_value_to_string(buff, code));
     vga_printchar(' ');

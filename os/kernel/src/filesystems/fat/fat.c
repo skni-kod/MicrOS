@@ -1,4 +1,6 @@
 #include "fat.h"
+#include "../../drivers/keyboard/keyboard.h"
+#include "../../drivers/vga/vga.h"
 
 volatile partition *current_partition;
 
@@ -62,14 +64,25 @@ void fat_save_fat()
 
 void fat_load_root()
 {
-    int root_first_sector = current_partition->header->reserved_sectors + current_partition->header->sectors_per_fat * current_partition->header->fat_count;
-    int root_clusters_count = current_partition->header->directory_entries * 32 / current_partition->header->bytes_per_sector;
+    int root_first_sector = current_partition->header->reserved_sectors + current_partition->header->sectors_per_fat * current_partition->header->fat_count;//19
+    int root_clusters_count = current_partition->header->directory_entries * 32 / current_partition->header->bytes_per_sector;//14
 
     for (int i = root_first_sector; i < root_first_sector + root_clusters_count; i++)
     {
-        uint16_t cluster_number = i + current_partition->first_sector;
-        uint32_t root_offset = (uint32_t)current_partition->root + (i - root_first_sector) * current_partition->header->bytes_per_sector;
+        uint16_t cluster_number = i + current_partition->first_sector;//19+
+        uint32_t root_offset = (uint32_t)current_partition->root + (i - root_first_sector) * current_partition->header->bytes_per_sector;//0+ 
         
+        //vga_printstring("Kolejne wykonanie wewnatrz fat_load_root()... Nacisnij ENTER");
+        //keyboard_scan_ascii_pair kb;
+        /*while(!keyboard_get_key_from_buffer(&kb));   
+        char tmp[9];
+
+            itoa(cluster_number, tmp, 10);
+            vga_printstring(tmp);
+            vga_printchar(' ');
+            vga_newline();
+*/
+
         uint8_t *buffer = current_partition->read_from_device(current_partition->device_number, cluster_number);
         memcpy((void *)root_offset, buffer, current_partition->header->bytes_per_sector);
     }
@@ -382,7 +395,15 @@ uint8_t *fat_read_file_from_cluster(uint16_t initial_cluster, uint16_t cluster_o
     
         for (int i = 0; i < current_partition->header->sectors_per_cluster; i++)
         {
+            keyboard_scan_ascii_pair kb;
+            /*vga_newline();
+            vga_printstring("Loading files... Press any key to test next file");
+            vga_newline();
+            while(!keyboard_get_key_from_buffer(&kb));
+            
+            logger_log_info("[FAT] Copy to buffer");*/
             uint8_t *read_data = current_partition->read_from_device(current_partition->device_number, cluster_to_read + i);
+            if(read_data == NULL) logger_log_error("[FAT] FLOPPY RETURN NULL!");
             memcpy(buffer_ptr, read_data, current_partition->header->bytes_per_sector);
             
             buffer_ptr += current_partition->header->bytes_per_sector;
