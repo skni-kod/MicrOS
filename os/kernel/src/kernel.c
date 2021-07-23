@@ -462,7 +462,7 @@ int kmain()
 
     v8086_machine = v8086_create_machine();
     v8086_set_386_instruction_set(v8086_machine);
-    idt_attach_interrupt_handler(0, v8086_BIOS_timer_interrupt);
+    //idt_attach_interrupt_handler(0, v8086_BIOS_timer_interrupt);
 
     uint8_t result_text[80];
     uint32_t list_timings[8];
