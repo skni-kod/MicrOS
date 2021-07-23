@@ -476,7 +476,7 @@ int kmain()
     uint32_t stop = timer_get_system_clock();
     list_timings[iiii++] = stop - start;
 
-    /*v8086_machine->regs.h.ah = 0x0;
+    v8086_machine->regs.h.ah = 0x0;
     v8086_machine->regs.h.al = 0x13;
     start = timer_get_system_clock();
     statuses[iiii] = v8086_call_int(v8086_machine, 0x10);
@@ -529,7 +529,7 @@ int kmain()
 
     v8086_machine->regs.h.ah = 0x0;
     v8086_machine->regs.h.al = 0x3;
-    v8086_call_int(v8086_machine, 0x10);*/
+    v8086_call_int(v8086_machine, 0x10);
 
     video_card_set_video_mode(0x3);
     vga_clear_screen();
@@ -548,6 +548,13 @@ int kmain()
         vga_printstring(buff);
         vga_printstring(" status: ");
         itoa(statuses[ii], buff, 10);
+        vga_printstring(buff);
+        vga_newline();
+        vga_printstring("CS: ");
+        itoa(v8086_machine->sregs.cs, buff, 16);
+        vga_printstring(buff);
+        vga_printstring(" IP: ");
+        itoa(v8086_machine->IP.w.ip, buff, 16);
         vga_printstring(buff);
         vga_newline();
     }
