@@ -31,10 +31,13 @@ bool rtl8139_init(net_device_t *net_dev)
     for (int i = 0; i < pci_get_number_of_devices(); i++)
     {
         pci_device *dev = pci_get_device(i);
-        if (dev->vendor_id == DEVICE_VENDOR_ID && dev->device_id == DEVICE_ID)
+        if (dev->vendor_id == DEVICE_VENDOR_ID)
         {
-            pci_rtl8139_device = *dev;
-            break;
+            if (dev->device_id == 0x8119 || dev->device_id == DEVICE_ID)
+            {
+                pci_rtl8139_device = *dev;
+                break;
+            }
         }
     }
 
@@ -165,6 +168,9 @@ void rtl8139_receive_packet()
     io_out_word(rtl8139_device.io_base + CAPR, current_packet_ptr - 0x10);
 
     (*receive_packet)(out);
+
+    char str[] = "Received packet!";
+    logger_log_info(str);
 }
 
 void rtl8139_send_packet(net_packet_t *packet)
