@@ -25,14 +25,15 @@ int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint1
         segment_register = select_segment_register(machine, machine->internal_state.segment_reg_select);
     else
     {
-        if(((mod_rm & 7u) == 2) || ((mod_rm & 7u) == 3) || (((mod_rm & 7u) == 6) && ((mod_rm & 0xC0) == 0))){
+        /*if(((mod_rm & 7u) == 2) || ((mod_rm & 7u) == 3) || (((mod_rm & 7u) == 6) && ((mod_rm & 0xC0) == 0))){
             segment_register = select_segment_register(machine, V8086_SS);
         }
         else{
             segment_register = select_segment_register(machine, V8086_DS);
-        }
+        }*/
+        /*TODO: optimization screwed up on hardware*/
         /*TODO: consider better optimization*/
-        /*switch (mod_rm & 7u)
+        switch (mod_rm & 7u)
         {
             case 0:
             case 1:
@@ -48,7 +49,7 @@ int16_t calculate_segment_offset_from_mode(v8086* machine, uint8_t mod_rm, uint1
             default:
                 segment_register = select_segment_register(machine, V8086_SS);
                 break;
-        }*/
+        }
     }
 
     if(segment_register == NULL) return V8086_UNDEFINED_SEGMENT_REGISTER;

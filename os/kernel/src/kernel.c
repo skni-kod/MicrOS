@@ -469,6 +469,8 @@ int kmain()
     int16_t statuses[8];
     uint8_t iiii = 0;
     
+    setSkipDebugging(true);
+
     v8086_machine->regs.h.ah = 0x0;
     v8086_machine->regs.h.al = 0x03;
     uint32_t start = timer_get_system_clock();
