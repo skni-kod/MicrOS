@@ -102,8 +102,6 @@ gdt_description:
     dd gdt_begin
 
 main:
-    ;call realstr
-    ;hlt
     ; Load memory map before we will switch to the protected mode
     ; Buffer segment
     mov bx, 0x0000
@@ -113,8 +111,6 @@ main:
     mov bx, 0x5C00
     mov di, bx
 
-    
-
     call load_memory_map
 
     ;call realstr
@@ -123,7 +119,56 @@ main:
     ; Load GDT table
     lgdt [dword gdt_description]
 
-    
+; Check If Line A20 Enabled
+    call check_a20
+    or ax, ax
+    jnz a20_enabled
+
+; Try Enable via BIOS
+    jmp enable_A20_BIOS
+
+; Check if Enabled via BIOS
+a20_check_after_bios:
+    call check_a20
+    or ax, ax
+    jnz a20_enabled
+
+; Not Enabled via BIOS. Try by Keyboard Controller
+a20_bios_failed:
+    call enable_A20_keyboard
+    mov cx, 0x20
+
+; Check if Enabled via Keyboard Controller
+a20_keyboard_check:
+    call check_a20
+    or ax, ax
+    jnz a20_enabled
+    dec cx
+    jnz a20_keyboard_check
+
+; Not Enabled via Keyboard Controller, Try Fast A20
+a20_keyboard_failed:
+    in al, 0x92
+    or al, 2
+    out 0x92, al
+    mov cx, 0x20
+
+; Check if enabled via Fast A20
+a20_fast_a20_check:
+    call check_a20
+    or ax, ax
+    jnz a20_enabled
+    dec cx
+    jnz a20_fast_a20_check
+
+; Not Enabled via A20. No idea what to do here
+    call realstr
+    cli
+    hlt
+
+; Enabled Line A20
+a20_enabled:
+    ;call realstr 
 
     ; Set protected mode flag
     mov eax, cr0
@@ -178,6 +223,122 @@ load_memory_map:
     mov [di], eax
     
     ret
+
+check_a20:
+    pushf
+    push ds
+    push es
+    push di
+    push si
+ 
+    cli
+ 
+    xor ax, ax ; ax = 0
+    mov es, ax
+ 
+    not ax ; ax = 0xFFFF
+    mov ds, ax
+ 
+    mov di, 0x0500
+    mov si, 0x0510
+ 
+    mov al, byte [es:di]
+    push ax
+ 
+    mov al, byte [ds:si]
+    push ax
+ 
+    mov byte [es:di], 0x00
+    mov byte [ds:si], 0xFF
+ 
+    cmp byte [es:di], 0xFF
+ 
+    pop ax
+    mov byte [ds:si], al
+ 
+    pop ax
+    mov byte [es:di], al
+ 
+    mov ax, 0
+    je check_a20__exit
+ 
+    mov ax, 1
+ 
+check_a20__exit:
+    pop si
+    pop di
+    pop es
+    pop ds
+    popf
+ 
+    ret
+
+enable_A20_BIOS:
+    mov     ax,2403h                ;--- A20-Gate Support ---
+    int     15h
+    jb      a20_bios_failed                  ;INT 15h is not supported
+    cmp     ah,0
+    jnz     a20_bios_failed                  ;INT 15h is not supported
+
+    mov     ax,2402h                ;--- A20-Gate Status ---
+    int     15h
+    jb      a20_bios_failed             ;couldn't get status
+    cmp     ah,0
+    jnz     a20_bios_failed              ;couldn't get status
+ 
+    cmp     al,1
+    jz      a20_enabled           ;A20 is already activated
+ 
+    mov     ax,2401h                ;--- A20-Gate Activate ---
+    int     15h
+    jb      a20_bios_failed              ;couldn't activate the gate
+    cmp     ah,0
+    jnz     a20_bios_failed              ;couldn't activate the gate
+
+enable_A20_keyboard:
+        cli
+ 
+        call    a20wait
+        mov     al,0xAD
+        out     0x64,al
+ 
+        call    a20wait
+        mov     al,0xD0
+        out     0x64,al
+ 
+        call    a20wait2
+        in      al,0x60
+        push    eax
+ 
+        call    a20wait
+        mov     al,0xD1
+        out     0x64,al
+ 
+        call    a20wait
+        pop     eax
+        or      al,2
+        out     0x60,al
+ 
+        call    a20wait
+        mov     al,0xAE
+        out     0x64,al
+ 
+        call    a20wait
+        sti
+        ret
+ 
+a20wait:
+        in      al,0x64
+        test    al,2
+        jnz     a20wait
+        ret
+ 
+ 
+a20wait2:
+        in      al,0x64
+        test    al,1
+        jz      a20wait2
+        ret
     
 [BITS 32]
 main_protected_area:
@@ -189,13 +350,25 @@ main_protected_area:
     mov gs, ax
     mov ss, ax
     
+    ;call protstr
+    ;cli
+    ;hlt
+
     call clear_page_directory
+    ;call protstr
+    ;cli
+    ;hlt
+    
     call clear_page_tables
+
+    ;call protstr
+    ;cli
+    ;hlt
 
     call create_page_directory
     call create_identity_page_table
     call create_kernel_page_table
-    call enable_paging
+    call enable_paging  
 
     ; Set new stack with virtual address
     mov eax, 0xC1100000
@@ -245,6 +418,10 @@ clear_page_tables:
     ; Leave loop if we cleared all entries
     cmp eax, 0x400000
     jl clear_page_tables_loop
+
+    ;;call protstr
+    ;;cli
+    ;;hlt
 
     ret
 
