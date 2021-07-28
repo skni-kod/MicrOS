@@ -134,7 +134,7 @@ void keyboard_put_key_to_buffer(unsigned char scancode, unsigned char ascii)
         return;
     }
 
-    volatile keyboard_scan_ascii_pair *character = (keyboard_scan_ascii_pair *)((0xc0000000 + (0x0040 * 0x10)) + (*buffer_write));
+    volatile keyboard_scan_ascii_pair *character = (keyboard_scan_ascii_pair *)((0xC0000000 + (0x0040 * 0x10)) + (*buffer_write));
     character->ascii = ascii;
     character->scancode = scancode;
     keyboard_increment_buffer_pointer(buffer_write);
@@ -147,7 +147,7 @@ bool keyboard_get_key_from_buffer(keyboard_scan_ascii_pair *scan_ascii_pair)
         return false;
     }
 
-    keyboard_scan_ascii_pair *tmp = (keyboard_scan_ascii_pair *)((0xc0000000 + (0x0040 * 0x10)) + (*buffer_read));
+    keyboard_scan_ascii_pair *tmp = (keyboard_scan_ascii_pair *)((0xC0000000 + (0x0040 * 0x10)) + (*buffer_read));
     scan_ascii_pair->ascii = tmp->ascii;
     scan_ascii_pair->scancode = tmp->scancode;
     keyboard_increment_buffer_pointer(buffer_read);

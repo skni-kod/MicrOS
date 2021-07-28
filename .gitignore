@@ -64,3 +64,5 @@ cloc.bat
 
 .idea
 compile_commands.json
+build.output
+dump.dat

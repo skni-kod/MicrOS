@@ -10,6 +10,7 @@
 #define DMA_COUNT_REGISTER_CHANNEL 0x05
 #define DMA_EXTERNAL_PAGE_REGISTER 0x81
 #define DMA_MODE_REGISTER 0x0B
+#define DMA_ADDRESS_OFFSET 0xC0000000
 
 void dma_init(uint32_t buffer_address);
 void dma_init_transfer(uint8_t channel, bool read);
