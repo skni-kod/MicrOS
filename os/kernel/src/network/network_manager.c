@@ -40,6 +40,21 @@ bool network_manager_init()
         __network_manager_print_device_info(tmp);
     }
 
+    //If VirtIO is present
+    if (virtio_nic_init(&dev))
+    {
+        net_device_t *tmp = heap_kernel_alloc(sizeof(net_device_t), 0);
+        memcpy(tmp, &dev, sizeof(net_device_t));
+        tmp->rx_queue = heap_kernel_alloc(sizeof(kvector), 0);
+        tmp->tx_queue = heap_kernel_alloc(sizeof(kvector), 0);
+        kvector_init(tmp->rx_queue);
+        kvector_init(tmp->tx_queue);
+        kvector_add(net_devices, tmp);
+        //Hardcode IPv4 address
+        __set_ipv4_addr(tmp->ipv4_address, 10,0,0,99);
+        __network_manager_print_device_info(tmp);
+    }
+
     // net_packet_t* test_packet = heap_kernel_alloc(sizeof(net_packet_t),0);
     // memcpy(test_packet->device_mac,((net_device_t*)(net_devices->data[0]))->mac_address,MAC_ADDRESS_SIZE);
     // char* data = heap_kernel_alloc(16,0);
