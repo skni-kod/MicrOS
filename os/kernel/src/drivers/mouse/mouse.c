@@ -1,17 +1,14 @@
 #include "mouse.h"
 
-uint8_t cycle = 0, mouse_data[3];
-    
+uint8_t cycle = 0, mouse_data[3], tmp, device_id;
+int32_t mouse_x, mouse_y, counter = 0;
+
 void ps2mouse_init()
 {
-    pic_enable_irq(IRQ_NUM);                                     // IRQ Controller
-    idt_attach_interrupt_handler(IRQ_NUM, ps2mouse_irq_handler); // CPU IDT
 
     // Check if PS/2 controller is available to write
-    while (ps2mouse_check_buffer_status(Input) != Empty)
-    {
-        io_out_byte(0x64, 0xA8); // Enable PS/2 second port
-    }
+    ps2mouse_check_buffer_status(Input);
+    io_out_byte(0x64, 0xA8); // Enable PS/2 second port
 
     uint8_t configurationByte = 0;
 
@@ -38,39 +35,45 @@ void ps2mouse_init()
         io_out_byte(0x60, configurationByte);
     }
 
+    //get device ID
+    ps2mouse_write(0xF5);
+    ps2mouse_write(0xF2);
+    ps2mouse_read(&device_id);
+
     // Set defaults
     ps2mouse_write(0xF6);
-    // Ack, passing dummy pointer
-    if (!ps2mouse_read(&configurationByte))
-    {
-        return;
-    }
 
     // Enable data reporting
     ps2mouse_write(0xF4);
-    //Ack, passing dummy pointer
-    if (!ps2mouse_read(&configurationByte))
-    {
-        return;
-    }
+
+    pic_enable_irq(IRQ_NUM);                                     // IRQ Controller
+    idt_attach_interrupt_handler(IRQ_NUM, ps2mouse_irq_handler); // CPU IDT
 }
 
 bool ps2mouse_irq_handler()
 {
-    logger_log_info("** Odglosy myszy **");
+    static char str[10] = "";
 
     switch (cycle)
     {
     case 0:
-        mouse_data[0] = inportb(0x60);
+        ps2mouse_read(mouse_data);
         cycle++;
         break;
     case 1:
-        mouse_data[1] = inportb(0x60);
+        ps2mouse_read(mouse_data + 1);
         cycle++;
         break;
     case 2:
-        mouse_data[2] = inportb(0x60);
+        ps2mouse_read(mouse_data + 2);
+        mouse_x += mouse_data[1] - ((mouse_data[0] << 4) & 0x100);
+        mouse_y += mouse_data[2] - ((mouse_data[0] << 3) & 0x100);
+        memcpy(str,"X:", 2);
+        itoa(mouse_x, str+2, 10);
+        logger_log_info(str);
+        memcpy(str,"Y:", 2);
+        itoa(mouse_y, str+2, 10);
+        logger_log_info(str);
         cycle = 0;
         break;
     }
@@ -124,6 +127,15 @@ bool ps2mouse_write(uint8_t byte)
     }
 
     io_out_byte(0x60, byte);
+
+    counter = PS2_MOUSE_TIMEOUT;
+    while (counter-- >= 1)
+    {
+        if (!ps2mouse_read(&tmp))
+            return false;
+        if (tmp == PS2_MOUSE_CMD_ACK)
+            break;
+    }
 
     return true;
 }

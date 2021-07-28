@@ -66,3 +66,4 @@ cloc.bat
 compile_commands.json
 build.output
 dump.dat
+configure.sh

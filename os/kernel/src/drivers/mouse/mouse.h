@@ -6,9 +6,19 @@
 #include "../../cpu/idt/idt.h"
 #include "../serial/serial.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 #define IRQ_NUM 12
 #define TIMEOUT 100000
+
+#define PS2_MOUSE_CMD_RESET 0xFF
+#define PS2_MOUSE_CMD_RESEND 0xFE
+#define PS2_MOUSE_CMD_DEFAULT 0xF6
+#define PS2_MOUSE_CMD_DISABLE_REPORT 0xF5
+#define PS2_MOUSE_CMD_ENABLE_REPORT 0xF4
+#define PS2_MOUSE_CMD_GET_DEVICE_ID 0xF2
+#define PS2_MOUSE_CMD_ACK 0xFA
+#define PS2_MOUSE_TIMEOUT 10000
 
 struct Cursor {
     int cursor_x;
