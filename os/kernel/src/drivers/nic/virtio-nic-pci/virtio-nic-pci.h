@@ -15,19 +15,19 @@
 #include "../../../klibrary/kvector.h"
 #include <stdlib.h>
 
-#define DEVICE_VENDOR_ID 0x1AF4
-#define DEVICE_CLASS_ID 0x2
-#define DEVICE_NAME "VirtIO NIC"
+#define VIRTIO_NIC_DEVICE_VENDOR_ID 0x1AF4
+#define VIRTIO_NIC_DEVICE_CLASS_ID 0x2
+#define VIRTIO_NIC_DEVICE_ID_BEGIN 0x1000
+#define VIRTIO_NIC_DEVICE_ID_END 0x103F
+#define VIRTIO_NIC_DEVICE_NAME "VirtIO NIC"
 
 typedef struct virtio_nic_dev
 {
     uint8_t bar_type;
     uint16_t io_base;
     uint32_t mem_base;
-    int eeprom_exist;
     uint8_t mac_addr[6];
-    char *rx_buffer;
-    int tx_cur;
+    uint8_t status;
 } virtio_nic_dev_t;
 
 bool virtio_nic_init(net_device_t *net_dev);

@@ -15,11 +15,12 @@
 #include "../../../klibrary/kvector.h"
 #include <stdlib.h>
 
-#define DEVICE_VENDOR_ID 0x10EC
-#define DEVICE_ID 0x8139
-#define DEVICE_NAME "RTL8139 NIC"
+#define RTL8139_DEVICE_VENDOR_ID 0x10EC
+#define RTL8139_DEVICE_ID_PRIMARY 0x8139
+#define RTL8139_DEVICE_ID_SECONDARY 0x8119
+#define RTL8139_DEVICE_NAME "RTL8139 NIC"
 
-#define RX_BUFFER_SIZE 8192 + 16 + 1500
+#define RTL8139_RX_BUFFER_SIZE 8192 + 16 + 1500
 
 #define CAPR 0x38
 #define RX_READ_POINTER_MASK (~3)

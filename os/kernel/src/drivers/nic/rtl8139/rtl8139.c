@@ -31,9 +31,9 @@ bool rtl8139_init(net_device_t *net_dev)
     for (int i = 0; i < pci_get_number_of_devices(); i++)
     {
         pci_device *dev = pci_get_device(i);
-        if (dev->vendor_id == DEVICE_VENDOR_ID)
+        if (dev->vendor_id == RTL8139_DEVICE_VENDOR_ID)
         {
-            if (dev->device_id == 0x8119 || dev->device_id == DEVICE_ID)
+            if (dev->device_id == RTL8139_DEVICE_ID_PRIMARY || dev->device_id == RTL8139_DEVICE_ID_SECONDARY)
             {
                 pci_rtl8139_device = *dev;
                 break;
@@ -75,8 +75,8 @@ bool rtl8139_init(net_device_t *net_dev)
 
     //RECEIVE BUFFER
     // Allocate receive buffer
-    rtl8139_device.rx_buffer = heap_kernel_alloc(RX_BUFFER_SIZE, 0);
-    memset(rtl8139_device.rx_buffer, 0x0, RX_BUFFER_SIZE);
+    rtl8139_device.rx_buffer = heap_kernel_alloc(RTL8139_RX_BUFFER_SIZE, 0);
+    memset(rtl8139_device.rx_buffer, 0x0, RTL8139_RX_BUFFER_SIZE);
     io_out_long(rtl8139_device.io_base + RXBUF, (uint32_t)rtl8139_device.rx_buffer - DMA_ADDRESS_OFFSET);
 
     // (1 << 7) is the WRAP bit, 0xf is (promiscious) AB+AM+APM+AAP
@@ -96,8 +96,8 @@ bool rtl8139_init(net_device_t *net_dev)
 
     rtl8139_read_mac_addr();
 
-    net_dev->device_name = heap_kernel_alloc(strlen(DEVICE_NAME) + 1, 0);
-    strcpy(net_dev->device_name, DEVICE_NAME);
+    net_dev->device_name = heap_kernel_alloc(strlen(RTL8139_DEVICE_NAME) + 1, 0);
+    strcpy(net_dev->device_name, RTL8139_DEVICE_NAME);
     memcpy(net_dev->mac_address, rtl8139_device.mac_addr, sizeof(uint8_t) * 6);
     net_dev->send_packet = &rtl8139_send_packet;
     net_dev->sent_count = &rtl8139_get_sent_count;
@@ -161,8 +161,8 @@ void rtl8139_receive_packet()
 
     current_packet_ptr = (current_packet_ptr + packet_length + 7) & RX_READ_POINTER_MASK;
 
-    if (current_packet_ptr > RX_BUFFER_SIZE)
-        current_packet_ptr -= RX_BUFFER_SIZE;
+    if (current_packet_ptr > RTL8139_RX_BUFFER_SIZE)
+        current_packet_ptr -= RTL8139_RX_BUFFER_SIZE;
 
     //Tell to device where put, next incoming packet
     io_out_word(rtl8139_device.io_base + CAPR, current_packet_ptr - 0x10);

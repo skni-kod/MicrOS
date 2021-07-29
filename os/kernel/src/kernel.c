@@ -345,13 +345,15 @@ void startup()
     //     vga_printstring_color(itoa(dev->prog_if, buff, 16), &col);
     //     vga_printchar('\n');
     // }
-
+    // while(1);
     //fat_init();
     //logger_log_ok("FAT12");
 
     ///    Networking
     if (network_manager_init())
         logger_log_ok("Network manager");
+
+    while(1){;}
 
     init_terminal_manager();
     logger_log_ok("Terminal manager");
@@ -398,7 +400,7 @@ int kmain()
   
     logger_log_info("Hello, World!");
 
-    startup_music_play();
+    //startup_music_play();
     logger_log_ok("READY.");
 
     logger_log_ok("Loading shells...");
