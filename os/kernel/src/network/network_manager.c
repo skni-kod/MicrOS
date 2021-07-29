@@ -51,7 +51,7 @@ bool network_manager_init()
         kvector_init(tmp->tx_queue);
         kvector_add(net_devices, tmp);
         //Hardcode IPv4 address
-        __set_ipv4_addr(tmp->ipv4_address, 10,0,0,99);
+        __set_ipv4_addr(tmp->ipv4_address, 192,168,1,109);
         __network_manager_print_device_info(tmp);
     }
 
@@ -209,19 +209,12 @@ void __network_manager_print_device_info(net_device_t *device)
     logger_log_ok(device->device_name);
 
     char logInfo[27] = "MAC: __:__:__:__:__:__";
-    char numberBuffer[3];
-    for (uint8_t i = 0; i < 6; i++)
-    {
-        itoa(device->mac_address[i], numberBuffer, 16);
-        //Add leading zero
-        if (numberBuffer[1] == 0)
-        {
-            numberBuffer[1] = numberBuffer[0];
-            numberBuffer[0] = '0';
-        }
-        //Copy just 2 characters, we dont need ending 0
-        memcpy(logInfo + (5 + i * 3), numberBuffer, 2);
-    }
-
+    kernel_sprintf(logInfo, "MAC: %02x:%02x:%02x:%02x:%02x:%02x",
+                    device->mac_address[0],
+                    device->mac_address[1],
+                    device->mac_address[2],
+                    device->mac_address[3],
+                    device->mac_address[4],
+                    device->mac_address[5]);
     logger_log_info(logInfo);
 }

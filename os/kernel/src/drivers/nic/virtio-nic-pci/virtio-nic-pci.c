@@ -22,7 +22,7 @@ bool virtio_nic_init(net_device_t *net_dev)
     {
         pci_device *dev = pci_get_device(i);
 
-        if (dev->vendor_id == VIRTIO_NIC_DEVICE_VENDOR_ID && dev->device_id >= VIRTIO_NIC_DEVICE_ID_BEGIN &&  dev->device_id <= VIRTIO_NIC_DEVICE_ID_END)
+        if (dev->vendor_id == VIRTIO_NIC_DEVICE_VENDOR_ID && dev->device_id >= VIRTIO_NIC_DEVICE_ID_BEGIN && dev->device_id <= VIRTIO_NIC_DEVICE_ID_END)
         {
             if (dev->class_code == VIRTIO_NIC_DEVICE_CLASS_ID)
             {
@@ -56,9 +56,44 @@ bool virtio_nic_init(net_device_t *net_dev)
     strcpy(net_dev->device_name, VIRTIO_NIC_DEVICE_NAME);
 
     memcpy(net_dev->mac_address, virtio_nic.mac_addr, sizeof(uint8_t) * 6);
-    //net_dev->send_packet = &rtl8139_send_packet;
-    //net_dev->sent_count = &rtl8139_get_sent_count;
-    //net_dev->received_count = &rtl8139_get_received_count;
+
+    //Reset device
+    io_out_byte(virtio_nic.io_base + 0x12, 0x0);
+
+    //Ack to device
+    io_out_byte(virtio_nic.io_base + 0x12, 0x1);
+    //Notify the host that the driver is loaded.
+    io_out_byte(virtio_nic.io_base + 0x12, 0x3);
+
+    //TODO: Manage device features
+    uint32_t device_features = io_in_long(virtio_nic.io_base + 0x0);
+
+    //setup queue 0
+    io_out_word(virtio_nic.io_base + 0x1E, 0x0);
+    uint16_t q_size = io_in_word(virtio_nic.io_base + 0x1C);
+    uint32_t q_ptr = heap_kernel_alloc(q_size, 4096);
+    memset(q_ptr, 0x0, q_size);
+    io_out_long(virtio_nic.io_base + 0x08, (q_ptr - DMA_ADDRESS_OFFSET) >> 12);
+
+    io_out_word(virtio_nic.io_base + 0x1E, 0x1);
+    q_size = io_in_word(virtio_nic.io_base + 0x1C);
+    q_ptr = heap_kernel_alloc(q_size, 4096);
+    memset(q_ptr, 0x0, q_size);
+    io_out_long(virtio_nic.io_base + 0x08, (q_ptr - DMA_ADDRESS_OFFSET) >> 12);
+
+    io_out_long(virtio_nic.io_base + 0x04, (0x0 | VIRTIO_NET_F_MAC));
+    io_out_long(virtio_nic.io_base + 0x12, 0x07);
+    io_out_long(virtio_nic.io_base + 0x10, 0x00);
+
+    uint32_t irq_num = pci_virtio_nic_device.interrupt_line;
+    pic_enable_irq(irq_num);
+    idt_attach_interrupt_handler(irq_num, virtio_nic_irq_handler);
+
+    return true;
+}
+
+bool virtio_nic_irq_handler(){
+    logger_log_info("DUPA");
 
     return true;
 }
