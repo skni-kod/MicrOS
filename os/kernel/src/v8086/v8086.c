@@ -665,9 +665,10 @@ int16_t parse_and_execute_instruction(v8086* machine)
     if(machine->sregs.cs == 0xc000 && machine->IP.w.ip == 0x36db && loop_flag == 1) {loop_flag = 2;}
     if(machine->sregs.cs == 0xc000 && machine->IP.w.ip == 0x3817 && loop_flag == 2) {loop_flag = 3;}
     if(machine->sregs.cs == 0xc000 && machine->IP.w.ip == 0xa9c8 && loop_flag == 3) {loop_flag = 4;}
-    if(machine->sregs.cs == 0xc000 && machine->IP.w.ip == 0x23e0 && loop_flag == 4) {setSkipDebugging(false); loop_flag = 5;}
-    if(machine->sregs.cs == 0xc000 && machine->IP.w.ip == 0x52a8 && loop_flag == 5) setSkipDebugging(false);
-    if(machine->sregs.cs == 0xc000 && machine->IP.w.ip == 0x529c && loop_flag == 5) setSkipDebugging(true);
+    if(machine->sregs.cs == 0xc000 && machine->IP.w.ip == 0x23e0 && loop_flag == 4) {loop_flag = 5;}
+    if(machine->sregs.cs == 0xc000 && machine->IP.w.ip == 0x23e0 && loop_flag == 5) {setSkipDebugging(false); loop_flag = 6;}
+    if(machine->sregs.cs == 0xc000 && machine->IP.w.ip == 0x52a8 && loop_flag == 6) setSkipDebugging(false);
+    if(machine->sregs.cs == 0xc000 && machine->IP.w.ip == 0x529c && loop_flag == 6) setSkipDebugging(true);
 
     #ifdef DEBUG_V8086
         #ifdef DEBUG_V8086_TEXT

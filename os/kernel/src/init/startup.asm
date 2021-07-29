@@ -32,6 +32,36 @@ realstr:
 
     ret
 
+realstr2:
+    
+    mov ax, 0xb800
+    mov es, ax
+    mov ax, 0xf941
+    mov ecx, 10
+    xor edi, edi
+    rep stosw
+
+    ret
+
+realstr_status:
+    
+    mov al, ah
+    xor ah, ah
+    mov bl, 64
+    div bl
+    xchg ah, al
+    add ah, 0x09
+    add al, 48
+
+    mov bx, 0xb800
+    mov es, bx
+    ;mov ax, 0x0c41
+    mov ecx, 10
+    xor edi, edi
+    rep stosw
+
+    ret
+
 ; Entry frame: https://wiki.osdev.org/GDT
 gdt_begin:
 ; Null segment, reserved by CPU
@@ -123,9 +153,20 @@ main:
     call check_a20
     or ax, ax
     jnz a20_enabled
+    ;jnz a20_check_true
 
 ; Try Enable via BIOS
     jmp enable_A20_BIOS
+    ;call realstr
+    ;jmp a20_check_false
+
+;a20_check_true:
+;    call realstr2
+
+;a20_check_false:
+
+;    cli
+;    hlt
 
 ; Check if Enabled via BIOS
 a20_check_after_bios:
@@ -136,30 +177,31 @@ a20_check_after_bios:
 ; Not Enabled via BIOS. Try by Keyboard Controller
 a20_bios_failed:
     call enable_A20_keyboard
-    mov cx, 0x20
+    ;mov cx, 0x20
 
 ; Check if Enabled via Keyboard Controller
 a20_keyboard_check:
     call check_a20
     or ax, ax
     jnz a20_enabled
-    dec cx
-    jnz a20_keyboard_check
+    ;dec cx
+    ;jnz a20_keyboard_check
+
 
 ; Not Enabled via Keyboard Controller, Try Fast A20
 a20_keyboard_failed:
     in al, 0x92
     or al, 2
     out 0x92, al
-    mov cx, 0x20
+    ;mov cx, 0x20
 
 ; Check if enabled via Fast A20
 a20_fast_a20_check:
     call check_a20
     or ax, ax
     jnz a20_enabled
-    dec cx
-    jnz a20_fast_a20_check
+    ;dec cx
+    ;jnz a20_fast_a20_check
 
 ; Not Enabled via A20. No idea what to do here
     call realstr
@@ -169,7 +211,6 @@ a20_fast_a20_check:
 ; Enabled Line A20
 a20_enabled:
     ;call realstr 
-
     ; Set protected mode flag
     mov eax, cr0
     or eax, 1
@@ -273,15 +314,22 @@ check_a20__exit:
  
     ret
 
+halt_a20:
+    call realstr_status
+    cli
+    hlt
+
 enable_A20_BIOS:
     mov     ax,2403h                ;--- A20-Gate Support ---
     int     15h
+    ;cmp     ah, 0x86
     jb      a20_bios_failed                  ;INT 15h is not supported
     cmp     ah,0
     jnz     a20_bios_failed                  ;INT 15h is not supported
 
     mov     ax,2402h                ;--- A20-Gate Status ---
     int     15h
+    ;jmp      halt_a20
     jb      a20_bios_failed             ;couldn't get status
     cmp     ah,0
     jnz     a20_bios_failed              ;couldn't get status
@@ -342,6 +390,9 @@ a20wait2:
     
 [BITS 32]
 main_protected_area:
+    ;call protstr
+    cli
+    ;hlt
     ; Set data and stack segments to the third GDI descriptor
     mov ax, 0x10
     mov ds, ax
@@ -350,9 +401,7 @@ main_protected_area:
     mov gs, ax
     mov ss, ax
     
-    ;call protstr
-    ;cli
-    ;hlt
+    
 
     call clear_page_directory
     ;call protstr
@@ -369,7 +418,7 @@ main_protected_area:
     call create_identity_page_table
     call create_kernel_page_table
     call enable_paging  
-
+    
     ; Set new stack with virtual address
     mov eax, 0xC1100000
     mov esp, eax
@@ -377,6 +426,11 @@ main_protected_area:
     ; Init FPU
     finit
     
+    ;call protstr
+    ;cli
+    ;hlt
+
+
     ; Jump to kmain and start kernel work
     extern kmain
     call kmain

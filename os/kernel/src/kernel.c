@@ -277,7 +277,7 @@ void startup()
     // NOTE: it doesn't work well, so assume for now that floppy controller is always present
     // if(fdc_is_present())
     {
-        //fdc_init();
+        fdc_init();
         logger_log_ok("Floppy Disc Controller");
     }
     
@@ -288,7 +288,7 @@ void startup()
     keyboard_init();
     logger_log_ok("Keyboard");
 
-    //partitions_init();
+    partitions_init();
     logger_log_ok("Partitions");
 
     tss_init();
@@ -409,7 +409,7 @@ int kmain()
     // create_terminal(&d);
     // create_terminal(&d);
     uint32_t d = 0;
-    /*for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 4; i++)
     {
         char args[16];
         itoa(i, args, 10);
@@ -420,18 +420,18 @@ int kmain()
         uint32_t terminal_number = i;
         const terminal_struct* ts = get_terminals(&terminal_number);
         attach_process_to_terminal(ts[i].terminal_id, process_manager_get_process(p));
-    }*/
+    }
     
     vga_clear_screen();
     
-    //switch_active_terminal(0);
+    switch_active_terminal(0);
     
-    //process_manager_run();
-    keyboard_scan_ascii_pair kb;
-    vga_printstring("Press key to continue... (Sending Debug Informations via serial)\n");
-    while(!keyboard_get_key_from_buffer(&kb));
+    process_manager_run();
+    //keyboard_scan_ascii_pair kb;
+    //vga_printstring("Press key to continue... (Sending Debug Informations via serial)\n");
+    //while(!keyboard_get_key_from_buffer(&kb));
 
-    serial_init(COM1_PORT, 115200, 8, 1, PARITY_NONE);
+    //serial_init(COM1_PORT, 115200, 8, 1, PARITY_NONE);
 
 //    v8086_machine = v8086_create_machine();
   //  v8086_set_386_instruction_set(v8086_machine);
@@ -460,6 +460,7 @@ int kmain()
         }
     }*/
 
+/*
     v8086_machine = v8086_create_machine();
     v8086_set_386_instruction_set(v8086_machine);
     //idt_attach_interrupt_handler(0, v8086_BIOS_timer_interrupt);
