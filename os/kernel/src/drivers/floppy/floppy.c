@@ -88,8 +88,29 @@ bool floppy_reset()
 {
     // Disable floppy controller
     io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0);
+    
+    uint32_t before = timer_get_system_clock();
+
+    while(1)
+    {
+        if(timer_get_system_clock() - before > 10)
+        {
+            break;
+        }
+    }
 
     // Enable floppy controller (reset (0x04) | DMA (0x08))
+    io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x04);
+
+    before = timer_get_system_clock();
+    while(1)
+    {
+        if(timer_get_system_clock() - before > 10)
+        {
+            break;
+        }
+    }
+
     io_out_byte(FLOPPY_DIGITAL_OUTPUT_REGISTER, 0x0C);
 
     // Wait for interrupt and continue reset sequence
@@ -102,6 +123,10 @@ bool floppy_reset()
     uint8_t st0, cylinder;
 
     floppy_confirm_interrupt(&st0, &cylinder);
+    uint8_t tmp[8];
+    itoa(st0, tmp, 16);
+    logger_log_info(tmp);
+    
     if (st0 != 0xC0)
     {
         return false;
