@@ -208,7 +208,7 @@ void __network_manager_print_device_info(net_device_t *device)
 {
     logger_log_ok(device->device_name);
 
-    char logInfo[27] = "MAC: __:__:__:__:__:__";
+    char* logInfo[27];
     kernel_sprintf(logInfo, "MAC: %02x:%02x:%02x:%02x:%02x:%02x",
                     device->mac_address[0],
                     device->mac_address[1],

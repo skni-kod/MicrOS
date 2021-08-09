@@ -14,72 +14,17 @@
 #include "../../../network/network_definitions.h"
 #include "../../../klibrary/kvector.h"
 #include "../../../debug_helpers/library/kernel_stdio.h"
+#include "../../virtio/Virtio.h"
 #include <stdlib.h>
 
-#define VIRTIO_NIC_DEVICE_VENDOR_ID 0x1AF4
-#define VIRTIO_NIC_DEVICE_CLASS_ID 0x2
-#define VIRTIO_NIC_DEVICE_ID_BEGIN 0x1000
-#define VIRTIO_NIC_DEVICE_ID_END 0x103F
-#define VIRTIO_NIC_DEVICE_NAME "VirtIO NIC"
+/* Device specification for PCI (4.1.1) */
+#define VIRTIO_NET_DEVICE_VENDOR_ID 0x1AF4
+#define VIRTIO_NET_DEVICE_SUBSYSTEM_ID 0x1
+#define VIRTIO_NET_DEVICE_ID_BEGIN 0x1000
+#define VIRTIO_NET_DEVICE_ID_END 0x103F
+#define VIRTIO_NET_DEVICE_NAME "VirtIO NIC"
 
-// Network-device-specific registers:
-#define	REG_MAC_1           0x14
-#define	REG_MAC_2           0x15
-#define	REG_MAC_3           0x16
-#define	REG_MAC_4           0x17
-#define	REG_MAC_5           0x18
-#define	REG_MAC_6           0x19
-#define REG_NIC_STATUS      0x1A
-
-// Feature bits (See 5.1.3 of virtio-v1.0-cs04.pdf)
-#define VIRTIO_NET_F_GUEST_TSO6             0x100
-#define VIRTIO_NET_F_GUEST_ECN              0x200
-#define VIRTIO_NET_F_GUEST_UFO              0x400
-#define VIRTIO_NET_F_HOST_TSO4              0x800
-#define VIRTIO_NET_F_HOST_TSO6              0x1000
-#define VIRTIO_NET_F_HOST_ECN               0x2000
-#define VIRTIO_NET_F_HOST_UFO               0x4000
-#define VIRTIO_NET_F_MRG_RXBUF              0x8000
-#define VIRTIO_NET_F_STATUS                 0x10000
-#define VIRTIO_NET_F_CTRL_VQ                0x20000
-#define VIRTIO_NET_F_CTRL_RX                0x40000
-#define VIRTIO_NET_F_CTRL_VLAN              0x80000
-#define VIRTIO_NET_F_GUEST_ANNOUNCE         0x200000
-#define VIRTIO_NET_F_MQ                     0x400000
-#define VIRTIO_NET_F_CTRL_MAC_ADDR          0x800000
-#define VIRTIO_F_ANY_LAYOUT                 (1 << 27)
-
-// These are the features required by this driver (VirtualBox is borken and won't work without VIRTIO_NET_F_MRG_RXBUF) 
-#undef REQUIRED_FEATURES
-#define REQUIRED_FEATURES (/*VIRTIO_NET_F_CSUM |*/ VIRTIO_NET_F_MAC | VIRTIO_NET_F_MRG_RXBUF)
-
-
-// Flags for virtio_net_hdr
-#define VIRTIO_NET_HDR_F_NEEDS_CSUM 1
-#define VIRTIO_NET_HDR_F_DATA_VALID 2
-#define VIRTIO_NET_HDR_F_RSC_INFO   4
-
-// Values for virtio_net_hdr gso_type
-#define VIRTIO_NET_HDR_GSO_NONE     0
-#define VIRTIO_NET_HDR_GSO_TCPV4    1
-#define VIRTIO_NET_HDR_GSO_UDP      3
-#define VIRTIO_NET_HDR_GSO_TCPV6    4
-#define VIRTIO_NET_HDR_GSO_ECN      0x80
-
-// Every packet sent or received must be preceded by a virtio_net_hdr
-typedef struct virtio_net_hdr
-{
-    uint8_t flags;
-    uint8_t gso_type;
-    uint16_t hdr_len;
-    uint16_t gso_size;
-    uint16_t csum_start;
-    uint16_t csum_offset;
-    uint16_t num_buffers;  // num_buffer is not part of struct if VIRTIO_NET_F_MRG_RXBUF isn't negotiated
-} virtio_net_hdr;
-
-
-//Device FEATURES
+/* Feature bits (5.1.3) */
 /* VIRTIO_NET_F_CSUM (0) Device handles packets with partial checksum. This “checksum offload” is a common feature on modern network cards. */
 #define VIRTIO_NET_F_CSUM (1 << 0)
 /*VIRTIO_NET_F_GUEST_CSUM (1) Driver handles packets with partial checksum.*/
@@ -92,41 +37,126 @@ typedef struct virtio_net_hdr
 #define VIRTIO_NET_F_MAC (1 << 5)
 /*VIRTIO_NET_F_GUEST_TSO4 (7) Driver can receive TSOv4.*/
 #define VIRTIO_NET_F_GUEST_TSO4 (1 << 7)
-/*VIRTIO_NET_F_GUEST_TSO6 (8) Driver can receive TSOv6.
-VIRTIO_NET_F_GUEST_ECN (9) Driver can receive TSO with ECN.
-VIRTIO_NET_F_GUEST_UFO (10) Driver can receive UFO.
-VIRTIO_NET_F_HOST_TSO4 (11) Device can receive TSOv4.
-VIRTIO_NET_F_HOST_TSO6 (12) Device can receive TSOv6.
-VIRTIO_NET_F_HOST_ECN (13) Device can receive TSO with ECN.
-VIRTIO_NET_F_HOST_UFO (14) Device can receive UFO.
-VIRTIO_NET_F_MRG_RXBUF (15) Driver can merge receive buffers.
-VIRTIO_NET_F_STATUS (16) Configuration status field is available.
-VIRTIO_NET_F_CTRL_VQ (17) Control channel is available.
-VIRTIO_NET_F_CTRL_RX (18) Control channel RX mode support.
-VIRTIO_NET_F_CTRL_VLAN (19) Control channel VLAN filtering.
-VIRTIO_NET_F_GUEST_ANNOUNCE(21) Driver can send gratuitous packets.
-VIRTIO_NET_F_MQ(22) Device supports multiqueue with automatic receive steering.
-VIRTIO_NET_F_CTRL_MAC_ADDR(23) Set MAC address through control channel.
-VIRTIO_NET_F_RSC_EXT(61) Device can process duplicated ACKs and report number of coalesced segments
-and duplicated ACKs
-VIRTIO_NET_F_STANDBY(62) Device may act as a standby for a primary device with the same MAC
-address.
-*/
+/*VIRTIO_NET_F_GUEST_TSO6 (8) Driver can receive TSOv6. */
+#define VIRTIO_NET_F_GUEST_TSO6 (1 << 8)
+/*VIRTIO_NET_F_GUEST_ECN (9) Driver can receive TSO with ECN.*/
+#define VIRTIO_NET_F_GUEST_ECN (1 << 9)
+/*VIRTIO_NET_F_GUEST_UFO (10) Driver can receive UFO.*/
+#define VIRTIO_NET_F_GUEST_UFO (1 << 10)
+/*VIRTIO_NET_F_HOST_TSO4 (11) Device can receive TSOv4.*/
+#define VIRTIO_NET_F_HOST_TSO4 (1 << 11)
+/*VIRTIO_NET_F_HOST_TSO6 (12) Device can receive TSOv6.*/
+#define VIRTIO_NET_F_HOST_TSO6 (1 << 12)
+/*VIRTIO_NET_F_HOST_ECN (13) Device can receive TSO with ECN.*/
+#define VIRTIO_NET_F_HOST_ECN (1 << 13)
+/*VIRTIO_NET_F_HOST_UFO (14) Device can receive UFO.*/
+#define VIRTIO_NET_F_HOST_UFO (1 << 14)
+/*VIRTIO_NET_F_MRG_RXBUF (15) Driver can merge receive buffers.*/
+#define VIRTIO_NET_F_MRG_RXBUF (1 << 15)
+/*VIRTIO_NET_F_STATUS (16) Configuration status field is available.*/
+#define VIRTIO_NET_F_STATUS (1 << 16)
+/*VIRTIO_NET_F_CTRL_VQ (17) Control channel is available.*/
+#define VIRTIO_NET_F_CTRL_VQ (1 << 17)
+/*VIRTIO_NET_F_CTRL_RX (18) Control channel RX mode support.*/
+#define VIRTIO_NET_F_CTRL_RX (1 << 18)
+/*VIRTIO_NET_F_CTRL_VLAN (19) Control channel VLAN filtering.*/
+#define VIRTIO_NET_F_CTRL_VLAN (1 << 19)
+/*VIRTIO_NET_F_GUEST_ANNOUNCE(21) Driver can send gratuitous packets.*/
+#define VIRTIO_NET_F_GUEST_ANNOUNCE (1 << 21)
+/*VIRTIO_NET_F_MQ(22) Device supports multiqueue with automatic receive steering.*/
+#define VIRTIO_NET_F_MQ (1 << 22)
+/*VIRTIO_NET_F_CTRL_MAC_ADDR(23) Set MAC address through control channel.*/
+#define VIRTIO_NET_F_CTRL_MAC_ADDR (1 << 23)
+/*VIRTIO_NET_F_RSC_EXT(61) Device can process duplicated ACKs and report number of coalesced segments
+and duplicated ACKs */
+#define VIRTIO_NET_F_RSC_EXT (1 << 61)
+/*VIRTIO_NET_F_STANDBY(62) Device may act as a standby for a primary device with the same MAC address*/
+#define VIRTIO_NET_F_STANDBY (1 << 62)
+
+/* Legacy interface feature bits (5.1.3.2)*/
+/*VIRTIO_NET_F_GSO (6) Device handles packets with any GSO type. This was supposed to indicate segmentation
+offload support, but upon further investigation it became clear that multiple bits were needed.*/
+#define VIRTIO_NET_F_GSO (1 << 6)
+/*VIRTIO_NET_F_GUEST_RSC4 (41) Device coalesces TCPIP v4 packets. This was implemented by hypervisor
+patch for certification purposes and current Windows driver depends on it. It will not function
+if virtio-net device reports this feature.*/
+#define VIRTIO_NET_F_GUEST_RSC4 (1 << 41)
+/*VIRTIO_NET_F_GUEST_RSC6 (42) Device coalesces TCPIP v6 packets. Similar to VIRTIO_NET_F_-GUEST_RSC4.*/
+#define VIRTIO_NET_F_GUEST_RSC6 (1 << 42)
+
+// NIC specific registers 
+#define VIRTIO_NET_REGISTER_MAC_1 0x14
+#define VIRTIO_NET_REGISTER_MAC_2 0x15
+#define VIRTIO_NET_REGISTER_MAC_3 0x16
+#define VIRTIO_NET_REGISTER_MAC_4 0x17
+#define VIRTIO_NET_REGISTER_MAC_5 0x18
+#define VIRTIO_NET_REGISTER_MAC_6 0x19
+#define VIRTIO_NET_REGISTER_STATUS 0x1A
+
+/* Device specific queues indexes */
+#define VIRTIO_NET_RECEIVE_QUEUE_INDEX 0
+#define VIRTIO_NET_TRANSMIT_QUEUE_INDEX 1
+#define VIRTIO_NET_CONTROL_QUEUE_INDEX 2
 
 
 
-typedef struct virtio_nic_dev
+#undef REQUIRED_FEATURES
+#define REQUIRED_FEATURES (/*VIRTIO_NET_F_CSUM |*/ VIRTIO_NET_F_MAC | VIRTIO_NET_F_MRG_RXBUF)
+
+// Flags for virtio_net_hdr
+#define VIRTIO_NET_HDR_F_NEEDS_CSUM 1
+#define VIRTIO_NET_HDR_F_DATA_VALID 2
+#define VIRTIO_NET_HDR_F_RSC_INFO 4
+
+// Values for virtio_net_hdr gso_type
+#define VIRTIO_NET_HDR_GSO_NONE 0
+#define VIRTIO_NET_HDR_GSO_TCPV4 1
+#define VIRTIO_NET_HDR_GSO_UDP 3
+#define VIRTIO_NET_HDR_GSO_TCPV6 4
+#define VIRTIO_NET_HDR_GSO_ECN 0x80
+
+typedef struct
+{
+    uint8_t flags;
+    uint8_t segmentation_offload;
+    uint16_t header_size;
+    uint16_t segment_size;
+    uint16_t checksum_start;
+    uint16_t checksum_offset;
+    /* num_buffer is not part of struct if VIRTIO_NET_F_MRG_RXBUF isn't negotiated */
+    uint16_t buffers_count; 
+} virtio_nic_net_header;
+
+typedef struct
 {
     uint8_t bar_type;
     uint16_t io_base;
     uint32_t mem_base;
     uint8_t mac_addr[6];
     uint8_t status;
-} virtio_nic_dev_t;
+} virtio_nic_dev;
 
 bool virtio_nic_init(net_device_t *net_dev);
 
 bool virtio_nic_irq_handler();
 
+
+
+/* TODO: dfd */
+void VirtIO_Net_InterruptHandler();
+
+void VirtIO_Net_ScanRQ();
+
+void VirtIO_Net_SendPacket(net_packet_t *packet);
+
+bool VirtIO_Net_SharedInterruptHandler(void);
+
+void VirtIO_Net_SetupReceiveBuffers();
+
+void VirtIO_Net_ReceivePacket();
+
+void VNet_Write_Register(uint16_t reg, uint32_t data);
+
+uint32_t VNet_Read_Register(uint16_t reg);
 
 #endif

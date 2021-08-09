@@ -90,6 +90,9 @@ bool rtl8139_init(net_device_t *net_dev)
     //Set TransmitterOK and ReceiveOK to HIGH
     io_out_word(rtl8139_device.io_base + INTRSTATUS, 0x0);
     io_out_word(rtl8139_device.io_base + INTRMASK, 0xff);
+    
+
+    //Enable IRQ
     uint32_t irq_num = pci_rtl8139_device.interrupt_line;
     pic_enable_irq(irq_num);
     idt_attach_interrupt_handler(irq_num, rtl8139_irq_handler);

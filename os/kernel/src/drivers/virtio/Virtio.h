@@ -5,6 +5,7 @@
 #include "../assembly/io.h"
 #include "../logger/logger.h"
 #include "../debug_helpers/library/kernel_stdio.h"
+#include "../cpu/dma/dma.h"
 
 // Registers (generic virtio) - note: this is considered the "legacy interface" and is defined in 4.1.4.8 of the virtio spec
 #define REG_DEVICE_FEATURES 0x00

@@ -32,8 +32,7 @@ void VirtIO_Allocate_Virtqueue(virtq *virtqueue, uint16_t queueSize)
     uint32_t virtqueueByteSize = descriptorTableSize + driverAreaSize + driverAreaPadding + deviceAreaSize;
 
     // Allocate memory for virtqueue + extra bytes for 4096-byte alignment
-    uint8_t *virtqueue_mem = 0;
-    heap_kernel_alloc(virtqueue_mem,virtqueueByteSize + 4095);
+    uint32_t *virtqueue_mem = heap_kernel_alloc(virtqueueByteSize + 4095, 0);
 
     // Zero virtqueue memory
     memset(virtqueue_mem, 0, virtqueueByteSize + 4095);
