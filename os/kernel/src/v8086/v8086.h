@@ -20,7 +20,7 @@
 #define DIRECTION_FLAG_BIT 10u
 #define OVERFLOW_FLAG_BIT 11u
 
-#define DEBUG_V8086
+//#define DEBUG_V8086
 //#define TEST_V8086
 
 typedef enum _segment_register_select {
