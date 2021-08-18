@@ -70,8 +70,8 @@ Main:
     ; Search for file name in DES
     ;;cx = 11 - file name length
     ;;dl = drive number
-    ;;es:di = pointer to DES file name
-    ;;ds:si = pointer to search file name or dap
+    ;;ds:si = pointer to DES file name, or dap
+    ;;es:di = pointer to search file name
     ;;bx = index of Sector DES Search
 
     ;; Initialize DAP
@@ -98,19 +98,31 @@ FileNameLoop:
     xor bx, bx
 DESPerSectorSearch:
     mov cx, 11 ; Need to set every loop beacuse cx is affected later 
-    mov si, LoaderFileName
-    mov di, [MemoryLayout.DESPlace + DES.Filename + bx]
-    mov al, [MemoryLayout.DESPlace + DES.Filename + bx] ; write first letter of filename
+    mov di, LoaderFileName
+    mov si, MemoryLayout.DESPlace + DES.Filename
+    add si, bx
+
+    mov ax, [si + DES.Attribute] ; checking attributes
+    cmp ax, 0xf
+    je WrongEntry ; The entry is vfat long name
+    and ax, 0x58
+    jnz WrongEntry ; The entry is label, directory, device
+    push bx
+    mov al, [si] ; write first letter of LoaderName
+    call WriteCharacter
+    mov al, [di] ; write first letter of filename
     call WriteCharacter
     mov al, 0x0d ;CR LF - new line
     call WriteCharacter
     mov al, 0x0a
     call WriteCharacter
-    repne cmpsb ; compare file names
+    pop bx
+    repe cmpsb ; compare file names
 
     ; File found, jump.
     je FileFound
     
+WrongEntry:
     ; File not found.
     add bx, DES_size
 
@@ -138,9 +150,74 @@ DESPerSectorSearch:
     jmp FileNameLoop
 
 FileFound:
-    mov al, 0x4b
-    call WriteCharacter
-    hlt
+    ; Save loader structure for feature use
+    sub si, 11 ; go back to begin of file name
+    mov di, MemoryLayout.DESPlace + DES.Filename
+    mov cx, DES_size
+    rep movsb
+
+    ;Loading clusters
+    ;;dl = drive number
+    ;;ds:si = DAP
+    ;;ah = 0x42
+
+    ;Calculate sector where start
+    xor edx, edx
+    movzx eax, word [MemoryLayout.DESPlace + DES.StartCluster]
+    movzx bx, byte [MemoryLayout.BootSector + FAT.LogicalSectorsPerCluster]
+    mul bx
+    shl edx, 16
+    or edx, eax
+    push edx ;;start sector
+
+    ;Calculate how many sectors to copy
+    mov eax, [MemoryLayout.DESPlace + DES.FileSize]
+    mov edx, eax
+    shr edx, 16
+    mov bx, word [MemoryLayout.BootSector + FAT.BytesPerLogicalSector]
+    div bx
+    cmp dx, 0
+    je NoNeedToRoundUp
+    inc ax ;;need to round up
+
+NoNeedToRoundUp:
+    ;;in eax we have number of sectors to read
+    pop edx
+    mov [MemoryLayout.DAPPlace + DAP.LowerStartLBA], edx
+    mov dword [MemoryLayout.DAPPlace + DAP.UpperStartLBA], 0
+    mov word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], 0xf000
+    mov word [MemoryLayout.DAPPlace + DAP.TransferBufferSegment], 0
+    ;; assume that non segment registers are changed
+    mov word [MemoryLayout.DAPPlace + DAP.NumberOfSectorsToTransfer], ax
+    ;push dx
+    mov dl, [MemoryLayout.LocalVariablesPlace + LocalVariables.DriveNumber]
+    mov si, MemoryLayout.DAPPlace + DAP.SizeOfPacket
+    int 13h
+
+    jmp 0x0000:0xF000
+
+    ;;Calculate which LBA contains File in FAT Table
+    ;movzx eax, word [MemoryLayout.DESPlace + DES.StartCluster]
+    ;xor edx, edx
+    ;shld dx, ax, 1
+    ;shl ax, 1
+    ;div word [MemoryLayout.BootSector + FAT.BytesPerLogicalSector]
+    ;; In AX we have LBA offset in DX we have byte offset of cluster
+
+    ;movzx ebx, ax
+    ;add ebx, [MemoryLayout.LocalVariablesPlace + LocalVariables.FatRegionStart]
+    ;mov [MemoryLayout.DAPPlace + DAP.LowerStartLBA], ebx
+    ;mov dword [MemoryLayout.DAPPlace + DAP.UpperStartLBA], 0
+    ;mov di, MemoryLayout.FATTableSlice
+    ;mov [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], di
+    ;; assume that non segment registers are changed
+    ;mov word [MemoryLayout.DAPPlace + DAP.NumberOfSectorsToTransfer], 8
+    ;push dx
+    ;mov dl, [MemoryLayout.LocalVariablesPlace + LocalVariables.DriveNumber]
+    ;mov si, MemoryLayout.DAPPlace + DAP.SizeOfPacket
+    ;int 13h
+    ;pop dx
+    ;add di, dx ;;here we go we have cluster 
 
 FileNotFound:
     mov al, 0x4e

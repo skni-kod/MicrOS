@@ -18,4 +18,5 @@ struc MemoryLayout
     .DAPPlace resb DAP_size
     .LocalVariablesPlace resb LocalVariables_size
     .DESPlace resb DES_size
+    .FATTableSlice resb 4096
 endstruc
