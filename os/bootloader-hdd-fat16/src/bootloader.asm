@@ -9,7 +9,7 @@
 ; |------------|---------|------------|------------|----------------|---------|------------|------------|---------|---------|------------|------------|------------|------------|
 ; {                                        Segment 1                                                       }{                            Segment 2 - n                          }
 
-%include "src/memory_layout.asm" ; 16 Bytes of DAP structure
+%include "src/memory_layout.asm" ; memory layout struct
 
 [BITS 16]
 [ORG FAT.BoostrapCode]
