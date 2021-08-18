@@ -119,6 +119,9 @@ DESPerSectorSearch:
     pop bx
     repe cmpsb ; compare file names
 
+    mov ah, 0x0
+    int 16h ;try to wait for keyboard
+
     ; File found, jump.
     je FileFound
     
@@ -128,8 +131,6 @@ WrongEntry:
 
     ; Check if any root directory entries
     dec word [MemoryLayout.LocalVariablesPlace + LocalVariables.DESEntryCounter]
-    mov ah, 0x0
-    int 16h ;try to wait for keyboard
     jz FileNotFound
     
     ; Check if end of loaded sector
