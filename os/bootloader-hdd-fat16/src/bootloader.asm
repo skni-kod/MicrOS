@@ -11,6 +11,7 @@
 
 %include "src/memory_layout.asm" ; memory layout struct
 
+
 [BITS 16]
 [ORG FAT.BoostrapCode]
 
