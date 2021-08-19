@@ -18,9 +18,9 @@ Main:
     ; Disable interrupt and clear direction flag
     cli
     cld
-    
+
     ; Store active partition 
-    mov cx, 16
+    mov cx, PTE_size
     mov ax, 0x7c0
     mov es, ax
     mov di, MemoryLayout.PTEPlace + PTE.PartitionAttributes
@@ -49,7 +49,7 @@ Main:
     ; Root Directory Region
     movzx ax, [MemoryLayout.BootSector + FAT.NumberOfFATs]
     mul word [MemoryLayout.BootSector + FAT.LogicalSectorsPerFAT]
-    shr edx, 16
+    shl edx, 16
     mov dx, ax
     add ebx, edx
     mov [MemoryLayout.LocalVariablesPlace + LocalVariables.RootDirectoryRegionStart], ebx
@@ -108,8 +108,8 @@ DESPerSectorSearch:
     and ax, 0x58
     jnz WrongEntry ; The entry is label, directory, device
     push bx
-    mov al, [si] ; write first letter of LoaderName
-    call WriteCharacter
+    ;;mov al, [si] ; write first letter of LoaderName
+    ;;call WriteCharacter
     mov al, [di] ; write first letter of filename
     call WriteCharacter
     mov al, 0x0d ;CR LF - new line
@@ -157,18 +157,45 @@ FileFound:
     mov cx, DES_size
     rep movsb
 
+;NotDupa:
+;    mov cx, DES_size
+;    mov di, MemoryLayout.DESPlace + DES.Filename
+;WriteBytes:
+;    mov al, [di]
+;    inc di
+;    call WriteCharacter
+;    loop WriteBytes
+ ;   mov al, 0x65
+ ;   call WriteCharacter 
+
     ;Loading clusters
     ;;dl = drive number
     ;;ds:si = DAP
     ;;ah = 0x42
 
     ;Calculate sector where start
+    ;; Calculate Data Region Start
+    mov ax, [MemoryLayout.BootSector + FAT.NumberOfDirectoryEntries]
+    xor dx, dx
+    shld dx, ax, 5
+    shl ax, 5
+    div word [MemoryLayout.BootSector + FAT.BytesPerLogicalSector]
+    movzx eax, ax
+    add eax, dword [MemoryLayout.LocalVariablesPlace + LocalVariables.RootDirectoryRegionStart]
+    push eax
+
+    ;; Translate start cluster to start sector
     xor edx, edx
-    movzx eax, word [MemoryLayout.DESPlace + DES.StartCluster]
+    mov ax, word [MemoryLayout.DESPlace + DES.StartCluster]
+    sub ax, 2
     movzx bx, byte [MemoryLayout.BootSector + FAT.LogicalSectorsPerCluster]
     mul bx
     shl edx, 16
-    or edx, eax
+    mov dx, ax
+
+    ;; Add Data Region Start to Start Sector
+    pop eax
+    add edx, eax
     push edx ;;start sector
 
     ;Calculate how many sectors to copy
@@ -193,7 +220,28 @@ NoNeedToRoundUp:
     ;push dx
     mov dl, [MemoryLayout.LocalVariablesPlace + LocalVariables.DriveNumber]
     mov si, MemoryLayout.DAPPlace + DAP.SizeOfPacket
+    mov ah, 0x42
     int 13h
+
+;    jnc NotDupa
+;    mov al, ah
+;    call WriteCharacter
+;    mov al, 0x57
+;   call WriteCharacter
+
+    
+NotDupa:
+    mov cx, 20
+    mov di, 0xf000
+    xor ax, ax
+    mov ds, ax
+WriteBytes:
+    mov al, [di]
+    inc di
+    call WriteCharacter
+    loop WriteBytes
+    mov al, 'f'
+    call WriteCharacter 
 
     jmp 0x0000:0xF000
 

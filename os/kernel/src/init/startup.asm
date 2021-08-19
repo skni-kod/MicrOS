@@ -134,6 +134,10 @@ gdt_description:
 main:
     ; Load memory map before we will switch to the protected mode
     ; Buffer segment
+
+    call realstr
+    hlt
+
     mov bx, 0x0000
     mov es, bx
 
