@@ -136,6 +136,7 @@ main:
     ; Buffer segment
 
     call realstr
+    cli
     hlt
 
     mov bx, 0x0000
@@ -214,7 +215,9 @@ a20_fast_a20_check:
 
 ; Enabled Line A20
 a20_enabled:
-    ;call realstr 
+    ;;call realstr 
+    ;;cli
+    ;;hlt
     ; Set protected mode flag
     mov eax, cr0
     or eax, 1

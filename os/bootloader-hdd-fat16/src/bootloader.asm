@@ -108,20 +108,20 @@ DESPerSectorSearch:
     je WrongEntry ; The entry is vfat long name
     and ax, 0x58
     jnz WrongEntry ; The entry is label, directory, device
-    push bx
+    ;;push bx
     ;;mov al, [si] ; write first letter of LoaderName
     ;;call WriteCharacter
-    mov al, [di] ; write first letter of filename
-    call WriteCharacter
-    mov al, 0x0d ;CR LF - new line
-    call WriteCharacter
-    mov al, 0x0a
-    call WriteCharacter
-    pop bx
+    ;;mov al, [di] ; write first letter of filename
+    ;;call WriteCharacter
+    ;;mov al, 0x0d ;CR LF - new line
+    ;;call WriteCharacter
+    ;;mov al, 0x0a
+    ;;call WriteCharacter
+    ;;pop bx
     repe cmpsb ; compare file names
 
-    mov ah, 0x0
-    int 16h ;try to wait for keyboard
+    ;;mov ah, 0x0
+    ;;int 16h ;try to wait for keyboard
 
     ; File found, jump.
     je FileFound
@@ -209,20 +209,31 @@ FileFound:
     je NoNeedToRoundUp
     inc ax ;;need to round up
 
+    
 NoNeedToRoundUp:
     ;;in eax we have number of sectors to read
     pop edx
+    movzx ecx, ax
     mov [MemoryLayout.DAPPlace + DAP.LowerStartLBA], edx
     mov dword [MemoryLayout.DAPPlace + DAP.UpperStartLBA], 0
-    mov word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], 0xf000
-    mov word [MemoryLayout.DAPPlace + DAP.TransferBufferSegment], 0
+    mov word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], 0
+    mov word [MemoryLayout.DAPPlace + DAP.TransferBufferSegment], 0xf00
     ;; assume that non segment registers are changed
-    mov word [MemoryLayout.DAPPlace + DAP.NumberOfSectorsToTransfer], ax
+    mov word [MemoryLayout.DAPPlace + DAP.NumberOfSectorsToTransfer], 1
     ;push dx
+ReadSector:
     mov dl, [MemoryLayout.LocalVariablesPlace + LocalVariables.DriveNumber]
     mov si, MemoryLayout.DAPPlace + DAP.SizeOfPacket
     mov ah, 0x42
     int 13h
+    mov ax, word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset]
+    add ax, word [MemoryLayout.BootSector + FAT.BytesPerLogicalSector]
+    jno NotSegmentOverflow
+    inc word [MemoryLayout.DAPPlace + DAP.TransferBufferSegment]
+NotSegmentOverflow:
+    mov [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], ax
+    inc word [MemoryLayout.DAPPlace + DAP.LowerStartLBA]
+    loop ReadSector
 
 ;    jnc NotDupa
 ;    mov al, ah
@@ -233,18 +244,19 @@ NoNeedToRoundUp:
     
 NotDupa:
     mov cx, 20
-    mov di, 0xf000
+    mov di, 0xf200
     xor ax, ax
     mov ds, ax
 WriteBytes:
-    mov al, [di]
-    inc di
+   mov al, [di]
+   inc di
     call WriteCharacter
-    loop WriteBytes
-    mov al, 'f'
-    call WriteCharacter 
+   loop WriteBytes
+   mov al, 'f'
+   call WriteCharacter 
 
-    jmp 0x0000:0xF000
+    hlt
+    ;jmp 0x0000:0xF000
 
     ;;Calculate which LBA contains File in FAT Table
     ;movzx eax, word [MemoryLayout.DESPlace + DES.StartCluster]
