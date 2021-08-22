@@ -216,20 +216,30 @@ NoNeedToRoundUp:
     movzx ecx, ax
     mov [MemoryLayout.DAPPlace + DAP.LowerStartLBA], edx
     mov dword [MemoryLayout.DAPPlace + DAP.UpperStartLBA], 0
-    mov word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], 0
-    mov word [MemoryLayout.DAPPlace + DAP.TransferBufferSegment], 0xf00
+    mov word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], 0xf000
+    mov word [MemoryLayout.DAPPlace + DAP.TransferBufferSegment], 0x0
     ;; assume that non segment registers are changed
     mov word [MemoryLayout.DAPPlace + DAP.NumberOfSectorsToTransfer], 1
     ;push dx
+    ;mov al, 'd'
+    ;call WriteCharacter
 ReadSector:
+    ;mov al, 'x'
+    ;call WriteCharacter
     mov dl, [MemoryLayout.LocalVariablesPlace + LocalVariables.DriveNumber]
     mov si, MemoryLayout.DAPPlace + DAP.SizeOfPacket
     mov ah, 0x42
     int 13h
     mov ax, word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset]
+    push ax
+    ;mov ax, word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset]
+    mov al, ah
+    sub al, 0xcf
+    ;call WriteCharacter
+    pop ax
     add ax, word [MemoryLayout.BootSector + FAT.BytesPerLogicalSector]
-    jno NotSegmentOverflow
-    inc word [MemoryLayout.DAPPlace + DAP.TransferBufferSegment]
+    jnc NotSegmentOverflow
+    add word [MemoryLayout.DAPPlace + DAP.TransferBufferSegment], 0x1000
 NotSegmentOverflow:
     mov [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], ax
     inc word [MemoryLayout.DAPPlace + DAP.LowerStartLBA]
@@ -242,21 +252,26 @@ NotSegmentOverflow:
 ;   call WriteCharacter
 
     
-NotDupa:
-    mov cx, 20
-    mov di, 0xf200
+;NotDupa:
+;    mov cx, 20
+;    mov di, 0xf200
+;    xor ax, ax
+;    mov ds, ax
+;WriteBytes:
+;   mov al, [di]
+ ;  inc di
+;    call WriteCharacter
+;   loop WriteBytes
+;   mov al, 'f'
+;   call WriteCharacter 
+
+    ;hlt
     xor ax, ax
     mov ds, ax
-WriteBytes:
-   mov al, [di]
-   inc di
-    call WriteCharacter
-   loop WriteBytes
-   mov al, 'f'
-   call WriteCharacter 
-
-    hlt
-    ;jmp 0x0000:0xF000
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    jmp 0x0000:0xF000
 
     ;;Calculate which LBA contains File in FAT Table
     ;movzx eax, word [MemoryLayout.DESPlace + DES.StartCluster]

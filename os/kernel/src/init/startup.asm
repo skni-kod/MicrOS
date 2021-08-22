@@ -135,9 +135,9 @@ main:
     ; Load memory map before we will switch to the protected mode
     ; Buffer segment
 
-    call realstr
+    ;call realstr
     cli
-    hlt
+    ;hlt
 
     mov bx, 0x0000
     mov es, bx
@@ -215,14 +215,22 @@ a20_fast_a20_check:
 
 ; Enabled Line A20
 a20_enabled:
-    ;;call realstr 
-    ;;cli
-    ;;hlt
+    ;
+    cli
+    ;call realstr 
+    ;hlt
     ; Set protected mode flag
     mov eax, cr0
     or eax, 1
     mov cr0, eax
-
+dupa:
+    ;mov ecx, 0xffffffff
+    ;loop dword dupa
+    ;call dword 0x08:protstr
+dupa2:
+    ;mov ecx, 0xffffffff
+    ;loop dword dupa2
+    ;hlt
     ; Jump to protected area 
     jmp dword 0x08:main_protected_area
 
@@ -394,6 +402,7 @@ a20wait2:
         test    al,1
         jz      a20wait2
         ret
+      
     
 [BITS 32]
 main_protected_area:
@@ -436,7 +445,6 @@ main_protected_area:
     ;call protstr
     ;cli
     ;hlt
-
 
     ; Jump to kmain and start kernel work
     extern kmain
@@ -592,7 +600,9 @@ protstr:
     
     mov edi, 0xb8000
     mov ax, 0x0941
-    mov ecx, 10
+    mov ecx, 20
     rep stosw
+
+    hlt
 
     ret
