@@ -415,6 +415,11 @@ int kmain()
     
     switch_active_terminal(0);
     
+    //v8086_machine = v8086_create_machine();
+    //v8086_set_386_instruction_set(v8086_machine);
+    //idt_attach_interrupt_handler(0, v8086_BIOS_timer_interrupt);
+    //v8086_call_com_program(v8086_machine, "A:/TC.COM");
+
     process_manager_run();  
 
     while (1);

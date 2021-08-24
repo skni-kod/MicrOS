@@ -15,6 +15,16 @@
 [BITS 16]
 [ORG FAT.BoostrapCode]
 
+BYTES_PER_SECTOR equ 512; assuming that disk has 512 bytes per sector
+NUMBER_OF_DES_ENTRIES equ 512; assuming that in FAT 16 Root Directory can contains 512 entries
+DES_ENTRIES_PER_SECTOR equ 32; assuming that we load 32 DES entries in one sector
+
+; KNOW PLACES OF NEEDED VARIABLES:
+;[ebp - 2] - place of drive number (byte)
+;[ebp - 6] - place of Root Directory Region (word)
+;[ebp - 8] - DESEntryCounter (word)
+
+
 Main:
     ; Disable interrupt and clear direction flag
     cli
@@ -39,13 +49,12 @@ Main:
     mov es, ax
 
     ; Store drive number to variable
-    mov [MemoryLayout.LocalVariablesPlace + LocalVariables.DriveNumber], dl
+    push dx ;;[ebp - 2] - place of drive number (byte)
 
     ; Caluclate needed things
     ; FAT Region
     movzx ebx, word [MemoryLayout.BootSector + FAT.ReservedLogicalSectors]
     add ebx, [MemoryLayout.PTEPlace + PTE.PartitionRegionStart]
-    mov [MemoryLayout.LocalVariablesPlace + LocalVariables.FatRegionStart], ebx
 
     ; Root Directory Region
     movzx ax, [MemoryLayout.BootSector + FAT.NumberOfFATs]
@@ -53,20 +62,15 @@ Main:
     shl edx, 16
     mov dx, ax
     add ebx, edx
-    mov [MemoryLayout.LocalVariablesPlace + LocalVariables.RootDirectoryRegionStart], ebx
-
-    ; DES Entries per Sector
-    mov ax, [MemoryLayout.BootSector + FAT.BytesPerLogicalSector]
-    mov bh, 32 ;; 32 bytes per DES
-    div bh
-    mov [MemoryLayout.LocalVariablesPlace + LocalVariables.DESEntriesPerSector], al
+    push ebx ;;[ebp - 6] - place of Root Directory Region (word)
 
     ; Make Check if Int13h extension exisis
-    mov dl, [MemoryLayout.LocalVariablesPlace + LocalVariables.DriveNumber]
+    mov dl, [ebp - 2]
     call CheckInt13Extenstion
 
     ; If no exists... fail...
     jc Fail
+
 
     ; Search for file name in DES
     ;;cx = 11 - file name length
@@ -79,16 +83,16 @@ Main:
     mov byte [MemoryLayout.DAPPlace + DAP.SizeOfPacket], 0x10
     mov byte [MemoryLayout.DAPPlace + DAP.Reserved], 0x0
     mov word [MemoryLayout.DAPPlace + DAP.NumberOfSectorsToTransfer], 0x1
-    mov di, MemoryLayout.DESPlace + DES.Filename
-    mov [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], di
+    mov word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], MemoryLayout.DESPlace + DES.Filename
     mov [MemoryLayout.DAPPlace + DAP.TransferBufferSegment], es
-    mov di, [MemoryLayout.LocalVariablesPlace + LocalVariables.RootDirectoryRegionStart]
+    mov di, [ebp - 6]
     mov [MemoryLayout.DAPPlace + DAP.LowerStartLBA], di
     mov dword [MemoryLayout.DAPPlace + DAP.UpperStartLBA], 0x0
 
     ;; Initlize Loop Varaibles
-    mov bx, [MemoryLayout.BootSector + FAT.NumberOfDirectoryEntries]
-    mov [MemoryLayout.LocalVariablesPlace + LocalVariables.DESEntryCounter], bx
+    push word NUMBER_OF_DES_ENTRIES ;;[ebp - 8] - DESEntryCounter (word)
+    ;;mov bx, [MemoryLayout.BootSector + FAT.NumberOfDirectoryEntries]
+    ;;mov [MemoryLayout.LocalVariablesPlace + LocalVariables.DESEntryCounter], bx
 
 FileNameLoop:
     ; Read Sector
@@ -104,24 +108,12 @@ DESPerSectorSearch:
     add si, bx
 
     mov ax, [si + DES.Attribute] ; checking attributes
-    cmp ax, 0xf
-    je WrongEntry ; The entry is vfat long name
     and ax, 0x58
     jnz WrongEntry ; The entry is label, directory, device
-    ;;push bx
-    ;;mov al, [si] ; write first letter of LoaderName
-    ;;call WriteCharacter
-    ;;mov al, [di] ; write first letter of filename
-    ;;call WriteCharacter
-    ;;mov al, 0x0d ;CR LF - new line
-    ;;call WriteCharacter
-    ;;mov al, 0x0a
-    ;;call WriteCharacter
-    ;;pop bx
+    not ax
+    test ax, 0xf
+    jz WrongEntry ; The entry is vfat long name
     repe cmpsb ; compare file names
-
-    ;;mov ah, 0x0
-    ;;int 16h ;try to wait for keyboard
 
     ; File found, jump.
     je FileFound
@@ -131,14 +123,14 @@ WrongEntry:
     add bx, DES_size
 
     ; Check if any root directory entries
-    dec word [MemoryLayout.LocalVariablesPlace + LocalVariables.DESEntryCounter]
+    dec word [ebp - 8]
     jz FileNotFound
     
     ; Check if end of loaded sector
     mov ax, bx
     mov cl, DES_size
     div cl
-    cmp al, [MemoryLayout.LocalVariablesPlace + LocalVariables.DESEntriesPerSector]
+    cmp al, DES_ENTRIES_PER_SECTOR
     
     ; The are more entries to analyze in loaded sector
     jne DESPerSectorSearch
@@ -158,17 +150,6 @@ FileFound:
     mov cx, DES_size
     rep movsb
 
-;NotDupa:
-;    mov cx, DES_size
-;    mov di, MemoryLayout.DESPlace + DES.Filename
-;WriteBytes:
-;    mov al, [di]
-;    inc di
-;    call WriteCharacter
-;    loop WriteBytes
- ;   mov al, 0x65
- ;   call WriteCharacter 
-
     ;Loading clusters
     ;;dl = drive number
     ;;ds:si = DAP
@@ -176,13 +157,8 @@ FileFound:
 
     ;Calculate sector where start
     ;; Calculate Data Region Start
-    mov ax, [MemoryLayout.BootSector + FAT.NumberOfDirectoryEntries]
-    xor dx, dx
-    shld dx, ax, 5
-    shl ax, 5
-    div word [MemoryLayout.BootSector + FAT.BytesPerLogicalSector]
-    movzx eax, ax
-    add eax, dword [MemoryLayout.LocalVariablesPlace + LocalVariables.RootDirectoryRegionStart]
+    mov eax, (NUMBER_OF_DES_ENTRIES * 32) / BYTES_PER_SECTOR
+    add eax, dword [ebp - 6]
     push eax
 
     ;; Translate start cluster to start sector
@@ -203,7 +179,7 @@ FileFound:
     mov eax, [MemoryLayout.DESPlace + DES.FileSize]
     mov edx, eax
     shr edx, 16
-    mov bx, word [MemoryLayout.BootSector + FAT.BytesPerLogicalSector]
+    mov bx, BYTES_PER_SECTOR
     div bx
     cmp dx, 0
     je NoNeedToRoundUp
@@ -220,24 +196,13 @@ NoNeedToRoundUp:
     mov word [MemoryLayout.DAPPlace + DAP.TransferBufferSegment], 0x0
     ;; assume that non segment registers are changed
     mov word [MemoryLayout.DAPPlace + DAP.NumberOfSectorsToTransfer], 1
-    ;push dx
-    ;mov al, 'd'
-    ;call WriteCharacter
 ReadSector:
-    ;mov al, 'x'
-    ;call WriteCharacter
-    mov dl, [MemoryLayout.LocalVariablesPlace + LocalVariables.DriveNumber]
+    mov dl, [ebp - 2]
     mov si, MemoryLayout.DAPPlace + DAP.SizeOfPacket
     mov ah, 0x42
     int 13h
     mov ax, word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset]
-    push ax
-    ;mov ax, word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset]
-    mov al, ah
-    sub al, 0xcf
-    ;call WriteCharacter
-    pop ax
-    add ax, word [MemoryLayout.BootSector + FAT.BytesPerLogicalSector]
+    add ax, BYTES_PER_SECTOR
     jnc NotSegmentOverflow
     add word [MemoryLayout.DAPPlace + DAP.TransferBufferSegment], 0x1000
 NotSegmentOverflow:
@@ -245,56 +210,12 @@ NotSegmentOverflow:
     inc word [MemoryLayout.DAPPlace + DAP.LowerStartLBA]
     loop ReadSector
 
-;    jnc NotDupa
-;    mov al, ah
-;    call WriteCharacter
-;    mov al, 0x57
-;   call WriteCharacter
-
-    
-;NotDupa:
-;    mov cx, 20
-;    mov di, 0xf200
-;    xor ax, ax
-;    mov ds, ax
-;WriteBytes:
-;   mov al, [di]
- ;  inc di
-;    call WriteCharacter
-;   loop WriteBytes
-;   mov al, 'f'
-;   call WriteCharacter 
-
-    ;hlt
     xor ax, ax
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
-    jmp 0x0000:0xF000
-
-    ;;Calculate which LBA contains File in FAT Table
-    ;movzx eax, word [MemoryLayout.DESPlace + DES.StartCluster]
-    ;xor edx, edx
-    ;shld dx, ax, 1
-    ;shl ax, 1
-    ;div word [MemoryLayout.BootSector + FAT.BytesPerLogicalSector]
-    ;; In AX we have LBA offset in DX we have byte offset of cluster
-
-    ;movzx ebx, ax
-    ;add ebx, [MemoryLayout.LocalVariablesPlace + LocalVariables.FatRegionStart]
-    ;mov [MemoryLayout.DAPPlace + DAP.LowerStartLBA], ebx
-    ;mov dword [MemoryLayout.DAPPlace + DAP.UpperStartLBA], 0
-    ;mov di, MemoryLayout.FATTableSlice
-    ;mov [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], di
-    ;; assume that non segment registers are changed
-    ;mov word [MemoryLayout.DAPPlace + DAP.NumberOfSectorsToTransfer], 8
-    ;push dx
-    ;mov dl, [MemoryLayout.LocalVariablesPlace + LocalVariables.DriveNumber]
-    ;mov si, MemoryLayout.DAPPlace + DAP.SizeOfPacket
-    ;int 13h
-    ;pop dx
-    ;add di, dx ;;here we go we have cluster 
+    jmp 0x0000:0xF000 ;;JUMP TO KERNEL
 
 FileNotFound:
     mov al, 0x4e

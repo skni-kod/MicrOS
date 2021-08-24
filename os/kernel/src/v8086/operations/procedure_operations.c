@@ -80,18 +80,19 @@ int16_t far_ret_imm(v8086* machine)
 
 int16_t perform_interrupt(v8086* machine, uint8_t interrupt_number)
 {
+
     if(interrupt_number == 0x21 && machine->regs.h.ah == 0x4c){
-        printf("Wszedlem\n");
+        vga_printstring("Wszedlem\n");
         machine->sregs.cs = 0x7c0;
         machine->regs.w.sp = 0xFFFE - 6;
         return far_ret(machine);
     }
     else if(interrupt_number == 0x21 && machine->regs.h.ah == 0x40 && machine->regs.x.bx == 1)
     {
-        printf("Writting to screen\n");
+        vga_printstring("Writting to screen\n");
         for(uint32_t i = 0; i < machine->regs.x.cx; i++)
         {
-            putchar(machine->Memory[get_absolute_address(machine->sregs.ds, machine->regs.x.dx + i)]);
+            vga_printchar(machine->Memory[get_absolute_address(machine->sregs.ds, machine->regs.x.dx + i)]);
         }
         machine->regs.x.ax = machine->regs.x.cx;
         bit_clear(machine->regs.x.flags, 1u << CARRY_FLAG_BIT);
