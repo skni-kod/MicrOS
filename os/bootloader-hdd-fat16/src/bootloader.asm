@@ -20,9 +20,10 @@ NUMBER_OF_DES_ENTRIES equ 512; assuming that in FAT 16 Root Directory can contai
 DES_ENTRIES_PER_SECTOR equ 32; assuming that we load 32 DES entries in one sector
 
 ; KNOW PLACES OF NEEDED VARIABLES:
-;[ebp - 2] - place of drive number (byte)
-;[ebp - 6] - place of Root Directory Region (word)
-;[ebp - 8] - DESEntryCounter (word)
+;[ebp - 4] - place of PartitionRegionStart
+;[ebp - 6] - place of drive number (byte)
+;[ebp - 10] - place of Root Directory Region (dword)
+;[ebp - 12] - DESEntryCounter (word)
 
 
 Main:
@@ -31,11 +32,11 @@ Main:
     cld
 
     ; Store active partition 
-    mov cx, PTE_size
-    mov ax, 0x7c0
-    mov es, ax
-    mov di, MemoryLayout.PTEPlace + PTE.PartitionAttributes
-    rep movsb
+    ;mov cx, PTE_size
+    ;mov ax, 0x7c0
+    ;mov es, ax
+    ;mov di, MemoryLayout.PTEPlace + PTE.PartitionAttributes
+    ;rep movsb
 
     ; Set stackpointer under bootloader
     xor ax, ax
@@ -43,18 +44,21 @@ Main:
     mov esp, 0x7C00
     mov ebp, esp
 
+    ; Store active partition region start
+    push dword [si + PTE.PartitionRegionStart]
+
     ; Initialize data segment register
     mov ax, 0x7c0
     mov ds, ax
     mov es, ax
 
     ; Store drive number to variable
-    push dx ;;[ebp - 2] - place of drive number (byte)
+    push dx ;;[ebp - 6] - place of drive number (byte)
 
     ; Caluclate needed things
     ; FAT Region
     movzx ebx, word [MemoryLayout.BootSector + FAT.ReservedLogicalSectors]
-    add ebx, [MemoryLayout.PTEPlace + PTE.PartitionRegionStart]
+    add ebx, dword [ebp - 4]
 
     ; Root Directory Region
     movzx ax, [MemoryLayout.BootSector + FAT.NumberOfFATs]
@@ -62,10 +66,10 @@ Main:
     shl edx, 16
     mov dx, ax
     add ebx, edx
-    push ebx ;;[ebp - 6] - place of Root Directory Region (word)
+    push ebx ;;[ebp - 10] - place of Root Directory Region (word)
 
     ; Make Check if Int13h extension exisis
-    mov dl, [ebp - 2]
+    mov dl, [ebp - 6]
     call CheckInt13Extenstion
 
     ; If no exists... fail...
@@ -85,12 +89,12 @@ Main:
     mov word [MemoryLayout.DAPPlace + DAP.NumberOfSectorsToTransfer], 0x1
     mov word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], MemoryLayout.DESPlace + DES.Filename
     mov [MemoryLayout.DAPPlace + DAP.TransferBufferSegment], es
-    mov di, [ebp - 6]
+    mov di, [ebp - 10]
     mov [MemoryLayout.DAPPlace + DAP.LowerStartLBA], di
     mov dword [MemoryLayout.DAPPlace + DAP.UpperStartLBA], 0x0
 
     ;; Initlize Loop Varaibles
-    push word NUMBER_OF_DES_ENTRIES ;;[ebp - 8] - DESEntryCounter (word)
+    push word NUMBER_OF_DES_ENTRIES ;;[ebp - 12] - DESEntryCounter (word)
     ;;mov bx, [MemoryLayout.BootSector + FAT.NumberOfDirectoryEntries]
     ;;mov [MemoryLayout.LocalVariablesPlace + LocalVariables.DESEntryCounter], bx
 
@@ -123,7 +127,7 @@ WrongEntry:
     add bx, DES_size
 
     ; Check if any root directory entries
-    dec word [ebp - 8]
+    dec word [ebp - 12]
     jz FileNotFound
     
     ; Check if end of loaded sector
@@ -158,7 +162,7 @@ FileFound:
     ;Calculate sector where start
     ;; Calculate Data Region Start
     mov eax, (NUMBER_OF_DES_ENTRIES * 32) / BYTES_PER_SECTOR
-    add eax, dword [ebp - 6]
+    add eax, dword [ebp - 10]
     push eax
 
     ;; Translate start cluster to start sector
@@ -197,7 +201,7 @@ NoNeedToRoundUp:
     ;; assume that non segment registers are changed
     mov word [MemoryLayout.DAPPlace + DAP.NumberOfSectorsToTransfer], 1
 ReadSector:
-    mov dl, [ebp - 2]
+    mov dl, [ebp - 6]
     mov si, MemoryLayout.DAPPlace + DAP.SizeOfPacket
     mov ah, 0x42
     int 13h
