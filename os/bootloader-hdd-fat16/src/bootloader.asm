@@ -41,8 +41,8 @@ Main:
     ; Set stackpointer under bootloader
     xor ax, ax
     mov ss, ax
-    mov esp, 0x7C00
-    mov ebp, esp
+    mov sp, 0x7C00
+    mov bp, sp
 
     ; Store active partition region start
     push dword [si + PTE.PartitionRegionStart]
@@ -58,9 +58,14 @@ Main:
     ; Caluclate needed things
     ; FAT Region
     movzx ebx, word [MemoryLayout.BootSector + FAT.ReservedLogicalSectors]
-    add ebx, dword [ebp - 4]
+    add ebx, dword [bp - 4]
 
     ; Root Directory Region
+    ;movzx eax, word [MemoryLayout.BootSector + FAT.LogicalSectorsPerFAT]
+    ;movzx edx, byte [MemoryLayout.BootSector + FAT.NumberOfFATs]
+    ;imul eax, edx
+    ;add ebx, edx
+    ;push ebx ;;[ebp - 10] - place of Root Directory Region (word)
     movzx ax, [MemoryLayout.BootSector + FAT.NumberOfFATs]
     mul word [MemoryLayout.BootSector + FAT.LogicalSectorsPerFAT]
     shl edx, 16
@@ -69,7 +74,7 @@ Main:
     push ebx ;;[ebp - 10] - place of Root Directory Region (word)
 
     ; Make Check if Int13h extension exisis
-    mov dl, [ebp - 6]
+    mov dl, [bp - 6]
     call CheckInt13Extenstion
 
     ; If no exists... fail...
@@ -89,7 +94,7 @@ Main:
     mov word [MemoryLayout.DAPPlace + DAP.NumberOfSectorsToTransfer], 0x1
     mov word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], MemoryLayout.DESPlace + DES.Filename
     mov [MemoryLayout.DAPPlace + DAP.TransferBufferSegment], es
-    mov di, [ebp - 10]
+    mov di, [bp - 10]
     mov [MemoryLayout.DAPPlace + DAP.LowerStartLBA], di
     mov dword [MemoryLayout.DAPPlace + DAP.UpperStartLBA], 0x0
 
@@ -127,7 +132,7 @@ WrongEntry:
     add bx, DES_size
 
     ; Check if any root directory entries
-    dec word [ebp - 12]
+    dec word [bp - 12]
     jz FileNotFound
     
     ; Check if end of loaded sector
@@ -162,7 +167,7 @@ FileFound:
     ;Calculate sector where start
     ;; Calculate Data Region Start
     mov eax, (NUMBER_OF_DES_ENTRIES * 32) / BYTES_PER_SECTOR
-    add eax, dword [ebp - 10]
+    add eax, dword [bp - 10]
     push eax
 
     ;; Translate start cluster to start sector
@@ -180,15 +185,20 @@ FileFound:
     push edx ;;start sector
 
     ;Calculate how many sectors to copy
-    mov eax, [MemoryLayout.DESPlace + DES.FileSize]
-    mov edx, eax
-    shr edx, 16
-    mov bx, BYTES_PER_SECTOR
-    div bx
-    cmp dx, 0
-    je NoNeedToRoundUp
-    inc ax ;;need to round up
-
+    ;mov eax, [MemoryLayout.DESPlace + DES.FileSize]
+    ;mov edx, eax
+    ;shr edx, 16
+    ;mov bx, BYTES_PER_SECTOR
+    ;div bx
+    ;cmp dx, 0
+    ;je NoNeedToRoundUp
+    ;inc ax ;;need to round up
+    mov edx, [MemoryLayout.DESPlace + DES.FileSize]
+    mov eax, edx
+    and dx, 511
+    shr eax, 9
+    cmp dx, 1
+    sbb ax, -1
     
 NoNeedToRoundUp:
     ;;in eax we have number of sectors to read
@@ -201,7 +211,7 @@ NoNeedToRoundUp:
     ;; assume that non segment registers are changed
     mov word [MemoryLayout.DAPPlace + DAP.NumberOfSectorsToTransfer], 1
 ReadSector:
-    mov dl, [ebp - 6]
+    mov dl, [bp - 6]
     mov si, MemoryLayout.DAPPlace + DAP.SizeOfPacket
     mov ah, 0x42
     int 13h
@@ -214,11 +224,6 @@ NotSegmentOverflow:
     inc word [MemoryLayout.DAPPlace + DAP.LowerStartLBA]
     loop ReadSector
 
-    xor ax, ax
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
     jmp 0x0000:0xF000 ;;JUMP TO KERNEL
 
 FileNotFound:

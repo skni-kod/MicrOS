@@ -18,6 +18,11 @@
 ; %define PAGE_TABLES_BASE    0x0A000000
 ; %define PAGES_COUNT         6
 
+xor ax, ax
+mov ds, ax
+mov es, ax
+mov fs, ax
+mov gs, ax
 jmp main
 
 ; Function for displaying debug text in real mode
