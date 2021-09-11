@@ -9,6 +9,8 @@ v8086* machine = NULL;
 bool initialized = false;
 int currentBank = -1;
 uint8_t* mem_buff = (uint8_t*)0xc0000000 + 0xA0000;
+uint8_t *linear_buffer = 0;
+uint32_t page_index = 0;
 
 void VBE_initialize()
 {
@@ -150,6 +152,27 @@ VBEStatus VBE_set_video_mode(uint16_t mode_number, bool clear_screen)
     if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
     if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
     currentBank = -1;
+
+    svga_mode_information mode_info;
+    status = VBE_get_vesa_mode_information(&mode_info, mode_number);
+    if(status == VBE_OK)
+    {
+        if(mode_info.frame_buffor_phys_address != 0)
+        {
+            page_index = paging_get_first_free_page_index(1);
+            paging_map_page(mode_info.frame_buffor_phys_address/0x400000, page_index, false);
+            linear_buffer = (uint8_t*)(page_index * 0x400000)+ 0xc00000000;
+        }
+        else
+        {
+            if(page_index != 0)
+            {
+                paging_unmap_page(page_index);
+                page_index = 0;
+                linear_buffer = 0;
+            }
+        }
+    }
     return VBE_OK;
 }
 
@@ -624,4 +647,15 @@ void VBE_draw_pixel_8_8_8(uint32_t mode_width, uint32_t mode_height, uint32_t wi
     mem_buff[offset] = b;
     mem_buff[offset + 1] = g;
     mem_buff[offset + 2] = r;
+}
+
+void VBE_draw_pixel_8_8_8_linear(uint32_t mode_width, uint32_t mode_height, uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b)
+{
+    if (linear_buffer != 0)
+    {
+        uint32_t index = 3 * mode_width * y + 3 * x;
+        linear_buffer[index] = b;
+        linear_buffer[index+1] = g;
+        linear_buffer[index+2] = r;
+    }
 }
