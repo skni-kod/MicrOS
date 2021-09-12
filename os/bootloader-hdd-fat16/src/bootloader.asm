@@ -57,8 +57,8 @@ Main:
 
     ; Caluclate needed things
     ; FAT Region
-    movzx ebx, word [MemoryLayout.BootSector + FAT.ReservedLogicalSectors]
-    add ebx, dword [bp - 4]
+    ;movzx ebx, word [MemoryLayout.BootSector + FAT.ReservedLogicalSectors]
+    ;add ebx, dword [bp - 4]
 
     ; Root Directory Region
     ;movzx eax, word [MemoryLayout.BootSector + FAT.LogicalSectorsPerFAT]
@@ -66,12 +66,19 @@ Main:
     ;imul eax, edx
     ;add ebx, edx
     ;push ebx ;;[ebp - 10] - place of Root Directory Region (word)
-    movzx ax, [MemoryLayout.BootSector + FAT.NumberOfFATs]
+    ;movzx ax, [MemoryLayout.BootSector + FAT.NumberOfFATs]
+    ;mul word [MemoryLayout.BootSector + FAT.LogicalSectorsPerFAT]
+    ;shl edx, 16
+    ;mov dx, ax
+    ;add ebx, edx
+    ;push ebx ;;[ebp - 10] - place of Root Directory Region (word)
+
+    movzx eax, byte [MemoryLayout.BootSector + FAT.NumberOfFATs]
     mul word [MemoryLayout.BootSector + FAT.LogicalSectorsPerFAT]
-    shl edx, 16
-    mov dx, ax
-    add ebx, edx
-    push ebx ;;[ebp - 10] - place of Root Directory Region (word)
+    add ax, [MemoryLayout.BootSector + FAT.ReservedLogicalSectors]
+    add eax, dword [bp - 4]
+    push eax ;;[ebp - 10] - place of Root Directory Region (word)
+
 
     ; Make Check if Int13h extension exisis
     mov dl, [bp - 6]

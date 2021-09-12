@@ -8,5 +8,4 @@ struc MemoryLayout
     .PTEPlace resb PTE_size
     .DAPPlace resb DAP_size
     .DESPlace resb DES_size
-    .FATTableSlice resb 4096
 endstruc
