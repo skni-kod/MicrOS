@@ -96,11 +96,14 @@ Main:
     ;;bx = index of Sector DES Search
 
     ;; Initialize DAP
-    mov byte [MemoryLayout.DAPPlace + DAP.SizeOfPacket], 0x10
-    mov byte [MemoryLayout.DAPPlace + DAP.Reserved], 0x0
-    mov word [MemoryLayout.DAPPlace + DAP.NumberOfSectorsToTransfer], 0x1
-    mov word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], MemoryLayout.DESPlace + DES.Filename
-    mov [MemoryLayout.DAPPlace + DAP.TransferBufferSegment], es
+    ;mov byte [MemoryLayout.DAPPlace + DAP.SizeOfPacket], 0x10
+    ;mov byte [MemoryLayout.DAPPlace + DAP.Reserved], 0x0
+    ;mov word [MemoryLayout.DAPPlace + DAP.NumberOfSectorsToTransfer], 0x1
+    mov dword [MemoryLayout.DAPPlace + DAP.SizeOfPacket], 0x00010010
+    ;mov word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], MemoryLayout.DESPlace + DES.Filename
+    ;mov [MemoryLayout.DAPPlace + DAP.TransferBufferSegment], es
+    ;assuming that es was not changed until here, and contains value = 0x7c0
+    mov dword [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], 0x07c00220; this magic number es concatanete with MemoryLayout.DESPlace + DES.Filename 
     mov di, [bp - 10]
     mov [MemoryLayout.DAPPlace + DAP.LowerStartLBA], di
     mov dword [MemoryLayout.DAPPlace + DAP.UpperStartLBA], 0x0
