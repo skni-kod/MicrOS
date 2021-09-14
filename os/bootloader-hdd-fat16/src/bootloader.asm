@@ -228,8 +228,7 @@ NoNeedToRoundUp:
     movzx ecx, ax
     mov [MemoryLayout.DAPPlace + DAP.LowerStartLBA], edx
     mov dword [MemoryLayout.DAPPlace + DAP.UpperStartLBA], 0
-    mov word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], 0xf000
-    mov word [MemoryLayout.DAPPlace + DAP.TransferBufferSegment], 0x0
+    mov dword [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], 0xf000
     ;; assume that non segment registers are changed
     mov word [MemoryLayout.DAPPlace + DAP.NumberOfSectorsToTransfer], 1
 ReadSector:
@@ -237,13 +236,13 @@ ReadSector:
     mov si, MemoryLayout.DAPPlace + DAP.SizeOfPacket
     mov ah, 0x42
     int 13h
-    mov ax, word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset]
-    add ax, BYTES_PER_SECTOR
+    ;mov ax, word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset]
+    add word [si + DAP.TransferBufferOffset], BYTES_PER_SECTOR
     jnc NotSegmentOverflow
-    add word [MemoryLayout.DAPPlace + DAP.TransferBufferSegment], 0x1000
+    add word [si + DAP.TransferBufferSegment], 0x1000
 NotSegmentOverflow:
-    mov [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], ax
-    inc word [MemoryLayout.DAPPlace + DAP.LowerStartLBA]
+    ;mov [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], ax
+    inc word [si + DAP.LowerStartLBA]
     loop ReadSector
 
     jmp 0x0000:0xF000 ;;JUMP TO KERNEL
