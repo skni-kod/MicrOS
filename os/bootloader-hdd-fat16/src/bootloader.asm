@@ -224,14 +224,14 @@ FileFound:
 NoNeedToRoundUp:
     ;;in eax we have number of sectors to read
     movzx ecx, ax
-    mov [MemoryLayout.DAPPlace + DAP.LowerStartLBA], ebx
-    mov dword [MemoryLayout.DAPPlace + DAP.UpperStartLBA], 0
-    mov dword [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], 0xf000
+    mov si, MemoryLayout.DAPPlace + DAP.SizeOfPacket
+    mov [si + DAP.LowerStartLBA], ebx
+    mov dword [si + DAP.UpperStartLBA], 0
+    mov dword [si + DAP.TransferBufferOffset], 0xf000
     ;; assume that non segment registers are changed
-    mov word [MemoryLayout.DAPPlace + DAP.NumberOfSectorsToTransfer], 1
+    mov word [si + DAP.NumberOfSectorsToTransfer], 1
 ReadSector:
     mov dl, [bp - 6]
-    mov si, MemoryLayout.DAPPlace + DAP.SizeOfPacket
     mov ah, 0x42
     int 13h
     ;mov ax, word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset]
