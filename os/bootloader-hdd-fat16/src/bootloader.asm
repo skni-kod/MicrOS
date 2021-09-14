@@ -65,19 +65,19 @@ Main:
     ;movzx edx, byte [MemoryLayout.BootSector + FAT.NumberOfFATs]
     ;imul eax, edx
     ;add ebx, edx
-    ;push ebx ;;[ebp - 10] - place of Root Directory Region (dword)
+    ;push ebx ;;[ebp - 10] - place of Root Directory Region (word)
     ;movzx ax, [MemoryLayout.BootSector + FAT.NumberOfFATs]
     ;mul word [MemoryLayout.BootSector + FAT.LogicalSectorsPerFAT]
     ;shl edx, 16
     ;mov dx, ax
     ;add ebx, edx
-    ;push ebx ;;[ebp - 10] - place of Root Directory Region (dword)
+    ;push ebx ;;[ebp - 10] - place of Root Directory Region (word)
 
     movzx eax, byte [MemoryLayout.BootSector + FAT.NumberOfFATs]
     mul word [MemoryLayout.BootSector + FAT.LogicalSectorsPerFAT]
     add ax, [MemoryLayout.BootSector + FAT.ReservedLogicalSectors]
     add eax, dword [bp - 4]
-    push eax ;;[ebp - 10] - place of Root Directory Region (dword)
+    push eax ;;[ebp - 10] - place of Root Directory Region (word)
 
 
     ; Make Check if Int13h extension exisis
@@ -104,8 +104,8 @@ Main:
     ;mov [MemoryLayout.DAPPlace + DAP.TransferBufferSegment], es
     ;assuming that es was not changed until here, and contains value = 0x7c0
     mov dword [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], 0x07c00220; this magic number es concatanete with MemoryLayout.DESPlace + DES.Filename 
-    ;mov di, [bp - 10]
-    mov [MemoryLayout.DAPPlace + DAP.LowerStartLBA], eax
+    mov di, [bp - 10]
+    mov [MemoryLayout.DAPPlace + DAP.LowerStartLBA], di
     mov dword [MemoryLayout.DAPPlace + DAP.UpperStartLBA], 0x0
 
     ;; Initlize Loop Varaibles
