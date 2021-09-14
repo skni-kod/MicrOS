@@ -299,6 +299,11 @@ void video_card_set_get_char_and_color_external_buffer(int8_t (*get_char_and_col
     _get_char_and_color_external_buffer = get_char_and_color_external_buffer;
 }
 
+void video_card_set_swap_external_buffer(int8_t (*swap_external_buffer(uint8_t*, uint16_t)))
+{
+    _swap_external_buffer = swap_external_buffer;
+}
+
 // Graphic functions
 
 video_mode* video_card_get_available_graphic_modes(uint32_t *noOfModes)

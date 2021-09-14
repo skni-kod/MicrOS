@@ -81,6 +81,7 @@ void video_card_set_turn_on_buffer_func(int8_t (*turn_on_buffer)());
 void video_card_set_turn_off_buffer_func(int8_t (*turn_off_buffer)());
 void video_card_set_is_buffer_on_func(uint8_t (*is_buffer_on)());
 void video_card_set_swap_buffers_func(int8_t (*swap_buffers)());
+void video_card_set_swap_external_buffer(int8_t (*swap_external_buffer(uint8_t*, uint16_t)));
 
 //! Setter to set print character on screen function.
 /*!
