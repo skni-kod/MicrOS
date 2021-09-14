@@ -123,7 +123,6 @@ FileNameLoop:
 DESPerSectorSearch:
     mov cx, 11 ; Need to set every loop beacuse cx is affected later 
     mov di, LoaderFileName
-    
     mov si, MemoryLayout.DESPlace + DES.Filename
     add si, bx
 
@@ -177,34 +176,23 @@ FileFound:
 
     ;Calculate sector where start
     ;; Calculate Data Region Start
-    ;mov eax, (NUMBER_OF_DES_ENTRIES * 32) / BYTES_PER_SECTOR
-    ;add eax, dword [bp - 10]
-    ;push eax
+    mov eax, (NUMBER_OF_DES_ENTRIES * 32) / BYTES_PER_SECTOR
+    add eax, dword [bp - 10]
+    push eax
 
     ;; Translate start cluster to start sector
-    mov ecx, (NUMBER_OF_DES_ENTRIES * 32) / BYTES_PER_SECTOR
-    add eax, dword [bp - 10]
-
-    movzx eax, word [MemoryLayout.DESPlace + DES.StartCluster]
-    sub eax, 2
-
-    movzx edx, byte [MemoryLayout.BootSector + FAT.LogicalSectorsPerCluster]
-    ;movzx eax, ax
-    imul eax, edx
-    add eax, ecx
-    
-    ;xor edx, edx
-    ;mov ax, word [MemoryLayout.DESPlace + DES.StartCluster]
-    ;sub ax, 2
-    ;movzx bx, byte [MemoryLayout.BootSector + FAT.LogicalSectorsPerCluster]
-    ;mul bx
-    ;shl edx, 16
-    ;mov dx, ax
+    xor edx, edx
+    mov ax, word [MemoryLayout.DESPlace + DES.StartCluster]
+    sub ax, 2
+    movzx bx, byte [MemoryLayout.BootSector + FAT.LogicalSectorsPerCluster]
+    mul bx
+    shl edx, 16
+    mov dx, ax
 
     ;; Add Data Region Start to Start Sector
-    ;pop eax
-    ;add edx, eax
-    ;push edx ;;start sector
+    pop eax
+    add edx, eax
+    push edx ;;start sector
 
     ;Calculate how many sectors to copy
     ;mov eax, [MemoryLayout.DESPlace + DES.FileSize]
