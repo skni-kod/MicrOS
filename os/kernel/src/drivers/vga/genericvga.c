@@ -65,14 +65,14 @@ void generic_vga_driver_init()
     s.set_char_and_color_external_buffer = mode03h_set_char_and_color_external_buffer;
     s.get_char_and_color_external_buffer = mode03h_get_char_and_color_external_buffer;
 
-    s.draw_pixel_external_buffer = mode03h_draw_pixel_external_buffer;
-    s.draw_line_external_buffer = mode03h_draw_line_external_buffer;
-    s.draw_circle_external_buffer = mode03h_draw_circle_external_buffer;
-    s.draw_rectangle_external_buffer = mode03h_draw_rectangle_external_buffer;
-    s.clear_screen_external_buffer = mode03h_clear_screen_external_buffer;
+    s.draw_pixel_external_buffer = generic_vga_draw_pixel_external_buffer;
+    s.draw_line_external_buffer = generic_vga_draw_line_external_buffer;
+    s.draw_circle_external_buffer = generic_vga_draw_circle_external_buffer;
+    s.draw_rectangle_external_buffer = generic_vga_draw_rectangle_external_buffer;
+    s.clear_screen_external_buffer = generic_vga_clear_screen_external_buffer;
 
-    s.swap_external_buffer = mode03h_swap_external_buffer;
-    s.create_external_buffer = mode03h_create_external_buffer;
+    s.swap_external_buffer = generic_vga_swap_external_buffer;
+    s.create_external_buffer = generic_vga_create_external_buffer;
     s.destroy_external_buffer = generic_vga_destroy_external_buffer;
     
     video_card_init_with_driver(&s);

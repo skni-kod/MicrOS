@@ -45,7 +45,7 @@ void* loadBMPToByteArray(char* filename)
     //if it fails, then I'll make another floppy just for assets.
     bmpFileHeader* fileHeader = (bmpFileHeader*)(contents);
     bmpInfoHeader* infoHeader = (bmpInfoHeader*)(contents+sizeof(bmpFileHeader));
-    printf("W: %d, H: %d\n", infoHeader->width, infoHeader->height);
+    //printf("W: %d, H: %d\n", infoHeader->width, infoHeader->height);
     array = malloc(infoHeader->width * infoHeader->height);
     //array = realloc(array, infoHeader->width * infoHeader->height);
     int j = 0;
@@ -56,5 +56,6 @@ void* loadBMPToByteArray(char* filename)
         memcpy(((byte*)array)+arrayOffset, contents+fileHeader->dataOffset+fileOffset, infoHeader->width);
     }
     free(contents);
+    
     return array;
 }

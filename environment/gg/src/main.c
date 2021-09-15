@@ -27,23 +27,23 @@ int main(int argc, char *argv[])
     partition = argv[1][0];
 
     micros_console_set_video_mode(0x13);
-    gpuBuffer = (byte*)calloc(GPU_BUFFER_SIZE, sizeof(byte));
+    
+    gpuBuffer = (byte*)calloc(GPU_BUFFER_SIZE , sizeof(byte));
 
     for(int i = 0; i < GPU_BUFFER_SIZE; i++)
     {
-        *(gpuBuffer+i) = i%256;
+       *(gpuBuffer+i) = i%256;
     }
     swap_buffers(gpuBuffer);
 
-    printf("I'M LOADING GIB SOME TIME\n");
     byte* playerSprite = (byte*)loadBMPToByteArray("/GG/IMG/ANIMU.BMP");
-    printf("LOADED\n");
 
     for(int i = 0; i < GPU_BUFFER_SIZE; i++)
     {
         *(gpuBuffer+i) = playerSprite[i];
     }
     swap_buffers(gpuBuffer);
+
     while(1);
 
 
