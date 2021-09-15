@@ -73,20 +73,23 @@ Main:
     ;add ebx, edx
     ;push ebx ;;[ebp - 10] - place of Root Directory Region (word)
 
-    movzx eax, byte [MemoryLayout.BootSector + FAT.NumberOfFATs]
-    mul word [MemoryLayout.BootSector + FAT.LogicalSectorsPerFAT]
-    add ax, [MemoryLayout.BootSector + FAT.ReservedLogicalSectors]
-    add eax, dword [bp - 4]
-    push eax ;;[ebp - 10] - place of Root Directory Region (word)
 
+    ;call CheckInt13Extenstion
+    mov ah, 0x41
+    mov bx, 0xaa55
 
-    ; Make Check if Int13h extension exisis
-    mov dl, [bp - 6]
-    call CheckInt13Extenstion
+    ; Call interrupt
+    int 0x13
 
     ; If no exists... fail...
     jc Fail
 
+
+    movzx eax, byte [bp + FAT.NumberOfFATs]
+    mul word [bp + FAT.LogicalSectorsPerFAT]
+    add ax, [bp + FAT.ReservedLogicalSectors]
+    add eax, dword [bp - 4]
+    push eax ;;[ebp - 10] - place of Root Directory Region (word)
 
     ; Search for file name in DES
     ;;cx = 11 - file name length
@@ -99,14 +102,15 @@ Main:
     ;mov byte [MemoryLayout.DAPPlace + DAP.SizeOfPacket], 0x10
     ;mov byte [MemoryLayout.DAPPlace + DAP.Reserved], 0x0
     ;mov word [MemoryLayout.DAPPlace + DAP.NumberOfSectorsToTransfer], 0x1
-    mov dword [MemoryLayout.DAPPlace + DAP.SizeOfPacket], 0x00010010
+    mov si, MemoryLayout.DAPPlace + DAP.SizeOfPacket
+    mov dword [si + DAP.SizeOfPacket], 0x00010010
     ;mov word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], MemoryLayout.DESPlace + DES.Filename
     ;mov [MemoryLayout.DAPPlace + DAP.TransferBufferSegment], es
     ;assuming that es was not changed until here, and contains value = 0x7c0
-    mov dword [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], 0x07c00220; this magic number es concatanete with MemoryLayout.DESPlace + DES.Filename 
-    mov di, [bp - 10]
-    mov [MemoryLayout.DAPPlace + DAP.LowerStartLBA], di
-    mov dword [MemoryLayout.DAPPlace + DAP.UpperStartLBA], 0x0
+    mov dword [si + DAP.TransferBufferOffset], 0x07c00220; this magic number es concatanete with MemoryLayout.DESPlace + DES.Filename 
+    ;mov di, [bp - 10]
+    mov [si + DAP.LowerStartLBA], eax
+    mov dword [si + DAP.UpperStartLBA], 0x0
 
     ;; Initlize Loop Varaibles
     push word NUMBER_OF_DES_ENTRIES ;;[ebp - 12] - DESEntryCounter (word)
@@ -115,14 +119,16 @@ Main:
 
 FileNameLoop:
     ; Read Sector
-    mov si, MemoryLayout.DAPPlace + DAP.SizeOfPacket
+    ;mov si, MemoryLayout.DAPPlace + DAP.SizeOfPacket
     mov ah, 0x42
+    mov dl, [bp - 6]
     int 13h
 
     xor bx, bx
 DESPerSectorSearch:
     mov cx, 11 ; Need to set every loop beacuse cx is affected later 
     mov di, LoaderFileName
+    push si
     mov si, MemoryLayout.DESPlace + DES.Filename
     add si, bx
 
@@ -140,7 +146,7 @@ DESPerSectorSearch:
 WrongEntry:
     ; File not found.
     add bx, DES_size
-
+    pop si
     ; Check if any root directory entries
     dec word [bp - 12]
     jz FileNotFound
@@ -246,22 +252,29 @@ NotSegmentOverflow:
     jmp 0x0000:0xF000 ;;JUMP TO KERNEL
 
 FileNotFound:
-    mov al, 0x4e
-    call WriteCharacter
-    hlt
+    mov al, 0x0e4e
+    jmp HaltOnError
+    ;call WriteCharacter
+    ;hlt
 
 Fail:
     ; All things go wrong. Snowman doesn't like us.
-    mov al, 0x46
-    call WriteCharacter
-    hlt
+    mov ax, 0x0e46
+    jmp HaltOnError
+    ;call WriteCharacter
+    ;hlt
 
-WriteCharacter:
-    mov ah, 0x0e
+HaltOnError:
     mov bl, 0x07
     int 10h
-    ret
+    hlt
 
-%include "src/drivefunctions.asm"
+;WriteCharacter:
+;    mov ah, 0x0e
+;    mov bl, 0x07
+;    int 10h
+;    ret
+
+;%include "src/drivefunctions.asm"
 
 LoaderFileName  db 'KERNEL  BIN'    ; 11 chars
