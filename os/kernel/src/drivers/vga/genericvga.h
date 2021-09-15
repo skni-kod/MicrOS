@@ -4,6 +4,9 @@
 #include <stdint.h>
 #include "drivers/dal/videocard/videocard.h"
 
+#define INPUT_STATUS_1 0x03da
+#define VRETRACE 0x08
+
 void generic_vga_driver_init();
 int16_t generic_vga_set_video_mode(uint16_t mode);
 uint8_t generic_vga_is_text_mode();
@@ -18,5 +21,7 @@ int8_t generic_vga_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode, 
 int8_t generic_vga_swap_external_buffer(uint8_t* buffer, uint16_t mode);
 uint8_t* generic_vga_create_external_buffer(uint16_t mode);
 void generic_vga_destroy_external_buffer(uint8_t* buffer);
+
+uint8_t generic_vga_is_vretrace();
 
 #endif

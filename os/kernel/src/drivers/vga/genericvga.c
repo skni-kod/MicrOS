@@ -18,6 +18,8 @@
 #include "modes/mode_y/mode_y.h"
 #include "memory/heap/heap.h"
 
+#include "../../assembly/io.h"
+
 video_mode current_video_mode;
 uint8_t text_mode;
 
@@ -548,4 +550,9 @@ uint8_t* generic_vga_create_external_buffer(uint16_t mode){
 }
 void generic_vga_destroy_external_buffer(uint8_t* buffer){
     heap_kernel_dealloc(buffer);
+}
+
+uint8_t generic_vga_is_vretrace()
+{
+    return io_in_byte(INPUT_STATUS_1) & VRETRACE;
 }
