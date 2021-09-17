@@ -45,15 +45,12 @@ Main:
     mov bp, sp
 
     ; Store active partition region start
-    push dword [si + PTE.PartitionRegionStart]
+    ;push dword [si + PTE.PartitionRegionStart]
 
     ; Initialize data segment register
     mov ax, 0x7c0
     mov ds, ax
     mov es, ax
-
-    ; Store drive number to variable
-    push dx ;;[ebp - 6] - place of drive number (byte)
 
     ; Caluclate needed things
     ; FAT Region
@@ -83,8 +80,38 @@ Main:
     int 0x13
 
     ; If no exists... fail...
-    jnc GetRootDirectory
+    jnc InitDAP
     mov dword [bp + MemoryLayout.PTEPlace], ReadSectorCHS + 0x7c00
+
+InitDAP:
+;; Initialize DAP
+    ;mov byte [MemoryLayout.DAPPlace + DAP.SizeOfPacket], 0x10
+    ;mov byte [MemoryLayout.DAPPlace + DAP.Reserved], 0x0
+    ;mov word [MemoryLayout.DAPPlace + DAP.NumberOfSectorsToTransfer], 0x1
+    mov si, MemoryLayout.DAPPlace + DAP.SizeOfPacket
+    mov dword [si + DAP.SizeOfPacket], 0x00010010
+    ;mov word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], MemoryLayout.DESPlace + DES.Filename
+    ;mov [MemoryLayout.DAPPlace + DAP.TransferBufferSegment], es
+    ;assuming that es was not changed until here, and contains value = 0x7c0
+    mov dword [si + DAP.TransferBufferOffset], 0x07c00220; this magic number es concatanete with MemoryLayout.DESPlace + DES.Filename 
+    ;mov di, [bp - 10]
+    mov dword [si + DAP.LowerStartLBA], 0x0
+    mov dword [si + DAP.UpperStartLBA], 0x0
+
+ ;;Get first sector and parse
+    call far [bp + MemoryLayout.PTEPlace]
+    mov cx, 4
+    mov di, MemoryLayout.DESPlace + DES.Filename + 430 ;begin of partition table
+
+PartitonTableParser:
+    add di, 16
+    cmp byte [di], 0x80
+    loopne PartitonTableParser
+
+ActivePartitionFound:
+    push dword [di + PTE.PartitionRegionStart]
+    ; Store drive number to variable
+    push dx ;;[ebp - 6] - place of drive number (byte)
 
 GetRootDirectory:
     movzx eax, byte [bp + FAT.NumberOfFATs]
@@ -104,15 +131,8 @@ GetRootDirectory:
     ;mov byte [MemoryLayout.DAPPlace + DAP.SizeOfPacket], 0x10
     ;mov byte [MemoryLayout.DAPPlace + DAP.Reserved], 0x0
     ;mov word [MemoryLayout.DAPPlace + DAP.NumberOfSectorsToTransfer], 0x1
-    mov si, MemoryLayout.DAPPlace + DAP.SizeOfPacket
-    mov dword [si + DAP.SizeOfPacket], 0x00010010
-    ;mov word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset], MemoryLayout.DESPlace + DES.Filename
-    ;mov [MemoryLayout.DAPPlace + DAP.TransferBufferSegment], es
-    ;assuming that es was not changed until here, and contains value = 0x7c0
-    mov dword [si + DAP.TransferBufferOffset], 0x07c00220; this magic number es concatanete with MemoryLayout.DESPlace + DES.Filename 
     ;mov di, [bp - 10]
     mov [si + DAP.LowerStartLBA], eax
-    mov dword [si + DAP.UpperStartLBA], 0x0
 
     ;; Initlize Loop Varaibles
     push word NUMBER_OF_DES_ENTRIES ;;[ebp - 12] - DESEntryCounter (word)
