@@ -301,7 +301,7 @@ ReadSectorCHS:
     shl cl, 6
     or cl, bl
     
-    mov dh, [bp - 24]
+    mov dh, [bp - 12]
     xchg dh, dl
     mov al, [si + DAP.NumberOfSectorsToTransfer]
     ;mov es, [si + DAP.TransferBufferSegment]
@@ -310,7 +310,7 @@ ReadSectorCHS:
     mov ah, 0x02
     int 13h
     jc Fail
-    mov [bp - 32], ax
+    mov [bp - 4], ax
     ;pop edx
     ;pop ecx
     ;pop ebx
