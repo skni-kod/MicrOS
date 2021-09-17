@@ -272,7 +272,7 @@ ReadSectorCHS:
     
     ;Get Drive Parameters
     mov ah, 0x08
-    mov di, 0
+    xor di, di
     mov es, di
     int 13h
     jc Fail
@@ -280,17 +280,17 @@ ReadSectorCHS:
     ; Calculate CHS
     ;;Prepare input data
     movzx ebx, cx
-    and ebx, 0x3f; Sectors per Track
+    and bx, 0x3f; Sectors per Track
     movzx ecx, dh; Number of Heads
-    inc ecx
+    inc cx
 
     mov eax, [si + DAP.LowerStartLBA]
     mov edx, [si + DAP.UpperStartLBA]
     div ebx ;;eax = LBA / Sectors Per Track
             ;;edx = LBA % (Sectors per Track)
-    mov ebx, edx
-    inc ebx ;; Sector
-    xor edx, edx
+    mov bx, dx
+    inc bx ;; Sector
+    xor dx, dx
 
     div ecx ;;edx = Head
             ;;eax = Cylinder
@@ -299,15 +299,14 @@ ReadSectorCHS:
     mov ch, al
     mov cl, ah
     shl cl, 6
-    and bl, 0x3f
     or cl, bl
     
-    mov al, dl
-    mov dx, [bp - 24]
-    mov dh, al
+    mov dh, [bp - 24]
+    xchg dh, dl
     mov al, [si + DAP.NumberOfSectorsToTransfer]
-    mov es, [si + DAP.TransferBufferSegment]
-    mov bx, [si + DAP.TransferBufferOffset]
+    ;mov es, [si + DAP.TransferBufferSegment]
+    ;mov bx, [si + DAP.TransferBufferOffset]
+    les bx, [si + DAP.TransferBufferOffset]
     mov ah, 0x02
     int 13h
     jc Fail
