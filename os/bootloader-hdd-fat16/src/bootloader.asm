@@ -122,7 +122,8 @@ FileNameLoop:
     ;mov si, MemoryLayout.DAPPlace + DAP.SizeOfPacket
     mov ah, 0x42
     mov dl, [bp - 6]
-    int 13h
+    ;int 13h
+    call ReadSectorCHS
 
     xor bx, bx
 DESPerSectorSearch:
@@ -239,7 +240,8 @@ NoNeedToRoundUp:
 ReadSector:
     mov dl, [bp - 6]
     mov ah, 0x42
-    int 13h
+    ;int 13h
+    call ReadSectorCHS
     ;mov ax, word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset]
     add word [si + DAP.TransferBufferOffset], BYTES_PER_SECTOR
     jnc NotSegmentOverflow
@@ -251,8 +253,77 @@ NotSegmentOverflow:
 
     jmp 0x0000:0xF000 ;;JUMP TO KERNEL
 
+;;Input dl = drive index
+;;ds:si = DAP struct
+;;Return:
+;;ah = return code
+;;cf = error (1); no error (0)
+ReadSectorCHS:
+    push bp
+    mov bp, sp
+    pushad
+    push es
+    ;push es
+    ;push di
+    ;push ebx
+    ;push ecx
+    ;push edx
+    ;push dx
+    
+    ;Get Drive Parameters
+    mov ah, 0x08
+    mov di, 0
+    mov es, di
+    int 13h
+    jc Fail
+
+    ; Calculate CHS
+    ;;Prepare input data
+    movzx ebx, cx
+    and ebx, 0x3f; Sectors per Track
+    movzx ecx, dh; Number of Heads
+    inc ecx
+
+    mov eax, [si + DAP.LowerStartLBA]
+    mov edx, [si + DAP.UpperStartLBA]
+    div ebx ;;eax = LBA / Sectors Per Track
+            ;;edx = LBA % (Sectors per Track)
+    mov ebx, edx
+    inc ebx ;; Sector
+    xor edx, edx
+
+    div ecx ;;edx = Head
+            ;;eax = Cylinder
+
+    ; pack data to registers for interrupt
+    mov ch, al
+    mov cl, ah
+    shl cl, 6
+    and bl, 0x3f
+    or cl, bl
+    
+    mov al, dl
+    mov dx, [bp - 24]
+    mov dh, al
+    mov al, [si + DAP.NumberOfSectorsToTransfer]
+    mov es, [si + DAP.TransferBufferSegment]
+    mov bx, [si + DAP.TransferBufferOffset]
+    mov ah, 0x02
+    int 13h
+    jc Fail
+    mov [bp - 32], ax
+    ;pop edx
+    ;pop ecx
+    ;pop ebx
+    ;pop di
+    ;pop es
+    pop es
+    popad
+    pop bp
+    ret
+
 FileNotFound:
-    mov al, 0x0e4e
+    mov ax, 0x0e4e
     jmp HaltOnError
     ;call WriteCharacter
     ;hlt
