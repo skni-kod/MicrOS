@@ -530,5 +530,4 @@ int8_t terminal_manager_copy_from_buffer(uint32_t process_id, uint8_t* buffer, s
     if(terminal->terminal_id == active_terminal_id) video_card_swap_external_buffer(buffer, terminal->screen_mode);
     return 0;
 }
-
 //TODO: Functions for writting to chars and pixels, changing modes, changing active terminal and get list of terminals

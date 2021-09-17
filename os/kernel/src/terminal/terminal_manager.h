@@ -60,5 +60,4 @@ int8_t terminal_manager_copy_from_buffer(uint32_t process_id, uint8_t* buffer, s
 
 uint32_t terminal_manager_get_active_terminal_id();
 bool terminal_manager_keyboard_interrupt_handler(interrupt_state *state);
-
 #endif

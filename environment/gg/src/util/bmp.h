@@ -30,6 +30,4 @@ typedef struct bmpInfoHeader
 
 #pragma pack(pop)
 
-void* loadBMPToByteArray(char* filename);
-
 #endif
