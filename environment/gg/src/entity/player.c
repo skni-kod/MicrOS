@@ -2,9 +2,11 @@
 #include <micros.h>
 
 #include "../util/screen.h"
-#include "../util/rect.h"
 
 extern rect* cameraRect;
+
+extern uint32_t LEVEL_WIDTH;
+extern uint32_t LEVEL_HEIGHT;
 
 player* initPlayer(int32_t x, int32_t y, image* img, int32_t r, int32_t c, int32_t cf)
 {

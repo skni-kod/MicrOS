@@ -19,6 +19,9 @@ byte* gpuBuffer;
 
 rect* cameraRect;
 
+uint32_t LEVEL_WIDTH;
+uint32_t LEVEL_HEIGHT;
+
 char partition;
 
 void processInput()
@@ -73,8 +76,11 @@ int main(int argc, char *argv[])
     }
     swap_buffers(gpuBuffer, true);
 
-    image* playerSprite = loadImage("/GG/IMG/CHARAS.BMP");
-    image* background = loadImage("/GG/IMG/BACKG.BMP");
+    //image*playerSprite = NULL;
+    image* playerSprite = loadImage("/GG/IMG/CHARAS.LZ", true);
+    image* background = loadImage("/GG/IMG/TILEMAP.LZ", true);
+    LEVEL_WIDTH = background->width;
+    LEVEL_HEIGHT = background->height;
     player* player = initPlayer(LEVEL_WIDTH/2, LEVEL_HEIGHT/2,playerSprite,4,3,1);
 
     uint32_t msStart, msEnd;
@@ -91,7 +97,7 @@ int main(int argc, char *argv[])
         //clear screen
         memset(gpuBuffer, 0, GPU_BUFFER_SIZE);
         //temporary
-        draw(background, 0 - (int32_t)cameraRect->x ,0 - (int32_t)cameraRect->y);
+        draw(background, 0 - (int32_t)cameraRect->x , 0 - (int32_t)cameraRect->y);
         //Update and draw everything here
 
         tickPlayer(player);

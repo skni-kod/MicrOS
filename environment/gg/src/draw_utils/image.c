@@ -2,12 +2,12 @@
 #include "../util/bmp.h"
 #include "../util/util.h"
 #include "../util/screen.h"
+#include "../util/file_utils.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-extern char partition;
 extern byte* gpuBuffer;
 
 typedef uint8_t byte;
@@ -19,47 +19,14 @@ image* initImage()
     return img;
 }
 
-image* loadImage(char* filename)
+image* loadImage(char* filename, bool isCompressed)
 {
     image* img = initImage();
     if(img == NULL) return NULL;
 
-    char path[64];
-    sprintf(path, "%c:%s", partition, filename);
-    byte* contents;
-    FILE* bmp = fopen(path, "rb");
-    if(bmp == NULL)
-    {
-        printf("ERROR: File %s couldn't be loaded.\n", filename);
-        error(-10);
-    }
-    int32_t fileSize;
-    // obtain file size:
-    fseek (bmp , 0 , SEEK_END);
-    fileSize = ftell (bmp);
-    rewind (bmp);
-    contents = (byte*)malloc(fileSize*sizeof(byte));
-    if(contents == NULL)
-    {
-        printf("Ooops, we're out of memory!\n");
-        error(-11);
-    }
-    uint32_t readLen = 0;
-    int32_t currentOffset = 0;
-    uint32_t chunkSize = 1024;
-    while(fileSize - currentOffset > 0)
-    {
-        if(currentOffset + 1024 > fileSize) chunkSize = fileSize - currentOffset;
-        readLen += fread(contents+currentOffset, sizeof(byte), chunkSize, bmp);
-        currentOffset += 1024;
-    }
-    if (fileSize != readLen)
-    {
-        printf("Reading error!\n");
-        error(-12);
-    }
-    //we copied whole file to memory at this point, so we can safely close file.
-    fclose (bmp);
+    byte* contents = NULL;
+    loadFile(filename, &contents, isCompressed);
+
     //Now proper bmp reading starts, since we expect files to be in correct format we can just simply realloc given pointer and copy data to it.
     //In normal circumstances I'd do some checks if it is proper BMP file, but we're kinda limited in space.
     //if it fails, then I'll make another floppy just for assets.
@@ -70,9 +37,11 @@ image* loadImage(char* filename)
     if(img->data != NULL) free(img->data);
     img->data = (byte*)malloc(infoHeader->width * infoHeader->height);
     int j = 0;
+    uint8_t padding = (4 - infoHeader->width % 4) % 4;
     for(int i = infoHeader->height - 1; i >= 0; i--, j++)
     {
-        int fileOffset= i * infoHeader->width;
+        
+        int fileOffset= i * (infoHeader->width+padding);
         int arrayOffset = j * infoHeader->width;
         memcpy(((byte*)img->data)+arrayOffset, contents+fileHeader->dataOffset+fileOffset, infoHeader->width);
     }
@@ -85,8 +54,9 @@ image* loadImage(char* filename)
 
 void draw(image* img, int32_t x, int32_t y)
 {
+    //draw to 320x200 buffor
     //xc - counter for width of image, yc - counter for height of image
-    uint32_t xc = 0,yc = 0;
+    uint32_t xc = 0, yc = 0;
 
     if(img != NULL)
     {
@@ -100,7 +70,7 @@ void draw(image* img, int32_t x, int32_t y)
                 if(j < 0 || j >= SCREEN_WIDTH) continue;
                 if(i < 0 || i >= SCREEN_HEIGHT) continue;
 
-                gpuBuffer[i*SCREEN_WIDTH + j] = img->data[yc*img->width+xc];
+                gpuBuffer[i * SCREEN_WIDTH + j] = img->data[yc*img->width+xc];
             }
             xc = 0;
         }

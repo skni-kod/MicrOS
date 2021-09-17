@@ -2,26 +2,27 @@
 #define IMAGE_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef uint8_t byte;
 
 typedef struct image
 {
-    uint16_t width;
-    uint16_t height;
+    int32_t width;
+    int32_t height;
     byte* data;
 } image;
 
 typedef struct image_clip
 {
-    uint16_t x;
-    uint16_t y;
-    uint16_t w;
-    uint16_t h;
+    int32_t x;
+    int32_t y;
+    int32_t w;
+    int32_t h;
 } image_clip;
 
 image* initImage();
-image* loadImage(char* filename);
+image* loadImage(char* filename, bool isCompressed);
 
 void draw(image* img, int32_t x, int32_t y);
 void drawClipped(image* img, int32_t x, int32_t y, image_clip* clip);
