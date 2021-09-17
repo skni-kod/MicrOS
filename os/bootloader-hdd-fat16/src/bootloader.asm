@@ -73,6 +73,7 @@ Main:
     ;add ebx, edx
     ;push ebx ;;[ebp - 10] - place of Root Directory Region (word)
 
+    mov dword [bp + MemoryLayout.PTEPlace], ReadSectorLBA + 0x7c00
 
     ;call CheckInt13Extenstion
     mov ah, 0x41
@@ -82,9 +83,10 @@ Main:
     int 0x13
 
     ; If no exists... fail...
-    jc Fail
+    jnc GetRootDirectory
+    mov dword [bp + MemoryLayout.PTEPlace], ReadSectorCHS + 0x7c00
 
-
+GetRootDirectory:
     movzx eax, byte [bp + FAT.NumberOfFATs]
     mul word [bp + FAT.LogicalSectorsPerFAT]
     add ax, [bp + FAT.ReservedLogicalSectors]
@@ -123,7 +125,7 @@ FileNameLoop:
     mov ah, 0x42
     mov dl, [bp - 6]
     ;int 13h
-    call ReadSectorCHS
+    call far [bp + MemoryLayout.PTEPlace]
 
     xor bx, bx
 DESPerSectorSearch:
@@ -241,7 +243,7 @@ ReadSector:
     mov dl, [bp - 6]
     mov ah, 0x42
     ;int 13h
-    call ReadSectorCHS
+    call far [bp + MemoryLayout.PTEPlace]
     ;mov ax, word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset]
     add word [si + DAP.TransferBufferOffset], BYTES_PER_SECTOR
     jnc NotSegmentOverflow
@@ -319,7 +321,11 @@ ReadSectorCHS:
     pop es
     popad
     pop bp
-    ret
+    retf
+
+ReadSectorLBA:
+    int 13h
+    retf
 
 FileNotFound:
     mov ax, 0x0e4e
