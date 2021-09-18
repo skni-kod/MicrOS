@@ -412,7 +412,7 @@ int kmain()
     }
     
     vga_clear_screen();
-    
+
     switch_active_terminal(0);
     
     process_manager_run();  

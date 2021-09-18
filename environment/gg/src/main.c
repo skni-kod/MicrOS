@@ -58,6 +58,7 @@ void updateCamera(rect* cam, player* play)
 int main(int argc, char *argv[])
 {
     partition = argv[1][0];
+    
 
     micros_console_set_video_mode(0x13);
 
