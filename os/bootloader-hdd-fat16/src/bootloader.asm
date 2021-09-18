@@ -100,8 +100,11 @@ InitDAP:
 
  ;;Get first sector and parse
     call far [bp + MemoryLayout.PTEPlace]
+    ;mov ah, 0x42
+    ;int 13h
+    jc Fail
     mov cx, 4
-    mov di, MemoryLayout.DESPlace + DES.Filename + 430 ;begin of partition table
+    mov di, MemoryLayout.DESPlace + 430 ;begin of partition table
 
 PartitonTableParser:
     add di, 16
@@ -142,7 +145,6 @@ GetRootDirectory:
 FileNameLoop:
     ; Read Sector
     ;mov si, MemoryLayout.DAPPlace + DAP.SizeOfPacket
-    mov ah, 0x42
     mov dl, [bp - 6]
     ;int 13h
     call far [bp + MemoryLayout.PTEPlace]
@@ -261,7 +263,6 @@ NoNeedToRoundUp:
     mov word [si + DAP.NumberOfSectorsToTransfer], 1
 ReadSector:
     mov dl, [bp - 6]
-    mov ah, 0x42
     ;int 13h
     call far [bp + MemoryLayout.PTEPlace]
     ;mov ax, word [MemoryLayout.DAPPlace + DAP.TransferBufferOffset]
@@ -344,6 +345,7 @@ ReadSectorCHS:
     retf
 
 ReadSectorLBA:
+    mov ah, 0x42
     int 13h
     retf
 
