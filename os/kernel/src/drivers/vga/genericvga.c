@@ -54,16 +54,16 @@ void generic_vga_driver_init()
     s.turn_cursor_on = mode03h_turn_cursor_on;
     s.turn_cursor_off = mode03h_turn_cursor_off;
 
-    s.print_char_external_buffer = mode03h_print_char_external_buffer;
-    s.print_char_color_external_buffer = mode03h_print_char_color_external_buffer;
-    s.print_string_external_buffer = mode03h_print_string_external_buffer;
-    s.print_string_color_external_buffer = mode03h_print_string_color_external_buffer;
-    s.set_char_external_buffer = mode03h_set_char_external_buffer;
-    s.get_char_external_buffer = mode03h_get_char_external_buffer;
-    s.set_color_external_buffer = mode03h_set_color_external_buffer;
-    s.get_color_external_buffer = mode03h_get_color_external_buffer;
-    s.set_char_and_color_external_buffer = mode03h_set_char_and_color_external_buffer;
-    s.get_char_and_color_external_buffer = mode03h_get_char_and_color_external_buffer;
+    s.print_char_external_buffer = generic_vga_print_char_external_buffer;
+    s.print_char_color_external_buffer = generic_vga_print_char_color_external_buffer;
+    s.print_string_external_buffer = generic_vga_print_string_external_buffer;
+    s.print_string_color_external_buffer = generic_vga_print_string_color_external_buffer;
+    s.set_char_external_buffer = generic_vga_set_char_external_buffer;
+    s.get_char_external_buffer = generic_vga_get_char_external_buffer;
+    s.set_color_external_buffer = generic_vga_set_color_external_buffer;
+    s.get_color_external_buffer = generic_vga_get_color_external_buffer;
+    s.set_char_and_color_external_buffer = generic_vga_set_char_and_color_external_buffer;
+    s.get_char_and_color_external_buffer = generic_vga_get_char_and_color_external_buffer;
 
     s.draw_pixel_external_buffer = generic_vga_draw_pixel_external_buffer;
     s.draw_line_external_buffer = generic_vga_draw_line_external_buffer;
