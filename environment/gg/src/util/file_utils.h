@@ -1,9 +1,7 @@
 #ifndef FILE_UTILS_H
 #define FILE_UTILS_H
 
-#include <stdint.h>
-#include <stdbool.h>
-typedef uint8_t byte;
+#include "../stdafx.h"
 
 /**
  * Load file from specified path into dst

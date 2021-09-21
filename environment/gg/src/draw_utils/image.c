@@ -10,7 +10,6 @@
 
 extern byte* gpuBuffer;
 
-typedef uint8_t byte;
 
 image* initImage()
 {
@@ -52,23 +51,26 @@ image* loadImage(char* filename, bool isCompressed)
 
 //ALL THESE FUNCTIONS WORK IN SCREENSPACE, NOT WORLD SPACE!!!
 
-void draw(image* img, int32_t x, int32_t y)
+void draw(image* img, int32_t x, int32_t y, rect* camera)
 {
     //draw to 320x200 buffor
     //xc - counter for width of image, yc - counter for height of image
     uint32_t xc = 0, yc = 0;
 
+    int vw = camera != NULL ? (int)camera->w : SCREEN_WIDTH;
+    int vh = camera != NULL ? (int)camera->h : SCREEN_HEIGHT;
+
     if(img != NULL)
     {
-        if(x < -img->width || x >= img->width + SCREEN_WIDTH) return;
-        if(y < -img->height || y >= img->height + SCREEN_HEIGHT) return;
+        if(x < -img->width || x >= img->width + vw) return;
+        if(y < -img->height || y >= img->height + vh) return;
 
         for(int i = y; i <= img->height + y - 1; i++, yc++)
         {
             for(int j = x; j <= img->width + x - 1; j++, xc++)    
             {
-                if(j < 0 || j >= SCREEN_WIDTH) continue;
-                if(i < 0 || i >= SCREEN_HEIGHT) continue;
+                if(j < 0 || j >= vw) continue;
+                if(i < 0 || i >= vh) continue;
 
                 gpuBuffer[i * SCREEN_WIDTH + j] = img->data[yc*img->width+xc];
             }
@@ -77,24 +79,27 @@ void draw(image* img, int32_t x, int32_t y)
     }
 }
 
-void drawClipped(image* img, int32_t x, int32_t y, image_clip* clip)
+void drawClipped(image* img, int32_t x, int32_t y, image_clip* clip, rect* camera)
 {
     //fallback for NULL clip, otherwise it will segfault.
-    if(clip == NULL) return draw(img, x,y);
+    if(clip == NULL) return draw(img, x,y, camera);
     //xc - counter for width of image, yc - counter for height of image
     uint32_t xc = 0,yc = 0;
 
+    int vw = camera != NULL ? (int)camera->w : SCREEN_WIDTH;
+    int vh = camera != NULL ? (int)camera->h : SCREEN_HEIGHT;
+
     if(img != NULL)
     {
-        if(x < -clip->w || x >= clip->w + SCREEN_WIDTH) return;
-        if(y < -clip->h || y >= clip->h + SCREEN_HEIGHT) return;
+        if(x < -clip->w || x >= clip->w + vw) return;
+        if(y < -clip->h || y >= clip->h + vh) return;
 
         for(int i = y; i <= clip->h + y - 1; i++, yc++)
         {
             for(int j = x; j <= clip->w + x - 1; j++, xc++)    
             {
-                if(j < 0 || j >= SCREEN_WIDTH) continue;
-                if(i < 0 || i >= SCREEN_HEIGHT) continue;
+                if(j < 0 || j >= vw) continue;
+                if(i < 0 || i >= vh) continue;
                 gpuBuffer[i*SCREEN_WIDTH + j] = img->data[yc*img->width + clip->y*img->width + clip->x + xc];
             }
             xc = 0;
@@ -102,22 +107,25 @@ void drawClipped(image* img, int32_t x, int32_t y, image_clip* clip)
     }
 }
 
-void drawTransparent(image* img, int32_t x, int32_t y, uint8_t colorKey)
+void drawTransparent(image* img, int32_t x, int32_t y, uint8_t colorKey, rect* camera)
 {
     //xc - counter for width of image, yc - counter for height of image
     uint32_t xc = 0,yc = 0;
 
+    int vw = camera != NULL ? (int)camera->w : SCREEN_WIDTH;
+    int vh = camera != NULL ? (int)camera->h : SCREEN_HEIGHT;
+
     if(img != NULL)
     {
-        if(x < -img->width || x >= img->width + SCREEN_WIDTH) return;
-        if(y < -img->height || y >= img->height + SCREEN_HEIGHT) return;
+        if(x < -img->width || x >= img->width + vw) return;
+        if(y < -img->height || y >= img->height + vh) return;
 
         for(int i = y; i <= img->height + y - 1; i++, yc++)
         {
             for(int j = x; j <= img->width + x - 1; j++, xc++)    
             {
-                if(j < 0 || j >= SCREEN_WIDTH) continue;
-                if(i < 0 || i >= SCREEN_HEIGHT) continue;
+                if(j < 0 || j >= vw) continue;
+                if(i < 0 || i >= vh) continue;
                 if(img->data[yc*img->width+xc] == colorKey) continue;
 
                 gpuBuffer[i*SCREEN_WIDTH + j] = img->data[yc*img->width+xc];
@@ -127,27 +135,60 @@ void drawTransparent(image* img, int32_t x, int32_t y, uint8_t colorKey)
     }
 }
 
-void drawClippedTransparent(image* img, int32_t x, int32_t y, image_clip* clip, uint8_t colorKey)
+void drawClippedTransparent(image* img, int32_t x, int32_t y, image_clip* clip, uint8_t colorKey, rect* camera)
 {
     //fallback for NULL clip, otherwise it will segfault.
-    if(clip == NULL) return drawTransparent(img, x,y, colorKey);
+    if(clip == NULL) return drawTransparent(img, x,y, colorKey, camera);
     
     //xc - counter for width of image, yc - counter for height of image
     uint32_t xc = 0,yc = 0;
 
+    int vw = camera != NULL ? (int)camera->w : SCREEN_WIDTH;
+    int vh = camera != NULL ? (int)camera->h : SCREEN_HEIGHT;
+
     if(img != NULL)
     {
-        if(x < -clip->w || x >= clip->w + SCREEN_WIDTH) return;
-        if(y < -clip->h || y >= clip->h + SCREEN_HEIGHT) return;
+        if(x < -clip->w || x >= clip->w + vw) return;
+        if(y < -clip->h || y >= clip->h + vh) return;
 
         for(int i = y; i <= clip->h + y - 1; i++, yc++)
         {
             for(int j = x; j <= clip->w + x - 1; j++, xc++)    
             {
-                if(j < 0 || j >= SCREEN_WIDTH) continue;
-                if(i < 0 || i >= SCREEN_HEIGHT) continue;
+                if(j < 0 || j >= vw) continue;
+                if(i < 0 || i >= vh) continue;
                 if(img->data[yc*img->width + clip->y*img->width + clip->x + xc] == colorKey) continue;
                 gpuBuffer[i*SCREEN_WIDTH + j] = img->data[yc*img->width + clip->y*img->width + clip->x + xc];
+            }
+            xc = 0;
+        }
+    }
+}
+
+void drawClippedTransparentC(image* img, int32_t x, int32_t y, image_clip* clip, uint8_t colorKey, uint8_t color, rect* camera)
+{
+    //fallback for NULL clip, otherwise it will segfault.
+    if(clip == NULL) return drawTransparent(img, x,y, colorKey, camera);
+    
+    //xc - counter for width of image, yc - counter for height of image
+    uint32_t xc = 0,yc = 0;
+
+    int vw = camera != NULL ? (int)camera->w : SCREEN_WIDTH;
+    int vh = camera != NULL ? (int)camera->h : SCREEN_HEIGHT;
+
+    if(img != NULL)
+    {
+        if(x < -clip->w || x >= clip->w + vw) return;
+        if(y < -clip->h || y >= clip->h + vh) return;
+
+        for(int i = y; i <= clip->h + y - 1; i++, yc++)
+        {
+            for(int j = x; j <= clip->w + x - 1; j++, xc++)    
+            {
+                if(j < 0 || j >= vw) continue;
+                if(i < 0 || i >= vh) continue;
+                if(img->data[yc*img->width + clip->y*img->width + clip->x + xc] == colorKey) continue;
+                gpuBuffer[i*SCREEN_WIDTH + j] = color;
             }
             xc = 0;
         }

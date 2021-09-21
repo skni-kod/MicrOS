@@ -79,5 +79,5 @@ void tickPlayer(player* player)
         player->animTime += FRAME_S;
     }
     //Draw
-    drawClippedTransparent(player->tex, player->pos->x - cameraRect->x, player->pos->y - cameraRect->y, cfPtr, 3);
+    drawClippedTransparent(player->tex, player->pos->x - cameraRect->x, player->pos->y - cameraRect->y, cfPtr, 3, cameraRect);
 }
