@@ -40,6 +40,10 @@
 #include "v8086/memory_operations.h"
 #include "drivers/vbe/vbe.h"
 
+#include "drivers/pci/pci.h"
+#include "drivers/pci/pci_device.h"
+#include "drivers/sb16/sb16_driver.h"
+
 #include "debug_helpers/library/kernel_stdio.h"
 
 typedef struct _linesStruct
@@ -297,7 +301,7 @@ void startup()
     signals_manager_init();
     logger_log_ok("Signals manager");
 
-    /*pci_init();
+    pci_init();
     logger_log_ok("PCI");
     logger_log_info("Number of devices: ");
     uint8_t nd = pci_get_number_of_devices();
@@ -339,7 +343,7 @@ void startup()
         vga_printstring_color(itoa(dev->prog_if, buff, 16), &col);
         vga_printchar('\n');
     }
-    pci_dev* dev = get_device(0);
+    /*pci_device* dev = get_device(0);
     log_info(itoa(dev->vendor_id, buff, 16));
     log_info(itoa(dev->header_type, buff, 16));
     log_info(itoa(dev->class_code, buff, 16));
@@ -411,11 +415,15 @@ int kmain()
         attach_process_to_terminal(ts[i].terminal_id, process_manager_get_process(p));
     }
     
-    vga_clear_screen();
+    //vga_clear_screen();
     
-    switch_active_terminal(0);
+    //switch_active_terminal(0);
     
-    process_manager_run();  
+    sb16_init();
+
+    bool dupa = sb16_is_present();
+    
+    //process_manager_run();  
 
     while (1);
     return 0;
