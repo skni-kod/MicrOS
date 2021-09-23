@@ -24,7 +24,7 @@ void dma_init_transfer(uint8_t channel, bool read)
 
     // Count to 0x01ff (number of bytes in a 3.5" floppy disk track)
     io_out_byte(DMA_COUNT_REGISTER_CHANNEL, (0xff));
-    io_out_byte(DMA_COUNT_REGISTER_CHANNEL, 0x01);
+    io_out_byte(DMA_COUNT_REGISTER_CHANNEL, 0x23);
 
     // We don't want to have external page register
     io_out_byte(DMA_EXTERNAL_PAGE_REGISTER, 0);
