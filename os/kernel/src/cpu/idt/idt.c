@@ -190,7 +190,7 @@ void idt_init()
     idt_set(39, idt_int39, false); // LPT1
     idt_set(40, idt_int40, false); // CMOS
     idt_set(41, idt_int41, false); // Free
-    idt_set(42, idt_int42, false); // Free
+    idt_set(42, idt_int42, false); // Can be SB16
     idt_set(43, idt_int43, false); // Free
     idt_set(44, idt_int44, false); // Mouse
     idt_set(45, idt_int45, false); // FPU

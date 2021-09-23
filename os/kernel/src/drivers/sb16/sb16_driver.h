@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "../cpu/idt/idt.h"
 
 #define SB16_DSP_MIXER_PORT 0x224
 #define SB16_DSP_MIXER_DATA_PORT 0x225
@@ -15,5 +16,12 @@
 
 void sb16_init();
 bool sb16_is_present();
+void sb16_write_dsp(uint8_t value);
+uint8_t sb16_read_dsp();
+
+void sb16_write_mixer_register(uint8_t index, uint8_t value);
+uint8_t sb16_read_mixer_register(uint8_t index);
+
+bool sb16_interrupt_handler(interrupt_state* state);
 
 #endif
