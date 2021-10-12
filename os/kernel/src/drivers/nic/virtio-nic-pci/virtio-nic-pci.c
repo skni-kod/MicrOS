@@ -8,13 +8,12 @@
 pci_device pci_virtio_nic_device = {0};
 virtio_nic_dev virtio_nic = {0};
 
-virtq* receiveQueue;
-virtq* transmitQueue;
-
+virtq *receiveQueue;
+virtq *transmitQueue;
 
 uint32_t VNet_Read_Register(uint16_t reg)
 {
-    // if 4-byte register 
+    // if 4-byte register
     if (reg < REG_QUEUE_SIZE)
     {
         return io_in_long(virtio_nic.io_base + reg);
@@ -23,15 +22,15 @@ uint32_t VNet_Read_Register(uint16_t reg)
     {
         // if 2-byte register
         if (reg <= REG_QUEUE_NOTIFY)
-            return io_in_long(virtio_nic.io_base + reg);
+            return io_in_word(virtio_nic.io_base + reg);
         else // 1-byte register
-            return io_in_long(virtio_nic.io_base + reg);
+            return io_in_byte(virtio_nic.io_base + reg);
     }
 }
 
 void VNet_Write_Register(uint16_t reg, uint32_t data)
 {
-    // if 4-byte register 
+    // if 4-byte register
     if (reg < REG_QUEUE_SIZE)
     {
         io_out_long(virtio_nic.io_base + reg, data);
@@ -60,13 +59,13 @@ bool virtio_nic_init(net_device_t *net_dev)
     {
         pci_device *dev = pci_get_device(i);
 
-        if (dev->vendor_id == VIRTIO_NET_DEVICE_VENDOR_ID && dev->device_id >= VIRTIO_NET_DEVICE_ID_BEGIN && dev->device_id <= VIRTIO_NET_DEVICE_ID_END)
+        if (dev->vendor_id == VIRTIO_NET_DEVICE_VENDOR_ID &&
+            dev->device_id >= VIRTIO_NET_DEVICE_ID_BEGIN &&
+            dev->device_id <= VIRTIO_NET_DEVICE_ID_END &&
+            dev->subsystem_id == VIRTIO_NET_DEVICE_SUBSYSTEM_ID)
         {
-            if (dev->subsystem_id == VIRTIO_NET_DEVICE_SUBSYSTEM_ID)
-            {
-                pci_virtio_nic_device = *dev;
-                break;
-            }
+            pci_virtio_nic_device = *dev;
+            break;
         }
     }
 
@@ -79,11 +78,6 @@ bool virtio_nic_init(net_device_t *net_dev)
     virtio_nic.io_base = pci_virtio_nic_device.base_addres_0 & (~0x3);
     virtio_nic.mem_base = pci_virtio_nic_device.base_addres_0 & (~0xf);
 
-    //Enable IRQ
-    uint32_t irq_num = pci_virtio_nic_device.interrupt_line;
-    pic_enable_irq(irq_num);
-    idt_attach_interrupt_handler(irq_num, virtio_nic_irq_handler);
-    
     // Reset the virtio-network device
     VNet_Write_Register(REG_DEVICE_STATUS, STATUS_RESET_DEVICE);
 
@@ -112,6 +106,22 @@ bool virtio_nic_init(net_device_t *net_dev)
     pci_bus_config |= 0x4;
     pci_io_out(&pci_virtio_nic_device, 1, pci_bus_config);
 
+    /*
+        // Init virtqueues (see 4.1.5.1.3 of virtio-v1.0-cs04.pdf)
+    // Since we don't negotiate VIRTIO_NET_F_MQ, we can expect 3 virtqueues: receive, transmit, and control
+    */
+    receiveQueue = heap_kernel_alloc(sizeof(virtq), 0);
+    transmitQueue = heap_kernel_alloc(sizeof(virtq), 0);
+
+    VirtIO_Net_Init_Virtqueue(receiveQueue, 0);
+    VirtIO_Net_Init_Virtqueue(transmitQueue, 1);
+    VirtIO_Net_SetupReceiveBuffers();
+    receiveQueue->deviceArea->flags = 0;
+
+    //Enable IRQ
+    uint32_t irq_num = pci_virtio_nic_device.interrupt_line;
+    pic_enable_irq(irq_num);
+    idt_attach_interrupt_handler(irq_num, virtio_nic_irq_handler);
 
     //Get mac address
     for (uint8_t i = 0; i < 6; i++)
@@ -121,12 +131,6 @@ bool virtio_nic_init(net_device_t *net_dev)
     strcpy(net_dev->device_name, VIRTIO_NET_DEVICE_NAME);
     memcpy(net_dev->mac_address, virtio_nic.mac_addr, sizeof(uint8_t) * 6);
 
-    receiveQueue = heap_kernel_alloc(sizeof(virtq),0);
-    transmitQueue = heap_kernel_alloc(sizeof(virtq),0);
-
-    VirtIO_Net_Init_Virtqueue(receiveQueue, 0);
-    VirtIO_Net_Init_Virtqueue(transmitQueue, 1);
-    VirtIO_Net_SetupReceiveBuffers();
 
     // Tell the device it's initialized
     VNet_Write_Register(REG_DEVICE_STATUS, STATUS_DRIVER_READY);
@@ -134,22 +138,12 @@ bool virtio_nic_init(net_device_t *net_dev)
     // Remind the device that it has receive buffers. Hey VirtualBox! Why aren't you using these?
     VNet_Write_Register(REG_QUEUE_NOTIFY, VIRTIO_NET_RECEIVE_QUEUE_INDEX);
 
-    char* tmp_str[100];
-    uint32_t isr;
-
-    while(1){
-        isr = VNet_Read_Register(REG_ISR_STATUS);
-        kernel_sprintf(tmp_str,"%x",isr);
-        logger_log_info(tmp_str);
-        sleep(500);
-    }
-
     return true;
 }
 
 bool virtio_nic_irq_handler()
 {
-    logger_log_info("DUPA");
+    logger_log_info("VirtIO NET: DUPA");
 
     return true;
 }
@@ -167,7 +161,6 @@ void VirtIO_Net_Init_Virtqueue(virtq *virtqueue, uint16_t queueIndex)
     if (!queueSize)
         return;
 
-    char str[200];
     kernel_sprintf(str, "queue %d has %d elements", queueIndex, queueSize);
     logger_log_info(str);
 
@@ -186,7 +179,9 @@ void VirtIO_Net_Init_Virtqueue(virtq *virtqueue, uint16_t queueIndex)
     kernel_sprintf(str, "deviceArea: 0x%x", virtqueue->deviceArea);
     logger_log_info(str);
 
-    VNet_Write_Register(REG_QUEUE_ADDRESS, (uint32_t)(virtqueue->descriptors - DMA_ADDRESS_OFFSET) / 4096);
+    uint32_t addr = (uint32_t)((uint32_t)virtqueue->descriptors - DMA_ADDRESS_OFFSET) / 4096;
+
+    VNet_Write_Register(REG_QUEUE_ADDRESS, addr);
 }
 
 void VirtIO_Net_SetupReceiveBuffers()
@@ -196,7 +191,7 @@ void VirtIO_Net_SetupReceiveBuffers()
     // Allocate and add 16 buffers to receive queue
     for (uint16_t i = 0; i < 16; ++i)
     {
-        uint32_t buffer = (heap_kernel_alloc(bufferSize, 0) - DMA_ADDRESS_OFFSET);
+        uint32_t buffer = ((uint32_t)heap_kernel_alloc(bufferSize, 0) - DMA_ADDRESS_OFFSET);
 
         // Add buffer to the descriptor table
         receiveQueue->descriptors[i].address = (uint64_t)buffer;
@@ -213,7 +208,7 @@ void VirtIO_Net_SetupReceiveBuffers()
     VNet_Write_Register(REG_QUEUE_NOTIFY, VIRTIO_NET_RECEIVE_QUEUE_INDEX);
 }
 
-
-void VirtIO_Net_SendPacket(net_packet_t *packet){
+void VirtIO_Net_SendPacket(net_packet_t *packet)
+{
     VNet_Write_Register(REG_QUEUE_NOTIFY, VIRTIO_NET_TRANSMIT_QUEUE_INDEX);
 }

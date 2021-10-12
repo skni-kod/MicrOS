@@ -17,6 +17,8 @@
 #include "../../virtio/Virtio.h"
 #include <stdlib.h>
 
+char str[256];
+
 /* Device specification for PCI (4.1.1) */
 #define VIRTIO_NET_DEVICE_VENDOR_ID 0x1AF4
 #define VIRTIO_NET_DEVICE_SUBSYSTEM_ID 0x1

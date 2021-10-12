@@ -36,7 +36,7 @@ bool network_manager_init()
         kvector_init(tmp->tx_queue);
         kvector_add(net_devices, tmp);
         //Hardcode IPv4 address
-        __set_ipv4_addr(tmp->ipv4_address, 10,0,0,99);
+        __set_ipv4_addr(tmp->ipv4_address, 192,160,1,120);
         __network_manager_print_device_info(tmp);
     }
 
@@ -51,7 +51,7 @@ bool network_manager_init()
         kvector_init(tmp->tx_queue);
         kvector_add(net_devices, tmp);
         //Hardcode IPv4 address
-        __set_ipv4_addr(tmp->ipv4_address, 192,168,1,109);
+        __set_ipv4_addr(tmp->ipv4_address, 192,160,1,120);
         __network_manager_print_device_info(tmp);
     }
 

@@ -166,7 +166,4 @@ typedef struct virtq
 
 
 void VirtIO_Allocate_Virtqueue(virtq *virtqueue, uint16_t queueSize);
-
-void VirtIO_Read_PCI_Capabilities(virtio_pci_cap *caps, uint8_t bus, uint8_t slot, uint8_t function, uint8_t capPointer);
-
 #endif
