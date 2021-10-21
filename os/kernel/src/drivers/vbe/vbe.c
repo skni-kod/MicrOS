@@ -159,6 +159,12 @@ VBEStatus VBE_set_video_mode(uint16_t mode_number, bool clear_screen)
     {
         if(mode_info.frame_buffor_phys_address != 0)
         {
+            if(page_index != 0)
+            {
+                paging_unmap_page(page_index);
+                page_index = 0;
+                linear_buffer = 0;
+            }
             page_index = paging_get_first_free_page_index(1);
             paging_map_page(mode_info.frame_buffor_phys_address/0x400000, page_index, false);
             linear_buffer = (uint8_t*)(page_index * 0x400000)+ 0xc00000000;
