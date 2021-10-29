@@ -554,7 +554,6 @@ uint8_t* floppy_read_continous(int device_number, int sector, int count){
         floppy_lba_to_chs(sector+offset, &head, &track, &true_sector);
         if (offset+18 <= count)
         {
-            if(true_sector != 1) vga_printstring("DUPA");
             uint8_t* tmp = read_track_from_floppy(device_number, head, track);
             //uint8_t* tmp = floppy_read_sectors(device_number, head, track, true_sector, 18);
             memcpy(buffer+(offset*512), tmp, 18*512);
@@ -570,7 +569,6 @@ uint8_t* floppy_read_continous(int device_number, int sector, int count){
 
 uint8_t* floppy_read_sectors(int device_number, uint8_t head, uint8_t track, uint8_t sector, uint32_t count)
 {
-    //logger_log_info("DUPA CONT");
     if (sector-1 + count > 18)
     {
         return NULL;
