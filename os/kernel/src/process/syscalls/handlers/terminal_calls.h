@@ -14,4 +14,7 @@ void syscall_terminal_get_cursor_position(interrupt_state *state);
 void syscall_terminal_clear();
 void syscall_terminal_set_cursor_visibility(interrupt_state *state);
 
+void syscall_terminal_set_video_mode(interrupt_state *state);
+void syscall_terminal_copy_from_buffer(interrupt_state *state);
+
 #endif

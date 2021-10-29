@@ -143,19 +143,15 @@ main:
 
     call load_memory_map
 
+    ;call realstr
+    ;hlt 
+
     ; Load GDT table
     lgdt [dword gdt_description]
 
-;   OK
-;    call realstr
-
 ; Check If Line A20 Enabled
     call check_a20
-    
-    call realstr
-    
     or ax, ax
-    
     jnz a20_enabled
     ;jnz a20_check_true
 
@@ -171,7 +167,6 @@ main:
 
 ;    cli
 ;    hlt
-
 
 ; Check if Enabled via BIOS
 a20_check_after_bios:
@@ -320,13 +315,6 @@ check_a20__exit:
     ret
 
 halt_a20:
-
-    mov ah, 0Ah
-    mov al, 'b'
-    mov bh, 0
-    mov cx, 3
-    int 10h
-
     call realstr_status
     cli
     hlt
@@ -354,6 +342,7 @@ enable_A20_BIOS:
     jb      a20_bios_failed              ;couldn't activate the gate
     cmp     ah,0
     jnz     a20_bios_failed              ;couldn't activate the gate
+    jmp     a20_check_after_bios
 
 enable_A20_keyboard:
         cli

@@ -56,6 +56,7 @@ int8_t terminal_manager_draw_line(uint32_t process_id, uint8_t color, uint16_t a
 int8_t terminal_manager_draw_circle(uint32_t process_id, uint8_t color, uint16_t x, uint16_t y, uint16_t radius);
 int8_t terminal_manager_draw_rectangle(uint32_t process_id, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
 int8_t terminal_manager_clear_screen(uint32_t process_id);
+int8_t terminal_manager_copy_from_buffer(uint32_t process_id, uint8_t* buffer, size_t how_many);
 
 uint32_t terminal_manager_get_active_terminal_id();
 bool terminal_manager_keyboard_interrupt_handler(interrupt_state *state);

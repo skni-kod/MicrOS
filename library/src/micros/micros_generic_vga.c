@@ -14,3 +14,8 @@ uint16_t micros_generic_vga_get_current_video_mode()
 {
     return micros_interrupt_0a(0x19);
 }
+
+uint8_t micros_generic_vga_is_vretrace()
+{
+    return micros_interrupt_0a(0x1A);
+}

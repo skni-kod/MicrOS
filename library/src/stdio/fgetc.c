@@ -10,5 +10,5 @@ int fgetc(FILE *stream)
         }
     }
 
-    return stream->buffer[stream->pos++ - stream->base];
+    return (unsigned char)stream->buffer[stream->pos++ - stream->base];
 }
