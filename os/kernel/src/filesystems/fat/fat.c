@@ -391,7 +391,7 @@ uint8_t *fat_read_file_from_cluster(uint16_t initial_cluster, uint16_t cluster_o
                              current_partition->first_sector;
         
         uint32_t counter = 1;
-        while (cluster + 1 == (cluster = fat_read_cluster_value(cluster)))
+        while (cluster + 1 == (cluster = fat_read_cluster_value(cluster)) && counter < clusters_count)
         {
             counter += 1;
         }

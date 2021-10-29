@@ -95,6 +95,7 @@ int8_t mode0fh_set_mode()
     video_card_set_draw_circle_func(&mode0fh_draw_circle);
     video_card_set_draw_rectangle_func(&mode0fh_draw_rectangle);
     video_card_set_clear_screen_func(&mode0fh_clear_screen);
+    video_card_set_swap_external_buffer(&mode0fh_swap_external_buffer);
 
     video_card_set_print_char_func(NULL);
 	video_card_set_print_char_color_func(NULL);

@@ -26,6 +26,7 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0x17, syscall_generic_vga_set_video_mode);
     syscalls_manager_attach_handler(0x18, syscall_generic_vga_is_text_mode);
     syscalls_manager_attach_handler(0x19, syscall_generic_vga_get_current_video_mode);
+    syscalls_manager_attach_handler(0x1A, syscall_generic_vga_is_vretrace);
 
     // 0x2X - Keyboard
     syscalls_manager_attach_handler(0x20, syscall_keyboard_is_key_pressed);
@@ -100,6 +101,10 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0xD3, syscall_serial_send);
     syscalls_manager_attach_handler(0xD4, syscall_serial_send_string);
     syscalls_manager_attach_handler(0xD5, syscall_serial_receive);
+
+    //0xEX - Terminal Manager Graphics Functions
+    syscalls_manager_attach_handler(0xE0, syscall_terminal_set_video_mode);
+    syscalls_manager_attach_handler(0xE1, syscall_terminal_copy_from_buffer);
 }
 
 void syscalls_manager_attach_handler(uint8_t function_number, void (*handler)(interrupt_state *state))
