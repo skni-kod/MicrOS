@@ -59,6 +59,9 @@ typedef enum _VBEStatus{
 void VBE_initialize();
 void VBE_close();
 bool VBE_is_initialized();
+
+void VBE_driver_init();
+
 VBEStatus VBE_check_existance_of_VESA();
 VBEStatus VBE_get_svga_information(svga_information** information_struct_ptr);
 VBEStatus VBE_get_vesa_mode_information(svga_mode_information* infromation_struct, uint16_t mode_number);

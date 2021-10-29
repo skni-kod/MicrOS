@@ -5,8 +5,9 @@
 #include "../util/file_utils.h"
 
 #include "../util/screen.h"
+#include "../draw_utils/draw_utils.h"
 
-float tilemapUpdateTime = 0.2f;
+float tilemapUpdateTime = 0.1f;
 float tilemapUpdateTimer = 0.0f;
 
 tileset* buildTileset(char* filename, int rows, int cols, int cellW, int cellH, uint8_t bgColor)
@@ -76,7 +77,8 @@ tilemap* createTileMap(int width, int height, tileset* ts)
     
     tm->invalidID.isAnimated = 0;
     tm->invalidID.isPlaying = 0;
-    tm->invalidID.frame = 0;
+    tm->invalidID.hasCollider = 0;
+    tm->invalidID.reserved = 0;
     tm->invalidID.tileset_id = 2047;
 
     for(int i = 0; i < 8; i++)
@@ -121,7 +123,7 @@ void drawMapBackground(tilemap* map, rect* camera)
     }
 }
 
-void drawMapForeground(tilemap* map, rect* camera)
+void drawMapForeground(tilemap* map, rect* camera, bool drawColliders)
 {
     int xmin = (camera->x / 32) - 1;
     if(xmin < 0) xmin = 0;
@@ -142,6 +144,12 @@ void drawMapForeground(tilemap* map, rect* camera)
             int offset = r * map->width + c;
             if((map->layers[6]+offset)->tileset_id != 2047) drawClippedTransparent(map->ts->tilesetTex, c*32 - camera->x, r*32 - camera->y, &map->ts->tile_clips[(map->layers[6]+offset)->tileset_id], map->ts->bgColor, camera);   
             if((map->layers[7]+offset)->tileset_id != 2047) drawClippedTransparent(map->ts->tilesetTex, c*32 - camera->x, r*32 - camera->y, &map->ts->tile_clips[(map->layers[7]+offset)->tileset_id], map->ts->bgColor, camera);   
+            
+            if((map->layers[7]+offset)->hasCollider == true && map->mode == 1) 
+            {
+                rect col = {c*32, r*32, 32, 32};
+                draw_fill_rect(&col, 0x04, camera);
+            }
         }
     }
 }
@@ -157,12 +165,48 @@ void animateTiles(tilemap* map)
         {
             for(int j = 0; j < 8; j++)
             {
-                if(map->layers[j]->isAnimated && map->ts->animations[map->layers[j]->tileset_id].next_id != 2047)
+                if((map->layers[j]+i)->isAnimated && map->ts->animations[(map->layers[j]+i)->tileset_id].next_id != 2047)
                 {
-                    map->layers[j]->tileset_id = map->ts->animations[map->layers[j]->tileset_id].next_id;
+                    (map->layers[j]+i)->tileset_id = map->ts->animations[(map->layers[j]+i)->tileset_id].next_id;
                 }
             }
         }
     }
     tilemapUpdateTimer += FRAME_S;
+}
+
+//TODO ADD FUCKING COLLISIONS
+void saveTilemap(tilemap* map, char* filename)
+{
+    if(map == NULL) return;
+
+    byte* tilemapData = (byte*)calloc(1, 65538);
+
+    *(tilemapData) = map->width;
+    *(tilemapData+1) = map->height;
+    for(int i = 0; i < 8; i++)
+    {
+        memcpy(tilemapData + 2 + i*(map->width*map->height*sizeof(uint16_t)), map->layers[i], map->width*map->height*sizeof(uint16_t));
+    }
+    saveFile(filename, tilemapData, 65538, true);
+}
+
+tilemap* loadTilemap(char* filename, tileset* ts)
+{
+    byte* tilemapData = NULL;
+    //it assumes file exists
+    uint32_t loadedBytes = loadFile("/GG/SCENE1.MAP", &tilemapData, true);
+    
+    tilemap* tm = (tilemap*)calloc(1, sizeof(tilemap));
+    tm->ts = ts;
+    tm->width = *tilemapData;
+    tm->height = *(tilemapData + 1);
+    tm->invalidID.tileset_id = 2047;
+    for(int i = 0; i < 8; i++)
+    {
+        tm->layers[i] = (tileID*)malloc(tm->width*tm->height*sizeof(uint16_t));
+        memcpy(tm->layers[i], tilemapData + 2 + i*(tm->width*tm->height*sizeof(uint16_t)), tm->width*tm->height*sizeof(uint16_t));
+    }
+    tm->mode = 0;
+    return tm;
 }

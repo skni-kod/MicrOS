@@ -8,9 +8,6 @@ size_t fread(void *ptr, size_t size, size_t count, FILE *stream)
 
     do
     {
-        /*printf("%02X\n", c);
-        char d; 
-        scanf("%c ", &d);*/
         ((char *)ptr)[i++] = c;
     } while (i < total_size && (c = fgetc(stream), c != EOF));
 

@@ -2,6 +2,7 @@
 #define FILE_UTILS_H
 
 #include "../stdafx.h"
+#include <stddef.h>
 
 /**
  * Load file from specified path into dst
@@ -11,6 +12,7 @@
  * @return amount of data loaded
  */
 uint32_t loadFile(char* filename, byte** dst, bool compressed);
+uint32_t saveFile(char* filename, byte* src, size_t src_size, bool useCompression);
 
 
 

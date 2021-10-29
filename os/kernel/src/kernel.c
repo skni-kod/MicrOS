@@ -347,7 +347,12 @@ void startup()
     log_info(itoa(dev->prog_if, buff, 16));*/
     //fat_init();
     //logger_log_ok("FAT12");
+
+    VBE_driver_init();
+    logger_log_ok("VBE");
     
+    while(1);
+
     init_terminal_manager();
     logger_log_ok("Terminal manager");
 

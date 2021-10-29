@@ -342,6 +342,7 @@ enable_A20_BIOS:
     jb      a20_bios_failed              ;couldn't activate the gate
     cmp     ah,0
     jnz     a20_bios_failed              ;couldn't activate the gate
+    jmp     a20_check_after_bios
 
 enable_A20_keyboard:
         cli

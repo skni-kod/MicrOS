@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <string.h>
 #include "../memory/heap/heap.h"
+#include "../../debug_helpers/library/kernel_stdio.h"
+#include "logger/logger.h"
 
 v8086* machine = NULL;
 bool initialized = false;
@@ -33,6 +35,34 @@ void VBE_close()
 bool VBE_is_initialized()
 {
     return initialized;
+}
+
+void VBE_driver_init()
+{
+    if(!initialized) VBE_initialize();
+
+    if(VBE_check_existance_of_VESA() == VBE_OK)
+    {
+        svga_information* information;
+        int status = VBE_get_svga_information(&information);
+        svga_mode_information modeInfo;
+        char buf[8];
+        itoa(status, buf, 10);
+        //logger_log_info(information->signature);
+        //logger_log_info(information->producent_text);
+        logger_log_info(buf);
+        while(1);
+        for(int i = 0; i < information->number_of_modes; i++)
+        {
+            char str[256];
+            VBE_get_vesa_mode_information(&modeInfo, information->mode_array[i]);
+            if(!(modeInfo.mode_attributes & 0b10000))
+            {
+                kernel_sprintf(str, "MODE %s: %dx%d", itoa(information->mode_array[i], buf, 16), modeInfo.mode_width, modeInfo.mode_height);
+                logger_log_info(str);
+            }
+        }
+    }
 }
 
 VBEStatus VBE_check_existance_of_VESA()

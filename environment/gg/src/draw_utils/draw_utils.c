@@ -66,30 +66,42 @@ void draw_rect(rect* rectangle, byte color, rect* camera)
     }
 }
 
-void draw_fill_rect(rect* rectangle, byte color)
+void draw_fill_rect(rect* rectangle, byte color, rect* camera)
 {
+    int x, y;
+    if(camera != NULL)
+    {
+        x = rectangle->x - camera->x;
+        y = rectangle->y - camera->y;
+    }
+    else
+    {
+        x = rectangle->x;
+        y = rectangle->y;
+    }
+    
     int right,left,top,bottom, temp;
     
-    if(rectangle->y > rectangle->y + rectangle->h - 1)
+    if(y > y + rectangle->h - 1)
     {
-        top = rectangle->y + rectangle->h -1;    
-        bottom = rectangle->y;
+        top = y + rectangle->h -1;    
+        bottom = y;
     }
     else
     {
-        top = rectangle->y;
-        bottom = rectangle->y + rectangle->h - 1;
+        top = y;
+        bottom = y + rectangle->h - 1;
     }
 
-    if(rectangle->x > rectangle->x + rectangle->w - 1)
+    if(x > x + rectangle->w - 1)
     {
-        left = rectangle->x + rectangle->w - 1;    
-        right = rectangle->x;
+        left = x + rectangle->w - 1;    
+        right = x;
     }
     else
     {
-        left = rectangle->x;
-        right = rectangle->x + rectangle->w - 1;
+        left = x;
+        right = x + rectangle->w - 1;
     }
 
     int top_offset = top >= 0 ? top : 0;

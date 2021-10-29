@@ -1,6 +1,7 @@
 #include "lz77.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 
 uint32_t lz77_compress(uint8_t* uncompressed_text, uint32_t uncompressed_size, uint8_t* compressed_text, uint8_t pointer_length_width)
@@ -164,4 +165,12 @@ uint32_t decompress(byte* src, uint32_t src_len, byte** dst)
         return 0;
 
     return uncompressed_size;
+}
+
+uint32_t compress(byte* src, size_t src_size, byte** dst, size_t malloc_size, uint8_t pointer_length_width)
+{
+    uint32_t cSize;
+    *dst = (uint8_t*)malloc(malloc_size);
+    cSize = lz77_compress(src, src_size, *dst, pointer_length_width);
+    return cSize;
 }

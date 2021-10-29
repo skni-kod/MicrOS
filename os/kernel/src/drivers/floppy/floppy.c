@@ -1,4 +1,5 @@
 #include "floppy.h"
+#include "../../debug_helpers/library/kernel_stdio.h"
 
 volatile uint32_t floppy_sectors_per_track;
 volatile uint32_t time_of_last_activity = 0;
@@ -286,7 +287,7 @@ uint8_t* read_track_from_floppy(int device_number, int head, int track){
     for (int i = 0; i < 10; i++)
     {
         // Init DMA
-        dma_init_transfer(0x06, true);
+        dma_init_transfer(0x06, true, 0x23ff);
 
         if (!floppy_seek(track, head))
         {
@@ -415,8 +416,11 @@ uint8_t* read_track_from_floppy(int device_number, int head, int track){
     return NULL;
 }
 
-uint8_t* floppy_read_sectors(int device_number, uint8_t head, uint8_t track, uint8_t sector, uint32_t count){
-    if (sector-1 + count > 18){
+uint8_t* floppy_read_sectors(int device_number, uint8_t head, uint8_t track, uint8_t sector, uint32_t count)
+{
+    //logger_log_info("DUPA CONT");
+    if (sector-1 + count > 18)
+    {
         return NULL;
     }
     // Run floppy motor and wait some time
@@ -426,7 +430,7 @@ uint8_t* floppy_read_sectors(int device_number, uint8_t head, uint8_t track, uin
     for (int i = 0; i < 10; i++)
     {
         // Init DMA
-        dma_init_transfer(0x06, true);
+        dma_init_transfer(0x06, true, (count*512 - 1));
 
         if (!floppy_seek(track, head))
         {
@@ -455,9 +459,12 @@ uint8_t* floppy_read_sectors(int device_number, uint8_t head, uint8_t track, uin
 
         // Sector size (2 = 512)
         floppy_send_command(2);
-
+        
+        // uint8_t x[80];
+        // kernel_sprintf(x, "%d, %d, %d, %d", track, head, sector, sector+count);
+        // logger_log_warning(x);
         // Sectors per track
-        floppy_send_command(sector+count-1);
+        floppy_send_command(sector+count < 18 ? sector+count : 18);
         //floppy_send_command(sectors_per_track);
 
         // Length of gap (0x1B = floppy 3,5)
@@ -607,6 +614,7 @@ void floppy_write_sector(int device_number, int sector, uint8_t *content)
 
 uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sector, bool read)
 {
+    //logger_log_info("DUPA SECTOR");
     // Run floppy motor and wait some time
     floppy_enable_motor();
     //sleep(500);
@@ -614,7 +622,7 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
     for (int i = 0; i < 10; i++)
     {
         // Init DMA
-        dma_init_transfer(0x06, read);
+        dma_init_transfer(0x06, read, 511);
 
         if (!floppy_seek(track, head))
         {

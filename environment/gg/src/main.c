@@ -13,6 +13,9 @@
 
 #include "editor/editor.h"
 
+#include "util/keyboard.h"
+#include "tile/tilemap.h"
+
 #include "stdafx.h"
 
 
@@ -39,6 +42,18 @@ int compareString(char* a, char*b)
     return 0;
 }
 
+void updateCameraGame(rect* cam, player* play)
+{
+    cam->x = (play->pos->x + play->pos->w/2 - cam->w/2);
+    cam->y = (play->pos->y + play->pos->h/2 - cam->h/2);
+
+    //TODO MAKE IT LEVEL DEPENDENT
+    if(cam->x < 0) cam->x = 0;
+    if(cam->x > LEVEL_WIDTH - SCREEN_WIDTH) cam->x = LEVEL_WIDTH - SCREEN_WIDTH;
+    if(cam->y < 0) cam->y = 0;
+    if(cam->y > LEVEL_HEIGHT - SCREEN_HEIGHT) cam->y = LEVEL_HEIGHT - SCREEN_HEIGHT;
+}
+
 int main(int argc, char *argv[])
 {
     uint8_t editorMode = 0;
@@ -60,12 +75,6 @@ int main(int argc, char *argv[])
     micros_console_set_video_mode(0x13);
     printf("After Enter video mode\n");
 
-    cameraRect = (rect*)calloc(1, sizeof(rect));
-    cameraRect->x = 0;
-    cameraRect->y = 0;
-    cameraRect->w = SCREEN_WIDTH;
-    cameraRect->h = SCREEN_HEIGHT;
-
     gpuBuffer = (byte*)calloc(GPU_BUFFER_SIZE , sizeof(byte));
 
     //Init gpu buffer, so we see anything on screen when loading.
@@ -79,27 +88,55 @@ int main(int argc, char *argv[])
     LEVEL_WIDTH = 500;
     LEVEL_HEIGHT = 500;
 
-    runEditor();
+    if(editorMode)
+    {
+        runEditor();
+    }
+    else
+    {
+        rect* camera = (rect*)calloc(1, sizeof(rect));
+        camera->x = 0;
+        camera->y = 0;
+        camera->w = SCREEN_WIDTH;
+        camera->h = SCREEN_HEIGHT;
+        
+        image* playerSprite = loadImage("/GG/CHARAS.ZIM", true);
+        player* playerPtr = initPlayer(0, 0,playerSprite,4,3,1);
+        tileset* mainTS = buildTileset("/GG/TILESET.ZIM", 22, 56, 32, 32, 0x0B);
+        tilemap* map = loadTilemap("/GG/SCENE1.MAP", mainTS);
 
-    // if(!editorMode)
-    // {
-    //     playerSprite = loadImage("/GG/CHARAS.ZIM", true);
-    //     player = initPlayer(LEVEL_WIDTH/2, LEVEL_HEIGHT/2,playerSprite,4,3,1);
-    // }
+        LEVEL_WIDTH = map->width * 32;
+        LEVEL_HEIGHT = map->height * 32;
 
-        // //We're not in editor mode, so launch normal game loop;
-        // if(!editorMode)
-        // {
-        //     //run game logic
-        //     //temporary
-        //     draw(tileset, 0 - (int32_t)cameraRect->x , 0 - (int32_t)cameraRect->y);
-        //     //Update and draw everything here
+        uint32_t msStart, msEnd;
 
-        //     tickPlayer(player);
-        //     updateCamera(cameraRect, player);
-        // }
+        initInput();
 
-    //return to text mode
+        while(1)
+        {
+            if(micros_keyboard_get_key_state(key_esc))
+            {
+                micros_console_set_video_mode(0x03);
+                break;
+            }
+            msStart = micros_timer_get_system_clock();
+            //Clean keybaord buffer
+            processInput();
+            //clear screen
+            memset(gpuBuffer, 0, GPU_BUFFER_SIZE);
+            
+            animateTiles(map);
+            drawMapBackground(map, camera);
+            tickPlayer(playerPtr, camera);
+            updateCameraGame(camera, playerPtr);
+            drawMapForeground(map, camera, false);
+
+            //End of update and draw!
+            swap_buffers(gpuBuffer, true);
+            msEnd = micros_timer_get_system_clock();
+            if (msEnd - msStart < FRAME_MS) micros_process_current_process_sleep(FRAME_MS - (msEnd - msStart));
+        }
+    }
     micros_console_set_video_mode(0x03);
 
     return 0;

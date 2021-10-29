@@ -15,7 +15,7 @@ typedef struct bitmap_font
 } bitmap_font;
 
 void draw_rect(rect* rectangle, byte color, rect* camera);
-void draw_fill_rect(rect* rectangle, byte color);
+void draw_fill_rect(rect* rectangle, byte color, rect* camera);
 
 bitmap_font* load_font(char* filename, int cell_width, int cell_height);
 

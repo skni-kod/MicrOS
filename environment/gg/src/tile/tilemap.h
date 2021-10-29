@@ -16,11 +16,17 @@
  * * alignment to byte
  */
 
+enum TMFLAGS
+{
+    TM_COLL = 0x01,
+};
+
 typedef struct tileID
 {
     uint8_t isAnimated : 1;
     uint8_t isPlaying : 1;
-    uint8_t frame : 3;
+    uint8_t hasCollider : 1;
+    uint8_t reserved : 2;
     uint16_t tileset_id : 11;
 } tileID;
 
@@ -52,6 +58,7 @@ typedef struct tilemap
     tileID* layers[8];
     tileset* ts;
     tileID invalidID;
+    byte mode;
 } tilemap;
 
 typedef struct tile
@@ -66,9 +73,13 @@ tileset* buildTileset(char* filename, int rows, int cols, int cellW, int cellH, 
 
 tilemap* createTileMap(int width, int height, tileset* ts);
 
-void drawMapForeground(tilemap* map, rect* camera);
+void drawMapForeground(tilemap* map, rect* camera, bool drawColliders);
 void drawMapBackground(tilemap* map, rect* camera);
 
 void animateTiles(tilemap* map);
+
+void saveTilemap(tilemap* map, char* filename);
+
+tilemap* loadTilemap(char* filename, tileset* ts);
 
 #endif

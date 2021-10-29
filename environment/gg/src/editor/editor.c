@@ -67,7 +67,17 @@ void runEditor()
 
     //test?
     tileset* mainTS = buildTileset("/GG/TILESET.ZIM", 22, 56, 32, 32, 0x0B);
-    map = createTileMap(64,64, mainTS);
+    //THIS SUCKS
+    FILE* tmp = fopen("A:/GG/SCENE1.MAP", "r");
+    if( tmp == 0)
+    {
+        map = createTileMap(64,64, mainTS);
+    }
+    else
+    {
+        map = loadTilemap("/GG/SCENE1.MAP", mainTS);
+        fclose(tmp);
+    }
     int tsX = 0, tsY = 0, layer = 0;
     uint8_t isAnimated = 0, isPlaying = 0;
     char tileInfo[64];
@@ -87,7 +97,7 @@ void runEditor()
         //clear screen
         memset(gpuBuffer, 0, GPU_BUFFER_SIZE);
 
-        draw_fill_rect(editorbg, 0x16);
+        draw_fill_rect(editorbg, 0x16, NULL);
 
         //still placeholder, but better view
         if(getKeyDown(key_pause))
@@ -143,22 +153,44 @@ void runEditor()
             tileID id;
             id.isAnimated = isAnimated;
             id.isPlaying = isPlaying;
-            id.frame = 0;
+            id.reserved = 0;
+            id.hasCollider = 0;
             id.tileset_id = tsY*mainTS->cols + tsX;
             placeTile(cix, ciy, layer, id, map);
         }
+
+        if(getKeyDown(key_c))
+        {
+            insertCollider(cix, ciy, map);
+        }
+
+        if(getKeyDown(key_m)) map->mode ^= 1;
 
         if(getKeyDown(key_backspace))
         {
             deleteTile(cix, ciy, layer, map);
         }
 
-        //render tilemap  (SLOW)
-        animateTiles(map);
-        drawMapBackground(map, camera);
-        drawMapForeground(map, camera);
+        if(getKeyDown(key_y))
+        {
+            draw_text("SAVING...", 140, 5, mainFont, 0x0F);
+            saveTilemap(map, "/GG/SCENE1.MAP");
+        }
 
-        draw_fill_rect(tilePlaceholder, 0x1C);
+        if(getKeyDown(key_z))
+        {
+            for(int i = 0; i < 8; i++)
+            {
+                memset(map->layers[i], 0, map->width*map->height*sizeof(uint16_t));
+            }
+        }
+
+        //render tilemap  (SLOW)
+        //animateTiles(map);
+        drawMapBackground(map, camera);
+        drawMapForeground(map, camera, map->mode == 1);
+
+        draw_fill_rect(tilePlaceholder, 0x1C, NULL);
         drawClippedTransparent(mainTS->tilesetTex, 283, 25, mainTS->tile_clips+(tsY*mainTS->cols + tsX), mainTS->bgColor, NULL);
 
         draw_text("EDITOR", 250, 5, mainFont, 0x0F);
@@ -202,12 +234,12 @@ void tickCursor()
         cursorTimer = 0.0f;
         drawCursor ^= 1;
     }
-    updateCamera();
+    updateCameraEditor();
     if(drawCursor) draw_rect(cursor, 0x0F, camera);
     cursorTimer += FRAME_S;
 }
 
-void updateCamera()
+void updateCameraEditor()
 {
     if(snapMode)
     {
@@ -225,5 +257,10 @@ void placeTile(int x, int y, int layer, tileID id, tilemap* map)
 
 void deleteTile(int x, int y, int layer, tilemap* map)
 {
+    *(map->layers[layer]+(y * map->width + x)) = map->invalidID;
+}
 
+void insertCollider(int x, int y, tilemap* map)
+{
+    (map->layers[7]+(y * map->width + x))->hasCollider ^= 1;
 }

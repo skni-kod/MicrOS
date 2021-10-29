@@ -51,9 +51,17 @@ image* loadImage(char* filename, bool isCompressed)
 
 //ALL THESE FUNCTIONS WORK IN SCREENSPACE, NOT WORLD SPACE!!!
 
+/**
+ * Draw opaque image on screen
+ */
 void draw(image* img, int32_t x, int32_t y, rect* camera)
 {
     //draw to 320x200 buffor
+    //Rework: make it few times faster! (LATER)
+    //Fix needed asap
+    //Do not sample image per pixel, without transparency we can copy it line by line.
+    //Of course when GPU buffer is linear!
+
     //xc - counter for width of image, yc - counter for height of image
     uint32_t xc = 0, yc = 0;
 
@@ -62,8 +70,12 @@ void draw(image* img, int32_t x, int32_t y, rect* camera)
 
     if(img != NULL)
     {
+        //this makes sure we do not attempt to draw if image is entirely outside screenspace or camera view space.
         if(x < -img->width || x >= img->width + vw) return;
         if(y < -img->height || y >= img->height + vh) return;
+
+        int sx = x < 0 ? img->width - x : x;
+        int sy = y < 0 ? img->height - y : y;
 
         for(int i = y; i <= img->height + y - 1; i++, yc++)
         {
@@ -107,6 +119,8 @@ void drawClipped(image* img, int32_t x, int32_t y, image_clip* clip, rect* camer
     }
 }
 
+//Transparency needs more time, cannot do much about that.
+//Add calculation of drawing bounds, to reduce time used to just go through image (should help with clipping too)
 void drawTransparent(image* img, int32_t x, int32_t y, uint8_t colorKey, rect* camera)
 {
     //xc - counter for width of image, yc - counter for height of image

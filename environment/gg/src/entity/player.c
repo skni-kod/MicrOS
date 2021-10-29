@@ -3,8 +3,6 @@
 
 #include "../util/screen.h"
 
-extern rect* cameraRect;
-
 extern uint32_t LEVEL_WIDTH;
 extern uint32_t LEVEL_HEIGHT;
 
@@ -41,7 +39,7 @@ player* initPlayer(int32_t x, int32_t y, image* img, int32_t r, int32_t c, int32
     return playerPtr;
 }
 
-void tickPlayer(player* player)
+void tickPlayer(player* player, rect* camera)
 {
     int8_t dx = 0, dy = 0;
     if(micros_keyboard_get_key_state(key_w)) dy = -1;
@@ -79,5 +77,5 @@ void tickPlayer(player* player)
         player->animTime += FRAME_S;
     }
     //Draw
-    drawClippedTransparent(player->tex, player->pos->x - cameraRect->x, player->pos->y - cameraRect->y, cfPtr, 3, cameraRect);
+    drawClippedTransparent(player->tex, player->pos->x - camera->x, player->pos->y - camera->y, cfPtr, 3, camera);
 }

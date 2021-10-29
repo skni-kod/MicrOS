@@ -19,7 +19,7 @@ typedef struct player
 
 player* initPlayer(int32_t x, int32_t y, image* img, int32_t r, int32_t c, int32_t cf);
 
-void tickPlayer(player* player);
+void tickPlayer(player* player, rect* camera);
 
 
 #endif
