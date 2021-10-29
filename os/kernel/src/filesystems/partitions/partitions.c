@@ -30,7 +30,7 @@ void partitions_init_floppy()
             floppy_partition->device_type = device_type_floppy;
             floppy_partition->device_number = 0;
             floppy_partition->write_on_device = floppy_write_sector;
-            floppy_partition->read_from_device = floppy_read_sector;
+            floppy_partition->read_from_device = floppy_read_continous;
             floppy_partition->first_sector = 0;
 
             

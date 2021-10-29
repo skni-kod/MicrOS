@@ -304,12 +304,10 @@ uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sect
     floppy_enable_motor();
     //sleep(500);
 
-    
-
     for (int i = 0; i < 10; i++)
     {
         // Init DMA
-        dma_init_transfer(0x06, read);
+        dma_init_transfer(0x06, read, 512);
 
         if (!floppy_seek(track, head))
         {
@@ -528,4 +526,325 @@ bool floppy_timer_interrupt()
     }
     
     return false;
+}
+
+uint8_t* floppy_read_continous(int device_number, int sector, int count){
+    uint8_t* buffer = heap_kernel_alloc(count*512, 0);
+    size_t offset = 0;
+    uint8_t starting_head, starting_track, starting_true_sector;
+    uint8_t head, track, true_sector;
+
+    floppy_lba_to_chs(sector, &starting_head, &starting_track, &starting_true_sector);
+    if (starting_true_sector != 1)
+    {
+        if (count < 18-starting_true_sector+1)
+        {
+            offset += count;
+        }
+        else
+        {
+            offset += 18-starting_true_sector+1;
+        }
+        uint8_t* tmp = floppy_read_sectors(device_number, starting_head, starting_track, starting_true_sector, offset);
+        memcpy(buffer, tmp, offset*512);
+    }
+
+    for (; offset < count; offset+=18)
+    {
+        floppy_lba_to_chs(sector+offset, &head, &track, &true_sector);
+        if (offset+18 <= count)
+        {
+            if(true_sector != 1) vga_printstring("DUPA");
+            uint8_t* tmp = read_track_from_floppy(device_number, head, track);
+            //uint8_t* tmp = floppy_read_sectors(device_number, head, track, true_sector, 18);
+            memcpy(buffer+(offset*512), tmp, 18*512);
+        }
+        else
+        {
+            uint8_t* tmp = floppy_read_sectors(device_number, head, track, true_sector, count-offset);
+            memcpy(buffer+(offset*512), tmp, (count-offset)*512);
+        }
+    }
+    return buffer;
+}
+
+uint8_t* floppy_read_sectors(int device_number, uint8_t head, uint8_t track, uint8_t sector, uint32_t count)
+{
+    //logger_log_info("DUPA CONT");
+    if (sector-1 + count > 18)
+    {
+        return NULL;
+    }
+    // Run floppy motor and wait some time
+    floppy_enable_motor();
+    //sleep(500);
+
+    for (int i = 0; i < 10; i++)
+    {
+        // Init DMA
+        dma_init_transfer(0x06, true, (count*512));
+
+        if (!floppy_seek(track, head))
+        {
+            logger_log_warning("[FLOPPY] SEEK failed");
+            sleep(10);
+            continue;
+        }
+
+        // Send command to read sector
+        //  0x06 - read sector command
+        //  0x40 - double density mode
+        //  0x80 - operate on both tracks of the cylinder
+        floppy_send_command(0x06| 0x40 | 0x80);
+
+        // _ _ _ _ _ HEAD DEV1 DEV2
+        floppy_send_command(head << 2 | DEVICE_NUMBER);
+
+        // Track number
+        floppy_send_command(track);
+
+        // Head number
+        floppy_send_command(head);
+
+        // Sector number
+        floppy_send_command(sector);
+
+        // Sector size (2 = 512)
+        floppy_send_command(2);
+        
+        // uint8_t x[80];
+        // kernel_sprintf(x, "%d, %d, %d, %d", track, head, sector, sector+count);
+        // logger_log_warning(x);
+        // Sectors per track
+        floppy_send_command(sector+count < 18 ? sector+count : 18);
+        //floppy_send_command(sectors_per_track);
+
+        // Length of gap (0x1B = floppy 3,5)
+        floppy_send_command(0x1B);
+
+        // Data length
+        floppy_send_command(0xff);
+
+        // Wait for interrupt
+        if(!floppy_wait_for_interrupt())
+        {
+            return false;
+        }
+
+        // Read command status
+        /*uint8_t st0 =*/ floppy_read_data();
+        uint8_t st1 = floppy_read_data();
+        uint8_t st2 = floppy_read_data();
+        /*uint8_t cylinder_data =*/ floppy_read_data();
+        /*uint8_t head_data =*/ floppy_read_data();
+        /*uint8_t sector_data =*/ floppy_read_data();
+        uint8_t bps = floppy_read_data();
+
+        if (st1 & 0x80)
+        {
+            logger_log_error("[Floppy] End of cylinder");
+        }
+        if (st1 & 0x20)
+        {
+            logger_log_error("[Floppy] Data error");
+        }
+        if (st1 & 0x04)
+        {
+            logger_log_error("[Floppy] No data");
+        }
+        if (st1 & 0x02)
+        {
+            logger_log_error("[Floppy] Not writable");
+        }
+        if (st1 & 0x01)
+        {
+            logger_log_error("[Floppy] Missing address mark");
+        }
+
+        if (st2 & 0x40)
+        {
+            logger_log_error("[Floppy] Control mask");
+        }
+        if (st2 & 0x20)
+        {
+            logger_log_error("[Floppy] Data error in data field");
+        }
+        if (st2 & 0x10)
+        {
+            logger_log_error("[Floppy] Wrong cylinder");
+        }
+        if (st2 & 0x02)
+        {
+            logger_log_error("[Floppy] Bad cylinder");
+        }
+        if (st2 & 0x01)
+        {
+            logger_log_error("[Floppy] Missing data address mark");
+        }
+
+        if (bps != 0x2)
+        {
+            logger_log_error("[Floppy] Invalid bps");
+        }
+
+        if (st1 != 0 || st2 != 0)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                if (!floppy_calibrate())
+                {
+                    sleep(10);
+                    logger_log_warning("[FLOPPY] Calibration failed");
+
+                    if (i + 1 == 10)
+                    {
+                        return false;
+                    }
+                }
+                else{break;}
+            }
+
+            sleep(100);
+            continue;
+        }
+        return st1 == 0 ? (uint8_t *)dma_get_buffer() : NULL;
+    }
+    return NULL;
+}
+
+uint8_t* read_track_from_floppy(int device_number, int head, int track)
+{
+    // Run floppy motor and wait some time
+    floppy_enable_motor();
+    //sleep(500);
+
+    for (int i = 0; i < 10; i++)
+    {
+        // Init DMA
+        dma_init_transfer(0x06, true, 0x2400);
+
+        if (!floppy_seek(track, head))
+        {
+            logger_log_warning("[FLOPPY] SEEK failed");
+            sleep(10);
+            continue;
+        }
+
+        // Send command to read sector
+        //  0x02 - read entire track
+        //  0x40 - double density mode
+        //  can operate only on one track of the cylinder
+        floppy_send_command(0x02 | 0x40);
+
+        // _ _ _ _ _ HEAD DEV1 DEV2
+        floppy_send_command(head << 2 | DEVICE_NUMBER);
+
+        // Track number
+        floppy_send_command(track);
+
+        // Head number
+        floppy_send_command(head);
+
+        // Sector number - ignored by read track command
+        floppy_send_command(1);
+
+        // Sector size (2 = 512)
+        floppy_send_command(2);
+
+        uint8_t sectors_per_track = floppy_sectors_per_track;
+
+        // Sectors per track, technically should be ignored by read track command
+        floppy_send_command(sectors_per_track);
+
+        // Length of gap (0x1B = floppy 3,5)
+        floppy_send_command(0x1B);
+
+        // Data length
+        floppy_send_command(0xff);
+
+        // Wait for interrupt
+        if(!floppy_wait_for_interrupt())
+        {
+            return false;
+        }
+
+        // Read command status
+        /*uint8_t st0 =*/ floppy_read_data();
+        uint8_t st1 = floppy_read_data();
+        uint8_t st2 = floppy_read_data();
+        /*uint8_t cylinder_data =*/ floppy_read_data();
+        /*uint8_t head_data =*/ floppy_read_data();
+        /*uint8_t sector_data =*/ floppy_read_data();
+        uint8_t bps = floppy_read_data();
+
+        if (st1 & 0x80)
+        {
+            logger_log_error("[Floppy] End of cylinder");
+        }
+        if (st1 & 0x20)
+        {
+            logger_log_error("[Floppy] Data error");
+        }
+        if (st1 & 0x04)
+        {
+            logger_log_error("[Floppy] No data");
+        }
+        if (st1 & 0x02)
+        {
+            logger_log_error("[Floppy] Not writable");
+        }
+        if (st1 & 0x01)
+        {
+            logger_log_error("[Floppy] Missing address mark");
+        }
+
+        if (st2 & 0x40)
+        {
+            logger_log_error("[Floppy] Control mask");
+        }
+        if (st2 & 0x20)
+        {
+            logger_log_error("[Floppy] Data error in data field");
+        }
+        if (st2 & 0x10)
+        {
+            logger_log_error("[Floppy] Wrong cylinder");
+        }
+        if (st2 & 0x02)
+        {
+            logger_log_error("[Floppy] Bad cylinder");
+        }
+        if (st2 & 0x01)
+        {
+            logger_log_error("[Floppy] Missing data address mark");
+        }
+
+        if (bps != 0x2)
+        {
+            logger_log_error("[Floppy] Invalid bps");
+        }
+
+        if (st1 != 0 || st2 != 0)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                if (!floppy_calibrate())
+                {
+                    sleep(10);
+                    logger_log_warning("[FLOPPY] Calibration failed");
+
+                    if (i + 1 == 10)
+                    {
+                        return false;
+                    }
+                }
+                else{break;}
+            }
+
+            sleep(100);
+            continue;
+        }
+        return st1 == 0 ? (uint8_t *)dma_get_buffer() : NULL;
+    }
+    return NULL;
 }
