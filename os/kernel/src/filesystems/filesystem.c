@@ -204,3 +204,8 @@ void filesystem_remove_partition_from_path(char *old_path, char *new_path)
     memcpy(new_path, old_path + 2, path_length - 2);
     new_path[path_length - 2] = 0;
 }
+
+void filesystem_reload_fat(){
+    fat_load_fat();
+    fat_load_root();
+}

@@ -25,5 +25,6 @@ void syscall_filesystem_append_to_file(interrupt_state *state);
 
 void syscall_filesystem_get_free_space(interrupt_state *state);
 void syscall_filesystem_get_total_space(interrupt_state *state);
+void syscall_filesystem_reload_fat(interrupt_state *state);
 
 #endif

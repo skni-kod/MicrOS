@@ -96,3 +96,8 @@ int micros_filesystem_get_total_space(const char partition_symbol)
 {
     return micros_interrupt_1a(0x71, (uint32_t)partition_symbol);
 }
+
+void micros_filesystem_reload_fat()
+{
+    micros_interrupt_0a(0x5F);
+}

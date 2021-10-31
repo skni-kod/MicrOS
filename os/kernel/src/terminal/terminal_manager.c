@@ -1,6 +1,7 @@
 #include "terminal_manager.h"
 #include "memory/heap/heap.h"
 #include "drivers/dal/videocard/videocard.h"
+#include "filesystems/fat/fat.h"
 #include "process/manager/process_manager.h"
 
 uint32_t active_terminal_id = 0;
@@ -509,6 +510,13 @@ bool terminal_manager_keyboard_interrupt_handler(interrupt_state *state)
             case 62:
             {
                 switch_active_terminal(pair.scancode - 59);
+                break;
+            }
+            //F8 - reload FAT
+            case 66:
+            {
+                fat_load_fat();
+                fat_load_root();
                 break;
             }
             

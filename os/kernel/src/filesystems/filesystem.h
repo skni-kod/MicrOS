@@ -34,5 +34,6 @@ bool filesystem_save_to_file(char *path, char *buffer, int size);
 bool filesystem_append_to_file(char *path, char *buffer, int size);
 
 void filesystem_remove_partition_from_path(char *old_path, char *new_path);
+void filesystem_reload_fat();
 
 #endif

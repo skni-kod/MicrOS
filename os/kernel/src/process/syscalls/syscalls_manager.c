@@ -56,6 +56,8 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0x5C, syscall_filesystem_rename_directory);
     syscalls_manager_attach_handler(0x5D, syscall_filesystem_save_to_file);
     syscalls_manager_attach_handler(0x5E, syscall_filesystem_append_to_file);
+    syscalls_manager_attach_handler(0x5F, syscall_filesystem_reload_fat);
+    //0x5X pool exhausted
 
     // 0x6X - Timer
     syscalls_manager_attach_handler(0x60, syscall_timer_get_system_clock);

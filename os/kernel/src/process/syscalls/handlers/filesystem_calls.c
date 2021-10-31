@@ -88,3 +88,8 @@ void syscall_filesystem_get_total_space(interrupt_state *state)
 {
     state->registers.eax = filesystem_get_total_space((char)state->registers.ebx);
 }
+
+void syscall_filesystem_reload_fat(interrupt_state *state)
+{
+    filesystem_reload_fat();
+}

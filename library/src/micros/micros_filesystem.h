@@ -231,6 +231,12 @@ int micros_filesystem_get_free_space(const char partition_symbol);
 */
 int micros_filesystem_get_total_space(const char partition_symbol);
 
+//! Reloads file allocation table
+/*! 
+    Reloads file allocation table and root directory
+*/
+void micros_filesystem_reload_fat();
+
 #ifdef __cplusplus
 }
 #endif
