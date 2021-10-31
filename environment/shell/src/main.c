@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
         
         printf(" %c:%s> ", current_partition_symbol, current_dir);
         gets(path);
-        
+        micros_filesystem_reload_fat();
         path[strlen(path) - 1] = 0;
         if(path[0] == 'c' && path[1] == 'd')
         {
