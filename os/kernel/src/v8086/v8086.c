@@ -365,25 +365,25 @@ void v8086_set_386_instruction_set(v8086* machine)
 
 v8086* v8086_create_machine()
 {
-    vga_printstring("HERE\n");
+    //vga_printstring("HERE\n");
     v8086* machine = (v8086*) heap_kernel_alloc(sizeof(v8086), 0);
     if(machine == NULL) vga_printstring("NULL \n");
-    vga_printstring("NOT HERE\n");
+    //vga_printstring("NOT HERE\n");
     if(machine == NULL) return NULL;
-    vga_printstring("HERE\n");
+    //vga_printstring("HERE\n");
     memset(machine, 0, sizeof(v8086));
-    vga_printstring("NOT HERE\n");
+    //vga_printstring("NOT HERE\n");
     machine->regs.x.flags = 0x2;
     machine->sregs.cs = 0xf000;
     machine->IP.w.ip = 0xfff0;
     machine->sregs.ss = 0x0;
     machine->regs.d.ebp = 0x7bff;
     machine->regs.d.esp = 0x7bff;
-    vga_printstring("HERE\n");
+    //vga_printstring("HERE\n");
 	memcpy(machine->Memory, (void*)0xc0000000, 0x100000);
-    vga_printstring("NOT HERE\n");
+    //vga_printstring("NOT HERE\n");
     v8086_set_8086_instruction_set(machine);
-    vga_printstring("HERE?\n");
+    //vga_printstring("HERE?\n");
     return machine;
 }
 

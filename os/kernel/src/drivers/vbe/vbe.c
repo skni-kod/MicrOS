@@ -11,6 +11,11 @@ int currentBank = -1;
 uint8_t* mem_buff = (uint8_t*)0xc0000000 + 0xA0000;
 uint8_t *linear_buffer = 0;
 uint32_t page_index = 0;
+uint32_t page_count = 0;
+
+//EDID Stuff
+uint8_t edid_ver = 0;
+uint8_t edid_rev = 0;
 
 void VBE_initialize()
 {
@@ -123,6 +128,117 @@ VBEStatus VBE_get_vesa_mode_information(svga_mode_information* infromation_struc
     return VBE_OK;
 }
 
+VBEStatus VBE_DDC_capabilities()
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f15;
+    machine->regs.h.bl = 0x00;
+    machine->regs.x.cx = 0x0000;
+    machine->sregs.es = 0x0000;
+    machine->regs.x.di = 0x0000;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+
+    if(machine->regs.h.bl & DDC1_SUPPORT)
+        vga_printstring("DDC1 SUPPORT ENABLED\n");
+
+    if(machine->regs.h.bl & DDC2_SUPPORT)
+        vga_printstring("DDC2 SUPPORT ENABLED\n");
+}
+
+VBEStatus VBE_DDC_read_edid_block(uint16_t block_number, edid* block_ptr)
+{
+    if(!initialized) return VBE_NO_INITAILIZED;
+    machine->regs.x.ax = 0x4f15;
+    machine->regs.h.bl = 0x01;
+    machine->regs.x.cx = 0x0000;
+    machine->regs.x.dx = block_number;
+    machine->sregs.es = 0x0000;
+    machine->regs.x.di = 0x7E00;
+    int16_t status = v8086_call_int(machine, 0x10);
+    if(status != 0x10) return VBE_INTERNAL_ERROR;
+    if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+    if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+
+    memcpy(block_ptr, machine->Memory + get_absolute_address(0x0000, 0x7E00), sizeof(edid));
+
+    edid_ver = block_ptr->edid_version;
+    edid_rev = block_ptr->edid_revision;
+}
+
+
+VESA_std_timing VBE_DDC_decode_std_timing(uint16_t timing)
+{
+    VESA_std_timing _timing;
+    _timing.horizontal_res = ((timing & 0xFF) + 31) * 8;
+    _timing.aspect_ratio = (((timing >> 8) & 0xC0) >> 6);
+    switch(_timing.aspect_ratio )
+    {
+        //1:1 or 16:10, Consult EEDID specs from VESA
+        case 0:
+            if(edid_ver == 1 && edid_rev < 4)
+                _timing.vertical_res = _timing.horizontal_res;
+            else
+                _timing.vertical_res = (_timing.horizontal_res/16)*10;
+            break;
+        //4:3
+        case 1:
+            _timing.vertical_res = (_timing.horizontal_res/4)*3;
+            break;
+        //5:4
+        case 2:
+            _timing.vertical_res = (_timing.horizontal_res/5)*4;
+            break;
+        //16:9
+        case 3:
+            _timing.vertical_res = (_timing.horizontal_res/16)*9;
+            break;
+    }
+    _timing.refresh_rate = ((timing >> 8) & 0x3F) + 60;
+    return _timing;
+}
+
+//Yeah I know this looks weird, ask VESA why...
+VESA_detailed_timing VBE_DDC_read_detailed_timing(edid* block_ptr, uint8_t detailed_block_num)
+{
+    uint8_t* byte_ptr = &block_ptr->detailed_timing_desc[detailed_block_num*18];
+    VESA_detailed_timing dt = {};
+    dt.pixel_clock               =  *(uint16_t*)(byte_ptr);
+    dt.horizontal_active        |=  0xFF & *(byte_ptr+0x02);
+    dt.horizontal_blanking      |=  0xFF & *(byte_ptr+0x03);
+    dt.horizontal_active        |=  ((0xF0 & *(byte_ptr+0x04)) >> 4) << 8;
+    dt.horizontal_blanking      |=  (0x0F & *(byte_ptr+0x04)) << 8;
+    dt.vertical_active          |=  0xFF & *(byte_ptr+0x05);
+    dt.vertical_blanking        |=  0xFF & *(byte_ptr+0x06);
+    dt.vertical_active          |=  ((0xF0 & *(byte_ptr+0x07)) >> 4) << 8;
+    dt.vertical_blanking        |=  (0x0F & *(byte_ptr+0x07)) << 8;
+    dt.hsync_offset             |=  0xFF & *(byte_ptr+0x08);
+    dt.hsync_pulse_width        |=  0xFF & *(byte_ptr+0x09);
+    dt.vsync_offset             |=  (0xF0 & *(byte_ptr+0x0A)) >> 4;
+    dt.vsync_pulse_width        |=  (0x0F & *(byte_ptr+0x0A));
+    dt.hsync_offset             |=  ((0xC0 & *(byte_ptr+0x0B)) >> 6) << 8;
+    dt.hsync_pulse_width        |=  ((0x30 & *(byte_ptr+0x0B)) >> 4) << 8;
+    dt.vsync_offset             |=  ((0x0C & *(byte_ptr+0x0B)) >> 2) << 8;
+    dt.vsync_pulse_width        |=  (0x03 & *(byte_ptr+0x0B)) << 8;
+    dt.horizontal_image_size    |=  0xFF & *(byte_ptr+0xC);
+    dt.vertical_image_size      |=  0xFF & *(byte_ptr+0xD);
+    dt.horizontal_image_size    |=  ((0xF0 & *(byte_ptr+0x0E)) >> 4) << 8;
+    dt.vertical_image_size      |=  (0x0F & *(byte_ptr+0x0E)) << 8;
+    dt.horizontal_border         =  0xFF & *(byte_ptr+0x0F);
+    dt.vertical_border           =  0xFF & *(byte_ptr+0x10);
+    dt.flags                     =  0xFF & *(byte_ptr+0x11);
+    return dt;
+}
+
+VESA_monitor_descriptor VBE_DDC_read_monitor_descriptor(edid* block_ptr, uint8_t block_num)
+{
+    VESA_monitor_descriptor md = {};
+    memcpy(&md, &block_ptr->detailed_timing_desc[block_num*18], 18);
+    return md;
+}
+
 uint16_t VBE_get_word(uint32_t seg, uint32_t offset)
 {
     return read_word_from_pointer(machine->Memory, get_absolute_address(seg, offset));
@@ -141,6 +257,7 @@ VBEStatus VBE_destroy_svga_information(svga_information* svga_information_ptr)
     return VBE_OK;
 }
 
+//TODO This might be broken. Examine paging and mapping memory.
 VBEStatus VBE_set_video_mode(uint16_t mode_number, bool clear_screen)
 {
     if(!initialized) return VBE_NO_INITAILIZED;
@@ -161,20 +278,54 @@ VBEStatus VBE_set_video_mode(uint16_t mode_number, bool clear_screen)
         {
             if(page_index != 0)
             {
-                paging_unmap_page(page_index);
+                for(int i = 0; i < page_count+1; i++)
+                {
+                    paging_unmap_page(page_index+i);
+                }
                 page_index = 0;
+                page_count = 0;
                 linear_buffer = 0;
             }
-            page_index = paging_get_first_free_page_index(1);
-            paging_map_page(mode_info.frame_buffor_phys_address/0x400000, page_index, false);
+            
+            uint32_t bufferSize = mode_info.mode_height*mode_info.mode_width*(mode_info.bits_per_pixel/8);
+            page_count = bufferSize / 0x400000;
+
+            
+            uint32_t tempIndex = 1;
+            uint32_t prevIndex = tempIndex;
+            int i = 0;
+            while(i < page_count+1)
+            {
+                tempIndex = paging_get_first_free_page_index(prevIndex);
+                if( i == 0 || tempIndex == prevIndex)
+                {
+                    i++;
+                }
+                else
+                {
+                    i = 0;
+                }
+                prevIndex = tempIndex+1;
+            }
+            page_index = tempIndex - page_count;
+
+            for(int i = 0; i < page_count+1; i++)
+            {
+                paging_map_page((mode_info.frame_buffor_phys_address+ i * 0x400000) / 0x400000, page_index + i, false);
+            }
+
             linear_buffer = (uint8_t*)(page_index * 0x400000)+ 0xc00000000;
         }
         else
         {
             if(page_index != 0)
             {
-                paging_unmap_page(page_index);
+                for(int i = 0; i < page_count+1; i++)
+                {
+                    paging_unmap_page(page_index+i);
+                }
                 page_index = 0;
+                page_count = 0;
                 linear_buffer = 0;
             }
         }
@@ -663,5 +814,17 @@ void VBE_draw_pixel_8_8_8_linear(uint32_t mode_width, uint32_t mode_height, uint
         linear_buffer[index] = b;
         linear_buffer[index+1] = g;
         linear_buffer[index+2] = r;
+    }
+}
+
+void VBE_draw_pixel_8_8_8_8_linear(uint32_t mode_width, uint32_t mode_height, uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b, uint8_t s)
+{
+    if (linear_buffer != 0)
+    {
+        uint32_t index = 4 * mode_width * y + 4 * x;
+        linear_buffer[index] = b;
+        linear_buffer[index+1] = g;
+        linear_buffer[index+2] = r;
+        linear_buffer[index+3] = s;
     }
 }
