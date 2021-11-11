@@ -9,6 +9,7 @@ typedef struct _video_mode
     uint32_t width;
     uint32_t height;
     uint64_t colors;
+    uint8_t graphic;
     uint8_t monochrome;
     uint8_t planar;
 } video_mode;

@@ -131,6 +131,14 @@ typedef enum _VBEStatus{
     VBE_OK, VBE_NOT_EXIST, VBE_FUNCTION_FAILURE, VBE_NO_INITAILIZED, VBE_INTERNAL_ERROR
 } VBEStatus;
 
+//TODO Add timing calculation to let choose other refresh rate. For now use defaults provided by BIOS.
+typedef struct _VBE_resolution
+{
+    uint16_t vertical;
+    uint16_t horizontal;
+    uint16_t refresh_rate;
+    uint32_t pixel_clock;
+} VBE_resolution;
 
 void VBE_initialize();
 void VBE_close();
@@ -144,6 +152,14 @@ VBEStatus VBE_DDC_read_edid_block(uint16_t block_number, edid* block_ptr);
 VESA_std_timing VBE_DDC_decode_std_timing(uint16_t timing);
 VESA_detailed_timing VBE_DDC_read_detailed_timing(edid* block_ptr, uint8_t detailed_block_num);
 VESA_monitor_descriptor VBE_DDC_read_monitor_descriptor(edid* block_ptr, uint8_t block_num);
+
+void VBE_add_supported_mode(VBE_resolution* res);
+VBE_resolution* VBE_get_supported_resolution(uint16_t horizontal_res, uint16_t vertical_res);
+
+/**
+ * @todo Add clock calculations 
+ */
+VBE_resolution VBE_create_resolution_def(uint16_t horizontal, uint16_t vertical, uint16_t refresh_rate);
 
 VBEStatus VBE_destroy_svga_information(svga_information* svga_information_ptr);
 VBEStatus VBE_set_video_mode(uint16_t mode_number, bool clear_screen);

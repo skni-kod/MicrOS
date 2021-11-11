@@ -451,7 +451,7 @@ int kmain()
     
     //process_manager_run();  
 
-    char buff[100];
+    char buff[128];
     VBE_initialize();
     //setSkipDebugging(true);
     //VBE_set_video_mode(0x18c, false);
@@ -470,7 +470,13 @@ int kmain()
     edid edid_block;
 
     VBE_DDC_read_edid_block(0, &edid_block);
-
+    vga_printstring("EDID: ");
+    itoa(edid_block.edid_version, buff, 10);
+    vga_printstring(buff);
+    vga_printstring(".");
+    itoa(edid_block.edid_revision, buff, 10);
+    vga_printstring(buff);
+    vga_newline();
     for(int i = 0; i < 8; i++)
     {
         VESA_std_timing timing = VBE_DDC_decode_std_timing(edid_block.standard_timings_supported[i]);
@@ -678,13 +684,41 @@ int kmain()
                         else
                             vga_newline();
                     }
+                    vga_newline();
                     break;
                 case MONITOR_RANGE_LIMITS:
                     break;
             }
         }
     }
-        while (1);
+
+    vga_printstring("EDID EXTENSION BLOCKS: ");
+    itoa(edid_block.extension_num, buff, 10);
+    vga_printstring(buff);
+    vga_newline();
+
+    uint8_t* edid_extension = heap_kernel_alloc(128, 0);
+    if(edid_block.extension_num > 0)
+    {
+        for(int i = 1; i <= edid_block.extension_num; i++)
+        {
+            VBE_DDC_read_edid_block(i, edid_extension);
+            uint8_t block_id = *edid_extension;
+            itoa(block_id, buff, 16);
+            vga_printstring("EXTENSION ID: ");
+            vga_printstring(buff);
+            vga_newline();
+            if(block_id == 0x10)
+            {
+                vga_printstring("VTB EXTENSION FOUND");
+                vga_newline();
+            }
+        }
+    }
+
+    keyboard_scan_ascii_pair kb;
+    while(!keyboard_get_key_from_buffer(&kb));
+    //while (1);
 
     svga_information* svga_info_ptr;
     status = VBE_get_svga_information(&svga_info_ptr);
@@ -707,7 +741,6 @@ int kmain()
         uint16_t max_bit_per_pixel = 0;
         uint32_t physBufforAddress = 0;
         uint16_t mode = 0;
-        keyboard_scan_ascii_pair kb;
         for(int i=0; i < svga_info_ptr->number_of_modes; i++)
         //for(int i=0x11b; i < 0x11c; i++)6
         {

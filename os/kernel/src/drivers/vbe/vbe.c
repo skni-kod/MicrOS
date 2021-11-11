@@ -178,7 +178,7 @@ VESA_std_timing VBE_DDC_decode_std_timing(uint16_t timing)
     {
         //1:1 or 16:10, Consult EEDID specs from VESA
         case 0:
-            if(edid_ver == 1 && edid_rev < 4)
+            if(edid_ver == 1 && edid_rev < 3)
                 _timing.vertical_res = _timing.horizontal_res;
             else
                 _timing.vertical_res = (_timing.horizontal_res/16)*10;
@@ -237,6 +237,17 @@ VESA_monitor_descriptor VBE_DDC_read_monitor_descriptor(edid* block_ptr, uint8_t
     VESA_monitor_descriptor md = {};
     memcpy(&md, &block_ptr->detailed_timing_desc[block_num*18], 18);
     return md;
+}
+
+VBE_resolution VBE_create_resolution_def(uint16_t horizontal, uint16_t vertical, uint16_t refresh_rate)
+{
+    VBE_resolution res = {};
+    res.horizontal = horizontal;
+    res.vertical = vertical;
+    res.refresh_rate = refresh_rate;
+    res.pixel_clock = -1;
+    //TODO ADD PROPER TIMING HERE
+    return res;
 }
 
 uint16_t VBE_get_word(uint32_t seg, uint32_t offset)
