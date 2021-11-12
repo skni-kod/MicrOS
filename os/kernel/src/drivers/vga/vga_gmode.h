@@ -1,3 +1,7 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * THIS FILE IS MARKED TO BE REFACTORED IN FUTURE. TRY NOT TO ADD NEW THINGS TO PARTS OF OS IN THIS FILE *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #ifndef VGA_GMODE_H
 #define VGA_GMODE_H
 

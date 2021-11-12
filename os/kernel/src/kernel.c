@@ -259,11 +259,9 @@ void startup()
     pic_init();
     logger_log_ok("Programmable Interrupt Controller");
 
-
     idt_init();
     logger_log_ok("Interrupt Descriptor Table");
     
-
     timer_init();
     logger_log_ok("Timer");
 
@@ -454,274 +452,12 @@ int kmain()
     char buff[128];
     VBE_initialize();
     //setSkipDebugging(true);
-    //VBE_set_video_mode(0x18c, false);
+
     svga_mode_information mode_info;
-    //VBE_get_vesa_mode_information(&mode_info, 0x105);
-    VBEStatus status = VBE_check_existance_of_VESA();
-    if(status != VBE_OK)
-    {
-        vga_printstring("Problems with VBE: \n");
-        vga_printstring(itoa(status, buff, 10));
-        vga_newline();
-    }
-
-    status = VBE_DDC_capabilities();
-     
-    edid edid_block;
-
-    VBE_DDC_read_edid_block(0, &edid_block);
-    vga_printstring("EDID: ");
-    itoa(edid_block.edid_version, buff, 10);
-    vga_printstring(buff);
-    vga_printstring(".");
-    itoa(edid_block.edid_revision, buff, 10);
-    vga_printstring(buff);
-    vga_newline();
-    for(int i = 0; i < 8; i++)
-    {
-        VESA_std_timing timing = VBE_DDC_decode_std_timing(edid_block.standard_timings_supported[i]);
-        char buf[128];
-        vga_printstring("RES: ");
-        itoa(timing.horizontal_res, buff, 10);
-        vga_printstring(buff);
-        vga_printstring(" x ");
-        itoa(timing.vertical_res, buff, 10);
-        vga_printstring(buff);
-        vga_printstring(" @ ");
-        itoa(timing.refresh_rate, buff, 10);
-        vga_printstring(buff);
-        vga_printstring(" Hz ASPECT RATIO ");
-        switch(timing.aspect_ratio)
-        {
-            case 0:
-                vga_printstring("1:1 or 16:10");
-                break;
-            case 1:
-                vga_printstring("4:3");
-                break;
-            case 2:
-                vga_printstring("5:4");
-                break;
-            case 3:
-                vga_printstring("16:9");
-                break;
-        }
-        vga_newline();
-    }
-
-    //Detection code, move somwhere else, there's alot of stuff that will be listed here
-
-    //Established timings I
-    if(edid_block.established_supported_timings[0] & 0x80)
-        vga_printstring("RES: 720 x 400 @ 70 Hz \n");
-    if(edid_block.established_supported_timings[0] & 0x40)
-        vga_printstring("RES: 720 x 400 @ 85 Hz \n");
-    if(edid_block.established_supported_timings[0] & 0x20)
-        vga_printstring("RES: 640 x 480 @ 60 Hz \n");
-    if(edid_block.established_supported_timings[0] & 0x10)
-        vga_printstring("RES: 640 x 480 @ 67 Hz \n");
-    if(edid_block.established_supported_timings[0] & 0x08)
-        vga_printstring("RES: 640 x 480 @ 72 Hz \n");
-    if(edid_block.established_supported_timings[0] & 0x04)
-        vga_printstring("RES: 640 x 480 @ 75 Hz \n");
-    if(edid_block.established_supported_timings[0] & 0x02)
-        vga_printstring("RES: 800 x 600 @ 56 Hz \n");
-    if(edid_block.established_supported_timings[0] & 0x01)
-        vga_printstring("RES: 800 x 600 @ 60 Hz \n");
-
-    //Established timings II
-    if(edid_block.established_supported_timings[1] & 0x80)
-        vga_printstring("RES: 800 x 600 @ 72 Hz \n");
-    if(edid_block.established_supported_timings[1] & 0x40)
-        vga_printstring("RES: 800 x 600 @ 75 Hz \n");
-    if(edid_block.established_supported_timings[1] & 0x20)
-        vga_printstring("RES: 1024 x 768 @ 75 Hz \n");
-    if(edid_block.established_supported_timings[1] & 0x10)
-        vga_printstring("RES: 1024 x 768 @ 87 Hz \n");
-    if(edid_block.established_supported_timings[1] & 0x08)
-        vga_printstring("RES: 1024 x 768 @ 60 Hz \n");
-    if(edid_block.established_supported_timings[1] & 0x04)
-        vga_printstring("RES: 1024 x 768 @ 70 Hz \n");
-    if(edid_block.established_supported_timings[1] & 0x02)
-        vga_printstring("RES: 1024 x 768 @ 75 Hz \n");
-    if(edid_block.established_supported_timings[1] & 0x01)
-        vga_printstring("RES: 1280 x 1024 @ 75 Hz \n");
-
-    //Manufacturer timings
-    if(edid_block.manufacturer_reserved_timing & 0x80)
-        vga_printstring("RES: 1152 x 870 @ 75 Hz \n");
-    if(edid_block.manufacturer_reserved_timing & 0x40)
-        vga_printstring("Unknown, but supported\n");
-    if(edid_block.manufacturer_reserved_timing & 0x20)
-        vga_printstring("Unknown, but supported\n");
-    if(edid_block.manufacturer_reserved_timing & 0x10)
-        vga_printstring("Unknown, but supported\n");
-    if(edid_block.manufacturer_reserved_timing & 0x08)
-        vga_printstring("Unknown, but supported\n");
-    if(edid_block.manufacturer_reserved_timing & 0x04)
-        vga_printstring("Unknown, but supported\n");
-    if(edid_block.manufacturer_reserved_timing & 0x02)
-        vga_printstring("Unknown, but supported\n");
-    if(edid_block.manufacturer_reserved_timing & 0x01)
-        vga_printstring("Unknown, but supported\n");
-
-
-    VESA_detailed_timing det_timing = {};
-    for(int i = 0; i < 4; i++)
-    {
-        uint16_t det_flag = *(uint16_t*)(&edid_block.detailed_timing_desc[i*18]);
-        if(det_flag != 0x0000)
-        {
-            det_timing = VBE_DDC_read_detailed_timing(&edid_block, 0);
-        }
-        else
-        {
-            VESA_monitor_descriptor desc = VBE_DDC_read_monitor_descriptor(&edid_block, i);
-            //Add other block reading in this switch.
-            switch(desc.data_type)
-            {
-                case ESTABLISHED_TIMINGS_III:
-                    //BYTE 6
-                    if(desc.data[0] & 0x80)
-                        vga_printstring("640 x 350 @ 85 Hz\n");
-                    if(desc.data[0] & 0x40)
-                        vga_printstring("640 x 400 @ 85 Hz\n");
-                    if(desc.data[0] & 0x20)
-                        vga_printstring("720 x 400 @ 85 Hz\n");
-                    if(desc.data[0] & 0x10)
-                        vga_printstring("640 x 480 @ 85 Hz\n");
-                    if(desc.data[0] & 0x08)
-                        vga_printstring("848 x 480 @ 60 Hz\n");
-                    if(desc.data[0] & 0x04)
-                        vga_printstring("800 x 600 @ 85 Hz\n");
-                    if(desc.data[0] & 0x02)
-                        vga_printstring("1024 x 768 @ 85 Hz\n");
-                    if(desc.data[0] & 0x01)
-                        vga_printstring("1152 x 864 @ 75 Hz\n");
-                    //BYTE 7
-                    if(desc.data[1] & 0x80)
-                        vga_printstring("1280 x 768 @ 60 Hz (RB)\n");
-                    if(desc.data[1] & 0x40)
-                        vga_printstring("1280 x 768 @ 60 Hz\n");
-                    if(desc.data[1] & 0x20)
-                        vga_printstring("1280 x 768 @ 75 Hz\n");
-                    if(desc.data[1] & 0x10)
-                        vga_printstring("1280 x 768 @ 85 Hz\n");
-                    if(desc.data[1] & 0x08)
-                        vga_printstring("1280 x 960 @ 60 Hz\n");
-                    if(desc.data[1] & 0x04)
-                        vga_printstring("1280 x 960 @ 85 Hz\n");
-                    if(desc.data[1] & 0x02)
-                        vga_printstring("1280 x 1024 @ 60 Hz\n");
-                    if(desc.data[1] & 0x01)
-                        vga_printstring("1280 x 1024 @ 85 Hz\n");
-                    //BYTE 8
-                    if(desc.data[2] & 0x80)
-                        vga_printstring("1360 x 768 @ 60 Hz\n");
-                    if(desc.data[2] & 0x40)
-                        vga_printstring("1440 x 900 @ 60 Hz (RB)\n");
-                    if(desc.data[2] & 0x20)
-                        vga_printstring("1440 x 900 @ 60 Hz\n");
-                    if(desc.data[2] & 0x10)
-                        vga_printstring("1440 x 900 @ 75 Hz\n");
-                    if(desc.data[2] & 0x08)
-                        vga_printstring("1440 x 900 @ 85 Hz\n");
-                    if(desc.data[2] & 0x04)
-                        vga_printstring("1400 x 1050 @ 60 Hz (RB)\n");
-                    if(desc.data[2] & 0x02)
-                        vga_printstring("1400 x 1050 @ 60 Hz\n");
-                    if(desc.data[2] & 0x01)
-                        vga_printstring("1400 x 1050 @ 75 Hz\n");
-                    //BYTE 9
-                    if(desc.data[3] & 0x80)
-                        vga_printstring("1400 x 1050 @ 85 Hz\n");
-                    if(desc.data[3] & 0x40)
-                        vga_printstring("1680 x 1050 @ 60 Hz (RB)\n");
-                    if(desc.data[3] & 0x20)
-                        vga_printstring("1680 x 1050 @ 60 Hz\n");
-                    if(desc.data[3] & 0x10)
-                        vga_printstring("1680 x 1050 @ 75 Hz\n");
-                    if(desc.data[3] & 0x08)
-                        vga_printstring("1680 x 1050 @ 85 Hz\n");
-                    if(desc.data[3] & 0x04)
-                        vga_printstring("1600 x 1200 @ 60 Hz\n");
-                    if(desc.data[3] & 0x02)
-                        vga_printstring("1600 x 1200 @ 65 Hz\n");
-                    if(desc.data[3] & 0x01)
-                        vga_printstring("1600 x 1200 @ 70 Hz\n");
-                    //BYTE 10
-                    if(desc.data[4] & 0x80)
-                        vga_printstring("1600 x 1200 @ 75 Hz\n");
-                    if(desc.data[4] & 0x40)
-                        vga_printstring("1600 x 1200 @ 85 Hz\n");
-                    if(desc.data[4] & 0x20)
-                        vga_printstring("1792 x 1344 @ 60 Hz\n");
-                    if(desc.data[4] & 0x10)
-                        vga_printstring("1792 x 1344 @ 75 Hz\n");
-                    if(desc.data[4] & 0x08)
-                        vga_printstring("1856 x 1392 @ 60 Hz\n");
-                    if(desc.data[4] & 0x04)
-                        vga_printstring("1856 x 1392 @ 75 Hz\n");
-                    if(desc.data[4] & 0x02)
-                        vga_printstring("1920 x 1200 @ 60 Hz (RB)\n");
-                    if(desc.data[4] & 0x01)
-                        vga_printstring("1920 x 1200 @ 60 Hz\n");
-                    //BYTE 11
-                    if(desc.data[5] & 0x80)
-                        vga_printstring("1920 x 1200 @ 75 Hz\n");
-                    if(desc.data[5] & 0x40)
-                        vga_printstring("1920 x 1200 @ 85 Hz\n");
-                    if(desc.data[5] & 0x20)
-                        vga_printstring("1920 x 1440 @ 60 Hz\n");
-                    if(desc.data[5] & 0x10)
-                        vga_printstring("1920 x 1440 @ 75 Hz\n");
-                    break;
-                case MONITOR_NAME:
-                    for(int i = 0; i < 13; i++)
-                    {
-                        if(desc.data[i] != '\n')
-                            vga_printchar(desc.data[i]);
-                        else
-                            vga_newline();
-                    }
-                    vga_newline();
-                    break;
-                case MONITOR_RANGE_LIMITS:
-                    break;
-            }
-        }
-    }
-
-    vga_printstring("EDID EXTENSION BLOCKS: ");
-    itoa(edid_block.extension_num, buff, 10);
-    vga_printstring(buff);
-    vga_newline();
-
-    uint8_t* edid_extension = heap_kernel_alloc(128, 0);
-    if(edid_block.extension_num > 0)
-    {
-        for(int i = 1; i <= edid_block.extension_num; i++)
-        {
-            VBE_DDC_read_edid_block(i, edid_extension);
-            uint8_t block_id = *edid_extension;
-            itoa(block_id, buff, 16);
-            vga_printstring("EXTENSION ID: ");
-            vga_printstring(buff);
-            vga_newline();
-            if(block_id == 0x10)
-            {
-                vga_printstring("VTB EXTENSION FOUND");
-                vga_newline();
-            }
-        }
-    }
-
     keyboard_scan_ascii_pair kb;
-    while(!keyboard_get_key_from_buffer(&kb));
-    //while (1);
-
     svga_information* svga_info_ptr;
-    status = VBE_get_svga_information(&svga_info_ptr);
+    VBEStatus status = VBE_get_svga_information(&svga_info_ptr);
+    
     if(status == VBE_OK){
         vga_printstring(svga_info_ptr->signature);
         vga_newline();
@@ -838,10 +574,7 @@ int kmain()
         }
     }
     else{
-        itoa(status, buff, 16);
-        vga_printstring("Unable to get SVGA INFORMATION: ");
-        vga_printstring(buff);
-        vga_newline();
+
     }
     
     while (1);

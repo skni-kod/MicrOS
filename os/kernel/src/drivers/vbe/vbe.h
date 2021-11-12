@@ -1,9 +1,14 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * THIS FILE IS MARKED TO BE REFACTORED IN FUTURE. TRY NOT TO ADD NEW THINGS TO PARTS OF OS IN THIS FILE *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #ifndef VBE_H
 #define VBE_H
 
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
+#include "../../klibrary/kvector.h"
 
 #define DDC1_SUPPORT 0x01
 #define DDC2_SUPPORT 0x02
@@ -112,6 +117,7 @@ enum VESA_DescriptorDataType
 {
     UNUSED = 0x10,
     ESTABLISHED_TIMINGS_III = 0xF7,
+    STANDARD_TIMINGS = 0xFA,
     MONITOR_NAME = 0xFC,
     MONITOR_RANGE_LIMITS = 0xFD,
     ASCII_STRING = 0xFE,
@@ -127,8 +133,13 @@ typedef struct _VESA_monitor_descriptor
     uint8_t data[13];
 } __attribute__((packed)) VESA_monitor_descriptor;
 
-typedef enum _VBEStatus{
-    VBE_OK, VBE_NOT_EXIST, VBE_FUNCTION_FAILURE, VBE_NO_INITAILIZED, VBE_INTERNAL_ERROR
+typedef enum _VBEStatus
+{
+    VBE_OK,
+    VBE_NOT_EXIST,
+    VBE_FUNCTION_FAILURE,
+    VBE_NO_INITAILIZED,
+    VBE_INTERNAL_ERROR
 } VBEStatus;
 
 //TODO Add timing calculation to let choose other refresh rate. For now use defaults provided by BIOS.
@@ -152,9 +163,6 @@ VBEStatus VBE_DDC_read_edid_block(uint16_t block_number, edid* block_ptr);
 VESA_std_timing VBE_DDC_decode_std_timing(uint16_t timing);
 VESA_detailed_timing VBE_DDC_read_detailed_timing(edid* block_ptr, uint8_t detailed_block_num);
 VESA_monitor_descriptor VBE_DDC_read_monitor_descriptor(edid* block_ptr, uint8_t block_num);
-
-void VBE_add_supported_mode(VBE_resolution* res);
-VBE_resolution* VBE_get_supported_resolution(uint16_t horizontal_res, uint16_t vertical_res);
 
 /**
  * @todo Add clock calculations 

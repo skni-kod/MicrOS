@@ -1,5 +1,11 @@
 #include "videocard.h"
 #include <stddef.h>
+#include "../../../klibrary/kvector.h"
+
+//Temporary
+kvector* video_modes;
+video_mode* current_mode;
+
 
 video_mode* (*_get_available_graphic_video_modes)(uint32_t*) = NULL;
 video_mode* (*_get_available_text_video_modes)(uint32_t*) = NULL;
@@ -313,7 +319,20 @@ video_mode* video_card_get_available_text_modes(uint32_t *noOfModes)
 
 int16_t video_card_set_video_mode(uint16_t mode)
 {
-    return (*_set_video_mode)(mode);
+    for(int i = 0; i < video_modes->count; i++)
+    {
+        video_mode* mode_ptr = ((video_mode*)video_modes->data)+i;
+        //Check if it is mode we're looking for
+        if(mode_ptr->id == mode)
+        {
+            //Reinit video_card with driver structure valid for mode
+            video_card_init_with_driver(mode_ptr->dis_ptr);
+            //Call proper function for given mode
+            return (*_set_video_mode)(mode);
+        }
+    }
+    //Return -1 if required mode does not exist
+    return -1;
 }
 uint8_t video_card_is_text_mode()
 {

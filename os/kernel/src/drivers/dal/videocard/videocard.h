@@ -1,18 +1,11 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * THIS FILE IS MARKED TO BE REFACTORED IN FUTURE. TRY NOT TO ADD NEW THINGS TO PARTS OF OS IN THIS FILE *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #ifndef VIDEOCARD_H
 #define VIDEOCARD_H
 
 #include <stdint.h>
-
-typedef struct _video_mode
-{
-    uint16_t id;
-    uint32_t width;
-    uint32_t height;
-    uint64_t colors;
-    uint8_t graphic;
-    uint8_t monochrome;
-    uint8_t planar;
-} video_mode;
 
 typedef struct _driver_init_struct
 {
@@ -68,6 +61,18 @@ typedef struct _driver_init_struct
     uint8_t* (*create_external_buffer)(uint16_t);
     void (*destroy_external_buffer)(uint8_t*);
 } driver_init_struct;
+
+typedef struct _video_mode
+{
+    uint16_t id;
+    uint32_t width;
+    uint32_t height;
+    uint64_t colors;
+    uint8_t text;
+    uint8_t monochrome;
+    uint8_t planar;
+    driver_init_struct* dis_ptr;
+} video_mode;
 
 void video_card_init_with_driver(driver_init_struct* init_struct);
 

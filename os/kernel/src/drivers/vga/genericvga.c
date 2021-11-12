@@ -1,3 +1,7 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * THIS FILE IS MARKED TO BE REFACTORED IN FUTURE. TRY NOT TO ADD NEW THINGS TO PARTS OF OS IN THIS FILE *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
 #include "genericvga.h"
 #include "drivers/dal/videocard/videocard.h"
 #include "modes/mode_00h/mode_00h.h"
@@ -26,6 +30,11 @@ uint8_t text_mode;
 void generic_vga_driver_init()
 {
     driver_init_struct s;
+    video_mode* mode_ptr;
+
+    mode_ptr = heap_kernel_alloc(sizeof(video_mode), 0);
+
+
     s.set_video_mode = generic_vga_set_video_mode;
     s.is_text_mode = generic_vga_is_text_mode;
     s.get_current_video_mode = generic_vga_get_current_video_mode;
