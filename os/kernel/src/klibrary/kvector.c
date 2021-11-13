@@ -16,7 +16,7 @@ void kvector_insert(kvector *vector, void *data, uint32_t index)
 {
 	if (vector->size == 0)
 	{
-		vector->size = 8;
+		vector->size = 128;
 		vector->data = heap_kernel_alloc(sizeof(void *) * vector->size, 0);
 	}
 

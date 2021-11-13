@@ -154,6 +154,9 @@ typedef struct _VBE_resolution
 void VBE_initialize();
 void VBE_close();
 bool VBE_is_initialized();
+
+void VBE_init_driver();
+
 VBEStatus VBE_check_existance_of_VESA();
 VBEStatus VBE_get_svga_information(svga_information** information_struct_ptr);
 VBEStatus VBE_get_vesa_mode_information(svga_mode_information* infromation_struct, uint16_t mode_number);
@@ -202,8 +205,84 @@ VBEStatus VBE_set_during_vertical_retrace_palette_data_32bit(uint16_t index, uin
 VBEStatus VBE_get_protected_mode_interface(uint16_t* real_mode_table_segment, uint16_t* table_offset, uint16_t* table_length);
 VBEStatus VBE_get_set_pixel_clock(uint16_t pixel_clock, uint16_t mode_number, uint16_t* closest_pixel_clock);
 
+//Implementation of videocard generic driver.
+//Not supported features are supposed to return -1.
+//For now all text based functions will return -1.
+
+// DAL is incorrectly designed, hence anything else than
+// standard VGA modes won't work at all.
+// This means we're going to implement ONLY swap external buffer.
+// This makes sure we can draw into VBE buffer without any problem.
+// All drawing has to be offloaded to application.
+// NO PRIMITIVE DRAWING ROUTINES ARE AVAILABLE.
+// DAL IS SUPPOSED TO BE REWORKED IN 2022 OR AROUND CHRISTMAS 2021.
+
+
+//video_mode* (*get_available_graphic_video_modes)(uint32_t*);
+//video_mode* (*get_available_text_video_modes)(uint32_t*);
+
+int16_t __vbe_set_video_mode(uint16_t mode);
+
+//Not implemented, VBE need buffer larger than available memory.
+int8_t __vbe_turn_on_buffer();
+int8_t __vbe_turn_off_buffer();
+uint8_t __vbe_is_buffer_on();
+int8_t __vbe_swap_buffers();
+
+// Text mode functions
+// Since VBE is used for entering graphic modes these for now can just return -1
+// In future if we're even going to support text modes greater than 80x25
+// which is standard 03h mode from vga, we'll need to implement them.
+// but more likely case is that we're going to implement vendor/device
+// specific driver.
+int8_t __vbe_print_char(char character);
+int8_t __vbe_print_char_color(char character, uint8_t color);
+int8_t __vbe_print_string(const char* string);
+int8_t __vbe_print_string_color(const char* string, uint8_t color);
+int8_t __vbe_set_char(uint16_t x, uint16_t y, char character);
+int8_t __vbe_get_char(uint16_t x, uint16_t y, char* character);
+int8_t __vbe_set_color(uint16_t x, uint16_t y, uint8_t color);
+int8_t __vbe_get_color(uint16_t x, uint16_t y, uint8_t* color);
+int8_t __vbe_set_char_and_color(uint16_t x, uint16_t y, char character, uint8_t color);
+int8_t __vbe_get_char_and_color(uint16_t x, uint16_t y, char* character, uint8_t* color);
+int8_t __vbe_set_cursor_pos(uint16_t x, uint16_t y);
+int8_t __vbe_get_cursor_pos(uint16_t* x, uint16_t* y);
+int8_t __vbe_turn_cursor_on();
+int8_t __vbe_turn_cursor_off();
+int8_t __vbe_print_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character);
+int8_t __vbe_print_char_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character, uint8_t color);
+int8_t __vbe_print_string_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* character);
+int8_t __vbe_print_string_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* character, uint8_t  color);
+int8_t __vbe_set_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character);
+int8_t __vbe_get_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character);
+int8_t __vbe_set_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t color);
+int8_t __vbe_get_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t* color);
+int8_t __vbe_set_char_and_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character, uint8_t color);
+int8_t __vbe_get_char_and_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character, uint8_t*);
+
+//Not supported, mostly due to wrong DAL architecture, will get fixed after rework of DAL in 2022.
+int8_t __vbe_draw_pixel(uint8_t color, uint16_t x, uint16_t y);
+int8_t __vbe_draw_line(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
+int8_t __vbe_draw_circle(uint8_t color, uint16_t x, uint16_t y, uint16_t radius);
+int8_t __vbe_draw_rectangle(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
+int8_t __vbe_clear_screen();
+//Not supported, mostly due to wrong DAL architecture, will get fixed after rework of DAL in 2022.
+int8_t __vbe_draw_pixel_external_buffer(uint8_t* buffer, uint16_t mode, int8_t color, uint16_t x, uint16_t y);
+int8_t __vbe_draw_line_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
+int8_t __vbe_draw_circle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t x, uint16_t y, uint16_t radius);
+int8_t __vbe_draw_rectangle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by);
+int8_t __vbe_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y);
+
+int8_t __vbe_swap_external_buffer(uint8_t* buffer, uint16_t mode);
+uint8_t* __vbe_create_external_buffer(uint16_t mode);
+void __vbe_destroy_external_buffer(uint8_t* buffer);
+
+//Leftovers for debug, should be removed. This way of drawing is slow.
 void VBE_draw_pixel_8_8_8(uint32_t mode_width, uint32_t mode_height, uint32_t winsize, uint32_t granularity, uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b);
 void VBE_draw_pixel_8_8_8_linear(uint32_t mode_width, uint32_t mode_height, uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b);
 void VBE_draw_pixel_8_8_8_8_linear(uint32_t mode_width, uint32_t mode_height, uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b, uint8_t s);
+
+
+
 
 #endif

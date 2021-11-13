@@ -12,7 +12,7 @@ video_mode* (*_get_available_text_video_modes)(uint32_t*) = NULL;
 
 int16_t (*_set_video_mode)(uint16_t) = NULL;
 uint8_t (*_is_text_mode)() = NULL;
-video_mode* (*_get_current_video_mode)() = NULL;
+//video_mode* (*_get_current_video_mode)() = NULL;
 
 int8_t (*_turn_on_buffer)() = NULL;
 int8_t (*_turn_off_buffer)() = NULL;
@@ -66,8 +66,8 @@ void video_card_init_with_driver(driver_init_struct* init_struct){
     _get_available_graphic_video_modes = init_struct->get_available_graphic_video_modes;
     _get_available_text_video_modes = init_struct->get_available_text_video_modes;
     _set_video_mode = init_struct->set_video_mode;
-    _is_text_mode = init_struct->is_text_mode;
-    _get_current_video_mode = init_struct->get_current_video_mode;
+    //_is_text_mode = init_struct->is_text_mode;
+    //_get_current_video_mode = init_struct->get_current_video_mode;
     _turn_on_buffer = init_struct->turn_on_buffer;
     _turn_off_buffer = init_struct->turn_off_buffer;
     _is_buffer_on = init_struct->is_buffer_on;
@@ -130,15 +130,15 @@ void video_card_set_set_video_mode_func(int16_t (*set_video_mode)(uint16_t))
     _set_video_mode = set_video_mode;
 }
 
-void video_card_set_is_text_mode_func(uint8_t (*is_text_mode)())
-{
-    _is_text_mode = is_text_mode;
-}
+// void video_card_set_is_text_mode_func(uint8_t (*is_text_mode)())
+// {
+//     _is_text_mode = is_text_mode;
+// }
 
-void video_card_set_get_current_video_mode_func(video_mode* (*get_current_video_mode)())
-{
-    _get_current_video_mode = get_current_video_mode;
-}
+// void video_card_set_get_current_video_mode_func(video_mode* (*get_current_video_mode)())
+// {
+//     _get_current_video_mode = get_current_video_mode;
+// }
 
 void video_card_set_turn_on_buffer_func(int8_t (*turn_on_buffer)())
 {
@@ -305,6 +305,13 @@ void video_card_set_get_char_and_color_external_buffer(int8_t (*get_char_and_col
     _get_char_and_color_external_buffer = get_char_and_color_external_buffer;
 }
 
+//Init
+void video_card_init()
+{
+    video_modes = heap_kernel_alloc(sizeof(kvector), 0);
+    kvector_init(video_modes);
+}
+
 // Graphic functions
 
 video_mode* video_card_get_available_graphic_modes(uint32_t *noOfModes)
@@ -321,10 +328,11 @@ int16_t video_card_set_video_mode(uint16_t mode)
 {
     for(int i = 0; i < video_modes->count; i++)
     {
-        video_mode* mode_ptr = ((video_mode*)video_modes->data)+i;
+        video_mode* mode_ptr = (video_mode*)video_modes->data[i];
         //Check if it is mode we're looking for
         if(mode_ptr->id == mode)
         {
+            video_card_turn_off_buffer();
             //Reinit video_card with driver structure valid for mode
             video_card_init_with_driver(mode_ptr->dis_ptr);
             //Call proper function for given mode
@@ -334,15 +342,58 @@ int16_t video_card_set_video_mode(uint16_t mode)
     //Return -1 if required mode does not exist
     return -1;
 }
-uint8_t video_card_is_text_mode()
+
+void video_card_add_mode(video_mode* mode)
 {
-    return (*_is_text_mode)();
+    kvector_add(video_modes, mode);
 }
 
-video_mode *video_card_get_current_video_mode()
+video_mode* video_card_find_mode(uint16_t horizontal, uint16_t vertical, uint64_t colors, uint8_t text, uint8_t planar, uint8_t grayscale)
 {
-    return (*_get_current_video_mode)();
+    for(int i = 0; i < video_modes->count; i++)
+    {
+        video_mode* mode_ptr = (video_mode*)video_modes->data[i];
+        if( mode_ptr->width == horizontal &&
+            mode_ptr->height == vertical &&
+            mode_ptr->colors == colors &&
+            mode_ptr->text == text &&
+            mode_ptr->planar == planar &&
+            mode_ptr->monochrome == grayscale)
+            return mode_ptr;
+    }
+    return NULL;
 }
+
+video_mode* video_card_find_mode_by_number(uint16_t mode)
+{
+    for(int i = 0; i < video_modes->count; i++)
+    {
+        video_mode* mode_ptr = (video_mode*)video_modes->data[i];
+        if( mode_ptr->id == mode)
+            return mode_ptr;
+    }
+    return NULL;
+}
+
+video_mode* video_card_get_current_video_mode()
+{
+    return current_mode;
+}
+
+void video_card_set_current_mode(video_mode* mode)
+{
+    current_mode = mode;
+}
+
+uint8_t video_card_is_text_mode()
+{
+    return current_mode->text;
+}
+
+// video_mode *video_card_get_current_video_mode()
+// {
+//     return (*_get_current_video_mode)();
+// }
 
 int8_t video_card_turn_on_buffer(){
     return (*_turn_on_buffer)();

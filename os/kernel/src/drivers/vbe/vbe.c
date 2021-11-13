@@ -10,12 +10,14 @@
 #include "../memory/heap/heap.h"
 #include "../logger/logger.h"
 #include "../debug_helpers/library/kernel_stdio.h"
+#include "../dal/videocard/videocard.h"
 
 v8086* machine = NULL;
 bool initialized = false;
 int currentBank = -1;
 uint8_t* mem_buff = (uint8_t*)0xc0000000 + 0xA0000;
 uint8_t *linear_buffer = 0;
+uint32_t linear_buff_size;
 uint32_t page_index = 0;
 uint32_t page_count = 0;
 
@@ -33,7 +35,7 @@ kvector* monitor_res;
  * @param v Vertical resolution
  * @param rr Refresh rate
  */
-static void ____VBE_add_res_to_monitor_list(uint16_t h, uint16_t v, uint16_t rr)
+static void __VBE_add_res_to_monitor_list(uint16_t h, uint16_t v, uint16_t rr)
 {
     VBE_resolution* res = heap_kernel_alloc(sizeof(VBE_resolution), 0);
     res->horizontal = h;
@@ -41,6 +43,24 @@ static void ____VBE_add_res_to_monitor_list(uint16_t h, uint16_t v, uint16_t rr)
     res->refresh_rate = rr;
     res->pixel_clock = -1;
     kvector_add(monitor_res, res);
+}
+
+
+void VBE_init_driver()
+{
+
+}
+
+static uint8_t __VBE_find_mode_in_monitor_list(uint16_t h, uint16_t v)
+{
+    for(int i = 0; i < monitor_res->count; i++)
+    {
+        VBE_resolution* res_ptr = ((VBE_resolution*)monitor_res->data)+i;
+        if( res_ptr->horizontal == h &&
+            res_ptr->vertical == v)
+            return 1;
+    }
+    return 0;
 }
 
 void VBE_initialize()
@@ -330,7 +350,7 @@ void VBE_initialize()
 
     //Now read GPU stuff
     svga_information* svga_info_ptr;
-    VBEStatus status = VBE_get_svga_information(&svga_info_ptr);
+    status = VBE_get_svga_information(&svga_info_ptr);
     if(status != VBE_OK)
     {   
         kernel_sprintf(buff, "VBE Controller Information read failed, VBE Error code: %d.", status);
@@ -338,9 +358,99 @@ void VBE_initialize()
         return;  
     }
 
+    //OK, VBE controller exists so we can now setup driver initialize structure
+    //Each pointer has to point to implementation in this driver.
+    //Since DAL is still not really used for abstraction yet, we just need to make sure functions work fine.
+    //If function is not implemented it should return -1
+    driver_init_struct* s = heap_kernel_alloc(sizeof(driver_init_struct), 0);
+
+
+
+    s->set_video_mode = __vbe_set_video_mode;
+
+    s->turn_on_buffer = __vbe_turn_on_buffer;
+    s->turn_off_buffer = __vbe_turn_off_buffer;
+    s->is_buffer_on = __vbe_is_buffer_on;
+    s->swap_buffers = __vbe_swap_buffers;
+
+    s->print_char = __vbe_print_char;
+    s->print_char_color = __vbe_print_char_color;
+    s->print_string = __vbe_print_string;
+    s->print_string_color = __vbe_print_string_color;
+    s->set_char = __vbe_set_char;
+    s->get_char = __vbe_get_char;
+    s->set_color = __vbe_set_color;
+    s->get_color = __vbe_get_color;
+    s->set_char_and_color = __vbe_set_char_and_color;
+    s->get_char_and_color = __vbe_get_char_and_color;
+    s->set_cursor_pos = __vbe_set_cursor_pos;
+    s->get_cursor_pos = __vbe_get_cursor_pos;
+    s->turn_cursor_on = __vbe_turn_cursor_on;
+    s->turn_cursor_off = __vbe_turn_cursor_off;
+
+    s->print_char_external_buffer = __vbe_print_char_external_buffer;
+    s->print_char_color_external_buffer = __vbe_print_char_color_external_buffer;
+    s->print_string_external_buffer = __vbe_print_string_external_buffer;
+    s->print_string_color_external_buffer = __vbe_print_string_color_external_buffer;
+    s->set_char_external_buffer = __vbe_set_char_external_buffer;
+    s->get_char_external_buffer = __vbe_get_char_external_buffer;
+    s->set_color_external_buffer = __vbe_set_color_external_buffer;
+    s->get_color_external_buffer = __vbe_get_color_external_buffer;
+    s->set_char_and_color_external_buffer = __vbe_set_char_and_color_external_buffer;
+    s->get_char_and_color_external_buffer = __vbe_get_char_and_color_external_buffer;
+
+    s->draw_pixel = __vbe_draw_pixel;
+    s->draw_line = __vbe_draw_line;
+    s->draw_circle = __vbe_draw_circle;
+    s->draw_rectangle = __vbe_draw_rectangle;
+    s->clear_screen = __vbe_clear_screen;
+
+    s->draw_pixel_external_buffer = __vbe_draw_pixel_external_buffer;
+    s->draw_line_external_buffer = __vbe_draw_line_external_buffer;
+    s->draw_circle_external_buffer = __vbe_draw_circle_external_buffer;
+    s->draw_rectangle_external_buffer = __vbe_draw_rectangle_external_buffer;
+    s->clear_screen_external_buffer = __vbe_clear_screen_external_buffer;
+
+    s->swap_external_buffer = __vbe_swap_external_buffer;
+    s->create_external_buffer = __vbe_create_external_buffer;
+    s->destroy_external_buffer = __vbe_destroy_external_buffer;
+
     for(int i=0; i < svga_info_ptr->number_of_modes; i++)
     {
-    
+        svga_mode_information mode_info;
+        //Get VESA mode information
+        status = VBE_get_vesa_mode_information(&mode_info, svga_info_ptr->mode_array[i]);
+        if(status == VBE_OK && (mode_info.mode_attributes & 0x01) && mode_info.frame_buffor_phys_address != 0)
+        {
+            video_mode* mode_ptr = (video_mode*)heap_kernel_alloc(sizeof(video_mode), 0);
+            mode_ptr->id = svga_info_ptr->mode_array[i];
+            mode_ptr->width = mode_info.mode_width;
+            mode_ptr->height = mode_info.mode_height;
+            switch(mode_info.bits_per_pixel)
+            {
+                case 8:
+                    mode_ptr->colors = COLOR_8B;
+                    break;
+                case 16:
+                    mode_ptr->colors = COLOR_16B;
+                    break;
+                case 24:
+                    mode_ptr->colors = COLOR_24B;
+                    break;
+                case 32:
+                    mode_ptr->colors = COLOR_32B;
+                    break;
+            }
+            mode_ptr->monochrome = 0;
+            mode_ptr->planar = !(mode_info.mode_attributes & 0x80);
+            mode_ptr->text = !(mode_info.mode_attributes & 0x10);
+            mode_ptr->bpp = mode_info.bits_per_pixel;
+            //Check if current monitor supports this mode.
+            //Kinda simple check here, but it is just to prevent resolutions that are completely not correct size.
+            mode_ptr->monitor_supported = __VBE_find_mode_in_monitor_list(mode_ptr->width, mode_ptr->height);
+            mode_ptr->dis_ptr = s;
+            video_card_add_mode(mode_ptr);
+        }
     }
     //Wait for key, allow people to read whatever happened here.
     logger_log_warning("Press any key to continue [SVGA DEV FEATURE]");
@@ -612,7 +722,7 @@ VBEStatus VBE_set_video_mode(uint16_t mode_number, bool clear_screen)
         {
             if(page_index != 0)
             {
-                for(int i = 0; i < page_count+1; i++)
+                for(unsigned int i = 0; i < page_count+1; i++)
                 {
                     paging_unmap_page(page_index+i);
                 }
@@ -621,8 +731,8 @@ VBEStatus VBE_set_video_mode(uint16_t mode_number, bool clear_screen)
                 linear_buffer = 0;
             }
             
-            uint32_t bufferSize = mode_info.mode_height*mode_info.mode_width*(mode_info.bits_per_pixel/8);
-            page_count = bufferSize / 0x400000;
+            linear_buff_size = mode_info.mode_height*mode_info.mode_width*(mode_info.bits_per_pixel/8);
+            page_count = linear_buff_size / 0x400000;
 
             
             uint32_t tempIndex = 1;
@@ -1162,3 +1272,244 @@ void VBE_draw_pixel_8_8_8_8_linear(uint32_t mode_width, uint32_t mode_height, ui
         linear_buffer[index+3] = s;
     }
 }
+
+
+//videocard driver implementation
+// Set video mode
+// IMPORTANT TODO: Add safety return to mode 03h if mode switch failed.
+// TODO: Add warning about SVGA driver being in work, so you can bypass monitor
+// resolution support check, without ANY LIABILITY to authors of this OS and/or driver.
+int16_t __vbe_set_video_mode(uint16_t mode)
+{
+    video_mode* mode_ptr = video_card_find_mode_by_number(mode);
+    VBE_set_video_mode(mode|(mode_ptr->planar<<14), true);
+}
+
+// These want to use memory mapped for VGA modes. We cannot use it since any SVGA mode
+// will need bigger memory area.
+int8_t __vbe_turn_on_buffer()
+{
+    return -1;
+}
+
+int8_t __vbe_turn_off_buffer()
+{
+    if(page_index != 0)
+    {
+        for(int i = 0; i < page_count+1; i++)
+        {
+            paging_unmap_page(page_index+i);
+        }
+        page_index = 0;
+        page_count = 0;
+        linear_buffer = 0;
+    }
+    return 0;
+}
+uint8_t __vbe_is_buffer_on()
+{
+    return -1;
+}
+
+int8_t __vbe_swap_buffers()
+{
+    return -1;
+}
+
+//Text mode functions (NOT IMPLEMENTED)
+int8_t __vbe_print_char(char character)
+{
+    return -1;
+}
+
+int8_t __vbe_print_char_color(char character, uint8_t color)
+{
+    return -1;
+}
+
+int8_t __vbe_print_string(const char* string)
+{
+    return -1;
+}
+
+int8_t __vbe_print_string_color(const char* string, uint8_t color)
+{
+    return -1;
+}
+
+int8_t __vbe_set_char(uint16_t x, uint16_t y, char character)
+{
+    return -1;
+}
+
+int8_t __vbe_get_char(uint16_t x, uint16_t y, char* character)
+{
+    return -1;
+}
+
+int8_t __vbe_set_color(uint16_t x, uint16_t y, uint8_t color)
+{
+    return -1;
+}
+
+int8_t __vbe_get_color(uint16_t x, uint16_t y, uint8_t* color)
+{
+    return -1;
+}
+
+int8_t __vbe_set_char_and_color(uint16_t x, uint16_t y, char character, uint8_t color)
+{
+    return -1;
+}
+
+int8_t __vbe_get_char_and_color(uint16_t x, uint16_t y, char* character, uint8_t* color)
+{
+    return -1;
+}
+
+int8_t __vbe_set_cursor_pos(uint16_t x, uint16_t y)
+{
+    return -1;
+}
+
+int8_t __vbe_get_cursor_pos(uint16_t* x, uint16_t* y)
+{
+    return -1;
+}
+
+int8_t __vbe_turn_cursor_on()
+{
+    return -1;
+}
+
+int8_t __vbe_turn_cursor_off()
+{
+    return -1;
+}
+
+int8_t __vbe_print_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character)
+{
+    return -1;
+}
+
+int8_t __vbe_print_char_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character, uint8_t color)
+{
+    return -1;
+}
+
+int8_t __vbe_print_string_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* character)
+{
+    return -1;
+}
+
+int8_t __vbe_print_string_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* character, uint8_t  color)
+{
+    return -1;
+}
+
+int8_t __vbe_set_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character)
+{
+    return -1;
+}
+
+int8_t __vbe_get_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character)
+{
+    return -1;
+}
+
+int8_t __vbe_set_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t color)
+{
+    return -1;
+}
+
+int8_t __vbe_get_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t* color)
+{
+    return -1;
+}
+
+int8_t __vbe_set_char_and_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character, uint8_t color)
+{
+    return -1;
+}
+
+int8_t __vbe_get_char_and_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character, uint8_t* color)
+{
+    return -1;
+}
+
+// Graphic functions, all not implemented, dal architecture makes it impossible
+// To implement them in other driver than standard VGA.
+
+//Not supported, mostly due to wrong DAL architecture, will get fixed after rework of DAL in 2022.
+int8_t __vbe_draw_pixel(uint8_t color, uint16_t x, uint16_t y)
+{
+    return -1;
+}
+
+int8_t __vbe_draw_line(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
+{
+    return -1;
+}
+
+int8_t __vbe_draw_circle(uint8_t color, uint16_t x, uint16_t y, uint16_t radius)
+{
+    return -1;
+}
+
+int8_t __vbe_draw_rectangle(uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
+{
+    return -1;
+}
+
+int8_t __vbe_clear_screen()
+{
+    return -1;
+}
+
+//Not supported, mostly due to wrong DAL architecture, will get fixed after rework of DAL in 2022.
+int8_t __vbe_draw_pixel_external_buffer(uint8_t* buffer, uint16_t mode, int8_t color, uint16_t x, uint16_t y)
+{
+    return -1;
+}
+
+int8_t __vbe_draw_line_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
+{
+    return -1;
+}
+
+int8_t __vbe_draw_circle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t x, uint16_t y, uint16_t radius)
+{
+    return -1;
+}
+
+int8_t __vbe_draw_rectangle_external_buffer(uint8_t* buffer, uint16_t mode, uint8_t color, uint16_t ax, uint16_t ay, uint16_t bx, uint16_t by)
+{
+    return -1;
+}
+
+int8_t __vbe_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y)
+{
+    memset(buffer, 0, linear_buff_size);
+    return 0;
+}
+
+//Implemented
+
+int8_t __vbe_swap_external_buffer(uint8_t* buffer, uint16_t mode)
+{
+    memcpy(linear_buffer, buffer, linear_buff_size);
+    return 0;
+}
+
+uint8_t* __vbe_create_external_buffer(uint16_t mode)
+{
+    uint8_t* ptr = heap_kernel_alloc(linear_buff_size, 0);
+    return ptr;
+}
+
+void __vbe_destroy_external_buffer(uint8_t* buffer)
+{
+    heap_kernel_dealloc(buffer);
+}
+
+

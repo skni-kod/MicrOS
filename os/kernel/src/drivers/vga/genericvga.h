@@ -13,7 +13,7 @@
 
 void generic_vga_driver_init();
 int16_t generic_vga_set_video_mode(uint16_t mode);
-uint8_t generic_vga_is_text_mode();
+//uint8_t generic_vga_is_text_mode();
 video_mode *generic_vga_get_current_video_mode();
 
 int8_t generic_vga_draw_pixel_external_buffer(uint8_t* buffer, uint16_t mode, int8_t color, uint16_t x, uint16_t y);

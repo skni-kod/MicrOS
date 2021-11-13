@@ -24,270 +24,354 @@
 
 #include "../../assembly/io.h"
 
-video_mode current_video_mode;
-uint8_t text_mode;
+//video_mode current_video_mode;
+//uint8_t text_mode;
 
 void generic_vga_driver_init()
 {
-    driver_init_struct s;
+    driver_init_struct* s = heap_kernel_alloc(sizeof(driver_init_struct), 0);
+    
+    //Set proper function pointers for driver.
+    //TODO rework genericvga
+    s->set_video_mode = generic_vga_set_video_mode;
+    //s->is_text_mode = generic_vga_is_text_mode;
+    //s->get_current_video_mode = generic_vga_get_current_video_mode;
+    s->turn_on_buffer = mode03h_turn_on_buffer;
+    s->turn_off_buffer = mode03h_turn_off_buffer;
+    s->is_buffer_on = mode03h_is_buffer_on;
+    s->swap_buffers = mode03h_swap_buffers;
+    s->draw_pixel = mode03h_draw_pixel;
+    s->draw_line = mode03h_draw_line;
+    s->draw_circle = mode03h_draw_circle;
+    s->draw_rectangle = mode03h_draw_rectangle;
+    s->clear_screen = mode03h_clear_screen;
+
+    s->print_char = mode03h_print_char;
+    s->print_char_color = mode03h_print_char_color;
+    s->print_string = mode03h_print_string;
+    s->print_string_color = mode03h_print_string_color;
+    s->set_char = mode03h_set_char;
+    s->get_char = mode03h_get_char;
+    s->set_color = mode03h_set_color;
+    s->get_color = mode03h_get_color;
+    s->set_char_and_color = mode03h_set_char_and_color;
+    s->get_char_and_color = mode03h_get_char_and_color;
+    s->set_cursor_pos = mode03h_set_cursor_pos;
+    s->get_cursor_pos = mode03h_get_cursor_pos;
+    s->turn_cursor_on = mode03h_turn_cursor_on;
+    s->turn_cursor_off = mode03h_turn_cursor_off;
+
+    s->print_char_external_buffer = generic_vga_print_char_external_buffer;
+    s->print_char_color_external_buffer = generic_vga_print_char_color_external_buffer;
+    s->print_string_external_buffer = generic_vga_print_string_external_buffer;
+    s->print_string_color_external_buffer = generic_vga_print_string_color_external_buffer;
+    s->set_char_external_buffer = generic_vga_set_char_external_buffer;
+    s->get_char_external_buffer = generic_vga_get_char_external_buffer;
+    s->set_color_external_buffer = generic_vga_set_color_external_buffer;
+    s->get_color_external_buffer = generic_vga_get_color_external_buffer;
+    s->set_char_and_color_external_buffer = generic_vga_set_char_and_color_external_buffer;
+    s->get_char_and_color_external_buffer = generic_vga_get_char_and_color_external_buffer;
+
+    s->draw_pixel_external_buffer = generic_vga_draw_pixel_external_buffer;
+    s->draw_line_external_buffer = generic_vga_draw_line_external_buffer;
+    s->draw_circle_external_buffer = generic_vga_draw_circle_external_buffer;
+    s->draw_rectangle_external_buffer = generic_vga_draw_rectangle_external_buffer;
+    s->clear_screen_external_buffer = generic_vga_clear_screen_external_buffer;
+
+    s->swap_external_buffer = generic_vga_swap_external_buffer;
+    s->create_external_buffer = generic_vga_create_external_buffer;
+    s->destroy_external_buffer = generic_vga_destroy_external_buffer;
+
+
     video_mode* mode_ptr;
 
+    //Mode 00h
     mode_ptr = heap_kernel_alloc(sizeof(video_mode), 0);
-
-
-    s.set_video_mode = generic_vga_set_video_mode;
-    s.is_text_mode = generic_vga_is_text_mode;
-    s.get_current_video_mode = generic_vga_get_current_video_mode;
-    s.turn_on_buffer = mode03h_turn_on_buffer;
-    s.turn_off_buffer = mode03h_turn_off_buffer;
-    s.is_buffer_on = mode03h_is_buffer_on;
-    s.swap_buffers = mode03h_swap_buffers;
-    s.draw_pixel = mode03h_draw_pixel;
-    s.draw_line = mode03h_draw_line;
-    s.draw_circle = mode03h_draw_circle;
-    s.draw_rectangle = mode03h_draw_rectangle;
-    s.clear_screen = mode03h_clear_screen;
-
-    s.print_char = mode03h_print_char;
-    s.print_char_color = mode03h_print_char_color;
-    s.print_string = mode03h_print_string;
-    s.print_string_color = mode03h_print_string_color;
-    s.set_char = mode03h_set_char;
-    s.get_char = mode03h_get_char;
-    s.set_color = mode03h_set_color;
-    s.get_color = mode03h_get_color;
-    s.set_char_and_color = mode03h_set_char_and_color;
-    s.get_char_and_color = mode03h_get_char_and_color;
-    s.set_cursor_pos = mode03h_set_cursor_pos;
-    s.get_cursor_pos = mode03h_get_cursor_pos;
-    s.turn_cursor_on = mode03h_turn_cursor_on;
-    s.turn_cursor_off = mode03h_turn_cursor_off;
-
-    s.print_char_external_buffer = generic_vga_print_char_external_buffer;
-    s.print_char_color_external_buffer = generic_vga_print_char_color_external_buffer;
-    s.print_string_external_buffer = generic_vga_print_string_external_buffer;
-    s.print_string_color_external_buffer = generic_vga_print_string_color_external_buffer;
-    s.set_char_external_buffer = generic_vga_set_char_external_buffer;
-    s.get_char_external_buffer = generic_vga_get_char_external_buffer;
-    s.set_color_external_buffer = generic_vga_set_color_external_buffer;
-    s.get_color_external_buffer = generic_vga_get_color_external_buffer;
-    s.set_char_and_color_external_buffer = generic_vga_set_char_and_color_external_buffer;
-    s.get_char_and_color_external_buffer = generic_vga_get_char_and_color_external_buffer;
-
-    s.draw_pixel_external_buffer = generic_vga_draw_pixel_external_buffer;
-    s.draw_line_external_buffer = generic_vga_draw_line_external_buffer;
-    s.draw_circle_external_buffer = generic_vga_draw_circle_external_buffer;
-    s.draw_rectangle_external_buffer = generic_vga_draw_rectangle_external_buffer;
-    s.clear_screen_external_buffer = generic_vga_clear_screen_external_buffer;
-
-    s.swap_external_buffer = generic_vga_swap_external_buffer;
-    s.create_external_buffer = generic_vga_create_external_buffer;
-    s.destroy_external_buffer = generic_vga_destroy_external_buffer;
+    mode_ptr->id = 0x00;
+    mode_ptr->width = 40;
+    mode_ptr->height = 25;
+    mode_ptr->colors = 16;
+    mode_ptr->monochrome = 1;
+    mode_ptr->planar = 0;
+    mode_ptr->text = 1;
+    mode_ptr->monitor_supported = 1;
+    mode_ptr->dis_ptr = s;
+    video_card_add_mode(mode_ptr);
+    mode_ptr = 0;
+    mode_ptr = video_card_find_mode_by_number(0);
     
-    video_card_init_with_driver(&s);
+    //Mode 01h
+    mode_ptr = heap_kernel_alloc(sizeof(video_mode), 0);
+    mode_ptr->id = 0x01;
+    mode_ptr->width = 40;
+    mode_ptr->height = 25;
+    mode_ptr->colors = 16;
+    mode_ptr->monochrome = 0;
+    mode_ptr->planar = 0;
+    mode_ptr->text = 1;
+    mode_ptr->monitor_supported = 1;
+    mode_ptr->dis_ptr = s;
+    video_card_add_mode(mode_ptr);
+    
+    //Mode 02h
+    mode_ptr = heap_kernel_alloc(sizeof(video_mode), 0);
+    mode_ptr->id = 0x02;
+    mode_ptr->width = 80;
+    mode_ptr->height = 25;
+    mode_ptr->colors = 16;
+    mode_ptr->monochrome = 1;
+    mode_ptr->planar = 0;
+    mode_ptr->text = 1;
+    mode_ptr->monitor_supported = 1;
+    mode_ptr->dis_ptr = s;
+    video_card_add_mode(mode_ptr);
 
-    current_video_mode.colors = 16;
-    current_video_mode.height = 25;
-    current_video_mode.width = 80;
-    current_video_mode.id = 0x03;
-    current_video_mode.monochrome = 0;
-    current_video_mode.planar = 0;
+    //Mode 03h
+    mode_ptr = heap_kernel_alloc(sizeof(video_mode), 0);
+    mode_ptr->id = 0x03;
+    mode_ptr->width = 80;
+    mode_ptr->height = 25;
+    mode_ptr->colors = 16;
+    mode_ptr->monochrome = 0;
+    mode_ptr->planar = 0;
+    mode_ptr->text = 1;
+    mode_ptr->monitor_supported = 1;
+    mode_ptr->dis_ptr = s;
+    video_card_add_mode(mode_ptr);
+    //Set as current
+    video_card_set_current_mode(mode_ptr);
 
-    text_mode = 1;
+    //Mode 04h
+    mode_ptr = heap_kernel_alloc(sizeof(video_mode), 0);
+    mode_ptr->id = 0x04;
+    mode_ptr->width = 320;
+    mode_ptr->height = 200;
+    mode_ptr->colors = 4;
+    mode_ptr->monochrome = 0;
+    mode_ptr->planar = 0;
+    mode_ptr->text = 0;
+    mode_ptr->monitor_supported = 1;
+    mode_ptr->dis_ptr = s;
+    video_card_add_mode(mode_ptr);
+
+    //Mode 05h
+    mode_ptr = heap_kernel_alloc(sizeof(video_mode), 0);
+    mode_ptr->id = 0x05;
+    mode_ptr->width = 320;
+    mode_ptr->height = 200;
+    mode_ptr->colors = 4;
+    mode_ptr->monochrome = 0;
+    mode_ptr->planar = 0;
+    mode_ptr->text = 0;
+    mode_ptr->monitor_supported = 1;
+    mode_ptr->dis_ptr = s;
+    video_card_add_mode(mode_ptr);
+
+    //Mode 06h
+    mode_ptr = heap_kernel_alloc(sizeof(video_mode), 0);
+    mode_ptr->id = 0x06;
+    mode_ptr->width = 640;
+    mode_ptr->height = 200;
+    mode_ptr->colors = 2;
+    mode_ptr->monochrome = 1;
+    mode_ptr->planar = 0;
+    mode_ptr->text = 0;
+    mode_ptr->monitor_supported = 1;
+    mode_ptr->dis_ptr = s;
+    video_card_add_mode(mode_ptr);
+
+    //Mode 07h
+    mode_ptr = heap_kernel_alloc(sizeof(video_mode), 0);
+    mode_ptr->id = 0x07;
+    mode_ptr->width = 80;
+    mode_ptr->height = 25;
+    mode_ptr->colors = 3;
+    mode_ptr->monochrome = 1;
+    mode_ptr->planar = 0;
+    mode_ptr->text = 1;
+    mode_ptr->monitor_supported = 1;
+    mode_ptr->dis_ptr = s;
+    video_card_add_mode(mode_ptr);
+
+    //Mode 0Dh
+    mode_ptr = heap_kernel_alloc(sizeof(video_mode), 0);
+    mode_ptr->id = 0x0D;
+    mode_ptr->width = 320;
+    mode_ptr->height = 200;
+    mode_ptr->colors = 16;
+    mode_ptr->monochrome = 0;
+    mode_ptr->planar = 1;
+    mode_ptr->text = 0;
+    mode_ptr->monitor_supported = 1;
+    mode_ptr->dis_ptr = s;
+    video_card_add_mode(mode_ptr);
+
+    //Mode 0Eh
+    mode_ptr = heap_kernel_alloc(sizeof(video_mode), 0);
+    mode_ptr->id = 0x0E;
+    mode_ptr->width = 640;
+    mode_ptr->height = 200;
+    mode_ptr->colors = 16;
+    mode_ptr->monochrome = 0;
+    mode_ptr->planar = 1;
+    mode_ptr->text = 0;
+    mode_ptr->monitor_supported = 1;
+    mode_ptr->dis_ptr = s;
+    video_card_add_mode(mode_ptr);
+
+    //Mode 0Fh
+    mode_ptr = heap_kernel_alloc(sizeof(video_mode), 0);
+    mode_ptr->id = 0x0F;
+    mode_ptr->width = 640;
+    mode_ptr->height = 350;
+    mode_ptr->colors = 4;
+    mode_ptr->monochrome = 1;
+    mode_ptr->planar = 1;
+    mode_ptr->text = 0;
+    mode_ptr->monitor_supported = 1;
+    mode_ptr->dis_ptr = s;
+    video_card_add_mode(mode_ptr);
+
+    //Mode 10h
+    mode_ptr = heap_kernel_alloc(sizeof(video_mode), 0);
+    mode_ptr->id = 0x10;
+    mode_ptr->width = 640;
+    mode_ptr->height = 350;
+    mode_ptr->colors = 16;
+    mode_ptr->monochrome = 0;
+    mode_ptr->planar = 1;
+    mode_ptr->text = 0;
+    mode_ptr->monitor_supported = 1;
+    mode_ptr->dis_ptr = s;
+    video_card_add_mode(mode_ptr);
+
+    //Mode 11h
+    mode_ptr = heap_kernel_alloc(sizeof(video_mode), 0);
+    mode_ptr->id = 0x11;
+    mode_ptr->width = 640;
+    mode_ptr->height = 480;
+    mode_ptr->colors = 2;
+    mode_ptr->monochrome = 1;
+    mode_ptr->planar = 1;
+    mode_ptr->text = 0;
+    mode_ptr->monitor_supported = 1;
+    mode_ptr->dis_ptr = s;
+    video_card_add_mode(mode_ptr);
+    
+    //Mode 12h
+    mode_ptr = heap_kernel_alloc(sizeof(video_mode), 0);
+    mode_ptr->id = 0x12;
+    mode_ptr->width = 640;
+    mode_ptr->height = 480;
+    mode_ptr->colors = 16;
+    mode_ptr->monochrome = 0;
+    mode_ptr->planar = 1;
+    mode_ptr->text = 0;
+    mode_ptr->monitor_supported = 1;
+    mode_ptr->dis_ptr = s;
+    video_card_add_mode(mode_ptr);
+
+    //Mode 13h
+    mode_ptr = heap_kernel_alloc(sizeof(video_mode), 0);
+    mode_ptr->id = 0x13;
+    mode_ptr->width = 320;
+    mode_ptr->height = 200;
+    mode_ptr->colors = 256;
+    mode_ptr->monochrome = 0;
+    mode_ptr->planar = 0;
+    mode_ptr->text = 0;
+    mode_ptr->monitor_supported = 1;
+    mode_ptr->dis_ptr = s;
+    video_card_add_mode(mode_ptr);
+
+    //Mode 69h (Mode Y?)
+    mode_ptr = heap_kernel_alloc(sizeof(video_mode), 0);
+    mode_ptr->id = 0x69;
+    mode_ptr->width = 320;
+    mode_ptr->height = 200;
+    mode_ptr->colors = 256;
+    mode_ptr->monochrome = 0;
+    mode_ptr->planar = 1;
+    mode_ptr->text = 0;
+    mode_ptr->monitor_supported = 1;
+    mode_ptr->dis_ptr = s;
+    video_card_add_mode(mode_ptr);
+    
+    video_card_init_with_driver(s);
 }
 
-int16_t generic_vga_set_video_mode(uint16_t mode){
+int16_t generic_vga_set_video_mode(uint16_t mode)
+{
+    video_mode* mode_ptr;
+    mode_ptr = video_card_find_mode_by_number(mode);
+
+    video_card_turn_off_buffer();
     switch(mode)
     {
         case 0x00:
-            video_card_turn_off_buffer();
             if(mode00h_set_mode() != 0x00) return -1;
-            current_video_mode.colors = 16;
-            current_video_mode.height = 25;
-            current_video_mode.width = 40;
-            current_video_mode.id = 0x00;
-            current_video_mode.monochrome = 1;
-            current_video_mode.planar = 0;
-            text_mode = 1;
-            return 0x00;
+            break;
         case 0x01:
-            video_card_turn_off_buffer();
             if(mode01h_set_mode() != 0x01) return -1;
-            current_video_mode.colors = 16;
-            current_video_mode.height = 25;
-            current_video_mode.width = 40;
-            current_video_mode.id = 0x01;
-            current_video_mode.monochrome = 0;
-            current_video_mode.planar = 0;
-            text_mode = 1;
-            return 0x01;
+            break;
         case 0x02:
-            video_card_turn_off_buffer();
             if(mode02h_set_mode() != 0x02) return -1;
-            current_video_mode.colors = 16;
-            current_video_mode.height = 25;
-            current_video_mode.width = 80;
-            current_video_mode.id = 0x02;
-            current_video_mode.monochrome = 1;
-            current_video_mode.planar = 0;
-            text_mode = 1;
-            return 0x02;
+            break;
         case 0x03:
-            video_card_turn_off_buffer();
             if(mode03h_set_mode() != 0x03) return -1;
-            current_video_mode.colors = 16;
-            current_video_mode.height = 25;
-            current_video_mode.width = 80;
-            current_video_mode.id = 0x03;
-            current_video_mode.monochrome = 0;
-            current_video_mode.planar = 0;
-            text_mode = 1;
-            return 0x03;
+            break;
         case 0x04:
-            video_card_turn_off_buffer();
             if(mode04h_set_mode() != 0x04) return -1;
-            current_video_mode.colors = 4;
-            current_video_mode.height = 200;
-            current_video_mode.width = 320;
-            current_video_mode.id = 0x04;
-            current_video_mode.monochrome = 0;
-            current_video_mode.planar = 0;
-            text_mode = 0;
-            return 0x04;
+            break;
         case 0x05:
-            video_card_turn_off_buffer();
             if(mode05h_set_mode() != 0x05) return -1;
-            current_video_mode.colors = 4;
-            current_video_mode.height = 200;
-            current_video_mode.width = 320;
-            current_video_mode.id = 0x05;
-            current_video_mode.monochrome = 0;
-            current_video_mode.planar = 0;
-            text_mode = 0;
-            return 0x05;
+            break;
         case 0x06:
-            video_card_turn_off_buffer();
             if(mode06h_set_mode() != 0x06) return -1;
-            current_video_mode.colors = 2;
-            current_video_mode.height = 200;
-            current_video_mode.width = 640;
-            current_video_mode.id = 0x06;
-            current_video_mode.monochrome = 1;
-            current_video_mode.planar = 0;
-            text_mode = 0;
-            return 0x06;
+            break;
         case 0x07:
-            video_card_turn_off_buffer();
             if(mode07h_set_mode() != 0x07) return -1;
-            current_video_mode.colors = 3;
-            current_video_mode.height = 25;
-            current_video_mode.width = 80;
-            current_video_mode.id = 0x07;
-            current_video_mode.monochrome = 1;
-            current_video_mode.planar = 0;
-            text_mode = 1;
-            return 0x07;
+            break;
         case 0x0D:
-            video_card_turn_off_buffer();
             if(mode0dh_set_mode() != 0x0D) return -1;
-            current_video_mode.colors = 16;
-            current_video_mode.height = 200;
-            current_video_mode.width = 320;
-            current_video_mode.id = 0x0D;
-            current_video_mode.monochrome = 0;
-            current_video_mode.planar = 1;
-            text_mode = 0;
-            return 0x0D;
+            break;
         case 0x0E:
-            video_card_turn_off_buffer();
             if(mode0eh_set_mode() != 0x0E) return -1;
-            current_video_mode.colors = 16;
-            current_video_mode.height = 200;
-            current_video_mode.width = 640;
-            current_video_mode.id = 0x0E;
-            current_video_mode.monochrome = 0;
-            current_video_mode.planar = 1;
-            text_mode = 0;
-            return 0x0E;
+            break;
         case 0x0F:
-            video_card_turn_off_buffer();
             if(mode0fh_set_mode() != 0x0F) return -1;
-            current_video_mode.colors = 4;
-            current_video_mode.height = 350;
-            current_video_mode.width = 640;
-            current_video_mode.id = 0x0F;
-            current_video_mode.monochrome = 1;
-            current_video_mode.planar = 1;
-            text_mode = 0;
-            return 0x0F;
+            break;
         case 0x10:
-            video_card_turn_off_buffer();
             if(mode10h_set_mode() != 0x10) return -1;
-            current_video_mode.colors = 16;
-            current_video_mode.height = 350;
-            current_video_mode.width = 640;
-            current_video_mode.id = 0x10;
-            current_video_mode.monochrome = 0;
-            current_video_mode.planar = 1;
-            text_mode = 0;
-            return 0x10;
+            break;
         case 0x11:
-            video_card_turn_off_buffer();
             if(mode11h_set_mode() != 0x11) return -1;
-            current_video_mode.colors = 2;
-            current_video_mode.height = 480;
-            current_video_mode.width = 640;
-            current_video_mode.id = 0x11;
-            current_video_mode.monochrome = 1;
-            current_video_mode.planar = 1;
-            text_mode = 0;
-            return 0x11;
+            break;
         case 0x12:
-            video_card_turn_off_buffer();
             if(mode12h_set_mode() != 0x12) return -1;
-            current_video_mode.colors = 16;
-            current_video_mode.height = 480;
-            current_video_mode.width = 640;
-            current_video_mode.id = 0x12;
-            current_video_mode.monochrome = 0;
-            current_video_mode.planar = 1;
-            text_mode = 0;
-            return 0x12;
+            break;
         case 0x13:
-            video_card_turn_off_buffer();
             if(mode13h_set_mode() != 0x13) return -1;
-            current_video_mode.colors = 256;
-            current_video_mode.height = 200;
-            current_video_mode.width = 320;
-            current_video_mode.id = 0x13;
-            current_video_mode.monochrome = 0;
-            current_video_mode.planar = 0;
-            text_mode = 0;
-            return 0x13;
+            break;
         case 0x69:
-            video_card_turn_off_buffer();
             if(modey_set_mode() != 0x69) return -1;
-            current_video_mode.colors = 256;
-            current_video_mode.height = 200;
-            current_video_mode.width = 320;
-            current_video_mode.id = 0x69;
-            current_video_mode.monochrome = 0;
-            current_video_mode.planar = 1;
-            text_mode = 0;
-            return 0x69;
-        default: return -1;
+            break;
+        default:
+            return -1;
     }
+    video_card_set_current_mode(mode_ptr);
+    return mode;
 }
 
-uint8_t generic_vga_is_text_mode()
-{
-    return text_mode;
-}
+// uint8_t generic_vga_is_text_mode()
+// {
+//     return text_mode;
+// }
 
-video_mode *generic_vga_get_current_video_mode()
-{
-    return &current_video_mode;
-}
+// video_mode* generic_vga_get_current_video_mode()
+// {
+//     return video_card_get_current_mode();
+// }
 
 int8_t generic_vga_draw_pixel_external_buffer(uint8_t* buffer, uint16_t mode, int8_t color, uint16_t x, uint16_t y){
     switch(mode)

@@ -7,13 +7,20 @@
 
 #include <stdint.h>
 
+#define COLOR_8B 0x100
+#define COLOR_16B 0x10000
+#define COLOR_24B 0x1000000
+#define COLOR_32B 0x100000000
+
+typedef struct _video_mode video_mode;
+
 typedef struct _driver_init_struct
 {
     video_mode* (*get_available_graphic_video_modes)(uint32_t*);
     video_mode* (*get_available_text_video_modes)(uint32_t*);
     int16_t (*set_video_mode)(uint16_t);
-    uint8_t (*is_text_mode)();
-    video_mode* (*get_current_video_mode)();
+    //uint8_t (*is_text_mode)();
+    //video_mode* (*get_current_video_mode)();
     int8_t (*turn_on_buffer)();
     int8_t (*turn_off_buffer)();
     uint8_t (*is_buffer_on)();
@@ -62,17 +69,19 @@ typedef struct _driver_init_struct
     void (*destroy_external_buffer)(uint8_t*);
 } driver_init_struct;
 
-typedef struct _video_mode
+struct _video_mode
 {
     uint16_t id;
     uint32_t width;
     uint32_t height;
     uint64_t colors;
+    uint8_t bpp;
     uint8_t text;
     uint8_t monochrome;
     uint8_t planar;
+    uint8_t monitor_supported;
     driver_init_struct* dis_ptr;
-} video_mode;
+};
 
 void video_card_init_with_driver(driver_init_struct* init_struct);
 
@@ -81,8 +90,8 @@ void video_card_init_with_driver(driver_init_struct* init_struct);
 void video_card_set_get_available_graphic_video_modes_func(video_mode* (*get_available_graphic_video_modes)(uint32_t*));
 void video_card_set_get_available_text_video_modes_func(video_mode* (*get_available_text_video_modes)(uint32_t*));
 void video_card_set_set_video_mode_func(int16_t (*set_video_mode)(uint16_t));
-void video_card_set_is_text_mode_func(uint8_t (*is_text_mode)());
-void video_card_set_get_current_video_mode_func(video_mode* (*get_current_video_mode)());
+//void video_card_set_is_text_mode_func(uint8_t (*is_text_mode)());
+//void video_card_set_get_current_video_mode_func(video_mode* (*get_current_video_mode)());
 void video_card_set_turn_on_buffer_func(int8_t (*turn_on_buffer)());
 void video_card_set_turn_off_buffer_func(int8_t (*turn_off_buffer)());
 void video_card_set_is_buffer_on_func(uint8_t (*is_buffer_on)());
@@ -238,6 +247,38 @@ void video_card_set_set_char_and_color_external_buffer(int8_t (*set_char_and_col
 */
 void video_card_set_get_char_and_color_external_buffer(int8_t (*get_char_and_color_external_buffer)(uint8_t*, uint16_t, uint16_t, uint16_t, char*, uint8_t*));
 
+//Init DAL version of driver
+void video_card_init();
+
+//Manage supported modes
+void video_card_add_mode(video_mode* mode);
+
+
+/*!
+    Function for finding supported mode with given params
+    \param horizontal Horizontal resolution (horizontal amount of characters for text modes!).
+    \param vertical Vertical resolution (vertical amount of characters for text modes!).
+    \param colors Amount of colors supported.
+    \param text Is text mode.
+    \param planar Is planar memory model.
+    \param grayscale Is grayscale.
+    \return Pointer to supported mode, when not found NULL.
+ */
+video_mode* video_card_find_mode(uint16_t horizontal, uint16_t vertical, uint64_t colors, uint8_t text, uint8_t planar, uint8_t grayscale);
+
+/*!
+    Function for finding supported mode with mode number
+    \param mode Mode number.
+    \return Pointer to supported mode, when not found NULL.
+ */
+video_mode* video_card_find_mode_by_number(uint16_t mode);
+
+//Think about better way of doing this.
+video_mode* video_card_get_current_video_mode();
+void video_card_set_current_mode(video_mode* mode);
+
+//TODO add removing for some reason
+
 // Graphic functions
 
 video_mode* video_card_get_available_graphic_modes(uint32_t *noOfModes);
@@ -245,7 +286,6 @@ video_mode* video_card_get_available_text_modes(uint32_t *noOfModes);
 
 int16_t video_card_set_video_mode(uint16_t mode);
 uint8_t video_card_is_text_mode();
-video_mode* video_card_get_current_video_mode();
 
 int8_t video_card_turn_on_buffer();
 int8_t video_card_turn_off_buffer();
