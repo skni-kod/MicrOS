@@ -1,7 +1,6 @@
 #include "terminal_manager.h"
-#include "memory/heap/heap.h"
-#include "drivers/dal/videocard/videocard.h"
-#include "process/manager/process_manager.h"
+#include "../memory/heap/heap.h"
+#include "../process/manager/process_manager.h"
 
 uint32_t active_terminal_id = 0;
 uint32_t next_terminal_id = 0;
@@ -154,6 +153,7 @@ int8_t destroy_active_terminal()
     return destroy_active_terminal(active_terminal_id);
 }
 
+//TODO add DAL workarround
 int8_t switch_active_terminal(uint32_t terminal_id)
 {
     for(uint32_t i = 0; i < _terminal_number; i++)
@@ -180,6 +180,7 @@ int8_t switch_active_terminal(uint32_t terminal_id)
     return -1;
 }
 
+//TODO add DAL workarrounds for now
 int8_t next_terminal()
 {
     for(uint32_t i = 0; i < _terminal_number; i++)
@@ -226,23 +227,41 @@ int8_t next_terminal()
     return -1;
 }
 
-int8_t terminal_manager_set_mode(uint32_t process_id, int8_t mode)
+int8_t terminal_manager_set_mode(uint32_t process_id, uint16_t mode)
 {
     terminal_struct* terminal = find_terminal_for_process(process_id);
     if(terminal == NULL) return -1;
-    uint8_t* buffer = video_card_create_external_buffer(mode);
+
+    video_mode* mode_ptr = video_card_find_mode_by_number(mode);
+
+    //not sure about that
+    uint8_t* buffer = (*mode_ptr->dis_ptr->create_external_buffer)(mode);
     if(buffer == NULL) return -1;
-    video_card_destroy_external_buffer(terminal->screen_buffer);
+    //DAL workaround
+    (*mode_ptr->dis_ptr->destroy_external_buffer)(terminal->screen_buffer);
+    //video_card_destroy_external_buffer(terminal->screen_buffer);
     terminal->screen_buffer = buffer;
     terminal->screen_mode = mode;
-    video_card_clear_screen_external_buffer(buffer, mode, &(terminal->cursor_position_x), &(terminal->cursor_position_y));
+    //DAL workaround
+    //(*mode_ptr->dis_ptr->clear_screen_external_buffer)(buffer, mode, &(terminal->cursor_position_x), &(terminal->cursor_position_y));
+    //video_card_clear_screen_external_buffer(buffer, mode, &(terminal->cursor_position_x), &(terminal->cursor_position_y));
     if(terminal->terminal_id == active_terminal_id)
     {
         video_card_set_video_mode(mode);
         video_card_clear_screen();
     }
-    return mode;
+    return 0;
 }
+
+// video_mode* terminal_manager_find_mode(uint16_t horizontal, uint16_t vertical, uint64_t colors, uint8_t text, uint8_t planar, uint8_t grayscale)
+// {
+//     return video_card_find_mode(horizontal, vertical, colors, text, planar, grayscale);
+// }
+
+// video_mode* video_card_find_mode_by_number(uint16_t mode)
+// {
+//     return video_card_find_mode_by_number(mode);
+// }
 
 int8_t terminal_manager_print_char(uint32_t process_id, char character)
 {

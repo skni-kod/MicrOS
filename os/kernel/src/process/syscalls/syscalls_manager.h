@@ -13,7 +13,7 @@
 #include "handlers/process_calls.h"
 #include "handlers/memory_calls.h"
 #include "handlers/keyboard_calls.h"
-#include "handlers/generic_vga.h"
+#include "handlers/videocard_calls.h"
 #include "handlers/partitions_calls.h"
 #include "handlers/power_calls.h"
 #include "handlers/serial_calls.h"

@@ -252,6 +252,12 @@ void startup()
     heap_init_kernel_heap();
     logger_log_ok("Virtual Memory");
 
+    //Loading Generic VGA Driver
+    video_card_init();
+    generic_vga_driver_init();
+    VBE_initialize();
+    logger_log_ok("Loaded DAL, and GenericVGA Driver");
+
     pic_init();
     logger_log_ok("Programmable Interrupt Controller");
 
@@ -277,12 +283,6 @@ void startup()
 
     keyboard_init();
     logger_log_ok("Keyboard");
-
-    //Loading Generic VGA Driver
-    video_card_init();
-    generic_vga_driver_init();
-    VBE_initialize();
-    logger_log_ok("Loaded DAL, and GenericVGA Driver");
 
     partitions_init();
     logger_log_ok("Partitions");
@@ -428,7 +428,7 @@ int kmain()
     logger_log_ok("READY.");
     //setSkipDebugging(true);
     serial_init(COM1_PORT, 115200, 8, 1, PARITY_NONE);
-    
+
     logger_log_ok("Loading shells...");
     
     uint32_t d = 0;
@@ -454,11 +454,27 @@ int kmain()
     //----------------------------------------------------
 
     // char buff[128];
-    // VBE_initialize();
     // video_mode* mode = video_card_find_mode(1024,768,COLOR_32B,0,0,0);
     // video_card_set_video_mode(mode->id);
 
-    // drawLenaIn10fH_linear();
+    // sleep(5000);
+
+    // VBE_set_video_mode(0x03, true);
+    // //video_card_set_video_mode(0x03);
+    
+    // logger_log_ok("I'm back in text mode!");
+
+    // sleep(5000);
+
+    // video_card_set_video_mode(0x13);
+
+    // sleep(5000);
+
+    // video_card_set_video_mode(0x3);
+
+    // logger_log_ok("I'm back in text mode! AGAIN!");
+
+    // // drawLenaIn10fH_linear();
     // while (1);
     return 0;
 }

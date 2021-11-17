@@ -53,7 +53,7 @@ void VBE_init_driver()
 
 static uint8_t __VBE_find_mode_in_monitor_list(uint16_t h, uint16_t v)
 {
-    for(int i = 0; i < monitor_res->count; i++)
+    for(uint32_t i = 0; i < monitor_res->count; i++)
     {
         VBE_resolution* res_ptr = ((VBE_resolution*)monitor_res->data)+i;
         if( res_ptr->horizontal == h &&
@@ -113,7 +113,6 @@ void VBE_initialize()
     monitor_res = heap_kernel_alloc(sizeof(kvector), 0);
     kvector_init(monitor_res);
 
-    VBE_resolution* res;
     //Decode standard timings and insert them to monitor suported resolutions
     //TODO BUG FIX: HDMI seems to include weird resolutions, possibly needs to be checked with newer versions of DDC and EDID (EDDC and EEDID).
     for(int i = 0; i < 8; i++)
@@ -329,24 +328,24 @@ void VBE_initialize()
     // Please note all IDs that will be listed and share them with us.
     // This also can take some time... DDC isn't very fast. ¯\_(ツ)_/¯
     logger_log_warning("EDID Extensions are ignored in this driver version.");
-    uint8_t* edid_extension = heap_kernel_alloc(128, 0);
-    if(edid_block.extension_num > 0)
-    {
-        for(int i = 1; i <= edid_block.extension_num; i++)
-        {
-            VBE_DDC_read_edid_block(i, edid_extension);
-            uint8_t block_id = *edid_extension;
-            //itoa(block_id, buff, 16);
-            // vga_printstring("EXTENSION ID: ");
-            // vga_printstring(buff);
-            // vga_newline();
-            // if(block_id == 0x10)
-            // {
-            //     vga_printstring("VTB EXTENSION FOUND");
-            //     vga_newline();
-            // }
-        }
-    }
+    //uint8_t* edid_extension = heap_kernel_alloc(128, 0);
+    // if(edid_block.extension_num > 0)
+    // {
+    //     for(int i = 1; i <= edid_block.extension_num; i++)
+    //     {
+    //         VBE_DDC_read_edid_block(i, edid_extension);
+    //         //uint8_t block_id = *edid_extension;
+    //         //itoa(block_id, buff, 16);
+    //         // vga_printstring("EXTENSION ID: ");
+    //         // vga_printstring(buff);
+    //         // vga_newline();
+    //         // if(block_id == 0x10)
+    //         // {
+    //         //     vga_printstring("VTB EXTENSION FOUND");
+    //         //     vga_newline();
+    //         // }
+    //     }
+    // }
 
     //Now read GPU stuff
     svga_information* svga_info_ptr;
@@ -363,8 +362,6 @@ void VBE_initialize()
     //Since DAL is still not really used for abstraction yet, we just need to make sure functions work fine.
     //If function is not implemented it should return -1
     driver_init_struct* s = heap_kernel_alloc(sizeof(driver_init_struct), 0);
-
-
 
     s->set_video_mode = __vbe_set_video_mode;
 
@@ -415,7 +412,7 @@ void VBE_initialize()
     s->create_external_buffer = __vbe_create_external_buffer;
     s->destroy_external_buffer = __vbe_destroy_external_buffer;
 
-    for(int i=0; i < svga_info_ptr->number_of_modes; i++)
+    for(size_t i = 0; i < svga_info_ptr->number_of_modes; i++)
     {
         svga_mode_information mode_info;
         //Get VESA mode information
@@ -423,6 +420,12 @@ void VBE_initialize()
         if(status == VBE_OK && (mode_info.mode_attributes & 0x01) && mode_info.frame_buffor_phys_address != 0)
         {
             video_mode* mode_ptr = (video_mode*)heap_kernel_alloc(sizeof(video_mode), 0);
+            //DEBUG
+            //char buff[128];
+            //kernel_sprintf(buff, "MODE %04X LFB PHYSICAL ADDRESS: %08X\n", svga_info_ptr->mode_array[i], mode_info.frame_buffor_phys_address);
+            //vga_printstring(buff);
+            //keyboard_scan_ascii_pair kb;
+            //while(!keyboard_get_key_from_buffer(&kb));
             mode_ptr->id = svga_info_ptr->mode_array[i];
             mode_ptr->width = mode_info.mode_width;
             mode_ptr->height = mode_info.mode_height;
@@ -445,6 +448,7 @@ void VBE_initialize()
             mode_ptr->planar = !(mode_info.mode_attributes & 0x80);
             mode_ptr->text = !(mode_info.mode_attributes & 0x10);
             mode_ptr->bpp = mode_info.bits_per_pixel;
+            mode_ptr->linear_buffer_size = mode_info.mode_height*mode_info.mode_width*(mode_info.bits_per_pixel/8);
             //Check if current monitor supports this mode.
             //Kinda simple check here, but it is just to prevent resolutions that are completely not correct size.
             mode_ptr->monitor_supported = __VBE_find_mode_in_monitor_list(mode_ptr->width, mode_ptr->height);
@@ -452,10 +456,6 @@ void VBE_initialize()
             video_card_add_mode(mode_ptr);
         }
     }
-    //Wait for key, allow people to read whatever happened here.
-    logger_log_warning("Press any key to continue [SVGA DEV FEATURE]");
-    keyboard_scan_ascii_pair kb;
-    while(!keyboard_get_key_from_buffer(&kb));
 }
 
 void VBE_close()
@@ -497,7 +497,7 @@ VBEStatus VBE_get_svga_information(svga_information** information_struct_ptr){
     information_struct->vesa_standard_number = read_word_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E04));
     uint16_t off = read_word_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E06));
     uint16_t seg = read_word_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E08));
-    uint16_t len = strlen(machine->Memory + get_absolute_address(seg, off));
+    uint16_t len = strlen((char*)(machine->Memory + get_absolute_address(seg, off)));
     information_struct->producent_text = heap_kernel_alloc(len + 1, 0);
     strcpy(information_struct->producent_text, machine->Memory + get_absolute_address(seg, off));
     information_struct->additional_info = read_dword_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E0A));
@@ -716,7 +716,7 @@ VBEStatus VBE_set_video_mode(uint16_t mode_number, bool clear_screen)
 
     svga_mode_information mode_info;
     status = VBE_get_vesa_mode_information(&mode_info, mode_number);
-    if(status == VBE_OK)
+    /*if(status == VBE_OK)
     {
         if(mode_info.frame_buffor_phys_address != 0)
         {
@@ -773,7 +773,7 @@ VBEStatus VBE_set_video_mode(uint16_t mode_number, bool clear_screen)
                 linear_buffer = 0;
             }
         }
-    }
+    }*/
     return VBE_OK;
 }
 
@@ -1282,8 +1282,69 @@ void VBE_draw_pixel_8_8_8_8_linear(uint32_t mode_width, uint32_t mode_height, ui
 int16_t __vbe_set_video_mode(uint16_t mode)
 {
     video_mode* mode_ptr = video_card_find_mode_by_number(mode);
-    VBE_set_video_mode(mode|(mode_ptr->planar<<14), true);
+    if(mode_ptr == NULL)
+    {
+        return -1;
+    }
+    else
+    {
+        VBE_set_video_mode(mode|(mode_ptr->planar<<14), true);
+    }
 }
+        // for(uint32_t i = 0; i < monitor_res->count; i++)
+        // {
+        //     VBE_resolution* res = (VBE_resolution*)monitor_res->data[i];
+        //     if(res->horizontal == mode_ptr->width && res->vertical == mode_ptr->height)
+        //     {
+        //         VBE_set_video_mode(mode|(mode_ptr->planar<<14), true);
+        //         return 0;
+        //     }
+        // }
+    //     char buff[128];
+    //     VBE_set_video_mode(0x03, true);
+    //     vga_printstring("IMPORTANT!\n");
+    //     vga_printstring("SVGA driver is still in development and cannot ensure full support of\nrequested resolution:\n");
+    //     video_mode* mode_ptr = video_card_find_mode_by_number(mode);
+    //     kernel_sprintf(buff, "%d x %d %d BPP\n", mode_ptr->width, mode_ptr->height, mode_ptr->bpp);
+    //     vga_printstring(buff);
+    //     vga_printstring("If you see \"Out of range\" press ESC key or wait for 15 seconds.\n");
+    //     vga_printstring("If it displays anything (even weird mixed colors) it should be fine.\n");
+    //     vga_printstring("To confirm successful switch press ENTER. Otherwise it return to text mode.\n");
+    //     vga_printstring("THIS WARNING IS DUE TO DISPLAY NOT LISTING REQUESTED RESOLTION AS SUPPORTED!\n");
+    //     vga_printstring("SWITCHING TO UNSUPPORTED RESOLUTION MAY DAMAGE YOUR DISPLAY (CRT).\n");
+    //     vga_printstring("Proceed at your own risk.\n");
+    //     vga_printstring("If you wish to continue press Y, to cancel switch press N.\n");
+
+    //     keyboard_scan_ascii_pair kb;
+
+    //     while(1)
+    //     {
+    //         if(keyboard_get_key_from_buffer(&kb))
+    //         {
+    //             if(kb.ascii == 'n') return -1;
+    //             else if(kb.ascii == 'y') break;
+    //         }
+    //     }
+
+    //     VBE_set_video_mode(mode|(mode_ptr->planar<<14), true);
+
+    //     uint32_t current_system_clock = timer_get_system_clock();
+    //     while(timer_get_system_clock < current_system_clock+15000)
+    //     {
+    //         if(keyboard_get_key_from_buffer(&kb))
+    //         {
+    //             if(kb.scancode = 0x01)
+    //             {
+    //                 VBE_set_video_mode(0x03, false);
+    //                 return -1;
+    //             }
+    //             else if(kb.scancode == 0x1c) return 0;
+    //         }
+    //     }
+    //     VBE_set_video_mode(0x03, false);
+    //     return -1;
+    // }
+    // return -1;
 
 // These want to use memory mapped for VGA modes. We cannot use it since any SVGA mode
 // will need bigger memory area.
@@ -1294,16 +1355,20 @@ int8_t __vbe_turn_on_buffer()
 
 int8_t __vbe_turn_off_buffer()
 {
-    if(page_index != 0)
-    {
-        for(int i = 0; i < page_count+1; i++)
-        {
-            paging_unmap_page(page_index+i);
-        }
-        page_index = 0;
-        page_count = 0;
-        linear_buffer = 0;
-    }
+    // if(page_index != 0)
+    // {
+    //     for(int i = 0; i < page_count+1; i++)
+    //     {
+    //         paging_unmap_page(page_index+i);
+    //     }
+    //     page_index = 0;
+    //     page_count = 0;
+    //     linear_buffer = 0;
+    // }
+    //This is workaround for a weird case of VBE mode not allowing returning back to standard VGA mode.
+    //This way we just make sure that VBE switched back to standard VGA mode and it unlocks normal VGA register.
+    //TODO: After DAL rework this should be changed to make proper use of VBE functions etc.
+    VBE_set_video_mode(0x03, true);
     return 0;
 }
 uint8_t __vbe_is_buffer_on()
@@ -1497,13 +1562,18 @@ int8_t __vbe_clear_screen_external_buffer(uint8_t* buffer, uint16_t mode, uint16
 
 int8_t __vbe_swap_external_buffer(uint8_t* buffer, uint16_t mode)
 {
-    memcpy(linear_buffer, buffer, linear_buff_size);
+    if(linear_buffer != 0)
+    {
+        video_mode* mode_ptr = video_card_find_mode_by_number(mode);
+        memcpy(linear_buffer, buffer, mode_ptr->linear_buffer_size);
+    }
     return 0;
 }
 
 uint8_t* __vbe_create_external_buffer(uint16_t mode)
 {
-    uint8_t* ptr = heap_kernel_alloc(linear_buff_size, 0);
+    video_mode* mode_ptr = video_card_find_mode_by_number(mode);
+    uint8_t* ptr = heap_kernel_alloc(mode_ptr->linear_buffer_size, 0);
     return ptr;
 }
 

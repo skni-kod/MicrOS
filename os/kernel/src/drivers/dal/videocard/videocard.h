@@ -80,6 +80,7 @@ struct _video_mode
     uint8_t monochrome;
     uint8_t planar;
     uint8_t monitor_supported;
+    uint32_t linear_buffer_size;
     driver_init_struct* dis_ptr;
 };
 

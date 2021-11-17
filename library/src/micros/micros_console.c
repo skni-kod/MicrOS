@@ -48,7 +48,7 @@ void micros_console_set_cursor_visibility(bool visibility)
     micros_interrupt_1a(0x16, (uint32_t)visibility);
 }
 
-void micros_console_set_video_mode(uint8_t mode)
+void micros_console_set_video_mode(uint16_t mode)
 {
     micros_interrupt_1a(0xE0, mode);
 }

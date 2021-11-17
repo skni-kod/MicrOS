@@ -5,12 +5,13 @@
 #include "../process/manager/process_info.h"
 #include "../drivers/keyboard/keyboard.h"
 #include "../drivers/keyboard/keyboard_state_flags.h"
+#include "../drivers/dal/videocard/videocard.h"
 
 typedef struct terminal_struct
 {
     bool cursor;
     uint32_t terminal_id;
-    int8_t screen_mode;
+    uint16_t screen_mode;
     uint16_t cursor_position_x;
     uint16_t cursor_position_y;
     uint8_t* screen_buffer;
@@ -35,7 +36,8 @@ int8_t destroy_active_terminal();
 int8_t switch_active_terminal(uint32_t terminal_id);
 int8_t next_terminal();
 
-int8_t terminal_manager_set_mode(uint32_t process_id, int8_t mode);
+int8_t terminal_manager_set_mode(uint32_t process_id, uint16_t mode);
+
 int8_t terminal_manager_print_char(uint32_t process_id, char character);
 int8_t terminal_manager_print_char_color(uint32_t process_id, char character, uint8_t color);
 int8_t terminal_manager_print_string(uint32_t process_id, const char* string);

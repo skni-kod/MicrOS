@@ -5,7 +5,7 @@ void __stdlib_swap(void *first, void *second, size_t size)
     uint8_t *a = first;
     uint8_t *b = second;
 
-    for(int i = 0; i < size; ++i)
+    for(size_t i = 0; i < size; ++i)
     {
         uint8_t temp = *a;
         *a = *b;

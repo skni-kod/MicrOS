@@ -23,10 +23,11 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0x15, syscall_terminal_clear);
     syscalls_manager_attach_handler(0x16, syscall_terminal_set_cursor_visibility);
     
-    syscalls_manager_attach_handler(0x17, syscall_generic_vga_set_video_mode);
-    syscalls_manager_attach_handler(0x18, syscall_generic_vga_is_text_mode);
-    syscalls_manager_attach_handler(0x19, syscall_generic_vga_get_current_video_mode);
-    syscalls_manager_attach_handler(0x1A, syscall_generic_vga_is_vretrace);
+    syscalls_manager_attach_handler(0x17, syscall_videocard_set_video_mode);
+    syscalls_manager_attach_handler(0x18, syscall_videocard_is_text_mode);
+    syscalls_manager_attach_handler(0x19, syscall_videocard_get_current_video_mode);
+    syscalls_manager_attach_handler(0x1A, syscall_videocard_is_vretrace);
+    syscalls_manager_attach_handler(0x1B, syscall_videocard_find_video_mode);
 
     // 0x2X - Keyboard
     syscalls_manager_attach_handler(0x20, syscall_keyboard_is_key_pressed);

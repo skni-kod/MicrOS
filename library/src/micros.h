@@ -13,5 +13,6 @@
 #include "micros/micros_partitions.h"
 #include "micros/micros_power.h"
 #include "micros/micros_serial.h"
+#include "micros/micros_gdi.h"
 
 #endif
