@@ -147,7 +147,7 @@ void rtl8139_get_mac_addr(uint8_t *buffer)
 
 void rtl8139_receive_packet()
 {
-    uint16_t *packet = (uint16_t *)(rtl8139_device.rx_buffer + current_packet_ptr);
+    uint32_t *packet = (uint16_t *)(rtl8139_device.rx_buffer + current_packet_ptr);
 
     //Get packet length by skipping packet header
     uint32_t packet_length = *(packet + 1);

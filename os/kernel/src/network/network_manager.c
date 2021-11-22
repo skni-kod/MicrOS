@@ -117,9 +117,11 @@ void network_manager_process_packet(net_packet_t *packet)
     switch (frame.type)
     {
     case ARP_PROTOCOL_TYPE:
+        logger_log_info("ARP");
         arp_process_packet((arp_packet_t *)data_ptr, packet->device_mac);
         break;
     case IPv4_PROTOCOL_TYPE:
+        logger_log_info("IP");
         ipv4_process_packet((ipv4_packet_t *)data_ptr, packet->device_mac);
         break;
     };

@@ -147,15 +147,13 @@ bool virtio_nic_irq_handler();
 /* TODO: dfd */
 void VirtIO_Net_InterruptHandler();
 
-void VirtIO_Net_ScanRQ();
-
 void VirtIO_Net_SendPacket(net_packet_t *packet);
-
-bool VirtIO_Net_SharedInterruptHandler(void);
 
 void VirtIO_Net_SetupReceiveBuffers();
 
 void VirtIO_Net_ReceivePacket();
+
+void VirtIO_Net_GetMAC(uint32_t* ptr);
 
 void VNet_Write_Register(uint16_t reg, uint32_t data);
 
