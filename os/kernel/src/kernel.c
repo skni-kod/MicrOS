@@ -430,7 +430,7 @@ int kmain()
     serial_init(COM1_PORT, 115200, 8, 1, PARITY_NONE);
 
     logger_log_ok("Loading shells...");
-    
+
     uint32_t d = 0;
     for (int i = 0; i < 4; i++)
     {
@@ -448,8 +448,8 @@ int kmain()
     video_card_clear_screen();
 
     switch_active_terminal(0);
-    
-    process_manager_run();  
+
+    process_manager_run();
 
     //----------------------------------------------------
 
@@ -475,6 +475,8 @@ int kmain()
     // logger_log_ok("I'm back in text mode! AGAIN!");
 
     // // drawLenaIn10fH_linear();
-    // while (1);
+
+    //TODO DO NOT COMMENT THIS SHIT
+    while (1);
     return 0;
 }

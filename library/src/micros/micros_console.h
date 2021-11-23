@@ -110,6 +110,9 @@ void micros_console_set_cursor_visibility(bool visibility);
 void micros_console_set_video_mode(uint16_t mode);
 void micros_console_copy_from_buffer(uint8_t* buffer, uint32_t how_many);
 
+//TODO TO BE REMOVED
+void micros_console_debug_kernel_alloc(uint32_t size);
+
 #ifdef __cplusplus
 }
 #endif

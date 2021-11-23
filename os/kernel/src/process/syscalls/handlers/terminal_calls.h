@@ -17,4 +17,7 @@ void syscall_terminal_set_cursor_visibility(interrupt_state *state);
 void syscall_terminal_set_video_mode(interrupt_state *state);
 void syscall_terminal_copy_from_buffer(interrupt_state *state);
 
+//TODO TO BE REMOVED
+void syscall_terminal_debug_kernel_alloc(interrupt_state * state);
+
 #endif

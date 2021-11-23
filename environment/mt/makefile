@@ -17,7 +17,7 @@ GCC_COMPILE_FLAGS := -I../../library/src -ffreestanding -Wall -Wextra -Wno-unuse
 GCC_LINK_FLAGS := -L../../library/bin -lc -lgcc -nostdlib
 
 ifeq ($(MODE),release)
-GCC_COMPILE_FLAGS += -O2
+GCC_COMPILE_FLAGS += -O3 -mfpmath=sse
 GCC_LINK_FLAGS += -s -DNDEBUG
 else
 GCC_COMPILE_FLAGS += -O0 -ggdb3

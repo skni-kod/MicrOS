@@ -1,4 +1,5 @@
 #include "heap.h"
+#include "../../cpu/paging/paging.h"
 
 heap_entry *kernel_heap;
 heap_entry *user_heap;
@@ -85,7 +86,6 @@ void *heap_alloc(uint32_t size, uint32_t align, bool supervisor)
                         {
                             return 0;
                         }
-                        
                         current_entry->size += 4 * 1024 * 1024;
                     }
 
@@ -221,6 +221,17 @@ void heap_init_heap(bool supervisor)
     heap->free = 1;
     heap->next = 0;
     heap->prev = 0;
+
+    //WORKAROUND, SINCE NO IDEA HOW TO FIX PROBLEM PROPERLY
+    //"Fix": Problem with allocating new page for kernel heap.
+    //If you manage to allocate 256 MB in kernel heap, you're doomed ( ͡• ͜ʖ ͡• )
+    if(supervisor)
+    {
+        for(int i = 0; i < 63; i++)
+        {
+            virtual_memory_alloc_page(supervisor);
+        }
+    }
 }
 
 void heap_kernel_dump()

@@ -99,3 +99,10 @@ void syscall_terminal_copy_from_buffer(interrupt_state *state)
 {
     terminal_manager_copy_from_buffer(process_manager_get_current_process()->id, (uint8_t*)(state->registers.ebx), state->registers.ecx);
 }
+
+
+//TODO TO BE REMOVED
+void syscall_terminal_debug_kernel_alloc(interrupt_state * state)
+{
+    heap_kernel_alloc(state->registers.ebx, 0);
+}

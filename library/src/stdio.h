@@ -461,6 +461,9 @@ int vfscanf(FILE *stream, const char *format, va_list arg);
 */
 int scanf(const char *format, ...);
 
+//TODO DOCUMENT
+int sscanf(const char *str, const char *format, ...);
+
 //! Creates new stream
 /*!
     Creates new stream (not assigned to any file or device) and returns it.

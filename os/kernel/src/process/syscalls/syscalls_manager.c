@@ -106,6 +106,7 @@ void syscalls_manager_init()
     //0xEX - Terminal Manager Graphics Functions
     syscalls_manager_attach_handler(0xE0, syscall_terminal_set_video_mode);
     syscalls_manager_attach_handler(0xE1, syscall_terminal_copy_from_buffer);
+    syscalls_manager_attach_handler(0xEF, syscall_terminal_debug_kernel_alloc);
 }
 
 void syscalls_manager_attach_handler(uint8_t function_number, void (*handler)(interrupt_state *state))

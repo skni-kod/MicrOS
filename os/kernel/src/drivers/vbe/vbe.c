@@ -716,7 +716,7 @@ VBEStatus VBE_set_video_mode(uint16_t mode_number, bool clear_screen)
 
     svga_mode_information mode_info;
     status = VBE_get_vesa_mode_information(&mode_info, mode_number);
-    /*if(status == VBE_OK)
+    if(status == VBE_OK)
     {
         if(mode_info.frame_buffor_phys_address != 0)
         {
@@ -773,7 +773,7 @@ VBEStatus VBE_set_video_mode(uint16_t mode_number, bool clear_screen)
                 linear_buffer = 0;
             }
         }
-    }*/
+    }
     return VBE_OK;
 }
 

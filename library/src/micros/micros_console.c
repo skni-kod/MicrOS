@@ -57,3 +57,9 @@ void micros_console_copy_from_buffer(uint8_t* buffer, uint32_t how_many)
 {
     micros_interrupt_2a(0xE1, (uint32_t)buffer, how_many);
 }
+
+//TODO TO BE REMOVED
+void micros_console_debug_kernel_alloc(uint32_t size)
+{
+    micros_interrupt_1a(0xEF, size);
+}
