@@ -1,7 +1,7 @@
-#include "Virtio.h"
+#include "virtio-pci.h"
 
 // TODO: Error-checking
-void VirtIO_Allocate_Virtqueue(virtq *virtqueue, uint16_t queueSize)
+void virtio_setup_queue(virtq *virtqueue, uint16_t queueSize)
 {
     // Zero virtqueue structure
     memset(virtqueue, 0, sizeof(virtq));
@@ -52,6 +52,4 @@ void VirtIO_Allocate_Virtqueue(virtq *virtqueue, uint16_t queueSize)
     virtqueue->driverArea = (virtq_driver_area *)((uint32_t)virtqueue_mem + descriptorTableSize);
     // deviceArea will follow driver area + padding bytes
     virtqueue->deviceArea = (virtq_device_area *)((uint32_t)virtqueue->driverArea + driverAreaSize + driverAreaPadding);
-
-    virtqueue->byteSize = virtqueueByteSize;
 }

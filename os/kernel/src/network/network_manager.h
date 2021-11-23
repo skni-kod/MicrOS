@@ -6,7 +6,7 @@
 #define network_manager
 
 #include "../drivers/nic/rtl8139/rtl8139.h"
-#include "../drivers/nic/virtio-nic-pci/virtio-nic-pci.h"
+#include "../drivers/nic/virtio-pci-nic/virtio-pci-nic.h"
 
 #include "network_definitions.h"
 #include "protocols/protocols.h"

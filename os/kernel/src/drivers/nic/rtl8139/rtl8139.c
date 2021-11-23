@@ -1,7 +1,7 @@
 /*
     @JakubPrzystasz
     Created: 06.02.2021
-    Modify: 15.02.2021
+    Last modified: 15.02.2021
 */
 #include "rtl8139.h"
 

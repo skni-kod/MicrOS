@@ -1,9 +1,9 @@
 /*
     @JakubPrzystasz
     Created: 28.07.2021
-    Modify: 28.07.2021
+    Last modified: 28.07.2021
 */
-#include "virtio-nic-pci.h"
+#include "virtio-pci-nic.h"
 
 pci_device pci_virtio_nic_device = {0};
 virtio_nic_dev virtio_nic = {0};
@@ -84,10 +84,10 @@ bool virtio_nic_init(net_device_t *net_dev)
     VNet_Write_Register(REG_DEVICE_STATUS, STATUS_RESET_DEVICE);
 
     // Set the acknowledge status bit
-    VNet_Write_Register(REG_DEVICE_STATUS, STATUS_DEVICE_ACKNOWLEDGED);
+    VNet_Write_Register(REG_DEVICE_STATUS, STATUS_DEVICE_ACKNOWLEDGE);
 
     // Set the driver status bit
-    VNet_Write_Register(REG_DEVICE_STATUS, STATUS_DEVICE_ACKNOWLEDGED | STATUS_DRIVER_LOADED);
+    VNet_Write_Register(REG_DEVICE_STATUS, STATUS_DEVICE_ACKNOWLEDGE | STATUS_DRIVER_LOADED);
 
     // Read the feature bits
     uint32_t features = VNet_Read_Register(REG_DEVICE_FEATURES);
@@ -96,12 +96,12 @@ bool virtio_nic_init(net_device_t *net_dev)
     if ((features & REQUIRED_FEATURES) != REQUIRED_FEATURES)
     {
         logger_log_warning("Required features are not supported by device. Aborting");
-        VNet_Write_Register(REG_DEVICE_STATUS, STATUS_DEVICE_ERROR);
+        VNet_Write_Register(REG_DEVICE_STATUS, STATUS_DEVICE_NEEDS_RESET);
         return;
     }
 
     // Tell the device what features we'll be using
-    VNet_Write_Register(REG_GUEST_FEATURES, REQUIRED_FEATURES);
+    VNet_Write_Register(REG_DRIVER_FEATURES, REQUIRED_FEATURES);
 
     //PCI bus mastering
     uint32_t pci_bus_config = pci_io_in(&pci_virtio_nic_device, 1);
@@ -134,7 +134,7 @@ bool virtio_nic_init(net_device_t *net_dev)
     memcpy(net_dev->mac_address, virtio_nic.mac_addr, sizeof(uint8_t) * 6);
 
     // Tell the device it's initialized
-    VNet_Write_Register(REG_DEVICE_STATUS, STATUS_DRIVER_READY);
+    VNet_Write_Register(REG_DEVICE_STATUS, STATUS_DRIVER_OK);
 
     // Remind the device that it has receive buffers. Hey VirtualBox! Why aren't you using these?
     VNet_Write_Register(REG_QUEUE_NOTIFY, VIRTIO_NET_RECEIVE_QUEUE_INDEX);
@@ -214,7 +214,7 @@ void VirtIO_Net_Init_Virtqueue(virtq *virtqueue, uint16_t queueIndex)
         return;
 
     // Allocate and initialize the queue
-    VirtIO_Allocate_Virtqueue(virtqueue, queueSize);
+    virtio_setup_queue(virtqueue, queueSize);
 
     // kernel_sprintf(str, "queue %d has %d elements", queueIndex, queueSize);
     // logger_log_info(str);

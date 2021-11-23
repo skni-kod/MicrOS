@@ -14,7 +14,7 @@
 #include "../../../network/network_definitions.h"
 #include "../../../klibrary/kvector.h"
 #include "../../../debug_helpers/library/kernel_stdio.h"
-#include "../../virtio/Virtio.h"
+#include "../../virtio/virtio-pci.h"
 #include <stdlib.h>
 
 char str[256];
