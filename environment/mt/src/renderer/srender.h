@@ -36,8 +36,17 @@ void line_int(int x0, int y0, int x1, int y1, ssurface* surf, color* c);
 void line_vec2i(vec2i p0, vec2i p1, ssurface* surf, color* c);
 
 
+/*!
+    Set viewport coordinates and size
+    \param x x axis coordinate of viewport (screen)
+    \param y y axis coordinate of viewport (screen)
+    \param w width of viewport (screen)
+    \param h height of viewport (screen)
+*/
+void viewport(int x, int y, int w, int h);
 
-void triangle(vec3f* pts, vec2i* uvs, ssurface* surf, ssurface* zbuffer, ssurface* tex, color* c);
-void triangle_bc(vec3f* pts, vec2f* uvs, ssurface* zbuffer, ssurface* surf, ssurface* tex, color* c);
+
+void triangle(vec4* pts, vec2i* uvs, ssurface* surf, ssurface* zbuffer, ssurface* tex, color* c);
+void triangle_bc(vec3* pts, vec2f* uvs, ssurface* zbuffer, ssurface* surf, ssurface* tex, color* c);
 
 #endif

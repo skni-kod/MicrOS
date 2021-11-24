@@ -11,7 +11,7 @@
 
 //COLOR in 32 bit is 0xAARRGGBB
 
-#define PI 3.14159265
+int depth_buffer_res = 255;
 
 //string.h is supposed to be bugged, so I implement my own strcmp
 int compareString(char* a, char*b)
@@ -96,9 +96,21 @@ int main(int argc, char* argv[])
 
     micros_console_set_video_mode(vmd.mode_number);
 
-    vec3f light_dir = {0,0,1};
+    viewport(0,0,vmd.width, vmd.height);
+
+    vec3 light_dir = {0,0,1};
 
     float angle = 90.f;
+
+    vec3 cam = {2.0f, 0.0f, 3.0f};
+
+    mat4 view = translate(cam);
+
+    mat4 proj = perspective(45., buffer->width/(float)buffer->height, .001f, 100.0f);
+
+    mat4 model = mat4_identity();
+
+    viewport(0,0,vmd.width, vmd.height);
 
     while(1)
     {
@@ -112,7 +124,7 @@ int main(int argc, char* argv[])
         memcpy(zbuffer->data, zbuffer_empty->data, zbuffer->width*zbuffer->height*zbuffer->bpp);
 
         light_dir.x = light_dir.z*cos(angle*PI/180.0);
-        light_dir = normalize_vec3f(light_dir);
+        light_dir = normalize_vec3(light_dir);
         
         angle += 1.f;
 
@@ -124,28 +136,30 @@ int main(int argc, char* argv[])
         for(int i = 0; i < mdl->indices.count; i+=3)
         {
             //if(i + 3 > mdl->indices.count) break;
-            vec3f screen_coords[3];
-            vec3f world_coords[3]; 
+            vec4 screen_coords[3];
+            vec3 world_coords[3]; 
             vec2i uv_coords[3]; 
             for (int j = 0; j < 3; j++)
             { 
-                vec3f v = *(vec3f*)mdl->vertices.data[((vec3i*)mdl->indices.data[i+j])->x - 1];
+                vec3 v = *(vec3*)mdl->vertices.data[((vec3i*)mdl->indices.data[i+j])->x - 1];
                 uv_coords[j].u = (int)(((vec2f*)mdl->uv.data[((vec3i*)mdl->indices.data[i+j])->y - 1])->u * head_tex->width);
                 uv_coords[j].v = (int)(((vec2f*)mdl->uv.data[((vec3i*)mdl->indices.data[i+j])->y - 1])->v * head_tex->height);
-
-                screen_coords[j].x = (int)((v.x+1.)*buffer->width/2.+.5);
-                screen_coords[j].y = (int)((v.y+1.)*buffer->height/2.+.5);
-                screen_coords[j].z = v.z;
+                vec4 vt = {v.x,v.y,v.z,1};
+                screen_coords[j] = multiply_mat4_vec4(proj, multiply_mat4_vec4(view, multiply_mat4_vec4(model, vt)));
+                //screen_coords[j] = multiply_mat4_vec4(multiply_mat4(proj, multiply_mat4(view, model)), vt);
+                //screen_coords[j].x = (int)((v.x+1.)*buffer->width/2.+.5);
+                //screen_coords[j].y = (int)((v.y+1.)*buffer->height/2.+.5);
+                //screen_coords[j].z = v.z;
                 world_coords[j] = v;
             }
 
             //calculate lightning
             //??
-            vec3f n = cross_product_vec3f(sub_vec3f(world_coords[2],world_coords[0]),sub_vec3f(world_coords[1],world_coords[0])); 
+            vec3 n = cross_product_vec3(sub_vec3(world_coords[2],world_coords[0]),sub_vec3(world_coords[1],world_coords[0])); 
             
-            n = normalize_vec3f(n);
+            n = normalize_vec3(n);
             //Dot product
-            float intensity = dot_product_vec3f(n,light_dir); 
+            float intensity = dot_product_vec3(n,light_dir); 
 
             //Draw if we can see face.
             if(intensity > 0)

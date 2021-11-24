@@ -34,8 +34,8 @@ obj_model* load_obj_model(char* filename)
                 fread((char*)&vcount, sizeof(uint32_t), 1, in);
                 for(int i = 0; i < vcount; i++)
                 {
-                    vec3f* vert = (vec3f*)malloc(sizeof(vec3f));
-                    fread((char*)vert, sizeof(vec3f), 1, in);
+                    vec3* vert = (vec3*)malloc(sizeof(vec3));
+                    fread((char*)vert, sizeof(vec3), 1, in);
                     vert->y*= -1;
                     vector_add(&mdl->vertices, (void*)vert);
                 }

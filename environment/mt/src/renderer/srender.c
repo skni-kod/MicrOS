@@ -3,6 +3,11 @@
 #include <stdbool.h>
 #include <float.h>
 
+int viewport_x = 0;
+int viewport_y = 0;
+int viewport_w = 0;
+int viewport_h = 0;
+
 /*!
     Helper function to swap a and b numbers.
     \param a Pointer to first integer to be swapped.
@@ -132,17 +137,26 @@ color blend_colors(color a, color b)
     return result;
 }
 
-void triangle(vec3f* pts, vec2i* uvs, ssurface* surf, ssurface* zbuffer, ssurface* tex, color* c)
+void triangle(vec4* pts, vec2i* uvs, ssurface* surf, ssurface* zbuffer, ssurface* tex, color* c)
 {
-    vec3f t0 = pts[0];
-    vec3f t1 = pts[1];
-    vec3f t2 = pts[2];
+    vec3 t0 = {pts[0].x, pts[0].y, pts[0].z};
+    vec3 t1 = {pts[1].x, pts[1].y, pts[1].z};
+    vec3 t2 = {pts[2].x, pts[2].y, pts[2].z};
+
+    t0.x = (int)((t0.x+1.)*(viewport_w/2.f) + viewport_x);
+    t0.y = (int)((t0.y+1.)*(viewport_h/2.f) + viewport_y);
+    
+    t1.x = (int)((t1.x+1.)*(viewport_w/2.f) + viewport_x);
+    t1.y = (int)((t1.y+1.)*(viewport_h/2.f) + viewport_y);
+    
+    t2.x = (int)((t2.x+1.)*(viewport_w/2.f) + viewport_x);
+    t2.y = (int)((t2.y+1.)*(viewport_h/2.f) + viewport_y);
 
     //if (t0.y==t1.y && t0.y==t2.y)
 
-    if (t0.y>t1.y) swap_vec3f(&t0, &t1); 
-    if (t0.y>t2.y) swap_vec3f(&t0, &t2); 
-    if (t1.y>t2.y) swap_vec3f(&t1, &t2); 
+    if (t0.y>t1.y) swap_vec3(&t0, &t1); 
+    if (t0.y>t2.y) swap_vec3(&t0, &t2); 
+    if (t1.y>t2.y) swap_vec3(&t1, &t2); 
 
     int total_height = t2.y-t0.y; 
     for (int i=0; i<total_height; i++)
@@ -156,17 +170,17 @@ void triangle(vec3f* pts, vec2i* uvs, ssurface* surf, ssurface* zbuffer, ssurfac
         // Normally in C++ I'd suggest making operator overloads for each vec type.
 
         //Calculate proper positions of vertices for drawing.
-        vec3f A =               add_vec3f(t0, mul_vec3f_f(sub_vec3f(t2,t0),alpha)); 
-        vec3f B = second_half ? add_vec3f(t1, mul_vec3f_f(sub_vec3f(t2, t1), beta)) : add_vec3f(t0, mul_vec3f_f(sub_vec3f(t1, t0), beta)); 
+        vec3 A =               add_vec3(t0, mul_vec3_f(sub_vec3(t2,t0),alpha)); 
+        vec3 B = second_half ? add_vec3(t1, mul_vec3_f(sub_vec3(t2, t1), beta)) : add_vec3(t0, mul_vec3_f(sub_vec3(t1, t0), beta)); 
         
         vec2i uvA =               add_vec2i(uvs[0], mul_vec2i_f(sub_vec2i(uvs[2],uvs[0]), alpha));
         vec2i uvB = second_half ? add_vec2i(uvs[1], mul_vec2i_f(sub_vec2i(uvs[2],uvs[1]), beta)) : add_vec2i(uvs[0], mul_vec2i_f(sub_vec2i(uvs[1], uvs[0]), beta));
 
-        if (A.x>B.x) swap_vec3f(&A, &B); 
+        if (A.x>B.x) swap_vec3(&A, &B); 
         for (int j=(int)A.x; j<=(int)B.x; j++)
         { 
             float phi = B.x==A.x ? 1. : (float)(j-A.x)/(float)(B.x-A.x);
-            vec3f  p = add_vec3f(A, mul_vec3f_f(sub_vec3f(B,A),phi));
+            vec3  p = add_vec3(A, mul_vec3_f(sub_vec3(B,A),phi));
             vec2i uvp =     add_vec2i(uvA, mul_vec2i_f(sub_vec2i(uvB, uvA), phi));
 
             int index = (int)((p.x*zbuffer->bpp)+(p.y*zbuffer->width*zbuffer->bpp));
@@ -182,12 +196,12 @@ void triangle(vec3f* pts, vec2i* uvs, ssurface* surf, ssurface* zbuffer, ssurfac
 }
 
 //WIP
-float EdgeFunc( vec3f a, vec3f b, vec3f c )
+float EdgeFunc( vec3 a, vec3 b, vec3 c )
 {
 	return (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
 }
 
-void triangle_bc(vec3f* pts, vec2f* uvs, ssurface* zbuffer, ssurface* surf, ssurface* tex, color* c)
+void triangle_bc(vec3* pts, vec2f* uvs, ssurface* zbuffer, ssurface* surf, ssurface* tex, color* c)
 {
     //Create boundging box of screen size.
     vec2i bboxmin = {0, 0}; 
@@ -213,13 +227,13 @@ void triangle_bc(vec3f* pts, vec2f* uvs, ssurface* zbuffer, ssurface* surf, ssur
 
     // calculate barycentric coordinates of pixel in triangle.
     // This allows code to find if pixel is inside our bounding box of triangle.
-    vec3f p;
+    vec3 p;
 
     for (p.x=bboxmin.x; p.x<=bboxmax.x; p.x++)
     {
         for (p.y=bboxmin.y; p.y<=bboxmax.y; p.y++)
         {
-            vec3f bc_screen = barycentric(pts[0], pts[1], pts[2], p); //This might be slow
+            vec3 bc_screen = barycentric(pts[0], pts[1], pts[2], p); //This might be slow
             if (bc_screen.x<0 || bc_screen.y<0 || bc_screen.z<0) continue;
             p.z = 0;
             
@@ -234,4 +248,12 @@ void triangle_bc(vec3f* pts, vec2f* uvs, ssurface* zbuffer, ssurface* surf, ssur
             }
         }
     }
+}
+
+void viewport(int x, int y, int w, int h)
+{
+    viewport_x = x;
+    viewport_y = y;
+    viewport_w = w;
+    viewport_h = h;
 }
