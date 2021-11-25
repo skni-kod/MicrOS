@@ -1,7 +1,7 @@
 /*
     @JakubPrzystasz
     Created: 06.02.2021
-    Last modified: 15.02.2021
+    Last modified: 25.11.2021
 */
 #include "rtl8139.h"
 
@@ -171,9 +171,6 @@ void rtl8139_receive_packet()
     io_out_word(rtl8139_device.io_base + CAPR, current_packet_ptr - 0x10);
 
     (*receive_packet)(out);
-
-    char str[] = "Received packet!";
-    logger_log_info(str);
 }
 
 void rtl8139_send_packet(net_packet_t *packet)

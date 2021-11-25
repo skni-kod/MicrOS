@@ -8,7 +8,6 @@
 
 #include "../../pci/pci.h"
 #include "../../../assembly/io.h"
-#include "../../../logger/logger.h"
 #include "../../../cpu/idt/idt.h"
 #include "../../serial/serial.h"
 #include "../../../network/network_definitions.h"

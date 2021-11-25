@@ -1,3 +1,8 @@
+/*
+    @JakubPrzystasz
+    Created: 28.07.2021
+    Last modified: 25.11.2021
+*/
 #ifndef VIRTIO_GENERIC
 #define VIRTIO_GENERIC
 
@@ -107,20 +112,30 @@
 /* PCI configuration access */
 #define VIRTIO_PCI_CAP_PCI_CFG          0x05
 
-
+//! Virtqueue Descriptor Flags
+/* 2.7.6 Next Flag: Descriptor Chaining */
 /* This marks a buffer as continuing via the next field. */ 
-#define VIRTQ_DESC_F_NEXT   1 
+#define VIRTQ_DESC_F_NEXT               0x01 
+/* 2.7.3 Write Flag */
 /* This marks a buffer as device write-only (otherwise device read-only). */ 
-#define VIRTQ_DESC_F_WRITE     2 
+#define VIRTQ_DESC_F_WRITE              0x02 
+/* 2.7.7 Indirect Flag: Scatter-Gather Support */
 /* This means the buffer contains a list of buffer descriptors. */ 
-#define VIRTQ_DESC_F_INDIRECT   4 
+#define VIRTQ_DESC_F_INDIRECT           0x04 
 
-// Flag for virtq_driver_area:
-#define VIRTQ_AVAIL_F_NO_INTERRUPT          1
+/* The driver uses this in driver-area->flags to advise the device:
+   don’t interrupt me when you consume a buffer.
+   It’s unreliable, so it’s simply an optimization.  */ 
+#define VIRTQ_AVAIL_F_NO_INTERRUPT      0x1
 
-// Flag for virtq_device_area
-#define VIRTQ_USED_F_NO_NOTIFY              1
+/* The device uses this in device-area->flags to advise the driver: 
+   don’t kick me when you add a buffer.
+   It’s unreliable, so it’s simply an optimization. */ 
+#define VIRTQ_USED_F_NO_NOTIFY          0x01
 
+/*
+    4.1.4 Virtio Structure PCI Capabilities
+*/
 typedef struct virtio_pci_cap
 {
     uint8_t cap_vndr;   /* Generic PCI field: PCI_CAP_ID_VNDR */
@@ -133,6 +148,9 @@ typedef struct virtio_pci_cap
     uint32_t length;    /* Length of the structure, in bytes. */
 } virtio_pci_cap;
 
+/* 
+    4.1.4.3 Common configuration structure layout
+*/
 typedef struct virtio_pci_common_cfg 
 {
     /* About the whole device. */
@@ -156,73 +174,97 @@ typedef struct virtio_pci_common_cfg
     uint64_t queue_device;      /* read-write */
 } virtio_pci_common_cfg;
 
+/* 
+    4.1.4.4 Notification structure layout
+*/
 typedef struct virtio_pci_notify_cap 
 {
     struct virtio_pci_cap cap;
     uint32_t notify_off_multiplier; /* Multiplier for queue_notify_off. */
 } virtio_pci_notify_cap;
 
+/* 
+    2.6.5 The Virtqueue Descriptor Table
+*/
 typedef struct virtq_descriptor
 {
     /* Address (guest-physical). */
     uint64_t address;
     uint32_t length;
-
-    /* The flags as indicated above. */
+    /* The flags, see: Virtqueue Descriptor Flags */
     uint16_t flags;
     /* Next field if flags & NEXT */
     uint16_t next;
 } virtq_descriptor;
 
-// The driver area AKA Available Ring is only written by the driver and read by the device
+/*
+    2.6.6 The Virtqueue Available Ring
+*/
 typedef struct virtq_driver_area
 {
     uint16_t flags;
-    // index indicates where the driver will put the next entry in the ring (wrapping to the beginning of the ring as needed). It's value only ever increases.
+    /*
+        Index field indicates where the driver would put the next descriptor entry in the ring (modulo the queue size).
+        This starts at 0, and increases.
+    */
     uint16_t index;
-    // ringBuffer is a ring-buffer that is queue-size elements long. Each entry refers to the head of a descriptor chain.
-    uint16_t ringBuffer[1];
-    // ringBuffer will be allocated in-place and take up (2 * (queue size)) bytes
+    /* ring_buffer is queue-size elements long. 
+    Entries refers to the head of a descriptor chain. (2 * queue-size)*/
+    uint16_t ring_buffer[1];
+    // uint16_t used_event (Only available when VIRTIO_F_EVENT_IDX is negotiated)
+} virtq_driver_area;
 
-    // uint16_t used_event would be present after ringBuffer, but only if VIRTIO_F_EVENT_IDX is negotiated. (we don't use it here)
-} virtq_driver_area, virtq_available_ring;
 
-
+/*
+    2.6.8 The Virtqueue Used Ring
+*/
 typedef struct virtq_device_element
 {
-    // index is the index into the descriptor table of used descriptor chain
+    /* Index of start of used descriptor chain. */
     uint32_t index;
-    // length is the total length of bytes written to the descriptor chain
+    /* Total length of the descriptor chain which was used (written to) */ 
     uint32_t length;
-} virtq_device_element, virtq_used_elem;
+} virtq_device_element;
 
-// The device area AKA Used Ring is only written by the device and read by the driver
+/*
+    2.6.8 The Virtqueue Used Ring
+*/
 typedef struct virtq_device_area
 {
     uint16_t flags;
+    /* 
+        Index field indicates where the device would put
+        the next descriptor entry in the ring (modulo the queue size).
+        This starts at 0, and increases 
+    */
     uint16_t index;
-    virtq_device_element ringBuffer[1];
-    // ringBuffer will be allocated in-place and take up (4 * (queue size)) bytes. Each element describes a used descriptor, including the index and length.
+    /* Each element describes a used descriptor, including the index and length. (4 * queue-size) */
+    virtq_device_element ring_buffer[1];
+    // uint16_t avail_event (only used if VIRTIO_F_EVENT_IDX is negotiated.
+} virtq_device_area;
 
-    // uint16_t avail_event will be present after ringBuffer. It's only used if VIRTIO_F_EVENT_IDX is negotiated. (we don't use it here)
-} virtq_device_area, virtq_used_ring;
-
+/*
+    2.5 Virtqueues
+*/
 typedef struct virtq
 {
-    uint16_t elements;              // number of queue elements AKA queue size
-    virtq_descriptor *descriptors;  // will be an elements-long array of descriptors
-    virtq_driver_area *driverArea;  // extra data supplied by the driver to the device. AKA Available Ring
-    virtq_device_area *deviceArea;  // extra data supplied by the device to the driver. AKA Used Ring
-    uint16_t nextDescriptor;        // index of the next slot in the descriptor table we should use
-    uint16_t lastDeviceAreaIndex;   // the last value of deviceArea->index we've seen. If this value doesn't equal deviceArea->index, 
-                                    // the device has added used descriptors to deviceArea->ringBuffer.
+    uint16_t size;                          //  queue size
+    virtq_descriptor *descriptor_area;      //  array of descriptors (length determined by previous field)
+    virtq_driver_area *driver_area;         //  data supplied by the driver to the device (available ring)
+    virtq_device_area *device_area;         //  data supplied by the device to the driver (used ring)
+    uint16_t next_descriptor;               //  index of the next slot in the descriptor area that should be used
+    uint16_t last_device_index;             /*  the last known value of device_area->index
+                                                If value doesn't equal device_area->index, 
+                                                the device has added used descriptors to
+                                                device_area->ring_buffer.*/
 } virtq;
 
 //! virtio_setup_queue
 /*
-    @virtqueue
-    @size
+    @virtqueue pointer to virtque - memory for structure should be allocated before
+    @size - size of virtqueue 
+    If fails - returns non-zero
 */
-void virtio_setup_queue(virtq *virtqueue, uint16_t size);
+uint8_t virtio_setup_queue(virtq *virtqueue, uint16_t size);
 
 #endif

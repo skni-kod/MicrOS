@@ -1,19 +1,18 @@
 /*
     @JakubPrzystasz
     Created: 06.02.2021
-    Modify: 16.02.2021
+    Last modified: 25.11.2021
 */
 #ifndef RTL8139_H
 #define RTL8139_H
 
+#include <stdlib.h>
 #include "../../pci/pci.h"
 #include "../../../assembly/io.h"
-#include "../../../logger/logger.h"
 #include "../../../cpu/idt/idt.h"
 #include "../../serial/serial.h"
 #include "../../../network/network_definitions.h"
 #include "../../../klibrary/kvector.h"
-#include <stdlib.h>
 
 #define RTL8139_DEVICE_VENDOR_ID 0x10EC
 #define RTL8139_DEVICE_ID_PRIMARY 0x8139

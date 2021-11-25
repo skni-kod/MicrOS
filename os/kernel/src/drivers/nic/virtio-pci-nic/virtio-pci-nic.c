@@ -1,7 +1,7 @@
 /*
     @JakubPrzystasz
     Created: 28.07.2021
-    Last modified: 28.07.2021
+    Last modified: 25.11.2021
 */
 #include "virtio-pci-nic.h"
 
@@ -95,7 +95,6 @@ bool virtio_nic_init(net_device_t *net_dev)
     // Make sure the features we need are supported
     if ((features & REQUIRED_FEATURES) != REQUIRED_FEATURES)
     {
-        logger_log_warning("Required features are not supported by device. Aborting");
         VNet_Write_Register(REG_DEVICE_STATUS, STATUS_DEVICE_NEEDS_RESET);
         return;
     }
@@ -118,7 +117,7 @@ bool virtio_nic_init(net_device_t *net_dev)
     VirtIO_Net_Init_Virtqueue(receiveQueue, 0);
     VirtIO_Net_Init_Virtqueue(transmitQueue, 1);
     VirtIO_Net_SetupReceiveBuffers();
-    receiveQueue->deviceArea->flags = 0;
+    receiveQueue->device_area->flags = 0;
 
     //Enable IRQ
     uint32_t irq_num = pci_virtio_nic_device.interrupt_line;
@@ -141,13 +140,13 @@ bool virtio_nic_init(net_device_t *net_dev)
 
     receive_packet = net_dev->receive_packet;
 
-    net_packet_t *packet = heap_kernel_alloc(sizeof(net_packet_t), 0);
-    packet->packet_length = 16;
-    packet->packet_data = heap_kernel_alloc(16, 0);
-    char str[] = "No i dupa";
-    strcpy(packet->packet_data, str);
+    // net_packet_t *packet = heap_kernel_alloc(sizeof(net_packet_t), 0);
+    // packet->packet_length = 16;
+    // packet->packet_data = heap_kernel_alloc(16, 0);
+    // char str[] = "No i dupa";
+    // strcpy(packet->packet_data, str);
 
-    VirtIO_Net_SendPacket(packet);
+    // VirtIO_Net_SendPacket(packet);
 
     return true;
 }
@@ -160,38 +159,38 @@ bool virtio_nic_irq_handler()
         //terminal_writestring("Virtq used\n");
 
         // see if the transmit queue has been used
-        // while (transmitQueue.deviceArea->index != transmitQueue.lastDeviceAreaIndex)
+        // while (transmitQueue.device_area->index != transmitQueue.lastdevice_areaIndex)
         // {
         //     if (debugLevel)
         //         terminal_writestring("Transmit success\n");
         //     // free used buffers
-        //     uint16_t deviceRingIndex = transmitQueue.lastDeviceAreaIndex % transmitQueue.elements;
-        //     uint16_t descIndex = (uint16_t)transmitQueue.deviceArea->ringBuffer[deviceRingIndex].index;
+        //     uint16_t deviceRingIndex = transmitQueue.lastdevice_areaIndex % transmitQueue.elements;
+        //     uint16_t descIndex = (uint16_t)transmitQueue.device_area->ringBuffer[deviceRingIndex].index;
         //     descIndex %= transmitQueue.elements;
 
         //     if(debugLevel)
         //         kprintf("descIndex: %d\n", descIndex);
 
-        //     dbg_release((void *)(uint32_t)transmitQueue.descriptors[descIndex].address);
+        //     dbg_release((void *)(uint32_t)transmitQueue.descriptor_area[descIndex].address);
 
-        //     transmitQueue.descriptors[descIndex].address = 0xFFFFFFFFffffffff;
-        //     transmitQueue.descriptors[descIndex].length = 0;    // might not be necessary
+        //     transmitQueue.descriptor_area[descIndex].address = 0xFFFFFFFFffffffff;
+        //     transmitQueue.descriptor_area[descIndex].length = 0;    // might not be necessary
 
-        //     while (transmitQueue.descriptors[descIndex].next)
+        //     while (transmitQueue.descriptor_area[descIndex].next)
         //     {
-        //         transmitQueue.descriptors[descIndex++].next = 0;
+        //         transmitQueue.descriptor_area[descIndex++].next = 0;
         //         descIndex %= transmitQueue.elements;
-        //         if (!(uint32_t)transmitQueue.descriptors[descIndex].address)
+        //         if (!(uint32_t)transmitQueue.descriptor_area[descIndex].address)
         //             kprintf("That's bad!\n");
-        //         dbg_release((void *)(uint32_t)transmitQueue.descriptors[descIndex].address);
-        //         transmitQueue.descriptors[descIndex].address = 0xFFFFFFFFffffffff;
-        //         transmitQueue.descriptors[descIndex].length = 0;    // might not be necessary
+        //         dbg_release((void *)(uint32_t)transmitQueue.descriptor_area[descIndex].address);
+        //         transmitQueue.descriptor_area[descIndex].address = 0xFFFFFFFFffffffff;
+        //         transmitQueue.descriptor_area[descIndex].length = 0;    // might not be necessary
         //     }
-        //     transmitQueue.lastDeviceAreaIndex++;
+        //     transmitQueue.lastdevice_areaIndex++;
         // }
 
         // see if the receive queue has been used
-        if (receiveQueue->deviceArea->index != receiveQueue->lastDeviceAreaIndex)
+        if (receiveQueue->device_area->index != receiveQueue->last_device_index)
         {
             VirtIO_Net_ReceivePacket();
         }
@@ -219,19 +218,19 @@ void VirtIO_Net_Init_Virtqueue(virtq *virtqueue, uint16_t queueIndex)
     // kernel_sprintf(str, "queue %d has %d elements", queueIndex, queueSize);
     // logger_log_info(str);
 
-    // kernel_sprintf(str, "queue %d: 0x%u", queueIndex, virtqueue->descriptors);
+    // kernel_sprintf(str, "queue %d: 0x%u", queueIndex, virtqueue->descriptor_area);
     // logger_log_info(str);
 
     // kernel_sprintf(str, "queue size: %x", virtqueue->elements);
     // logger_log_info(str);
 
-    // kernel_sprintf(str, "driverArea: 0x%x", virtqueue->driverArea);
+    // kernel_sprintf(str, "driver_area: 0x%x", virtqueue->driver_area);
     // logger_log_info(str);
 
-    // kernel_sprintf(str, "deviceArea: 0x%x", virtqueue->deviceArea);
+    // kernel_sprintf(str, "device_area: 0x%x", virtqueue->device_area);
     // logger_log_info(str);
 
-    uint32_t addr = (uint32_t)((uint32_t)virtqueue->descriptors - DMA_ADDRESS_OFFSET) / 4096;
+    uint32_t addr = (uint32_t)((uint32_t)virtqueue->descriptor_area - DMA_ADDRESS_OFFSET) / 4096;
 
     VNet_Write_Register(REG_QUEUE_ADDRESS, addr);
 }
@@ -246,17 +245,17 @@ void VirtIO_Net_SetupReceiveBuffers()
         uint32_t buffer = ((uint32_t)heap_kernel_alloc(bufferSize, 0) - DMA_ADDRESS_OFFSET);
 
         // Add buffer to the descriptor table
-        receiveQueue->descriptors[i].address = (uint64_t)buffer;
-        receiveQueue->descriptors[i].flags = VIRTQ_DESC_F_DEVICE_WRITE_ONLY;
-        receiveQueue->descriptors[i].length = bufferSize;
-        receiveQueue->descriptors[i].next = 0;
+        receiveQueue->descriptor_area[i].address = (uint64_t)buffer;
+        receiveQueue->descriptor_area[i].flags = VIRTQ_DESC_F_DEVICE_WRITE_ONLY;
+        receiveQueue->descriptor_area[i].length = bufferSize;
+        receiveQueue->descriptor_area[i].next = 0;
 
         // Add index of descriptor to the driver ring
-        receiveQueue->driverArea->ringBuffer[i] = i;
+        receiveQueue->driver_area->ring_buffer[i] = i;
     }
 
     // Update next available index
-    receiveQueue->driverArea->index = 16;
+    receiveQueue->driver_area->index = 16;
     VNet_Write_Register(REG_QUEUE_NOTIFY, VIRTIO_NET_RECEIVE_QUEUE_INDEX);
 }
 
@@ -271,21 +270,21 @@ void VirtIO_Net_SendPacket(net_packet_t *packet)
     // Set parameters of netBuffer
     memset(netBuffer, 0, sizeof(virtio_nic_net_header));
 
-    // Get indices for the next two descriptors
-    uint16_t descIndex = transmitQueue->nextDescriptor % transmitQueue->elements;
-    uint16_t descIndex2 = (descIndex + 1) % transmitQueue->elements;
-    transmitQueue->nextDescriptor += 2;
+    // Get indices for the next two descriptor_area
+    uint16_t descIndex = transmitQueue->next_descriptor % transmitQueue->size;
+    uint16_t descIndex2 = (descIndex + 1) % transmitQueue->size;
+    transmitQueue->next_descriptor += 2;
 
     // Get index for the next entry into the available-ring
-    uint16_t index = transmitQueue->driverArea->index % transmitQueue->elements;
+    uint16_t index = transmitQueue->driver_area->index % transmitQueue->size;
 
     // fill descriptor with net header
-    transmitQueue->descriptors[descIndex].address = (uint64_t)netBuffer - DMA_ADDRESS_OFFSET;
-    if (transmitQueue->descriptors[descIndex].address == 0xdeadbeef || transmitQueue->descriptors[descIndex].address == 0xdeadbeefdeadbeef)
-        logger_log_error("Very bad");
-    transmitQueue->descriptors[descIndex].flags = VIRTQ_DESC_F_NEXT;
-    transmitQueue->descriptors[descIndex].length = bufferSize;
-    transmitQueue->descriptors[descIndex].next = descIndex2;
+    transmitQueue->descriptor_area[descIndex].address = (uint64_t)netBuffer - DMA_ADDRESS_OFFSET;
+    if (transmitQueue->descriptor_area[descIndex].address == 0xdeadbeef || transmitQueue->descriptor_area[descIndex].address == 0xdeadbeefdeadbeef)
+        return;
+    transmitQueue->descriptor_area[descIndex].flags = VIRTQ_DESC_F_NEXT;
+    transmitQueue->descriptor_area[descIndex].length = bufferSize;
+    transmitQueue->descriptor_area[descIndex].next = descIndex2;
 
     // copy packet to new buffer, because packetBuffer won't be a physical address
     uint8_t *packetBuffer = heap_kernel_alloc(packet->packet_length, 0);
@@ -294,36 +293,34 @@ void VirtIO_Net_SendPacket(net_packet_t *packet)
     // (TODO: malloc returns identity-mapped addresses for now but later we'll need a function to convert virtual to physical)
 
     // fill descriptor with ethernet packet
-    transmitQueue->descriptors[descIndex2].address = (uint64_t)(packetBuffer - DMA_ADDRESS_OFFSET);
-    if (transmitQueue->descriptors[descIndex2].address == 0xdeadbeef || transmitQueue->descriptors[descIndex].address == 0xdeadbeefdeadbeef)
-        logger_log_error("Very bad\n");
-    transmitQueue->descriptors[descIndex2].flags = 0;
-    transmitQueue->descriptors[descIndex2].length = packet->packet_length;
-    transmitQueue->descriptors[descIndex2].next = 0;
+    transmitQueue->descriptor_area[descIndex2].address = (uint64_t)(packetBuffer - DMA_ADDRESS_OFFSET);
+    if (transmitQueue->descriptor_area[descIndex2].address == 0xdeadbeef || transmitQueue->descriptor_area[descIndex].address == 0xdeadbeefdeadbeef)
+        return;
+    transmitQueue->descriptor_area[descIndex2].flags = 0;
+    transmitQueue->descriptor_area[descIndex2].length = packet->packet_length;
+    transmitQueue->descriptor_area[descIndex2].next = 0;
 
     // Add descriptor chain to the available ring
-    transmitQueue->driverArea->ringBuffer[index] = descIndex;
+    transmitQueue->driver_area->ring_buffer[index] = descIndex;
 
     // Increase available ring index and notify the device
-    transmitQueue->driverArea->index++;
+    transmitQueue->driver_area->index++;
 
     VNet_Write_Register(REG_QUEUE_NOTIFY, VIRTIO_NET_TRANSMIT_QUEUE_INDEX);
 }
 
 void VirtIO_Net_ReceivePacket()
 {
-    while (receiveQueue->deviceArea->index != receiveQueue->lastDeviceAreaIndex)
+    while (receiveQueue->device_area->index != receiveQueue->last_device_index)
     {
-        logger_log_info("Packet received successfully!");
-
         // Get the index of the current descriptor from the device's ring buffer
-        uint16_t ringBufferIndex = receiveQueue->lastDeviceAreaIndex % receiveQueue->elements;
-        uint16_t descIndex = (uint16_t)receiveQueue->deviceArea->ringBuffer[ringBufferIndex].index;
+        uint16_t ringBufferIndex = receiveQueue->last_device_index % receiveQueue->size;
+        uint16_t descIndex = (uint16_t)receiveQueue->device_area->ring_buffer[ringBufferIndex].index;
 
         // Get pointer to the beginning of the buffer
-        uint32_t *rxBegin = (uint32_t *)((uint32_t)receiveQueue->descriptors[descIndex % receiveQueue->elements].address + DMA_ADDRESS_OFFSET);
+        uint32_t *rxBegin = (uint32_t *)((uint32_t)receiveQueue->descriptor_area[descIndex % receiveQueue->size].address + DMA_ADDRESS_OFFSET);
 
-        // See if the buffer spans multiple descriptors
+        // See if the buffer spans multiple descriptor_area
         int buffers = ((virtio_nic_net_header *)rxBegin)->buffers_count;
 
         // TODO:
@@ -334,7 +331,7 @@ void VirtIO_Net_ReceivePacket()
         //     // determine length of entire buffer that spans the descriptor chain
         //     for (int i = 0; i < buffers; ++i)
         //     {
-        //         bufferSize += receiveQueue->descriptors[(descIndex + i) % receiveQueue->elements].length;
+        //         bufferSize += receiveQueue->descriptor_area[(descIndex + i) % receiveQueue->elements].length;
         //     }
 
         //     rxBegin = (heap_kernel_alloc(bufferSize, 0)) - DMA_ADDRESS_OFFSET;
@@ -349,9 +346,9 @@ void VirtIO_Net_ReceivePacket()
         //     for (int i = 0; i < buffers; ++i)
         //     {
         //         memcpy((void *)((uint32_t)rxBegin + offset),
-        //                (void *)(uint32_t)receiveQueue->descriptors[(descIndex + i) % receiveQueue->elements].address,
-        //                receiveQueue->descriptors[(descIndex + i) % receiveQueue->elements].length);
-        //         offset += receiveQueue->descriptors[(descIndex + i) % receiveQueue->elements].length;
+        //                (void *)(uint32_t)receiveQueue->descriptor_area[(descIndex + i) % receiveQueue->elements].address,
+        //                receiveQueue->descriptor_area[(descIndex + i) % receiveQueue->elements].length);
+        //         offset += receiveQueue->descriptor_area[(descIndex + i) % receiveQueue->elements].length;
         //     }
         // }
 
@@ -359,7 +356,7 @@ void VirtIO_Net_ReceivePacket()
         uint32_t *packet = ((uint32_t)rxBegin + sizeof(virtio_nic_net_header));
 
         //Get packet length by skipping packet header
-        uint32_t packet_length = receiveQueue->descriptors[descIndex % receiveQueue->elements].length;
+        uint32_t packet_length = receiveQueue->descriptor_area[descIndex % receiveQueue->size].length;
 
         //Copy received data to heap
         void *packet_data = heap_kernel_alloc(packet_length, 0);
@@ -376,14 +373,14 @@ void VirtIO_Net_ReceivePacket()
         // Place the used descriptor indices back in the available ring (driver area)
         for (uint16_t i = 0; i < buffers; ++i)
         {
-            receiveQueue->driverArea->ringBuffer[(receiveQueue->driverArea->index++) % receiveQueue->elements] = descIndex + i;
+            receiveQueue->driver_area->ring_buffer[(receiveQueue->driver_area->index++) % receiveQueue->size] = descIndex + i;
             // restore descriptor settings
-            receiveQueue->descriptors[(descIndex + i) % receiveQueue->elements].flags = VIRTQ_DESC_F_DEVICE_WRITE_ONLY;
-            receiveQueue->descriptors[(descIndex + i) % receiveQueue->elements].length = 1526;
-            receiveQueue->descriptors[(descIndex + i) % receiveQueue->elements].next = 0;
+            receiveQueue->descriptor_area[(descIndex + i) % receiveQueue->size].flags = VIRTQ_DESC_F_DEVICE_WRITE_ONLY;
+            receiveQueue->descriptor_area[(descIndex + i) % receiveQueue->size].length = 1526;
+            receiveQueue->descriptor_area[(descIndex + i) % receiveQueue->size].next = 0;
         }
 
-        receiveQueue->lastDeviceAreaIndex++;
+        receiveQueue->last_device_index++;
     }
 
     // notify the device that we've updated the availaible ring index
