@@ -1,22 +1,23 @@
 #include "geometry.h"
+#include <stdlib.h>
 #include <math.h>
 #include <assert.h>
 
 vec2i c_vec2i(int x, int y)
 {
-    vec2i temp = {x,y};
+    vec2i temp = {{{x,y}}};
     return temp;
 }
 
 vec3 c_vec3(float x, float y, float z)
 {
-    vec3 temp = {x,y,z};
+    vec3 temp = {{{x,y,z}}};
     return temp;
 }
 
 vec3 barycentric(vec3 A, vec3 B, vec3 C, vec3 P)
 {
-    vec3 result = {-1.f, 1.f, 1.f};
+    vec3 result = {{{-1.f, 1.f, 1.f}}};
     vec3 s[2];
     for (int i=2; i--; )
     {
@@ -36,32 +37,37 @@ vec3 barycentric(vec3 A, vec3 B, vec3 C, vec3 P)
 
 vec2i add_vec2i(vec2i a, vec2i b)
 {
-    vec2i result = {a.x + b.x, a.y + b.y};
+    vec2i result = {{{a.x + b.x, a.y + b.y}}};
     return result;
 }
 
 vec2i sub_vec2i(vec2i a, vec2i b)
 {
-    vec2i result = {a.x - b.x, a.y - b.y};
+    vec2i result = {{{a.x - b.x, a.y - b.y}}};
     return result;
 }
 
 vec2i mul_vec2i_f(vec2i a, float b)
 {
-    vec2i result = {a.x * b, a.y * b};
+    vec2i result = {{{a.x * b, a.y * b}}};
     return result;
 }
 
 vec3 add_vec3(vec3 a, vec3 b)
 {
-    vec3 result = {a.x + b.x, a.y + b.y, a.z + b.z};
+    vec3 result = {{{a.x + b.x, a.y + b.y, a.z + b.z}}};
     return result;
 }
 
 vec3 sub_vec3(vec3 a, vec3 b)
 {
-    vec3 result = {a.x - b.x, a.y - b.y, a.z - b.z};
+    vec3 result = {{{a.x - b.x, a.y - b.y, a.z - b.z}}};
     return result;
+}
+
+vec3 div_vec3(vec3 vector, float scalar)
+{
+    return mul_vec3(vector, 1/scalar);
 }
 
 vec3 cross_product_vec3(vec3 a, vec3 b)
@@ -78,15 +84,15 @@ float dot_product_vec3(vec3 a, vec3 b)
     return a.x*b.x + a.y*b.y + a.z*b.z;
 }
 
-vec3 mul_vec3_f(vec3 a, float b)
+vec3 mul_vec3(vec3 a, float b)
 {
-    vec3 result = {a.x * b, a.y * b, a.z * b};
+    vec3 result = {{{a.x * b, a.y * b, a.z * b}}};
     return result;
 }
 
 vec3 normalize_vec3(vec3 a)
 {
-    return mul_vec3_f(a,(1.f/sqrt(a.x*a.x + a.y*a.y + a.z*a.z)));
+    return mul_vec3(a,(1.f/sqrt(a.x*a.x + a.y*a.y + a.z*a.z)));
 }
 
 void swap_vec2i(vec2i* a, vec2i*b)
@@ -108,10 +114,12 @@ void swap_vec3(vec3* a, vec3*b)
 //Matrix stuff
 mat4 mat4_identity()
 {
-    mat4 result = {1.,0.,0.,0.,
-                   0.,1.,0.,0.,
-                   0.,0.,1.,0.,
-                   0.,0.,0.,1};
+    mat4 result = {0};
+
+    result.elems[0][0] = 1.f;
+    result.elems[1][1] = 1.f;
+    result.elems[2][2] = 1.f;
+    result.elems[3][3] = 1.f;
     return result;
 }
 
@@ -130,8 +138,11 @@ mat4 mat4_transpose(mat4 m)
 
 mat4 mat4_inverse(mat4 m)
 {
+    mat4 result = {};
     //lol
     assert(0);
+
+    return result;
 }
 
 mat4 multiply_mat4(mat4 left, mat4 right)
@@ -147,6 +158,7 @@ mat4 multiply_mat4(mat4 left, mat4 right)
             {
                 sum += left.elems[current_mat][rows] * right.elems[columns][current_mat];
             }
+            result.elems[columns][rows] = sum;
         }
     }
     return result;
@@ -197,6 +209,37 @@ mat4 perspective(float fov, float aspect_ratio, float near, float far)
     return result;
 }
 
+mat4 lookat(vec3 eye, vec3 center, vec3 up)
+{
+    mat4  result;
+
+    vec3 F = normalize_vec3(sub_vec3(center, eye));
+    vec3 S = normalize_vec3(cross_product_vec3(F, up));
+    vec3 U = cross_product_vec3(S, F);
+
+    result.elems[0][0] = S.x;
+    result.elems[0][1] = U.x;
+    result.elems[0][2] = -F.x;
+    result.elems[0][3] = 0.0f;
+
+    result.elems[1][0] = S.y;
+    result.elems[1][1] = U.y;
+    result.elems[1][2] = -F.y;
+    result.elems[1][3] = 0.0f;
+
+    result.elems[2][0] = S.z;
+    result.elems[2][1] = U.z;
+    result.elems[2][2] = -F.z;
+    result.elems[2][3] = 0.0f;
+
+    result.elems[3][0] = -dot_product_vec3(S, eye);
+    result.elems[3][1] = -dot_product_vec3(U, eye);
+    result.elems[3][2] = dot_product_vec3(F, eye);
+    result.elems[3][3] = 1.0f;
+
+    return (result);
+}
+
 mat4 translate(vec3 translation)
 {
     mat4 result = mat4_identity();
@@ -206,4 +249,30 @@ mat4 translate(vec3 translation)
     result.elems[3][2] = translation.z;
 
     return result;
+}
+
+mat4 rotate(float angle, vec3 axis)
+{
+    mat4 result = mat4_identity();
+
+    axis = normalize_vec3(axis);
+
+
+    float sinangle = sin(angle*(PI/180.f));
+    float cosangle = cos(angle*(PI/180.f));
+    float cosvalue = 1.0f - cosangle;
+
+    result.elems[0][0] = (axis.x * axis.x * cosvalue) + cosangle;
+    result.elems[0][1] = (axis.x * axis.y * cosvalue) + (axis.z * sinangle);
+    result.elems[0][2] = (axis.x * axis.z * cosvalue) - (axis.y * sinangle);
+
+    result.elems[1][0] = (axis.y * axis.x * cosvalue) - (axis.z * sinangle);
+    result.elems[1][1] = (axis.y * axis.y * cosvalue) + cosangle;
+    result.elems[1][2] = (axis.y * axis.z * cosvalue) + (axis.x * sinangle);
+
+    result.elems[2][0] = (axis.z * axis.x * cosvalue) + (axis.y * sinangle);
+    result.elems[2][1] = (axis.z * axis.y * cosvalue) - (axis.x * sinangle);
+    result.elems[2][2] = (axis.z * axis.z * cosvalue) + cosangle;
+
+    return (result);
 }

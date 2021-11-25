@@ -4,6 +4,8 @@
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 
+#define CLAMP(x, _min, _max) x > _max ? _max : x < _min ? _min : x;
+
 #define PI 3.14159265
 
 typedef struct _vec2i
@@ -117,6 +119,11 @@ typedef struct _vec4
             float z;
             float w;
         };
+        struct 
+        {
+            vec3 xyz;
+            float _Ignored_0;
+        };
         float elems[4];
     };
     
@@ -125,7 +132,6 @@ typedef struct _vec4
 typedef union mat4
 {
     float elems[4][4];
-    float m[16];
 } mat4;
 
 /*!
@@ -224,6 +230,14 @@ vec2i mul_vec2i_f(vec2i a, float b);
 vec3 add_vec3(vec3 a, vec3 b);
 
 /*!
+    Divide vector by scalar value.
+    \param vector vector to be divided.
+    \param scalar scalar divisor.
+    \return divided vector.
+*/
+vec3 div_vec3(vec3 vector, float scalar);
+
+/*!
     Subtract two vec3 (a-b)
     \param a first term.
     \param b second term.
@@ -253,7 +267,7 @@ float dot_product_vec3(vec3 a, vec3 b);
     \param b float value.
     \return vec3 equal to a*b.
 */
-vec3 mul_vec3_f(vec3 a, float b);
+vec3 mul_vec3(vec3 a, float b);
 
 /*!
     Normalizes vector (vec3)
@@ -303,9 +317,20 @@ mat4 perspective(float fov, float aspect_ratio, float near, float far);
 //TODO Add ortho
 
 /*!
+    Create view matrix of camera based on camera and target position.
+    \param eye position of camera in 3D space.
+    \param center position of point at which camera is looking.
+    \param up vector representing up axis of 3d space.
+    \return view matrix.
+*/
+mat4 lookat(vec3 eye, vec3 center, vec3 up);
+
+/*!
     sets translation in transformation matrix.
     \param translation translation vector.
     \return transformation matrix after translation.
 */
 mat4 translate(vec3 translation);
+
+mat4 rotate(float angle, vec3 axis);
 #endif

@@ -15,7 +15,7 @@ obj_model* load_obj_model(char* filename)
     vector_init(&mdl->vertices);
     vector_init(&mdl->indices);
     vector_init(&mdl->uv);
-    char buff[256];
+    //char buff[256];
 
     //Read own model format (scanf isn't working)
 
@@ -32,11 +32,12 @@ obj_model* load_obj_model(char* filename)
             {
                 uint32_t vcount;
                 fread((char*)&vcount, sizeof(uint32_t), 1, in);
-                for(int i = 0; i < vcount; i++)
+                for(uint32_t i = 0; i < vcount; i++)
                 {
                     vec3* vert = (vec3*)malloc(sizeof(vec3));
                     fread((char*)vert, sizeof(vec3), 1, in);
-                    vert->y*= -1;
+                    //vert->y*= -1;
+                    //vert->z *= -1;
                     vector_add(&mdl->vertices, (void*)vert);
                 }
                 break;
@@ -46,7 +47,7 @@ obj_model* load_obj_model(char* filename)
             {
                 uint32_t ucount;
                 fread((char*)&ucount, sizeof(uint32_t), 1, in);
-                for(int i = 0; i < ucount; i++)
+                for(uint32_t i = 0; i < ucount; i++)
                 {
                     vec2f* uv = (vec2f*)malloc(sizeof(vec2f));
                     fread((char*)uv, sizeof(vec2f), 1, in);
@@ -60,7 +61,7 @@ obj_model* load_obj_model(char* filename)
             {
                 uint32_t icount;
                 fread((char*)&icount, sizeof(uint32_t), 1, in);
-                for(int i = 0; i < icount; i++)
+                for(uint32_t i = 0; i < icount; i++)
                 {
                     vec3i* index = (vec3i*)malloc(sizeof(vec3i));
                     fread((char*)index, sizeof(vec3i), 1, in);

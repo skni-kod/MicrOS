@@ -11,10 +11,10 @@ uint32_t loadFile(char* filename, byte** dst)
     if(in == NULL)
     {
         printf("ERROR: File %s couldn't be loaded.\n", filename);
-        return NULL;
+        return 0;
     }
 
-    int32_t fileSize;
+    uint32_t fileSize;
     // obtain file size:
     fseek (in , 0 , SEEK_END);
     fileSize = ftell (in);
@@ -23,10 +23,10 @@ uint32_t loadFile(char* filename, byte** dst)
     if(contents == NULL)
     {
         printf("Ooops, we're out of memory!\n");
-        return NULL;
+        return 0;
     }
     uint32_t readLen = 0;
-    int32_t currentOffset = 0;
+    uint32_t currentOffset = 0;
     uint32_t chunkSize = 20*1024;
     while(fileSize - currentOffset > 0)
     {
@@ -37,7 +37,7 @@ uint32_t loadFile(char* filename, byte** dst)
     if (fileSize != readLen)
     {
         printf("Reading error!\n");
-        return NULL;
+        return 0;
     }
     //we copied whole file to memory at this point, so we can safely close file.
     fclose (in);
@@ -66,11 +66,11 @@ ssurface* load_image(char* filename)
 
     img->data = malloc(img->width*img->height*img->bpp);
 
-    uint8_t padding = (4 - infoHeader->width % 4) % 4;
+    //uint8_t padding = (uint8_t)((4 - infoHeader->width % 4) % 4);
     int j = 0;
     for(int i = infoHeader->height - 1; i >= 0; i--, j++)
     {
-        for(int k = 0; k < infoHeader->width; k++)
+        for(uint32_t k = 0; k < infoHeader->width; k++)
         {
             color* pix = (color*)(img->data + j * img->width * img->bpp + k * img->bpp);
             pix->b = *(contents+fileHeader->dataOffset+i*infoHeader->width*(infoHeader->bitPerPixel/8)+k*(infoHeader->bitPerPixel/8));

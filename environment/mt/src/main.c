@@ -18,7 +18,7 @@ int compareString(char* a, char*b)
 {
     if(a == NULL || b == NULL) return -2;
     int i = 0;
-    while((a[i] != NULL) && (b[i] != NULL))
+    while((a[i] != 0) && (b[i] != 0))
     {
         if(a[i] < b[i]) return -1;
         if(a[i] > b[i]) return 1;
@@ -84,11 +84,11 @@ int main(int argc, char* argv[])
     
     for(int i = 0; i < zbuffer_empty->width*zbuffer_empty->height; i++)
     {
-        *(float*)(zbuffer_empty->data+i*4) = -FLT_MAX;
+        *(float*)(zbuffer_empty->data+i*4) = 1.f;
     }
 
     //uint8_t* gpuBuffer = calloc(vmd.width*vmd.height*4, sizeof(uint8_t));
-    color white = {0xFF, 0xFF, 0xFF, 0x00};
+    //color white = {0xFF, 0xFF, 0xFF, 0x00};
 
     ssurface* head_tex = load_image("A:/RES/HEAD.BMP");
 
@@ -98,17 +98,27 @@ int main(int argc, char* argv[])
 
     viewport(0,0,vmd.width, vmd.height);
 
-    vec3 light_dir = {0,0,1};
+    vec3 light_dir = {{{-0.4f,0.4f,-1.f}}};
 
     float angle = 90.f;
 
-    vec3 cam = {2.0f, 0.0f, 3.0f};
+    vec3 cam_pos = {{{0.0f, 0.0f, -30.0f}}};
+    vec3 cam_target = {{{0.0f,0.0f,0.0f}}};
+    vec3 up = {{{0.0f,1.0f,0.0f}}};
 
-    mat4 view = translate(cam);
+    //mat4 view = lookat(cam_pos, cam_target, up);
+
+    mat4 view;
 
     mat4 proj = perspective(45., buffer->width/(float)buffer->height, .001f, 100.0f);
 
-    mat4 model = mat4_identity();
+    mat4 model;
+
+    float rot_angle = 0.0f;
+    vec3 hrotd = {{{0.f, 1.f,0.f}}};
+    vec3 rot_x = {{{1.f,0.f,0.f}}};
+    mat4 vrot = rotate(180.f, rot_x);
+    mat4 hrot;
 
     viewport(0,0,vmd.width, vmd.height);
 
@@ -120,20 +130,44 @@ int main(int argc, char* argv[])
         if(getKeyDown(key_esc)) break;
 
 
+        if(getKey(key_d)) cam_pos.x += .5;
+        if(getKey(key_a)) cam_pos.x -= .5f;
+
+        if(getKey(key_s)) cam_pos.y += .5f;
+        if(getKey(key_w)) cam_pos.y -= .5f;
+
+        if(getKey(key_i)) cam_pos.z += .5f;
+        if(getKey(key_k)) cam_pos.z -= .5f;
+
+        if(getKey(key_q)) rot_angle -= 2.f;
+        if(getKey(key_e)) rot_angle += 2.f;
+
+        view = translate(cam_pos);
+
+        model = mat4_identity();
+        
+        hrot = rotate(rot_angle, hrotd);
+        
+        mat4 rot = multiply_mat4(vrot, hrot);
+
+        model = multiply_mat4(model, rot);
+
         memset(buffer->data, 0, buffer->width*buffer->height*buffer->bpp);
         memcpy(zbuffer->data, zbuffer_empty->data, zbuffer->width*zbuffer->height*zbuffer->bpp);
 
-        light_dir.x = light_dir.z*cos(angle*PI/180.0);
-        light_dir = normalize_vec3(light_dir);
+        //light_dir.x = cos(angle*PI/180.0);
+        //light_dir = normalize_vec3(light_dir);
         
-        angle += 1.f;
+        //angle += 1.f;
 
         if(angle >= 360.0f)
         {
             angle = 0.0f;
         }
+        mat4 vp = multiply_mat4(proj, view);
+        mat4 mvp = multiply_mat4(vp, model);
 
-        for(int i = 0; i < mdl->indices.count; i+=3)
+        for(uint32_t i = 0; i < mdl->indices.count; i+=3)
         {
             //if(i + 3 > mdl->indices.count) break;
             vec4 screen_coords[3];
@@ -144,8 +178,9 @@ int main(int argc, char* argv[])
                 vec3 v = *(vec3*)mdl->vertices.data[((vec3i*)mdl->indices.data[i+j])->x - 1];
                 uv_coords[j].u = (int)(((vec2f*)mdl->uv.data[((vec3i*)mdl->indices.data[i+j])->y - 1])->u * head_tex->width);
                 uv_coords[j].v = (int)(((vec2f*)mdl->uv.data[((vec3i*)mdl->indices.data[i+j])->y - 1])->v * head_tex->height);
-                vec4 vt = {v.x,v.y,v.z,1};
-                screen_coords[j] = multiply_mat4_vec4(proj, multiply_mat4_vec4(view, multiply_mat4_vec4(model, vt)));
+                vec4 vt = {{{v.x,v.y,v.z,1}}};
+                
+                screen_coords[j] = multiply_mat4_vec4(mvp, vt);
                 //screen_coords[j] = multiply_mat4_vec4(multiply_mat4(proj, multiply_mat4(view, model)), vt);
                 //screen_coords[j].x = (int)((v.x+1.)*buffer->width/2.+.5);
                 //screen_coords[j].y = (int)((v.y+1.)*buffer->height/2.+.5);
@@ -161,13 +196,12 @@ int main(int argc, char* argv[])
             //Dot product
             float intensity = dot_product_vec3(n,light_dir); 
 
-            //Draw if we can see face.
-            if(intensity > 0)
-            {
-                color c = {intensity * 0xFF,intensity * 0xFF,intensity * 0xFF, 0xFF};
-                triangle(screen_coords, uv_coords, buffer, zbuffer, head_tex, &c);
-                //triangle2D(screen_coords, buffer, &c);
-            }// for(int j = 0; j < 3; j++)
+            //Draw
+            intensity = intensity > 1.0f ? 1.0f : intensity < 0.0f ? 0.0f : intensity;
+            color c = {intensity * 0xFF,intensity * 0xFF,intensity * 0xFF, 0xFF};
+            triangle(screen_coords, uv_coords, buffer, zbuffer, head_tex, &c);
+            //triangle2D(screen_coords, buffer, &c);
+            // for(int j = 0; j < 3; j++)
             // {
             //     vec3* v0 = (vec3*)mdl->vertices.data[*(int*)mdl->indices.data[i+j] - 1];
             //     vec3* v1 = (vec3*)mdl->vertices.data[*(int*)mdl->indices.data[i+((j+1)%3)] - 1];

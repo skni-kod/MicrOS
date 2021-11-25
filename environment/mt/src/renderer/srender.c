@@ -1,4 +1,5 @@
 #include "srender.h"
+#include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
 #include <float.h>
@@ -137,41 +138,76 @@ color blend_colors(color a, color b)
     return result;
 }
 
+static int is_vertex_visible(vec4 v)
+{
+    return fabs(v.x) <= v.w && fabs(v.y) <= v.w && fabs(v.z) <= v.w;
+}
+
+static int is_back_facing(vec3 ndc_coords[3])
+{
+    vec3 a = ndc_coords[0];
+    vec3 b = ndc_coords[1];
+    vec3 c = ndc_coords[2];
+    float signed_area = a.x * b.y - a.y * b.x +
+                        b.x * c.y - b.y * c.x +
+                        c.x * a.y - c.y * a.x;
+    return signed_area <= 0;
+}
+
+//Todo speed up rasterization
+//TODO Divide drawing routines to vertex and fragment elements.
+// Fragment drawing will rasterize triangle, vertex drawing will only calculate position, so we can determine if given pixel is visible.
+// This way it should make rendering way faster, since vertex operations are way faster.
 void triangle(vec4* pts, vec2i* uvs, ssurface* surf, ssurface* zbuffer, ssurface* tex, color* c)
 {
-    vec3 t0 = {pts[0].x, pts[0].y, pts[0].z};
-    vec3 t1 = {pts[1].x, pts[1].y, pts[1].z};
-    vec3 t2 = {pts[2].x, pts[2].y, pts[2].z};
+    //Check if triangle is at all visible (implement better culling algorithm)
+    int t1_vis = is_vertex_visible(pts[0]);
+    int t2_vis = is_vertex_visible(pts[1]);
+    int t3_vis = is_vertex_visible(pts[2]);
+    if(!t1_vis && !t2_vis && !t3_vis) return;
+    
+    vec3 t[3];
+    t[0] = div_vec3(pts[0].xyz, pts[0].w);
+    t[1] = div_vec3(pts[1].xyz, pts[1].w);
+    t[2] = div_vec3(pts[2].xyz, pts[2].w);
 
-    t0.x = (int)((t0.x+1.)*(viewport_w/2.f) + viewport_x);
-    t0.y = (int)((t0.y+1.)*(viewport_h/2.f) + viewport_y);
+    if(is_back_facing(t)) return;
+
+    t[0].x = (int)((t[0].x+1.)*(viewport_w/2.f) + viewport_x);
+    t[0].y = (int)((t[0].y+1.)*(viewport_h/2.f) + viewport_y);
+    t[0].z = (t[0].z + 1.f) * 0.5f;
+    t[0].z = CLAMP(t[0].z, 0.0f, 1.0f); 
     
-    t1.x = (int)((t1.x+1.)*(viewport_w/2.f) + viewport_x);
-    t1.y = (int)((t1.y+1.)*(viewport_h/2.f) + viewport_y);
+    t[1].x = (int)((t[1].x+1.)*(viewport_w/2.f) + viewport_x);
+    t[1].y = (int)((t[1].y+1.)*(viewport_h/2.f) + viewport_y);
+    t[1].z = (t[1].z + 1.f) * 0.5f;
+    t[1].z = CLAMP(t[1].z, 0.0f, 1.0f); 
     
-    t2.x = (int)((t2.x+1.)*(viewport_w/2.f) + viewport_x);
-    t2.y = (int)((t2.y+1.)*(viewport_h/2.f) + viewport_y);
+    t[2].x = (int)((t[2].x+1.)*(viewport_w/2.f) + viewport_x);
+    t[2].y = (int)((t[2].y+1.)*(viewport_h/2.f) + viewport_y);
+    t[2].z = (t[2].z + 1.f) * 0.5f;  
+    t[2].z = CLAMP(t[2].z, 0.0f, 1.0f); 
 
     //if (t0.y==t1.y && t0.y==t2.y)
 
-    if (t0.y>t1.y) swap_vec3(&t0, &t1); 
-    if (t0.y>t2.y) swap_vec3(&t0, &t2); 
-    if (t1.y>t2.y) swap_vec3(&t1, &t2); 
+    if (t[0].y>t[1].y) swap_vec3(&t[0], &t[1]); 
+    if (t[0].y>t[2].y) swap_vec3(&t[0], &t[2]); 
+    if (t[1].y>t[2].y) swap_vec3(&t[1], &t[2]); 
 
-    int total_height = t2.y-t0.y; 
+    int total_height = t[2].y-t[0].y; 
     for (int i=0; i<total_height; i++)
     { 
-        bool second_half = i > t1.y - t0.y || t1.y == t0.y; 
-        int segment_height = second_half ? t2.y - t1.y : t1.y - t0.y; 
+        bool second_half = i > t[1].y - t[0].y || t[1].y == t[0].y; 
+        int segment_height = second_half ? t[2].y - t[1].y : t[1].y - t[0].y; 
         float alpha = (float)i / total_height; 
-        float beta  = (float)(i - (second_half ? t1.y - t0.y : 0)) / segment_height; // be careful: with above conditions no division by zero here 
+        float beta  = (float)(i - (second_half ? t[1].y - t[0].y : 0)) / segment_height; // be careful: with above conditions no division by zero here 
         
         // Since we're doing everything in C we need to implement functions that will work in place of operators.
         // Normally in C++ I'd suggest making operator overloads for each vec type.
 
         //Calculate proper positions of vertices for drawing.
-        vec3 A =               add_vec3(t0, mul_vec3_f(sub_vec3(t2,t0),alpha)); 
-        vec3 B = second_half ? add_vec3(t1, mul_vec3_f(sub_vec3(t2, t1), beta)) : add_vec3(t0, mul_vec3_f(sub_vec3(t1, t0), beta)); 
+        vec3 A =               add_vec3(t[0], mul_vec3(sub_vec3(t[2],t[0]),alpha)); 
+        vec3 B = second_half ? add_vec3(t[1], mul_vec3(sub_vec3(t[2], t[1]), beta)) : add_vec3(t[0], mul_vec3(sub_vec3(t[1], t[0]), beta)); 
         
         vec2i uvA =               add_vec2i(uvs[0], mul_vec2i_f(sub_vec2i(uvs[2],uvs[0]), alpha));
         vec2i uvB = second_half ? add_vec2i(uvs[1], mul_vec2i_f(sub_vec2i(uvs[2],uvs[1]), beta)) : add_vec2i(uvs[0], mul_vec2i_f(sub_vec2i(uvs[1], uvs[0]), beta));
@@ -180,16 +216,17 @@ void triangle(vec4* pts, vec2i* uvs, ssurface* surf, ssurface* zbuffer, ssurface
         for (int j=(int)A.x; j<=(int)B.x; j++)
         { 
             float phi = B.x==A.x ? 1. : (float)(j-A.x)/(float)(B.x-A.x);
-            vec3  p = add_vec3(A, mul_vec3_f(sub_vec3(B,A),phi));
+            vec3  p = add_vec3(A, mul_vec3(sub_vec3(B,A),phi));
             vec2i uvp =     add_vec2i(uvA, mul_vec2i_f(sub_vec2i(uvB, uvA), phi));
-
+            //part of culling, this shouldn't be here, but works.
+            if(p.x < viewport_x || p.x > viewport_w || p.y < viewport_y || p.y > viewport_h) continue;
             int index = (int)((p.x*zbuffer->bpp)+(p.y*zbuffer->width*zbuffer->bpp));
-            if (p.z > *(float*)&zbuffer->data[index])
+            if (p.z <= *(float*)&zbuffer->data[index])
             {
                 *(float*)&zbuffer->data[index] = p.z;
                 color col = blend_colors(*(color*)(tex->data + (uvp.y * tex->width * tex->bpp) + (uvp.x * tex->bpp)), *c);
 
-                *(uint32_t*)(surf->data + ((((int)t0.y+i) * surf->width * surf->bpp) +  (j * surf->bpp))) = *(uint32_t*)&col;
+                *(uint32_t*)(surf->data + (((int)p.y * surf->width * surf->bpp) +  ((int)p.x * surf->bpp))) = *(uint32_t*)&col;
             }
         } 
     }
@@ -204,10 +241,10 @@ float EdgeFunc( vec3 a, vec3 b, vec3 c )
 void triangle_bc(vec3* pts, vec2f* uvs, ssurface* zbuffer, ssurface* surf, ssurface* tex, color* c)
 {
     //Create boundging box of screen size.
-    vec2i bboxmin = {0, 0}; 
-    vec2i bboxmax = {surf->width - 1, surf->height - 1};
+    vec2i bboxmin = {{{0, 0}}}; 
+    vec2i bboxmax = {{{surf->width - 1, surf->height - 1}}};
     //create clamping vector
-    vec2i clamp = {surf->width-1,  surf->height-1};
+    vec2i clamp = {{{surf->width-1,  surf->height-1}}};
     //clamp values to bounding box
     
     bboxmax.x = MIN(MAX(pts[0].x, MAX(pts[1].x, pts[2].x)), clamp.x);
