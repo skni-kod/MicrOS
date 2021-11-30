@@ -5,7 +5,7 @@
 #include "stddef.h"
 
 //! Unsigned integral type.
-typedef size_t uint32_t;
+//typedef size_t uint32_t;
 
 #ifdef __cplusplus
 extern "C" {
