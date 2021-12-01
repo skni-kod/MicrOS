@@ -13,8 +13,8 @@ ASM_OBJECTS := $(ASM_SOUCES:%.asm=$(OBJ_DIR)/%.o)
 
 DEPS := $(C_OBJECTS:.o=.d)
 
-GCC_COMPILE_FLAGS := -I../../library/src ./lib -lz -ffreestanding -Wall -Wextra -Wno-unused-parameter -Wno-packed-bitfield-compat 
-GCC_LINK_FLAGS := -L../../library/bin -lc -lgcc -nostdlib
+GCC_COMPILE_FLAGS := -I../../library/src -static -I../../lib/zlib -ffreestanding -Wall -Wextra -Wno-unused-parameter -Wno-packed-bitfield-compat
+GCC_LINK_FLAGS := -L../../library/bin -L../../lib/zlib -lz -lc -lgcc -nostdlib
 
 ifeq ($(MODE),release)
 GCC_COMPILE_FLAGS += -O2
@@ -26,7 +26,7 @@ endif
 $(OUTPUT_FILE): $(C_OBJECTS) $(ASM_OBJECTS)
 	@echo "=== Linking output file $(OUTPUT_FILE) ==="
 	@mkdir -p '$(@D)'
-	@$(GCC) $(C_OBJECTS) -o $(OUTPUT_FILE) $(GCC_LINK_FLAGS) -L./lib -lz
+	@$(GCC) $(C_OBJECTS) -o $(OUTPUT_FILE) $(GCC_LINK_FLAGS) 
 	@echo "=== $(OUTPUT_FILE) done ==="
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
