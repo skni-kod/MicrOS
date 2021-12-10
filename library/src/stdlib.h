@@ -101,6 +101,14 @@ ldiv_t ldiv(long int numer, long int denom);
 */
 lldiv_t lldiv(long long int numer, long long int denom);
 
+//! Convert string to float
+/*
+    Parses the C-string str interpreting its content as an floating-point number, which is returned as a value of type double.
+    \param string C-string beginning with the representation of an floating-point number.
+    \return On success, the function returns the converted floating-point number as an double value.
+ */
+double atof(const char *string);
+
 //! Convert string to integer
 /*
     Parses the C-string str interpreting its content as an integral number, which is returned as a value of type int.

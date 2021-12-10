@@ -2,7 +2,7 @@
 #define STDIO_H
 
 //! Size of the stream buffer
-#define BUFSIZ 1024 * 32
+#define BUFSIZ 1024 * 32 * 32
 
 //! Value returned when internal stream position has reached the end of file
 #define EOF -1
