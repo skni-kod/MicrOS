@@ -164,6 +164,8 @@ uint32_t heap_get_object_size(void *ptr)
 
 void *heap_realloc(void *ptr, uint32_t size, uint32_t align, bool supervisor)
 {
+    if(ptr == NULL) return heap_alloc(size, align, supervisor);
+    
     uint32_t old_entry_size = ((heap_entry *)((uint32_t)ptr - ENTRY_HEADER_SIZE))->size;
     void *new_ptr = heap_alloc(size, align, supervisor);
 

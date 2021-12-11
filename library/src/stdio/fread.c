@@ -2,7 +2,7 @@
 
 size_t fread(void *ptr, size_t size, size_t count, FILE *stream)
 {
-    char c = fgetc(stream);
+    int c = fgetc(stream);
     int i = 0;
     int total_size = size * count;
 

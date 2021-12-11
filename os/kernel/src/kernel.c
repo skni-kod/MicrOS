@@ -43,10 +43,6 @@
 
 #include "debug_helpers/library/kernel_stdio.h"
 
-#ifdef TEST_V8086
-#include "v8086/tests/tests.h"
-#endif
-
 typedef struct _linesStruct
 {
     uint16_t ax;
@@ -276,7 +272,7 @@ void startup()
     // NOTE: it doesn't work well, so assume for now that floppy controller is always present
     //if (fdc_is_present())
     {
-        //fdc_init();
+        fdc_init();
         logger_log_ok("Floppy Disc Controller");
     }
 
@@ -287,7 +283,7 @@ void startup()
     keyboard_init();
     logger_log_ok("Keyboard");
 
-    //partitions_init();
+    partitions_init();
     logger_log_ok("Partitions");
 
     tss_init();
@@ -391,7 +387,6 @@ void v8086_BIOS_timer_interrupt()
 
 int kmain()
 {
-
     clear_bss();
 
     startup();
@@ -400,8 +395,29 @@ int kmain()
 
     //startup_music_play();
     logger_log_ok("READY.");
-
+    
     logger_log_ok("Loading shells...");
+    
+    uint32_t d = 0;
+    for (int i = 0; i < 4; i++)
+    {
+        char args[16];
+        itoa(i, args, 10);
+        
+        uint32_t p = process_manager_create_process("A:/ENV/SHELL.ELF", args, 0, false);
+        create_terminal(&d);
+    
+        uint32_t terminal_number = i;
+        const terminal_struct* ts = get_terminals(&terminal_number);
+        attach_process_to_terminal(ts[i].terminal_id, process_manager_get_process(p));
+    }
+    
+    vga_clear_screen();
+    
+    switch_active_terminal(0);
+    
+    process_manager_run();  
 
+    while (1);
     return 0;
 }

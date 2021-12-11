@@ -46,4 +46,8 @@ bool floppy_wait_for_interrupt();
 bool floppy_interrupt();
 bool floppy_timer_interrupt();
 
+uint8_t* floppy_read_continous(int device_number, int sector, int count);
+uint8_t* floppy_read_sectors(int device_number, uint8_t head, uint8_t track, uint8_t sector, uint32_t count);
+uint8_t* read_track_from_floppy(int device_number, int head, int track);
+
 #endif

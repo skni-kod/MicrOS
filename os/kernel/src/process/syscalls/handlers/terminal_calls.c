@@ -89,3 +89,13 @@ void syscall_terminal_set_cursor_visibility(interrupt_state *state)
         terminal_manager_turn_cursor_off(process_manager_get_current_process()->id);
     }
 }
+
+void syscall_terminal_set_video_mode(interrupt_state *state)
+{
+    terminal_manager_set_mode(process_manager_get_current_process()->id, state->registers.ebx);
+}
+
+void syscall_terminal_copy_from_buffer(interrupt_state *state)
+{
+    terminal_manager_copy_from_buffer(process_manager_get_current_process()->id, (uint8_t*)(state->registers.ebx), state->registers.ecx);
+}

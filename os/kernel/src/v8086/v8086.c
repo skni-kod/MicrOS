@@ -17,12 +17,13 @@
     #include "../drivers/vga/vga.h"
     //#define DEBUG_V8086_TEXT
     //#define DEBUG_V8086_BIN
-    #define DEBUG_V8086_INTERACTIVE
+    //#define DEBUG_V8086_INTERACTIVE
 #endif
 
 bool skipDebugging = false;
 
 int16_t parse_and_execute_instruction(v8086* machine);
+uint8_t loop_flag = 0;
 
 #ifdef DEBUG_V8086
 void send_reg_32(uint32_t reg)
@@ -202,6 +203,8 @@ void v8086_set_8086_instruction_set(v8086* machine)
     //NOT DEFINED IN 8086 processor
     ASSIGN_NULL(0xc8u);
     ASSIGN_NULL(0xc9u);
+    ASSIGN_OPCODE(0xcau, retf_imm);
+    ASSIGN_OPCODE(0xcbu, retf);
     GROUP_OF_OPCODES(0xccu, 0xceu, interrupt);
     ASSIGN_OPCODE(0xcfu, iret);
     GROUP_OF_OPCODES(0xd0u, 0xd3u, group_2);

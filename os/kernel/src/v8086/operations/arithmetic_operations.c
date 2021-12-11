@@ -150,12 +150,16 @@ int16_t perform_rol(v8086 *machine, void *dest, uint8_t arg, uint8_t width) {
 int16_t perform_rcl(v8086 *machine, void *dest, uint8_t arg, uint8_t width) {
     uint16_t temp_flags;
     if (arg == 0) return V8086_OK;
+
+    __asm__("pushfw; pop %%bx" : "=b" (temp_flags));
+    bit_write(temp_flags, 1u << CARRY_FLAG_BIT, (bit_get(machine->regs.w.flags, 1u << CARRY_FLAG_BIT) ? 1 : 0));
+
     if (width == 8)
-            __asm__ __volatile__("rclb %%cl, %%al; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint8_t *) dest)) : "a" (*((uint8_t *) dest)), "c" (arg));
+            __asm__ __volatile__("push %%bx; popfw; rclb %%cl, %%al; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint8_t *) dest)) : "a" (*((uint8_t *) dest)), "b"(temp_flags), "c" (arg));
     else if (width == 16)
-            __asm__ __volatile__("rclw %%cl, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t *) dest)) : "a" (*((uint16_t *) dest)), "c" (arg));
+            __asm__ __volatile__("push %%bx; popfw; rclw %%cl, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t *) dest)) : "a" (*((uint16_t *) dest)), "b"(temp_flags), "c" (arg));
     else if (width == 32)
-            __asm__ __volatile__("rcll %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t *) dest)) : "a" (*((uint32_t *) dest)), "c" (arg));
+            __asm__ __volatile__("push %%bx; popfw; rcll %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t *) dest)) : "a" (*((uint32_t *) dest)), "b"(temp_flags), "c" (arg));
     else return V8086_BAD_WIDTH;
     if (arg == 1)
         bit_write(machine->regs.w.flags, 1u << OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1u << OVERFLOW_FLAG_BIT) != 0);
@@ -166,12 +170,16 @@ int16_t perform_rcl(v8086 *machine, void *dest, uint8_t arg, uint8_t width) {
 int16_t perform_rcr(v8086 *machine, void *dest, uint8_t arg, uint8_t width) {
     uint16_t temp_flags;
     if (arg == 0) return V8086_OK;
+
+    __asm__("pushfw; pop %%bx" : "=b" (temp_flags));
+    bit_write(temp_flags, 1u << CARRY_FLAG_BIT, (bit_get(machine->regs.w.flags, 1u << CARRY_FLAG_BIT) ? 1 : 0));
+
     if (width == 8)
-            __asm__ __volatile__("rcrb %%cl, %%al; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint8_t *) dest)) : "a" (*((uint8_t *) dest)), "c" (arg));
+            __asm__ __volatile__("push %%bx; popfw; rcrb %%cl, %%al; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint8_t *) dest)) : "a" (*((uint8_t *) dest)), "b"(temp_flags), "c" (arg));
     else if (width == 16)
-            __asm__ __volatile__("rcrw %%cl, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t *) dest)) : "a" (*((uint16_t *) dest)), "c" (arg));
+            __asm__ __volatile__("push %%bx; popfw; rcrw %%cl, %%ax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint16_t *) dest)) : "a" (*((uint16_t *) dest)), "b"(temp_flags), "c" (arg));
     else if (width == 32)
-            __asm__ __volatile__("rcrl %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t *) dest)) : "a" (*((uint32_t *) dest)), "c" (arg));
+            __asm__ __volatile__("push %%bx; popfw; rcrl %%cl, %%eax; pushfw; pop %%bx;" : "=b" (temp_flags), "=a" (*((uint32_t *) dest)) : "a" (*((uint32_t *) dest)), "b"(temp_flags), "c" (arg));
     else return V8086_BAD_WIDTH;
     if (arg == 1)
         bit_write(machine->regs.w.flags, 1u << OVERFLOW_FLAG_BIT, bit_get(temp_flags, 1u << OVERFLOW_FLAG_BIT) != 0);
