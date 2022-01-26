@@ -13,6 +13,7 @@ obj_model* load_obj_model(char* filename)
         return NULL;
     }
     vector_init(&mdl->vertices);
+    vector_init(&mdl->normals);
     vector_init(&mdl->indices);
     vector_init(&mdl->uv);
     //char buff[256];
@@ -34,10 +35,11 @@ obj_model* load_obj_model(char* filename)
                 fread((char*)&vcount, sizeof(uint32_t), 1, in);
                 for(uint32_t i = 0; i < vcount; i++)
                 {
-                    vec3* vert = (vec3*)malloc(sizeof(vec3));
-                    fread((char*)vert, sizeof(vec3), 1, in);
-                    //vert->y*= -1;
-                    //vert->z *= -1;
+                    vec3 temp_vert;
+                    fread((char*)&temp_vert, sizeof(vec3), 1, in);
+                    vec4* vert = (vec4*)malloc(sizeof(vec4));
+                    vert->xyz = temp_vert;
+                    vert->w = 1.0f;
                     vector_add(&mdl->vertices, (void*)vert);
                 }
                 break;
@@ -53,6 +55,20 @@ obj_model* load_obj_model(char* filename)
                     fread((char*)uv, sizeof(vec2f), 1, in);
                     uv->v = (float)fabs(1 - uv->v);
                     vector_add(&mdl->uv, (void*)uv);
+                }
+                break;
+            }
+
+            //MRON
+            case 0x4E4F524D:
+            {
+                uint32_t ncount;
+                fread((char*)&ncount, sizeof(uint32_t), 1, in);
+                for(uint32_t i = 0; i < ncount; i++)
+                {
+                    vec3* n = (vec3*)malloc(sizeof(vec3));
+                    fread((char*)n, sizeof(vec3), 1, in);
+                    vector_add(&mdl->normals, (void*)n);
                 }
                 break;
             }

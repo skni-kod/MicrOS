@@ -245,6 +245,18 @@ void startup()
     logger_log_ok("Procesor");
     print_processor_status();
 
+    //This is only for testing, think about enabling it only if CPU supports SSE.
+    // ADD SSE REGISTER SWITCHING TO PROCESS MANAGER!
+    __asm__("push %eax\n"
+             "mov %cr0, %eax\n"
+             "and $0xFFFB, %ax\n"
+             "or $0x2, %ax\n"
+             "mov %eax, %cr0\n"
+             "mov %cr4, %eax\n"
+             "or $0x0600, %ax\n"
+             "mov %eax, %cr4\n"
+             "pop %eax\n");
+
     physical_memory_init();
     logger_log_ok("Physical Memory");
 

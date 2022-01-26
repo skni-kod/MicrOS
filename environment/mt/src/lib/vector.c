@@ -35,6 +35,28 @@ void vector_insert(vector *vector, void *data, uint32_t index)
 	vector->count++;
 }
 
+//This is not a vector...
+void vector_place(vector *vector, void *data, uint32_t index)
+{
+	if (vector->size == 0)
+	{
+		vector->size = 8;
+		vector->data = calloc(sizeof(void *) * vector->size, 1);
+	}
+
+	if (vector->count + 1 > vector->size)
+	{
+		vector->size *= 2;
+		void* new_data = calloc(vector->size, sizeof(void*));
+		memcpy(new_data, vector->data, sizeof(void*)*(vector->size>>1));
+		free(vector->data);
+		vector->data = new_data;
+	}
+
+	if(vector->data[index] == NULL) vector->count++;
+	vector->data[index] = data;
+}
+
 void vector_remove(vector *vector, uint32_t index)
 {
 	if (index >= vector->count)

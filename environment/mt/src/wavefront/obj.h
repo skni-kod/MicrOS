@@ -7,6 +7,7 @@
 typedef struct _obj_model
 {
     vector vertices;
+    vector normals;
     vector indices;
     vector uv;
 } obj_model;

@@ -5,7 +5,7 @@ NASM := "../../tools/nasm"
 SRC_DIR := src
 OBJ_DIR := obj
 BIN_DIR := bin
-OUTPUT_FILE := $(BIN_DIR)/mt.elf
+OUTPUT_FILE := $(BIN_DIR)/ct.elf
 
 C_SOURCES := $(shell find $(SRC_DIR) -name "*.c")
 C_OBJECTS := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(C_SOURCES))
@@ -18,12 +18,12 @@ DEPS := $(C_OBJECTS:.o=.d)
 GCC_COMPILE_FLAGS := -I../../library/src -ffreestanding -Wall -Wextra -Wno-unused-parameter -Wno-packed-bitfield-compat
 GCC_LINK_FLAGS := -L../../library/bin -lc -lgcc -nostdlib
 
-ifeq ($(MODE),release)
-GCC_COMPILE_FLAGS += -O3 -msse3 -mfpmath=sse
-GCC_LINK_FLAGS += -s -DNDEBUG
-else
+# ifeq ($(MODE),release)
+# GCC_COMPILE_FLAGS += -O3 -mmmx -msse2 -mfpmath=sse
+# GCC_LINK_FLAGS += -s -DNDEBUG
+# else
 GCC_COMPILE_FLAGS += -O0 -ggdb3
-endif
+#endif
 
 $(OUTPUT_FILE): $(C_OBJECTS) $(ASM_OBJECTS)
 	@echo "=== Linking output file $(OUTPUT_FILE) ==="

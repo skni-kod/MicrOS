@@ -67,7 +67,7 @@ vec3 sub_vec3(vec3 a, vec3 b)
 
 vec3 div_vec3(vec3 vector, float scalar)
 {
-    return mul_vec3(vector, 1/scalar);
+    return mul_vec3_f(vector, 1/scalar);
 }
 
 vec3 cross_product_vec3(vec3 a, vec3 b)
@@ -84,7 +84,7 @@ float dot_product_vec3(vec3 a, vec3 b)
     return a.x*b.x + a.y*b.y + a.z*b.z;
 }
 
-vec3 mul_vec3(vec3 a, float b)
+vec3 mul_vec3_f(vec3 a, float b)
 {
     vec3 result = {{{a.x * b, a.y * b, a.z * b}}};
     return result;
@@ -92,7 +92,30 @@ vec3 mul_vec3(vec3 a, float b)
 
 vec3 normalize_vec3(vec3 a)
 {
-    return mul_vec3(a,(1.f/sqrt(a.x*a.x + a.y*a.y + a.z*a.z)));
+    return mul_vec3_f(a,(1.f/sqrt(a.x*a.x + a.y*a.y + a.z*a.z)));
+}
+
+vec4 add_vec4(vec4 a, vec4 b)
+{
+    vec4 result = {{{a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w}}};
+    return result;
+}
+
+vec4 sub_vec4(vec4 a, vec4 b)
+{
+    vec4 result = {{{a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w}}};
+    return result;
+}
+
+vec4 div_vec4_f(vec4 a, float b)
+{
+    return mul_vec4_f(a, 1/b);
+}
+
+vec4 mul_vec4_f(vec4 a, float b)
+{
+    vec4 result = {{{a.x * b, a.y * b, a.z * b, a.w * b}}};
+    return result;
 }
 
 void swap_vec2i(vec2i* a, vec2i*b)
@@ -109,6 +132,20 @@ void swap_vec3(vec3* a, vec3*b)
     tmp = *a;
     *a = *b;
     *b = tmp;
+}
+
+void swap_vec4(vec4* a, vec4*b)
+{
+    vec4 tmp;
+    tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+vec3 neg_vec3(vec3 a)
+{
+    vec3 result = {{{-a.x, -a.y, -a.z}}};
+    return result;
 }
 
 //Matrix stuff
@@ -136,11 +173,43 @@ mat4 mat4_transpose(mat4 m)
     return result;
 }
 
+static float invf(int i,int j,const float *m)
+{
+    int o = 2+(j-i);
+    i += 4+o;
+    j += 4-o;
+    
+    #define e(a,b) m[ ((j+b)%4)*4 + ((i+a)%4) ]
+
+    float inv =
+     + e(+1,-1)*e(+0,+0)*e(-1,+1)
+     + e(+1,+1)*e(+0,-1)*e(-1,+0)
+     + e(-1,-1)*e(+1,+0)*e(+0,+1)
+     - e(-1,-1)*e(+0,+0)*e(+1,+1)
+     - e(-1,+1)*e(+0,-1)*e(+1,+0)
+     - e(+1,-1)*e(-1,+0)*e(+0,+1);
+    
+    return (o%2)?inv : -inv;
+    #undef e 
+}
+
 mat4 mat4_inverse(mat4 m)
 {
     mat4 result = {};
-    //lol
-    assert(0);
+    float inv[16];
+    
+    for(int i=0;i<4;i++)
+        for(int j=0;j<4;j++)
+            inv[j*4+i] = invf(i,j,m.linear_elems);
+    
+    double D = 0;
+    
+    for(int k=0;k<4;k++) D += m.linear_elems[k] * inv[k*4];
+    
+    D = 1.0 / D;
+    
+    for (int i = 0; i < 16; i++)
+        result.linear_elems[i] = inv[i] * D;
 
     return result;
 }
@@ -167,13 +236,8 @@ mat4 multiply_mat4(mat4 left, mat4 right)
 mat4 multiply_mat4f(mat4 left, float right)
 {
     mat4 result;
-    for(int columns = 0; columns < 4; ++columns)
-    {
-        for(int rows = 0; rows < 4; ++rows)
-        {
-            result.elems[columns][rows] = left.elems[columns][rows] * right;
-        }
-    }
+    for(int i = 0; i < 16; i++)
+        result.linear_elems[i] = left.linear_elems[i] * right;
     return result;
 }
 
@@ -275,4 +339,40 @@ mat4 rotate(float angle, vec3 axis)
     result.elems[2][2] = (axis.z * axis.z * cosvalue) + cosangle;
 
     return (result);
+}
+
+vec3 reflect_vec3(vec3 I, vec3 N)
+{
+    return sub_vec3(I, mul_vec3_f(mul_vec3_f(N, dot_product_vec3(N,I)), -2));
+}
+
+vec3 mul_mat3_vec3(mat3 m, vec3 v)
+{
+    vec3 result;
+    int columns, rows;
+    for(rows = 0; rows < 3; ++rows)
+    {
+        float sum = 0;
+        for(columns = 0; columns < 3; ++columns)
+        {
+            sum += m.elems[columns][rows] * v.elems[columns];
+        }
+        result.elems[rows] = sum;
+    }
+    return result;
+}
+
+mat3 mat3_from_mat4(mat4 m)
+{
+    mat3 result;
+
+    for(int i = 0; i < 3; i++)
+    {
+        for(int j = 0; j < 3; j++)
+        {
+            result.elems[i][j] = m.elems[i][j];
+        }
+    }
+
+    return result;
 }

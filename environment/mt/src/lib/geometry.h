@@ -132,7 +132,13 @@ typedef struct _vec4
 typedef union mat4
 {
     float elems[4][4];
+    float linear_elems[16];
 } mat4;
+
+typedef union mat3
+{
+    float elems[3][3];
+} mat3;
 
 /*!
     Create identity matrix 4x4.
@@ -222,10 +228,10 @@ vec2i sub_vec2i(vec2i a, vec2i b);
 vec2i mul_vec2i_f(vec2i a, float b);
 
 /*!
-    Add two vec2i together
+    Add two vec3 together
     \param a first term.
     \param b second term.
-    \return vec2i equal to sum of a and b.
+    \return vec3 equal to sum of a and b.
 */
 vec3 add_vec3(vec3 a, vec3 b);
 
@@ -267,7 +273,7 @@ float dot_product_vec3(vec3 a, vec3 b);
     \param b float value.
     \return vec3 equal to a*b.
 */
-vec3 mul_vec3(vec3 a, float b);
+vec3 mul_vec3_f(vec3 a, float b);
 
 /*!
     Normalizes vector (vec3)
@@ -275,6 +281,45 @@ vec3 mul_vec3(vec3 a, float b);
     \return normalized vector a.
 */
 vec3 normalize_vec3(vec3 a);
+
+/*!
+    Inverts vector.
+    \param a Vector to be inverted.
+    \return inverted vector.
+*/
+vec3 neg_vec3(vec3 a);
+
+/*!
+    Add two vec4 together
+    \param a first term.
+    \param b second term.
+    \return vec4 equal to sum of a and b.
+*/
+vec4 add_vec4(vec4 a, vec4 b);
+
+/*!
+    Divide vector by scalar value.
+    \param vector vector to be divided.
+    \param scalar scalar divisor.
+    \return divided vector.
+*/
+vec4 div_vec4_f(vec4 vector, float scalar);
+
+/*!
+    Subtract two vec4 (a-b)
+    \param a first term.
+    \param b second term.
+    \return vec4 equal to subtraction of a and b vectors.
+*/
+vec4 sub_vec4(vec4 a, vec4 b);
+
+/*!
+    Multiply vec4 by float
+    \param a vec4 object.
+    \param b float value.
+    \return vec4 equal to a*b.
+*/
+vec4 mul_vec4_f(vec4 a, float b);
 
 /*!
     Calculate barycentric cooridnates of point P in triangle space defined by pts.
@@ -301,6 +346,13 @@ void swap_vec2i(vec2i* a, vec2i*b);
     \param b second vec3
 */
 void swap_vec3(vec3* a, vec3*b);
+
+/*!
+    Swaps two vec4 elements.
+    \param a first vec4
+    \param b second vec4
+*/
+void swap_vec4(vec4* a, vec4*b);
 
 //common graphics stuff
 
@@ -333,4 +385,12 @@ mat4 lookat(vec3 eye, vec3 center, vec3 up);
 mat4 translate(vec3 translation);
 
 mat4 rotate(float angle, vec3 axis);
+
+vec3 reflect_vec3(vec3 I, vec3 N);
+
+
+vec3 mul_mat3_vec3(mat3 m, vec3 v);
+
+mat3 mat3_from_mat4(mat4 m);
+
 #endif

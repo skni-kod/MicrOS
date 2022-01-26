@@ -91,12 +91,14 @@ void VBE_initialize()
         return;
     }
 
+    uint8_t edid_flags = 0;
+
     //Check if we support DDC
     status = VBE_DDC_capabilities();
     if(status != VBE_OK)
     {
         logger_log_error("DDC support not found. Cannot read supported resolutions.");
-        return;
+        edid_flags |= 1;
     }
 
     edid edid_block;
@@ -106,246 +108,255 @@ void VBE_initialize()
     if(status != VBE_OK)
     {
         logger_log_error("EDID block read failed!");
-        return;
+        edid_flags |= 2;
     }
 
     //Init monitor resolution vector
     monitor_res = heap_kernel_alloc(sizeof(kvector), 0);
     kvector_init(monitor_res);
 
-    //Decode standard timings and insert them to monitor suported resolutions
-    //TODO BUG FIX: HDMI seems to include weird resolutions, possibly needs to be checked with newer versions of DDC and EDID (EDDC and EEDID).
-    for(int i = 0; i < 8; i++)
+    if(edid_flags & 3 == 0)
     {
-        VESA_std_timing timing = VBE_DDC_decode_std_timing(edid_block.standard_timings_supported[i]);
-        __VBE_add_res_to_monitor_list(timing.horizontal_res, timing.vertical_res, timing.refresh_rate);
-    }
 
-    //This part is going to be long and very repeatetive
-    //Blame VESA for creating such weird way to list timings.
-    //If you can come up with better way to insert these.
-    //PLEASE DO CHANGE THIS.
-
-    //Established timings I
-    if(edid_block.established_supported_timings[0] & 0x80)
-        __VBE_add_res_to_monitor_list(720, 400, 70);
-    if(edid_block.established_supported_timings[0] & 0x40)
-        __VBE_add_res_to_monitor_list(720, 400, 85);
-    if(edid_block.established_supported_timings[0] & 0x20)
-        __VBE_add_res_to_monitor_list(640, 480, 60);
-    if(edid_block.established_supported_timings[0] & 0x10)
-        __VBE_add_res_to_monitor_list(640, 480, 67);
-    if(edid_block.established_supported_timings[0] & 0x08)
-        __VBE_add_res_to_monitor_list(640, 480, 72);
-    if(edid_block.established_supported_timings[0] & 0x04)
-        __VBE_add_res_to_monitor_list(640, 480, 75);
-    if(edid_block.established_supported_timings[0] & 0x02)
-        __VBE_add_res_to_monitor_list(800, 600, 56);
-    if(edid_block.established_supported_timings[0] & 0x01)
-        __VBE_add_res_to_monitor_list(800, 600, 60);
-
-    //Established timings II
-    if(edid_block.established_supported_timings[1] & 0x80)
-        __VBE_add_res_to_monitor_list(800, 600, 72);
-    if(edid_block.established_supported_timings[1] & 0x40)
-        __VBE_add_res_to_monitor_list(800, 600, 75);
-    if(edid_block.established_supported_timings[1] & 0x20)
-        __VBE_add_res_to_monitor_list(832, 624, 75);
-    if(edid_block.established_supported_timings[1] & 0x10)
-        __VBE_add_res_to_monitor_list(1024, 768, 87);
-    if(edid_block.established_supported_timings[1] & 0x08)
-        __VBE_add_res_to_monitor_list(1024, 768, 60);
-    if(edid_block.established_supported_timings[1] & 0x04)
-        __VBE_add_res_to_monitor_list(1024, 768, 70);
-    if(edid_block.established_supported_timings[1] & 0x02)
-        __VBE_add_res_to_monitor_list(1024, 768, 75);
-    if(edid_block.established_supported_timings[1] & 0x01)
-        __VBE_add_res_to_monitor_list(1280, 1024, 75);
-
-    //Manufacturer timings
-    if(edid_block.manufacturer_reserved_timing & 0x80)
-        __VBE_add_res_to_monitor_list(1152, 870, 75);
-
-    //Code below ~should~ be fine now.
-
-    //Read display descritors, EDID prior to 1.3 defined 4 descriptors, from 1.3 first block is native resolution/timing
-    for(int i = 0; i < 4; i++)
-    {
-        uint16_t det_flag = *(uint16_t*)(&edid_block.detailed_timing_desc[i*18]);
-        if(det_flag != 0x0000)
+        //Decode standard timings and insert them to monitor suported resolutions
+        //TODO BUG FIX: HDMI seems to include weird resolutions, possibly needs to be checked with newer versions of DDC and EDID (EDDC and EEDID).
+        for(int i = 0; i < 8; i++)
         {
-            native_res = VBE_DDC_read_detailed_timing(&edid_block, 0);
+            VESA_std_timing timing = VBE_DDC_decode_std_timing(edid_block.standard_timings_supported[i]);
+            __VBE_add_res_to_monitor_list(timing.horizontal_res, timing.vertical_res, timing.refresh_rate);
         }
-        else
+
+        //This part is going to be long and very repeatetive
+        //Blame VESA for creating such weird way to list timings.
+        //If you can come up with better way to insert these.
+        //PLEASE DO CHANGE THIS.
+
+        //Established timings I
+        if(edid_block.established_supported_timings[0] & 0x80)
+            __VBE_add_res_to_monitor_list(720, 400, 70);
+        if(edid_block.established_supported_timings[0] & 0x40)
+            __VBE_add_res_to_monitor_list(720, 400, 85);
+        if(edid_block.established_supported_timings[0] & 0x20)
+            __VBE_add_res_to_monitor_list(640, 480, 60);
+        if(edid_block.established_supported_timings[0] & 0x10)
+            __VBE_add_res_to_monitor_list(640, 480, 67);
+        if(edid_block.established_supported_timings[0] & 0x08)
+            __VBE_add_res_to_monitor_list(640, 480, 72);
+        if(edid_block.established_supported_timings[0] & 0x04)
+            __VBE_add_res_to_monitor_list(640, 480, 75);
+        if(edid_block.established_supported_timings[0] & 0x02)
+            __VBE_add_res_to_monitor_list(800, 600, 56);
+        if(edid_block.established_supported_timings[0] & 0x01)
+            __VBE_add_res_to_monitor_list(800, 600, 60);
+
+        //Established timings II
+        if(edid_block.established_supported_timings[1] & 0x80)
+            __VBE_add_res_to_monitor_list(800, 600, 72);
+        if(edid_block.established_supported_timings[1] & 0x40)
+            __VBE_add_res_to_monitor_list(800, 600, 75);
+        if(edid_block.established_supported_timings[1] & 0x20)
+            __VBE_add_res_to_monitor_list(832, 624, 75);
+        if(edid_block.established_supported_timings[1] & 0x10)
+            __VBE_add_res_to_monitor_list(1024, 768, 87);
+        if(edid_block.established_supported_timings[1] & 0x08)
+            __VBE_add_res_to_monitor_list(1024, 768, 60);
+        if(edid_block.established_supported_timings[1] & 0x04)
+            __VBE_add_res_to_monitor_list(1024, 768, 70);
+        if(edid_block.established_supported_timings[1] & 0x02)
+            __VBE_add_res_to_monitor_list(1024, 768, 75);
+        if(edid_block.established_supported_timings[1] & 0x01)
+            __VBE_add_res_to_monitor_list(1280, 1024, 75);
+
+        //Manufacturer timings
+        if(edid_block.manufacturer_reserved_timing & 0x80)
+            __VBE_add_res_to_monitor_list(1152, 870, 75);
+
+        //Code below ~should~ be fine now.
+
+        //Read display descritors, EDID prior to 1.3 defined 4 descriptors, from 1.3 first block is native resolution/timing
+        for(int i = 0; i < 4; i++)
         {
-            VESA_monitor_descriptor desc = VBE_DDC_read_monitor_descriptor(&edid_block, i);
-            //Add other block reading in this switch.
-            switch(desc.data_type)
+            uint16_t det_flag = *(uint16_t*)(&edid_block.detailed_timing_desc[i*18]);
+            if(det_flag != 0x0000)
             {
-                //Please do not remove RB comments, this is to note which resolution has reduced blanking for future.
-                case ESTABLISHED_TIMINGS_III:
+                native_res = VBE_DDC_read_detailed_timing(&edid_block, 0);
+            }
+            else
+            {
+                VESA_monitor_descriptor desc = VBE_DDC_read_monitor_descriptor(&edid_block, i);
+                //Add other block reading in this switch.
+                switch(desc.data_type)
                 {
-                    //BYTE 6
-                    if(desc.data[0] & 0x80)
-                        __VBE_add_res_to_monitor_list(640, 350, 85);
-                    if(desc.data[0] & 0x40)
-                        __VBE_add_res_to_monitor_list(640, 400, 85);
-                    if(desc.data[0] & 0x20)
-                        __VBE_add_res_to_monitor_list(720, 400, 85);
-                    if(desc.data[0] & 0x10)
-                        __VBE_add_res_to_monitor_list(640, 480, 85);
-                    if(desc.data[0] & 0x08)
-                        __VBE_add_res_to_monitor_list(848, 480, 60);
-                    if(desc.data[0] & 0x04)
-                        __VBE_add_res_to_monitor_list(800, 600, 85);
-                    if(desc.data[0] & 0x02)
-                        __VBE_add_res_to_monitor_list(1024, 768, 85);
-                    if(desc.data[0] & 0x01)
-                        __VBE_add_res_to_monitor_list(1152, 864, 75);
-
-                    //BYTE 7
-                    if(desc.data[1] & 0x80)
-                        __VBE_add_res_to_monitor_list(1280, 768, 60); //RB
-                    if(desc.data[1] & 0x40)
-                        __VBE_add_res_to_monitor_list(1280, 768, 60);
-                    if(desc.data[1] & 0x20)
-                        __VBE_add_res_to_monitor_list(1280, 768, 75);
-                    if(desc.data[1] & 0x10)
-                        __VBE_add_res_to_monitor_list(1280, 768, 85);
-                    if(desc.data[1] & 0x08)
-                        __VBE_add_res_to_monitor_list(1280, 960, 60);
-                    if(desc.data[1] & 0x04)
-                        __VBE_add_res_to_monitor_list(1280, 960, 85);
-                    if(desc.data[1] & 0x02)
-                        __VBE_add_res_to_monitor_list(1280, 1024, 60);
-                    if(desc.data[1] & 0x01)
-                        __VBE_add_res_to_monitor_list(1280, 1024, 85);
-
-                    //BYTE 8
-                    if(desc.data[2] & 0x80)
-                        __VBE_add_res_to_monitor_list(1360, 768, 60);
-                    if(desc.data[2] & 0x40)
-                        __VBE_add_res_to_monitor_list(1440, 900, 60); //RB
-                    if(desc.data[2] & 0x20)
-                        __VBE_add_res_to_monitor_list(1440, 900, 60);
-                    if(desc.data[2] & 0x10)
-                        __VBE_add_res_to_monitor_list(1440, 900, 75);
-                    if(desc.data[2] & 0x08)
-                        __VBE_add_res_to_monitor_list(1440, 900, 85);
-                    if(desc.data[2] & 0x04)
-                        __VBE_add_res_to_monitor_list(1440, 1050, 60); //RB
-                    if(desc.data[2] & 0x02)
-                        __VBE_add_res_to_monitor_list(1440, 1050, 60);
-                    if(desc.data[2] & 0x01)
-                        __VBE_add_res_to_monitor_list(1440, 1050, 75);
-
-                    //BYTE 9
-                    if(desc.data[3] & 0x80)
-                        __VBE_add_res_to_monitor_list(1440, 1050, 85);
-                    if(desc.data[3] & 0x40)
-                        __VBE_add_res_to_monitor_list(1680, 1050, 60); //RB
-                    if(desc.data[3] & 0x20)
-                        __VBE_add_res_to_monitor_list(1680, 1050, 60);
-                    if(desc.data[3] & 0x10)
-                        __VBE_add_res_to_monitor_list(1680, 1050, 75);
-                    if(desc.data[3] & 0x08)
-                        __VBE_add_res_to_monitor_list(1680, 1050, 85);
-                    if(desc.data[3] & 0x04)
-                        __VBE_add_res_to_monitor_list(1600, 1200, 60);
-                    if(desc.data[3] & 0x02)
-                        __VBE_add_res_to_monitor_list(1600, 1200, 65);
-                    if(desc.data[3] & 0x01)
-                        __VBE_add_res_to_monitor_list(1600, 1200, 70);
-
-                    //BYTE 10
-                    if(desc.data[4] & 0x80)
-                        __VBE_add_res_to_monitor_list(1600, 1200, 75);
-                    if(desc.data[4] & 0x40)
-                        __VBE_add_res_to_monitor_list(1600, 1200, 85);
-                    if(desc.data[4] & 0x20)
-                        __VBE_add_res_to_monitor_list(1792, 1344, 60);
-                    if(desc.data[4] & 0x10)
-                        __VBE_add_res_to_monitor_list(1792, 1344, 75);
-                    if(desc.data[4] & 0x08)
-                        __VBE_add_res_to_monitor_list(1856, 1392, 60);
-                    if(desc.data[4] & 0x04)
-                        __VBE_add_res_to_monitor_list(1856, 1392, 75);
-                    if(desc.data[4] & 0x02)
-                        __VBE_add_res_to_monitor_list(1920, 1200, 60); //RB
-                    if(desc.data[4] & 0x01)
-                        __VBE_add_res_to_monitor_list(1920, 1200, 60); 
-
-                    //BYTE 11
-                    if(desc.data[5] & 0x80)
-                        __VBE_add_res_to_monitor_list(1920, 1200, 75); 
-                    if(desc.data[5] & 0x40)
-                        __VBE_add_res_to_monitor_list(1920, 1200, 85); 
-                    if(desc.data[5] & 0x20)
-                        __VBE_add_res_to_monitor_list(1920, 1440, 60); 
-                    if(desc.data[5] & 0x10)
-                        __VBE_add_res_to_monitor_list(1920, 1440, 75); 
-                    break;
-                }
-                case MONITOR_NAME:
-                    // for(int i = 0; i < 13; i++)
-                    // {
-                    //     if(desc.data[i] != '\n')
-                    //         vga_printchar(desc.data[i]);
-                    //     else
-                    //         vga_newline();
-                    // }
-                    // vga_newline();
-                    logger_log_warning("Monitor name ignored for now.");
-                    break;
-
-                case MONITOR_RANGE_LIMITS:
-                    logger_log_warning("Monitor range limits not yet supported!");
-                    break;
-
-                case STANDARD_TIMINGS:
-                    for(int i = 0; i < 6; i++)
+                    //Please do not remove RB comments, this is to note which resolution has reduced blanking for future.
+                    case ESTABLISHED_TIMINGS_III:
                     {
-                        VESA_std_timing timing = VBE_DDC_decode_std_timing(*(uint16_t*)&desc.data[i*sizeof(uint16_t)]);
-                        __VBE_add_res_to_monitor_list(timing.horizontal_res, timing.vertical_res, timing.refresh_rate);
-                    }
-                    break;
+                        //BYTE 6
+                        if(desc.data[0] & 0x80)
+                            __VBE_add_res_to_monitor_list(640, 350, 85);
+                        if(desc.data[0] & 0x40)
+                            __VBE_add_res_to_monitor_list(640, 400, 85);
+                        if(desc.data[0] & 0x20)
+                            __VBE_add_res_to_monitor_list(720, 400, 85);
+                        if(desc.data[0] & 0x10)
+                            __VBE_add_res_to_monitor_list(640, 480, 85);
+                        if(desc.data[0] & 0x08)
+                            __VBE_add_res_to_monitor_list(848, 480, 60);
+                        if(desc.data[0] & 0x04)
+                            __VBE_add_res_to_monitor_list(800, 600, 85);
+                        if(desc.data[0] & 0x02)
+                            __VBE_add_res_to_monitor_list(1024, 768, 85);
+                        if(desc.data[0] & 0x01)
+                            __VBE_add_res_to_monitor_list(1152, 864, 75);
 
-                default:
-                    kernel_sprintf(buff, "Unknown display descriptor: %d", desc.data_type);
-                    logger_log_warning(buff);
-                    break;
+                        //BYTE 7
+                        if(desc.data[1] & 0x80)
+                            __VBE_add_res_to_monitor_list(1280, 768, 60); //RB
+                        if(desc.data[1] & 0x40)
+                            __VBE_add_res_to_monitor_list(1280, 768, 60);
+                        if(desc.data[1] & 0x20)
+                            __VBE_add_res_to_monitor_list(1280, 768, 75);
+                        if(desc.data[1] & 0x10)
+                            __VBE_add_res_to_monitor_list(1280, 768, 85);
+                        if(desc.data[1] & 0x08)
+                            __VBE_add_res_to_monitor_list(1280, 960, 60);
+                        if(desc.data[1] & 0x04)
+                            __VBE_add_res_to_monitor_list(1280, 960, 85);
+                        if(desc.data[1] & 0x02)
+                            __VBE_add_res_to_monitor_list(1280, 1024, 60);
+                        if(desc.data[1] & 0x01)
+                            __VBE_add_res_to_monitor_list(1280, 1024, 85);
+
+                        //BYTE 8
+                        if(desc.data[2] & 0x80)
+                            __VBE_add_res_to_monitor_list(1360, 768, 60);
+                        if(desc.data[2] & 0x40)
+                            __VBE_add_res_to_monitor_list(1440, 900, 60); //RB
+                        if(desc.data[2] & 0x20)
+                            __VBE_add_res_to_monitor_list(1440, 900, 60);
+                        if(desc.data[2] & 0x10)
+                            __VBE_add_res_to_monitor_list(1440, 900, 75);
+                        if(desc.data[2] & 0x08)
+                            __VBE_add_res_to_monitor_list(1440, 900, 85);
+                        if(desc.data[2] & 0x04)
+                            __VBE_add_res_to_monitor_list(1440, 1050, 60); //RB
+                        if(desc.data[2] & 0x02)
+                            __VBE_add_res_to_monitor_list(1440, 1050, 60);
+                        if(desc.data[2] & 0x01)
+                            __VBE_add_res_to_monitor_list(1440, 1050, 75);
+
+                        //BYTE 9
+                        if(desc.data[3] & 0x80)
+                            __VBE_add_res_to_monitor_list(1440, 1050, 85);
+                        if(desc.data[3] & 0x40)
+                            __VBE_add_res_to_monitor_list(1680, 1050, 60); //RB
+                        if(desc.data[3] & 0x20)
+                            __VBE_add_res_to_monitor_list(1680, 1050, 60);
+                        if(desc.data[3] & 0x10)
+                            __VBE_add_res_to_monitor_list(1680, 1050, 75);
+                        if(desc.data[3] & 0x08)
+                            __VBE_add_res_to_monitor_list(1680, 1050, 85);
+                        if(desc.data[3] & 0x04)
+                            __VBE_add_res_to_monitor_list(1600, 1200, 60);
+                        if(desc.data[3] & 0x02)
+                            __VBE_add_res_to_monitor_list(1600, 1200, 65);
+                        if(desc.data[3] & 0x01)
+                            __VBE_add_res_to_monitor_list(1600, 1200, 70);
+
+                        //BYTE 10
+                        if(desc.data[4] & 0x80)
+                            __VBE_add_res_to_monitor_list(1600, 1200, 75);
+                        if(desc.data[4] & 0x40)
+                            __VBE_add_res_to_monitor_list(1600, 1200, 85);
+                        if(desc.data[4] & 0x20)
+                            __VBE_add_res_to_monitor_list(1792, 1344, 60);
+                        if(desc.data[4] & 0x10)
+                            __VBE_add_res_to_monitor_list(1792, 1344, 75);
+                        if(desc.data[4] & 0x08)
+                            __VBE_add_res_to_monitor_list(1856, 1392, 60);
+                        if(desc.data[4] & 0x04)
+                            __VBE_add_res_to_monitor_list(1856, 1392, 75);
+                        if(desc.data[4] & 0x02)
+                            __VBE_add_res_to_monitor_list(1920, 1200, 60); //RB
+                        if(desc.data[4] & 0x01)
+                            __VBE_add_res_to_monitor_list(1920, 1200, 60); 
+
+                        //BYTE 11
+                        if(desc.data[5] & 0x80)
+                            __VBE_add_res_to_monitor_list(1920, 1200, 75); 
+                        if(desc.data[5] & 0x40)
+                            __VBE_add_res_to_monitor_list(1920, 1200, 85); 
+                        if(desc.data[5] & 0x20)
+                            __VBE_add_res_to_monitor_list(1920, 1440, 60); 
+                        if(desc.data[5] & 0x10)
+                            __VBE_add_res_to_monitor_list(1920, 1440, 75); 
+                        break;
+                    }
+                    case MONITOR_NAME:
+                        // for(int i = 0; i < 13; i++)
+                        // {
+                        //     if(desc.data[i] != '\n')
+                        //         vga_printchar(desc.data[i]);
+                        //     else
+                        //         vga_newline();
+                        // }
+                        // vga_newline();
+                        logger_log_warning("Monitor name ignored for now.");
+                        break;
+
+                    case MONITOR_RANGE_LIMITS:
+                        logger_log_warning("Monitor range limits not yet supported!");
+                        break;
+
+                    case STANDARD_TIMINGS:
+                        for(int i = 0; i < 6; i++)
+                        {
+                            VESA_std_timing timing = VBE_DDC_decode_std_timing(*(uint16_t*)&desc.data[i*sizeof(uint16_t)]);
+                            __VBE_add_res_to_monitor_list(timing.horizontal_res, timing.vertical_res, timing.refresh_rate);
+                        }
+                        break;
+
+                    default:
+                        kernel_sprintf(buff, "Unknown display descriptor: %d", desc.data_type);
+                        logger_log_warning(buff);
+                        break;
+                }
             }
         }
+
+        kernel_sprintf(buff, "EDID EXTENSIONS: %d", edid_block.extension_num);
+        logger_log_info(buff);
+
+        // read extensions blocks
+        // for now these are pretty much discarded, PART 2 will implement them properly.
+        // if your display has any extensions available (extension_num is 1 or greater)
+        // you can uncomment code inside for loop to list them.
+        // Please note all IDs that will be listed and share them with us.
+        // This also can take some time... DDC isn't very fast. ¯\_(ツ)_/¯
+        logger_log_warning("EDID Extensions are ignored in this driver version.");
+        //uint8_t* edid_extension = heap_kernel_alloc(128, 0);
+        // if(edid_block.extension_num > 0)
+        // {
+        //     for(int i = 1; i <= edid_block.extension_num; i++)
+        //     {
+        //         VBE_DDC_read_edid_block(i, edid_extension);
+        //         //uint8_t block_id = *edid_extension;
+        //         //itoa(block_id, buff, 16);
+        //         // vga_printstring("EXTENSION ID: ");
+        //         // vga_printstring(buff);
+        //         // vga_newline();
+        //         // if(block_id == 0x10)
+        //         // {
+        //         //     vga_printstring("VTB EXTENSION FOUND");
+        //         //     vga_newline();
+        //         // }
+        //     }
+        // }
+    }
+    else
+    {
+        logger_log_warning("DDC or EDID error, no display communication is established."); 
     }
 
-    kernel_sprintf(buff, "EDID EXTENSIONS: %d", edid_block.extension_num);
-    logger_log_info(buff);
-
-    // read extensions blocks
-    // for now these are pretty much discarded, PART 2 will implement them properly.
-    // if your display has any extensions available (extension_num is 1 or greater)
-    // you can uncomment code inside for loop to list them.
-    // Please note all IDs that will be listed and share them with us.
-    // This also can take some time... DDC isn't very fast. ¯\_(ツ)_/¯
-    logger_log_warning("EDID Extensions are ignored in this driver version.");
-    //uint8_t* edid_extension = heap_kernel_alloc(128, 0);
-    // if(edid_block.extension_num > 0)
-    // {
-    //     for(int i = 1; i <= edid_block.extension_num; i++)
-    //     {
-    //         VBE_DDC_read_edid_block(i, edid_extension);
-    //         //uint8_t block_id = *edid_extension;
-    //         //itoa(block_id, buff, 16);
-    //         // vga_printstring("EXTENSION ID: ");
-    //         // vga_printstring(buff);
-    //         // vga_newline();
-    //         // if(block_id == 0x10)
-    //         // {
-    //         //     vga_printstring("VTB EXTENSION FOUND");
-    //         //     vga_newline();
-    //         // }
-    //     }
-    // }
 
     //Now read GPU stuff
     svga_information* svga_info_ptr;
