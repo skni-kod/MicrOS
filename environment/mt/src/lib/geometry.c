@@ -315,6 +315,17 @@ mat4 translate(vec3 translation)
     return result;
 }
 
+mat4 scale(vec3 scale)
+{
+    mat4 result = mat4_identity();
+
+    result.elems[0][0] = scale.x;
+    result.elems[1][1] = scale.y;
+    result.elems[2][2] = scale.z;
+
+    return result;
+}
+
 mat4 rotate(float angle, vec3 axis)
 {
     mat4 result = mat4_identity();
