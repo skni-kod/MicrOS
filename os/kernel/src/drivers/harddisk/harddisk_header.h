@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "assembly/io.h"
+#include "cpu/timer/timer.h"
 #include "harddisk_identify_device_data.h"
 #include "harddisk_pio_mode_header.h"
 
