@@ -277,6 +277,8 @@ void startup()
         logger_log_ok("Floppy Disc Controller");
     }
     
+    harddisk_configuration harddisk_conf;
+    harddisk_conf.delay_by_reading_port = false;
     harddisk_init();
     logger_log_ok("Hard Disks");
     print_harddisks_status();

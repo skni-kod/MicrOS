@@ -2,9 +2,12 @@
 
 //! Current states of all hard drives.
 extern harddisk_states harddisk_current_states;
+//! Current configuration of harddisk
+extern harddisk_configuration harddisk_current_configuration;
 
-void harddisk_init()
+void harddisk_init(harddisk_configuration configuration)
 {
+    harddisk_current_configuration = configuration;
     harddisk_current_states.primary_master = (HARDDISK_STATE) __harddisk_check_presence(HARDDISK_ATA_MASTER, HARDDISK_ATA_PRIMARY_BUS, &harddisk_current_states);
     harddisk_current_states.primary_slave = (HARDDISK_STATE) __harddisk_check_presence(HARDDISK_ATA_SLAVE, HARDDISK_ATA_PRIMARY_BUS, &harddisk_current_states);
     harddisk_current_states.secondary_master = (HARDDISK_STATE) __harddisk_check_presence(HARDDISK_ATA_MASTER, HARDDISK_ATA_SECONDARY_BUS, &harddisk_current_states);

@@ -2,16 +2,10 @@
 
 //! Current states of all hard drives.
 harddisk_states harddisk_current_states;
+//! Current configuration of harddisk
+harddisk_configuration harddisk_current_configuration;
 
-void __harddisk_400ns_delay(uint16_t port)
-{
-    for(int i = 0; i < 15; ++i)
-    {
-        io_in_byte(port + HARDDISK_CONTROL_ALTERNATE_STATUS_REGISTER_OFFSET);
-    }
-}
-
-void __harddisk_soft_reset_port(uint16_t control_port)
+int8_t __harddisk_soft_reset_port(uint16_t control_port)
 {
     // Set SRST bit
     harddisk_control_device_control_register message = {.value = 0};
@@ -44,16 +38,53 @@ void __harddisk_soft_reset_port(uint16_t control_port)
     }
 
     // Pull BSY until clears
+    return __harddisk_bsy_poll(control_port);
+}
+
+
+void __harddisk_400ns_delay(uint16_t control_port)
+{
+    if(harddisk_current_configuration.delay_by_reading_port)
+    {
+        for(int i = 0; i < 15; ++i)
+        {
+            io_in_byte(control_port );
+        }
+    }
+    else
+    {
+        uint32_t start_time = timer_get_system_clock();
+        uint32_t stop_time = 0;
+        for(;;)
+        {
+            stop_time = timer_get_system_clock();
+            if(stop_time - start_time >= 1)
+            {
+                break;
+            }
+        }
+    } 
+}
+
+int8_t __harddisk_bsy_poll(uint16_t control_port)
+{
     harddisk_io_control_status_register result;
+    uint32_t start_time = timer_get_system_clock();
+    uint32_t stop_time = 0;
     for(;;)
     {
-        result.value = io_in_byte(control_port + HARDDISK_CONTROL_ALTERNATE_STATUS_REGISTER_OFFSET);
+        result.value = io_in_byte(control_port);
         if(result.fields.busy == 0)
         {
-            break;
+            return 1;
+        }
+        if(stop_time - start_time >= HARDDISK_BSY_ERROR_DELAY)
+        {
+            return -1;
         }
     }
 }
+
 
 void __harddisk_get_pointers(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, const HARDDISK_STATE **state, const harddisk_identify_device_data **data)
 {
