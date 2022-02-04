@@ -48,7 +48,7 @@ void __harddisk_400ns_delay(uint16_t control_port)
     {
         for(int i = 0; i < 15; ++i)
         {
-            io_in_byte(control_port );
+            io_in_byte(control_port);
         }
     }
     else
@@ -78,6 +78,7 @@ int8_t __harddisk_bsy_poll(uint16_t control_port)
         {
             return 1;
         }
+        stop_time = timer_get_system_clock();
         if(stop_time - start_time >= HARDDISK_BSY_ERROR_DELAY)
         {
             return -1;
