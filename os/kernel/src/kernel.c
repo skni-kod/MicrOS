@@ -153,12 +153,12 @@ void print_harddisk_details(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYP
         strcat(buff2, buff);
         logger_log_info(buff2);
 
-        itoa(harddisk_get_user_addressable_sectors(type, bus), buff, 10);
+        itoa((int)(harddisk_get_user_addressable_sectors(type, bus)), buff, 10);
         strcpy(buff2, "Total number of user addressable sectors: ");
         strcat(buff2, buff);
         logger_log_info(buff2);
 
-        itoa(harddisk_get_disk_space(type, bus) / (1024 * 1024), buff, 10);
+        itoa((int)(harddisk_get_disk_space(type, bus) / (1024 * 1024)), buff, 10);
         strcpy(buff2, "Total number of megabytes: ");
         strcat(buff2, buff);
         strcat(buff2, " MB");

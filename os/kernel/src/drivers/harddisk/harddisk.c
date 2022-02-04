@@ -110,7 +110,7 @@ char* harddisk_get_disk_model_number_terminated(HARDDISK_ATA_MASTER_SLAVE type, 
     return buffer;
 }
 
-uint32_t harddisk_get_user_addressable_sectors(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus)
+uint64_t harddisk_get_user_addressable_sectors(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus)
 {
     const HARDDISK_STATE *state;
     const harddisk_identify_device_data *data;
@@ -125,7 +125,7 @@ uint32_t harddisk_get_user_addressable_sectors(HARDDISK_ATA_MASTER_SLAVE type, H
     }
 }
 
-uint32_t harddisk_get_disk_space(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus)
+uint64_t harddisk_get_disk_space(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus)
 {
     const HARDDISK_STATE *state;
     const harddisk_identify_device_data *data;

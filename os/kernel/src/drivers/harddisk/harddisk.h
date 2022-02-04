@@ -74,7 +74,7 @@ char* harddisk_get_disk_model_number_terminated(HARDDISK_ATA_MASTER_SLAVE type, 
     \param bus Type of bus.
     \return Number of user addressable sectors.
 */
-uint32_t harddisk_get_user_addressable_sectors(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus);
+uint64_t harddisk_get_user_addressable_sectors(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus);
 
 //! Get space of hard disk.
 /*!
@@ -82,7 +82,7 @@ uint32_t harddisk_get_user_addressable_sectors(HARDDISK_ATA_MASTER_SLAVE type, H
     \param bus Type of bus.
     \return Space in bytes.
 */
-uint32_t harddisk_get_disk_space(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus);
+uint64_t harddisk_get_disk_space(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus);
 
 //! Check if device is removable media.
 /*!
