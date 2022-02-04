@@ -52,7 +52,7 @@ int8_t __harddisk_check_presence(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BU
     __harddisk_400ns_delay(control_port);
 
     // Poll the Status port until bit 7 (BSY, value = 0x80) clears.
-    result = __harddisk_bsy_poll(io_port + HARDDISK_CONTROL_ALTERNATE_STATUS_REGISTER_OFFSET);
+    result = __harddisk_bsy_poll(control_port + HARDDISK_CONTROL_ALTERNATE_STATUS_REGISTER_OFFSET);
     if(result == -1)
     {
         // Harddisk error
