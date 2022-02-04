@@ -172,7 +172,7 @@ int8_t __harddisk_get_identify_data(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA
                     result.value = io_in_byte(io_port + HARDDISK_IO_STATUS_REGISTER_OFFSET);
 
 
-                    if(result.fields.has_pio_data_to_transfer_or_ready_to_accept_pio_data == 1 || result.fields.overlapped_mode_service_request == 1)
+                    if(result.fields.drive_ready == 1 || result.fields.overlapped_mode_service_request == 1)
                     {
                         for(int i = 0; i < 256; i++)
                         {
