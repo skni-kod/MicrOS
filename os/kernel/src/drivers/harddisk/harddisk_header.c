@@ -12,30 +12,13 @@ int8_t __harddisk_soft_reset_port(uint16_t control_port)
     message.fields.software_reset = 1;
     io_out_byte(control_port, message.value);
     // We should wait at least 5 μs, but now MicrOS can't count μs
-    uint32_t start_time = timer_get_system_clock();
-    uint32_t stop_time = 0;
-    for(;;)
-    {
-        stop_time = timer_get_system_clock();
-        if(stop_time - start_time >= 2)
-        {
-            break;
-        }
-    }
+    timer_sleep(1);
 
     message.fields.software_reset = 0;
     io_out_byte(control_port, message.value);
 
     // Wait 2 ms
-    start_time = timer_get_system_clock();
-    for(;;)
-    {
-        stop_time = timer_get_system_clock();
-        if(stop_time - start_time >= 2)
-        {
-            break;
-        }
-    }
+    timer_sleep(2);
 
     // Pull BSY until clears
     return __harddisk_bsy_poll(control_port);
@@ -53,16 +36,7 @@ void __harddisk_400ns_delay(uint16_t control_port)
     }
     else
     {
-        uint32_t start_time = timer_get_system_clock();
-        uint32_t stop_time = 0;
-        for(;;)
-        {
-            stop_time = timer_get_system_clock();
-            if(stop_time - start_time >= 1)
-            {
-                break;
-            }
-        }
+        timer_sleep(1);
     } 
 }
 
@@ -70,7 +44,6 @@ int8_t __harddisk_bsy_poll(uint16_t control_port)
 {
     harddisk_io_control_status_register result;
     uint32_t start_time = timer_get_system_clock();
-    uint32_t stop_time = 0;
     for(;;)
     {
         result.value = io_in_byte(control_port);
@@ -78,8 +51,7 @@ int8_t __harddisk_bsy_poll(uint16_t control_port)
         {
             return 1;
         }
-        stop_time = timer_get_system_clock();
-        if(stop_time - start_time >= HARDDISK_BSY_ERROR_DELAY)
+        if(timer_does_elapsed(start_time,  HARDDISK_BSY_ERROR_DELAY_MS))
         {
             return -1;
         }

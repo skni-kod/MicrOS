@@ -9,7 +9,7 @@
 #include "harddisk_pio_mode_header.h"
 
 //! Delay after which we assume drive failed during BSY pooling
-#define HARDDISK_BSY_ERROR_DELAY 10000
+#define HARDDISK_BSY_ERROR_DELAY_MS 10000
 
 //! Enum represent bus type.
 typedef enum HARDDISK_ATA_BUS_TYPE
