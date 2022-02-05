@@ -61,7 +61,7 @@ void __harddisk_soft_reset_port(uint16_t control_port);
 
 //! Makes 400ns delay.
 /*!
-    Makes 400ns delay by checking drive status 4 times. User after switching type of drive in bus.
+    Makes 400ns delay by checking drive status 15 times. User after switching type of drive in bus.
     \param port Port for do delay.
 */
 void __harddisk_400ns_delay(uint16_t port);

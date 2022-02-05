@@ -103,6 +103,10 @@ void micros_console_clear();
 */
 void micros_console_set_cursor_visibility(bool visibility);
 
+//TODO document these
+void micros_console_set_video_mode(uint8_t mode);
+void micros_console_copy_from_buffer(uint8_t* buffer, uint32_t how_many);
+
 #ifdef __cplusplus
 }
 #endif

@@ -1,6 +1,6 @@
 #include "../signal.h"
 
-void (*signal_handlers[6])(int);
+signal_func signal_handlers[6];
 
 void (*signal(int sig, signal_func func))(int)
 {

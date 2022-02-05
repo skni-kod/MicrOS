@@ -1,4 +1,5 @@
 #include "partitions.h"
+#include <stdlib.h>
 
 kvector partitions;
 
@@ -6,10 +7,10 @@ void partitions_init()
 {
     partitions_init_floppy();
     
-    partitions_init_harddisks(HARDDISK_ATA_MASTER, HARDDISK_ATA_PRIMARY_BUS);
-    partitions_init_harddisks(HARDDISK_ATA_SLAVE, HARDDISK_ATA_PRIMARY_BUS);
-    partitions_init_harddisks(HARDDISK_ATA_MASTER, HARDDISK_ATA_SECONDARY_BUS);
-    // partitions_init_harddisks(HARDDISK_ATA_SLAVE, HARDDISK_ATA_SECONDARY_BUS);
+    //partitions_init_harddisks(HARDDISK_ATA_MASTER, HARDDISK_ATA_PRIMARY_BUS);
+    ///partitions_init_harddisks(HARDDISK_ATA_SLAVE, HARDDISK_ATA_PRIMARY_BUS);
+    //partitions_init_harddisks(HARDDISK_ATA_MASTER, HARDDISK_ATA_SECONDARY_BUS);
+    //partitions_init_harddisks(HARDDISK_ATA_SLAVE, HARDDISK_ATA_SECONDARY_BUS);
 }
 
 void partitions_init_floppy()
@@ -29,10 +30,14 @@ void partitions_init_floppy()
             floppy_partition->device_type = device_type_floppy;
             floppy_partition->device_number = 0;
             floppy_partition->write_on_device = floppy_write_sector;
-            floppy_partition->read_from_device = floppy_read_sector;
+            floppy_partition->read_from_device = floppy_read_continous;
             floppy_partition->first_sector = 0;
+
             
             memcpy(floppy_partition->header, floppy_do_operation_on_sector(0, 0, 1, true), 512);
+            ;
+
+            //while(1);
             fat_generic_set_current_partition(floppy_partition);
             
             if (fat_init())

@@ -14,7 +14,7 @@ typedef struct partition
     device_type device_type;
     int device_number;
     void (*write_on_device)(int device_number, int sector, uint8_t *data);
-    uint8_t *(*read_from_device)(int device_number, int sector);
+    uint8_t *(*read_from_device)(int device_number, int sector, int count);
     
     uint8_t *fat;
     fat_directory_entry *root;

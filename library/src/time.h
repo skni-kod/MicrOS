@@ -45,7 +45,7 @@ typedef struct tm
 } tm;
 
 //! Internal variable used during time conversions
-tm converted_time;
+extern tm converted_time;
 
 #ifdef __cplusplus
 extern "C" {

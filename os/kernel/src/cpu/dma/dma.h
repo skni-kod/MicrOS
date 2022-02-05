@@ -12,7 +12,7 @@
 #define DMA_MODE_REGISTER 0x0B
 
 void dma_init(uint32_t buffer_address);
-void dma_init_transfer(uint8_t channel, bool read);
+void dma_init_transfer(uint8_t channel, bool read, uint16_t dataLen);
 uint8_t *dma_get_buffer();
 
 #endif

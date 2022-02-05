@@ -205,6 +205,7 @@ void idt_init()
 
     // Add system calls interrupt handler
     idt_attach_interrupt_handler(18, idt_syscalls_interrupt_handler);
+	io_enable_interrupts();
 }
 
 void idt_set(uint8_t index, uint32_t (*handler)(interrupt_state *state), bool user_interrupt)
