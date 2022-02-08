@@ -369,7 +369,6 @@ bool fat_read_file_from_path(char *path, uint8_t *buffer, uint32_t start_index, 
 
 uint8_t *fat_read_file_from_cluster(uint16_t initial_cluster, uint16_t cluster_offset, uint16_t clusters_count, uint32_t *read_clusters)
 {
-    //CHECKING (TODO: TESTING)
     uint16_t cluster = initial_cluster;
     for (int i = 0; i < cluster_offset; i++)
     {
