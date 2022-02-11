@@ -71,6 +71,10 @@ bool micros_heap_verify_integrity();
 */
 micros_heap_entry *micros_heap_get_process_heap();
 
+
+//DEBUG
+void *micros_heap_kernel_alloc(uint32_t size, uint32_t align);
+
 #ifdef __cplusplus
 }
 #endif

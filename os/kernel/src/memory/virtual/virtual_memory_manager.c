@@ -6,6 +6,12 @@ uint32_t user_base_page_index;
 uint32_t virtual_memory_alloc_page(bool supervisor)
 {
     uint32_t base_page_index = supervisor ? kernel_base_page_index : user_base_page_index;
+    paging_table_entry* userDirectory = paging_get_page_directory();
+
+    if(supervisor)
+    {
+        paging_set_page_directory(paging_get_kernel_page_directory());
+    }
 
     uint32_t physical_page_index = physical_memory_alloc_page();
     uint32_t virtual_page_index = paging_get_first_free_page_index(base_page_index);
@@ -16,6 +22,12 @@ uint32_t virtual_memory_alloc_page(bool supervisor)
     }
     
     paging_map_page(physical_page_index, virtual_page_index, supervisor);
+    
+    if(supervisor)
+    {
+        paging_set_page_directory(userDirectory);
+    }
+
     return virtual_page_index;
 }
 
@@ -29,6 +41,13 @@ bool virtual_memory_dealloc_page(uint32_t page_index)
 
 bool virtual_memory_dealloc_last_page(bool supervisor)
 {
+    paging_table_entry* userDirectory = paging_get_page_directory();
+
+    if(supervisor)
+    {
+        paging_set_page_directory(paging_get_kernel_page_directory());
+    }
+
     uint32_t base_page_index = supervisor ? kernel_base_page_index : user_base_page_index;
     for (int i = base_page_index; i < 1024; i++)
     {
@@ -37,8 +56,18 @@ bool virtual_memory_dealloc_last_page(bool supervisor)
             uint32_t physical_page_index = paging_get_physical_index_of_virtual_page(i);
             paging_unmap_page(i);
             
+            if(supervisor)
+            {
+                paging_set_page_directory(userDirectory);
+            }  
+
             return physical_memory_dealloc_page(physical_page_index);
         }
+    }
+
+    if(supervisor)
+    {
+        paging_set_page_directory(userDirectory);
     }
 
     return false;

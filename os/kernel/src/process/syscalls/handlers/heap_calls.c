@@ -29,3 +29,10 @@ void syscall_heap_get_process_heap(interrupt_state *state)
 {
     state->registers.eax = (uint32_t)heap_get_user_heap();
 }
+
+
+//DEBUG
+void syscall_heap_kernel_alloc(interrupt_state * state)
+{
+    state->registers.eax = (uint32_t)heap_kernel_alloc(state->registers.ebx, state->registers.ecx);
+}
