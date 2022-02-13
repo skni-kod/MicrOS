@@ -346,8 +346,8 @@ void startup()
     ///    Networking
     if (network_manager_init())
         logger_log_ok("Network manager");
-
-    while(1){;}
+    else
+        logger_log_warning("Network manager not initialized");
 
     init_terminal_manager();
     logger_log_ok("Terminal manager");
