@@ -2,6 +2,7 @@
 #include "assembly/io.h"
 #include "logger/logger.h"
 #include <stdlib.h>
+#include <ktime.h>
 
 static pci_device devices[PCI_DEVICE_COUNT];
 
@@ -135,4 +136,55 @@ uint32_t pci_io_in(pci_device *dev, uint8_t desc_index)
 {
     io_out_long(PCI_CONFIG_ADDRESS, dev->descriptors[desc_index]);
     return io_in_long(PCI_CONFIG_DATA);
+}
+
+void pci_print_devices(uint32_t delay){
+    char buff[50];
+
+    logger_log_info("Number of devices: ");
+    uint8_t nd = pci_get_number_of_devices();
+    logger_log_info(itoa(nd, buff, 10));
+    logger_log_info("Devices: ");
+    vga_color col;
+    col.color_without_blink.background = VGA_COLOR_BLACK;
+    col.color_without_blink.letter = VGA_COLOR_BLUE;
+    vga_printstring_color("vendor_id ", &col);
+    col.color_without_blink.letter = VGA_COLOR_GREEN;
+    vga_printstring_color("device_id ", &col);
+    col.color_without_blink.letter = VGA_COLOR_LIGHT_BLUE;
+    vga_printstring_color("header_type ", &col);
+    col.color_without_blink.letter = VGA_COLOR_LIGHT_RED;
+    vga_printstring_color("class_code ", &col);
+    col.color_without_blink.letter = VGA_COLOR_YELLOW;
+    vga_printstring_color("subclass ", &col);
+    col.color_without_blink.letter = VGA_COLOR_MAGENTA;
+    vga_printstring_color("prog_if\n", &col);
+
+    for (int i = 0; i < pci_get_number_of_devices(); i++)
+    {
+        pci_device *dev = pci_get_device(i);
+        col.color_without_blink.letter = VGA_COLOR_BLUE;
+        vga_printstring_color(itoa(dev->vendor_id, buff, 16), &col);
+        vga_printchar(' ');
+        col.color_without_blink.letter = VGA_COLOR_GREEN;
+        vga_printstring_color(itoa(dev->device_id, buff, 16), &col);
+        vga_printchar(' ');
+        col.color_without_blink.letter = VGA_COLOR_LIGHT_BLUE;
+        vga_printstring_color(itoa(dev->header_type, buff, 16), &col);
+        vga_printchar(' ');
+        col.color_without_blink.letter = VGA_COLOR_LIGHT_RED;
+        vga_printstring_color(itoa(dev->class_code, buff, 16), &col);
+        vga_printchar(' ');
+        col.color_without_blink.letter = VGA_COLOR_YELLOW;
+        vga_printstring_color(itoa(dev->subclass, buff, 16), &col);
+        vga_printchar(' ');
+        col.color_without_blink.letter = VGA_COLOR_MAGENTA;
+        vga_printstring_color(itoa(dev->prog_if, buff, 16), &col);
+        vga_printchar('\n');
+    }
+
+    if(!delay)
+        while(1);
+    else
+        sleep(delay);
 }

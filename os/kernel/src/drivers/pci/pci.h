@@ -23,4 +23,6 @@ void pci_check_all_buses();
 void pci_io_out(pci_device *dev, uint8_t desc_index, uint32_t value);
 uint32_t pci_io_in(pci_device *dev, uint8_t desc_index);
 
+void pci_print_devices();
+
 #endif

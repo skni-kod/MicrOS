@@ -16,8 +16,6 @@
 #include "../../virtio/virtio-pci.h"
 #include <stdlib.h>
 
-char str[256];
-
 /* Device specification for PCI (4.1.1) */
 #define VIRTIO_NET_DEVICE_VENDOR_ID 0x1AF4
 #define VIRTIO_NET_DEVICE_SUBSYSTEM_ID 0x1
@@ -141,21 +139,18 @@ bool virtio_nic_init(net_device_t *net_dev);
 
 bool virtio_nic_irq_handler();
 
+void virtio_nic_send(net_packet_t *packet);
 
+void virtio_nic_init_queue(virtq *virtqueue, uint16_t queueIndex);
 
-/* TODO: dfd */
-void VirtIO_Net_InterruptHandler();
+void virtio_nic_receive();
 
-void VirtIO_Net_SendPacket(net_packet_t *packet);
+void virtio_nic_setup_buffers();
 
-void VirtIO_Net_SetupReceiveBuffers();
+void virtio_nic_get_mac(uint8_t* buffer);
 
-void VirtIO_Net_ReceivePacket();
+uint32_t virtio_nic_reg_read(uint16_t reg);
 
-void VirtIO_Net_GetMAC(uint32_t* ptr);
-
-void VNet_Write_Register(uint16_t reg, uint32_t data);
-
-uint32_t VNet_Read_Register(uint16_t reg);
+void virtio_nic_reg_write(uint16_t reg, uint32_t data);
 
 #endif

@@ -89,17 +89,17 @@ typedef struct rtl8139_dev
 */
 bool rtl8139_init(net_device_t *net_dev);
 
-//! rtl8139_send_packet
+//! rtl8139_send
 /*
     Send data, with desired length
 */
-void rtl8139_send_packet(net_packet_t *packet);
+void rtl8139_send(net_packet_t *packet);
 
-//! rtl8139_receive_packet
+//! rtl8139_receive
 /*
     Receive packet
 */
-void rtl8139_receive_packet();
+void rtl8139_receive();
 
 //! rtl8139_irq_handler
 /*!
@@ -107,18 +107,18 @@ void rtl8139_receive_packet();
 */
 bool rtl8139_irq_handler();
 
-//! rtl8139_read_mac_addr
+//! rtl8139_read_mac
 /*!
     Reads device mac address
 */
-void rtl8139_read_mac_addr();
+void rtl8139_read_mac();
 
-//! rtl8139_get_mac_addr
+//! rtl8139_get_mac
 /*!
     Puts to buffer mac address of device 
     Requires buffer with size of (6 * uint8_t)
 */
-void rtl8139_get_mac_addr(uint8_t *buffer);
+void rtl8139_get_mac(uint8_t *buffer);
 
 //! rtl8139_get_sent_count
 /*!

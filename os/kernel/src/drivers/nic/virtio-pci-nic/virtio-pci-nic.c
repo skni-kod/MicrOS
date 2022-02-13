@@ -1,7 +1,7 @@
 /*
     @JakubPrzystasz
     Created: 28.07.2021
-    Last modified: 25.11.2021
+    Last modified: 13.02.2022
 */
 #include "virtio-pci-nic.h"
 
@@ -13,49 +13,12 @@ virtq *transmitQueue;
 
 void (*receive_packet)(net_packet_t *);
 
-uint32_t VNet_Read_Register(uint16_t reg)
-{
-    // if 4-byte register
-    if (reg < REG_QUEUE_SIZE)
-    {
-        return io_in_long(virtio_nic.io_base + reg);
-    }
-    else
-    {
-        // if 2-byte register
-        if (reg <= REG_QUEUE_NOTIFY)
-            return io_in_word(virtio_nic.io_base + reg);
-        else // 1-byte register
-            return io_in_byte(virtio_nic.io_base + reg);
-    }
-}
-
-void VNet_Write_Register(uint16_t reg, uint32_t data)
-{
-    // if 4-byte register
-    if (reg < REG_QUEUE_SIZE)
-    {
-        io_out_long(virtio_nic.io_base + reg, data);
-    }
-    else
-    {
-        // if 2-byte register
-        if (reg <= REG_QUEUE_NOTIFY)
-            io_out_word(virtio_nic.io_base + reg, (uint16_t)data);
-        else // 1-byte register
-            io_out_byte(virtio_nic.io_base + reg, (uint8_t)data);
-    }
-}
-
 bool virtio_nic_init(net_device_t *net_dev)
 {
 
     //Prevent for re-init
     if (pci_virtio_nic_device.vendor_id != 0)
         return false;
-
-    // First get the network device using PCI
-    // PCI must be initialized!
 
     for (int i = 0; i < pci_get_number_of_devices(); i++)
     {
@@ -81,26 +44,26 @@ bool virtio_nic_init(net_device_t *net_dev)
     virtio_nic.mem_base = pci_virtio_nic_device.base_addres_0 & (~0xf);
 
     // Reset the virtio-network device
-    VNet_Write_Register(REG_DEVICE_STATUS, STATUS_RESET_DEVICE);
+    virtio_nic_reg_write(REG_DEVICE_STATUS, STATUS_RESET_DEVICE);
 
     // Set the acknowledge status bit
-    VNet_Write_Register(REG_DEVICE_STATUS, STATUS_DEVICE_ACKNOWLEDGE);
+    virtio_nic_reg_write(REG_DEVICE_STATUS, STATUS_DEVICE_ACKNOWLEDGE);
 
     // Set the driver status bit
-    VNet_Write_Register(REG_DEVICE_STATUS, STATUS_DEVICE_ACKNOWLEDGE | STATUS_DRIVER_LOADED);
+    virtio_nic_reg_write(REG_DEVICE_STATUS, STATUS_DEVICE_ACKNOWLEDGE | STATUS_DRIVER_LOADED);
 
     // Read the feature bits
-    uint32_t features = VNet_Read_Register(REG_DEVICE_FEATURES);
+    uint32_t features = virtio_nic_reg_read(REG_DEVICE_FEATURES);
 
     // Make sure the features we need are supported
     if ((features & REQUIRED_FEATURES) != REQUIRED_FEATURES)
     {
-        VNet_Write_Register(REG_DEVICE_STATUS, STATUS_DEVICE_NEEDS_RESET);
+        virtio_nic_reg_write(REG_DEVICE_STATUS, STATUS_DEVICE_NEEDS_RESET);
         return;
     }
 
     // Tell the device what features we'll be using
-    VNet_Write_Register(REG_DRIVER_FEATURES, REQUIRED_FEATURES);
+    virtio_nic_reg_write(REG_DRIVER_FEATURES, REQUIRED_FEATURES);
 
     //PCI bus mastering
     uint32_t pci_bus_config = pci_io_in(&pci_virtio_nic_device, 1);
@@ -114,9 +77,9 @@ bool virtio_nic_init(net_device_t *net_dev)
     receiveQueue = heap_kernel_alloc(sizeof(virtq), 0);
     transmitQueue = heap_kernel_alloc(sizeof(virtq), 0);
 
-    VirtIO_Net_Init_Virtqueue(receiveQueue, 0);
-    VirtIO_Net_Init_Virtqueue(transmitQueue, 1);
-    VirtIO_Net_SetupReceiveBuffers();
+    virtio_nic_init_queue(receiveQueue, 0);
+    virtio_nic_init_queue(transmitQueue, 1);
+    virtio_nic_setup_buffers();
     receiveQueue->device_area->flags = 0;
 
     //Enable IRQ
@@ -133,20 +96,12 @@ bool virtio_nic_init(net_device_t *net_dev)
     memcpy(net_dev->mac_address, virtio_nic.mac_addr, sizeof(uint8_t) * 6);
 
     // Tell the device it's initialized
-    VNet_Write_Register(REG_DEVICE_STATUS, STATUS_DRIVER_OK);
+    virtio_nic_reg_write(REG_DEVICE_STATUS, STATUS_DRIVER_OK);
 
     // Remind the device that it has receive buffers. Hey VirtualBox! Why aren't you using these?
-    VNet_Write_Register(REG_QUEUE_NOTIFY, VIRTIO_NET_RECEIVE_QUEUE_INDEX);
+    virtio_nic_reg_write(REG_QUEUE_NOTIFY, VIRTIO_NET_RECEIVE_QUEUE_INDEX);
 
     receive_packet = net_dev->receive_packet;
-
-    // net_packet_t *packet = heap_kernel_alloc(sizeof(net_packet_t), 0);
-    // packet->packet_length = 16;
-    // packet->packet_data = heap_kernel_alloc(16, 0);
-    // char str[] = "No i dupa";
-    // strcpy(packet->packet_data, str);
-
-    // VirtIO_Net_SendPacket(packet);
 
     return true;
 }
@@ -154,7 +109,7 @@ bool virtio_nic_init(net_device_t *net_dev)
 bool virtio_nic_irq_handler()
 {
     // Check for used queues
-    if (VNet_Read_Register(REG_ISR_STATUS) & VIRTIO_ISR_VIRTQ_USED)
+    if (virtio_nic_reg_read(REG_ISR_STATUS) & VIRTIO_ISR_VIRTQ_USED)
     {
         //terminal_writestring("Virtq used\n");
 
@@ -192,22 +147,22 @@ bool virtio_nic_irq_handler()
         // see if the receive queue has been used
         if (receiveQueue->device_area->index != receiveQueue->last_device_index)
         {
-            VirtIO_Net_ReceivePacket();
+            virtio_nic_receive();
         }
     }
 
     return true;
 }
 
-void VirtIO_Net_Init_Virtqueue(virtq *virtqueue, uint16_t queueIndex)
+void virtio_nic_init_queue(virtq *virtqueue, uint16_t queueIndex)
 {
     int16_t queueSize = -1;
 
     // access the current queue
-    VNet_Write_Register(REG_QUEUE_SELECT, queueIndex);
+    virtio_nic_reg_write(REG_QUEUE_SELECT, queueIndex);
 
     // get the size of the current queue
-    queueSize = (uint16_t)VNet_Read_Register(REG_QUEUE_SIZE);
+    queueSize = (uint16_t)virtio_nic_reg_read(REG_QUEUE_SIZE);
 
     if (!queueSize)
         return;
@@ -215,27 +170,12 @@ void VirtIO_Net_Init_Virtqueue(virtq *virtqueue, uint16_t queueIndex)
     // Allocate and initialize the queue
     virtio_setup_queue(virtqueue, queueSize);
 
-    // kernel_sprintf(str, "queue %d has %d elements", queueIndex, queueSize);
-    // logger_log_info(str);
-
-    // kernel_sprintf(str, "queue %d: 0x%u", queueIndex, virtqueue->descriptor_area);
-    // logger_log_info(str);
-
-    // kernel_sprintf(str, "queue size: %x", virtqueue->elements);
-    // logger_log_info(str);
-
-    // kernel_sprintf(str, "driver_area: 0x%x", virtqueue->driver_area);
-    // logger_log_info(str);
-
-    // kernel_sprintf(str, "device_area: 0x%x", virtqueue->device_area);
-    // logger_log_info(str);
-
     uint32_t addr = (uint32_t)((uint32_t)virtqueue->descriptor_area - DMA_ADDRESS_OFFSET) / 4096;
 
-    VNet_Write_Register(REG_QUEUE_ADDRESS, addr);
+    virtio_nic_reg_write(REG_QUEUE_ADDRESS, addr);
 }
 
-void VirtIO_Net_SetupReceiveBuffers()
+void virtio_nic_setup_buffers()
 {
     const uint16_t bufferSize = 1526; // as per virtio specs
 
@@ -256,10 +196,10 @@ void VirtIO_Net_SetupReceiveBuffers()
 
     // Update next available index
     receiveQueue->driver_area->index = 16;
-    VNet_Write_Register(REG_QUEUE_NOTIFY, VIRTIO_NET_RECEIVE_QUEUE_INDEX);
+    virtio_nic_reg_write(REG_QUEUE_NOTIFY, VIRTIO_NET_RECEIVE_QUEUE_INDEX);
 }
 
-void VirtIO_Net_SendPacket(net_packet_t *packet)
+void virtio_nic_send(net_packet_t *packet)
 {
 
     uint16_t bufferSize = sizeof(virtio_nic_net_header);
@@ -306,10 +246,10 @@ void VirtIO_Net_SendPacket(net_packet_t *packet)
     // Increase available ring index and notify the device
     transmitQueue->driver_area->index++;
 
-    VNet_Write_Register(REG_QUEUE_NOTIFY, VIRTIO_NET_TRANSMIT_QUEUE_INDEX);
+    virtio_nic_reg_write(REG_QUEUE_NOTIFY, VIRTIO_NET_TRANSMIT_QUEUE_INDEX);
 }
 
-void VirtIO_Net_ReceivePacket()
+void virtio_nic_receive()
 {
     while (receiveQueue->device_area->index != receiveQueue->last_device_index)
     {
@@ -366,7 +306,7 @@ void VirtIO_Net_ReceivePacket()
         net_packet_t *out = heap_kernel_alloc(sizeof(net_packet_t), 0);
         out->packet_data = packet_data;
         out->packet_length = packet_length;
-        VirtIO_Net_GetMAC(out->device_mac);
+        virtio_nic_get_mac(out->device_mac);
 
         (*receive_packet)(out);
 
@@ -384,10 +324,36 @@ void VirtIO_Net_ReceivePacket()
     }
 
     // notify the device that we've updated the availaible ring index
-    VNet_Write_Register(REG_QUEUE_NOTIFY, VIRTIO_NET_RECEIVE_QUEUE_INDEX);
+    virtio_nic_reg_write(REG_QUEUE_NOTIFY, VIRTIO_NET_RECEIVE_QUEUE_INDEX);
 }
 
-void VirtIO_Net_GetMAC(uint32_t *ptr)
+void virtio_nic_get_mac(uint8_t *ptr)
 {
     memcpy(ptr, virtio_nic.mac_addr, 6);
+}
+
+uint32_t virtio_nic_reg_read(uint16_t reg)
+{
+    if (reg < REG_QUEUE_SIZE)
+        return io_in_long(virtio_nic.io_base + reg);
+    else
+    {
+        if (reg <= REG_QUEUE_NOTIFY)
+            return io_in_word(virtio_nic.io_base + reg);
+        else
+            return io_in_byte(virtio_nic.io_base + reg);
+    }
+}
+
+void virtio_nic_reg_write(uint16_t reg, uint32_t data)
+{
+    if (reg < REG_QUEUE_SIZE)
+        io_out_long(virtio_nic.io_base + reg, data);
+    else
+    {
+        if (reg <= REG_QUEUE_NOTIFY)
+            io_out_word(virtio_nic.io_base + reg, (uint16_t)data);
+        else
+            io_out_byte(virtio_nic.io_base + reg, (uint8_t)data);
+    }
 }

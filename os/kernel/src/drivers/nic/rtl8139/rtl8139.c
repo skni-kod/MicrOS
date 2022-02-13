@@ -1,7 +1,7 @@
 /*
     @JakubPrzystasz
     Created: 06.02.2021
-    Last modified: 25.11.2021
+    Last modified: 13.02.2022
 */
 #include "rtl8139.h"
 
@@ -97,12 +97,12 @@ bool rtl8139_init(net_device_t *net_dev)
     pic_enable_irq(irq_num);
     idt_attach_interrupt_handler(irq_num, rtl8139_irq_handler);
 
-    rtl8139_read_mac_addr();
+    rtl8139_read_mac();
 
     net_dev->device_name = heap_kernel_alloc(strlen(RTL8139_DEVICE_NAME) + 1, 0);
     strcpy(net_dev->device_name, RTL8139_DEVICE_NAME);
     memcpy(net_dev->mac_address, rtl8139_device.mac_addr, sizeof(uint8_t) * 6);
-    net_dev->send_packet = &rtl8139_send_packet;
+    net_dev->send_packet = &rtl8139_send;
     net_dev->sent_count = &rtl8139_get_sent_count;
     net_dev->received_count = &rtl8139_get_received_count;
     receive_packet = net_dev->receive_packet;
@@ -121,7 +121,7 @@ bool rtl8139_irq_handler()
     if (status & ROK)
     {
         received_count++;
-        rtl8139_receive_packet();
+        rtl8139_receive();
     }
 
     io_out_word(rtl8139_device.io_base + INTRSTATUS, 0x5);
@@ -129,7 +129,7 @@ bool rtl8139_irq_handler()
     return true;
 }
 
-void rtl8139_read_mac_addr()
+void rtl8139_read_mac()
 {
     for (uint8_t i = 0; i < 6; i++)
     {
@@ -137,7 +137,7 @@ void rtl8139_read_mac_addr()
     }
 }
 
-void rtl8139_get_mac_addr(uint8_t *buffer)
+void rtl8139_get_mac(uint8_t *buffer)
 {
     if (buffer == 0)
         return;
@@ -145,7 +145,7 @@ void rtl8139_get_mac_addr(uint8_t *buffer)
     memcpy(buffer, rtl8139_device.mac_addr, 6);
 }
 
-void rtl8139_receive_packet()
+void rtl8139_receive()
 {
     uint32_t *packet = (uint16_t *)(rtl8139_device.rx_buffer + current_packet_ptr);
 
@@ -160,7 +160,7 @@ void rtl8139_receive_packet()
     net_packet_t *out = heap_kernel_alloc(sizeof(net_packet_t), 0);
     out->packet_data = packet_data;
     out->packet_length = packet_length;
-    rtl8139_get_mac_addr(out->device_mac);
+    rtl8139_get_mac(out->device_mac);
 
     current_packet_ptr = (current_packet_ptr + packet_length + 7) & RX_READ_POINTER_MASK;
 
@@ -173,7 +173,7 @@ void rtl8139_receive_packet()
     (*receive_packet)(out);
 }
 
-void rtl8139_send_packet(net_packet_t *packet)
+void rtl8139_send(net_packet_t *packet)
 {
     void *data = heap_kernel_alloc(packet->packet_length, 0);
     memcpy(data, packet->packet_data, packet->packet_length);
