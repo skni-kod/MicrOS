@@ -7,7 +7,7 @@
 
 pci_device pci_rtl8139_device = {0};
 rtl8139_dev_t rtl8139_device = {0};
-void (*receive_packet)(net_packet_t *);
+void (*rtl8139_receive_packet)(net_packet_t *);
 
 uint32_t current_packet_ptr = 0;
 uint32_t sent_count = 0;
@@ -105,7 +105,7 @@ bool rtl8139_init(net_device_t *net_dev)
     net_dev->send_packet = &rtl8139_send;
     net_dev->sent_count = &rtl8139_get_sent_count;
     net_dev->received_count = &rtl8139_get_received_count;
-    receive_packet = net_dev->receive_packet;
+    rtl8139_receive_packet = net_dev->receive_packet;
 
     return true;
 }
@@ -170,7 +170,7 @@ void rtl8139_receive()
     //Tell to device where put, next incoming packet
     io_out_word(rtl8139_device.io_base + CAPR, current_packet_ptr - 0x10);
 
-    (*receive_packet)(out);
+    (*rtl8139_receive_packet)(out);
 }
 
 void rtl8139_send(net_packet_t *packet)
