@@ -267,6 +267,7 @@ void startup()
     dma_init(0xc0000500);
     logger_log_ok("DMA");
 
+    //TODO:
     // NOTE: it doesn't work well, so assume for now that floppy controller is always present
     //if (fdc_is_present())
     {
@@ -287,7 +288,6 @@ void startup()
     tss_init();
     logger_log_ok("TSS");
 
-
     syscalls_manager_init();
     logger_log_ok("Syscalls manager");
 
@@ -295,7 +295,7 @@ void startup()
     logger_log_ok("Signals manager");
 
     pci_init();
-    pci_print_devices();
+    pci_print_devices(1);
     
     if (network_manager_init())
         logger_log_ok("Network manager");
