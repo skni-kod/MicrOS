@@ -24,7 +24,7 @@ int hdd_wrapper_get_bus_by_device_number(int device)
     else return HARDDISK_ATA_SECONDARY_BUS;
 }
 
-uint8_t *hdd_wrapper_read_sector(int device_number, int sector)
+uint8_t *hdd_wrapper_read_sector(int device_number, int sector, int count)
 {
     HARDDISK_ATA_MASTER_SLAVE type = hdd_wrapper_get_type_by_device_number(device_number);
     HARDDISK_ATA_BUS_TYPE bus = hdd_wrapper_get_bus_by_device_number(device_number);

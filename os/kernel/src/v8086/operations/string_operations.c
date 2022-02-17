@@ -205,9 +205,9 @@ uint16_t perform_cmps(v8086* machine, uint8_t width)
     uint16_t* dest_segment = select_segment_register(machine, V8086_ES);
     void* source;
     void* dest;
-    uint32_t dest_before; //for overflow flag checking
-    uint32_t source_before;
-    uint64_t result;
+    //uint32_t dest_before; //for overflow flag checking
+    //uint32_t source_before;
+    //uint64_t result;
 
     if(machine->internal_state.segment_reg_select == V8086_DEFAULT) source_segment = select_segment_register(machine, V8086_DS);
     else source_segment = select_segment_register(machine, machine->internal_state.segment_reg_select);
@@ -316,9 +316,9 @@ uint16_t perform_scas(v8086* machine, uint8_t width)
     uint16_t* source_segment = select_segment_register(machine, V8086_ES);
     void* source;
     void* dest;
-    uint32_t dest_before; //for overflow flag checking
-    uint32_t source_before;
-    uint64_t result;
+    //uint32_t dest_before; //for overflow flag checking
+    //uint32_t source_before;
+    //uint64_t result;
 
     if(source_segment == NULL) return V8086_UNDEFINED_SEGMENT_REGISTER;
     //if repeat and number of repats == 0 -> dont copy anything

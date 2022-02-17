@@ -60,8 +60,8 @@ void drawMicrOSLogoIn13H()
 	OS21XBITMAPHEADER bh;
 	memcpy(&bh, buffer + sizeof(OS2BMPFILEHEADER), sizeof(OS21XBITMAPHEADER));
 
-	for(int x = 0; x < bh.Width; x++)
-		for(int y = 0; y < bh.Height; y++)
+	for(uint32_t x = 0; x < bh.Width; x++)
+		for(uint32_t y = 0; y < bh.Height; y++)
 			mode13h_draw_pixel(buffer[fh.BitmapOffset + (bh.Height * bh.Width - bh.Width - y*bh.Width) + x],x,y);
 
 	heap_kernel_dealloc(buffer);
@@ -82,8 +82,8 @@ void drawLenaIn13H()
 	OS21XBITMAPHEADER bh;
 	memcpy(&bh, buffer + sizeof(OS2BMPFILEHEADER), sizeof(OS21XBITMAPHEADER));
 
-	for(int x = 0; x < bh.Width; x++)
-		for(int y = 0; y < bh.Height; y++)
+	for(uint32_t x = 0; x < bh.Width; x++)
+		for(uint32_t y = 0; y < bh.Height; y++)
 			mode13h_draw_pixel(buffer[fh.BitmapOffset + (bh.Height * bh.Width - bh.Width - y*bh.Width) + x],x,y);
 
 	heap_kernel_dealloc(buffer);
@@ -103,8 +103,8 @@ void drawLenaIn10fH_linear(uint8_t* color)
 	OS21XBITMAPHEADER bh;
 	memcpy(&bh, buffer + sizeof(OS2BMPFILEHEADER), sizeof(OS21XBITMAPHEADER));
 
-	for(int x = 0; x < bh.Width; x++)
-		for(int y = 0; y < bh.Height; y++)
+	for(uint32_t x = 0; x < bh.Width; x++)
+		for(uint32_t y = 0; y < bh.Height; y++)
 			{
 				int i = 3*y * bh.Width + 3*x;
 				color[i] = buffer[fh.BitmapOffset + (x * 3) + (bh.Height - y - 1) * 3 * bh.Width];
@@ -128,8 +128,8 @@ void drawLenaIn10fH()
 	OS21XBITMAPHEADER bh;
 	memcpy(&bh, buffer + sizeof(OS2BMPFILEHEADER), sizeof(OS21XBITMAPHEADER));
 
-	for(int x = 0; x < bh.Width; x++)
-		for(int y = 0; y < bh.Height; y++)
+	for(uint32_t x = 0; x < bh.Width; x++)
+		for(uint32_t y = 0; y < bh.Height; y++)
 			//mode13h_draw_pixel(buffer[fh.BitmapOffset + (bh.Height * bh.Width - bh.Width - y*bh.Width) + x],x,y);
 			VBE_draw_pixel_8_8_8(320, 240, 64, 64, x, y, buffer[fh.BitmapOffset + (x * 3) + (bh.Height - y - 1) * 3 * bh.Width + 2], buffer[fh.BitmapOffset + (x * 3) + (bh.Height - y - 1) * 3 * bh.Width + 1], buffer[fh.BitmapOffset + (x * 3) + (bh.Height - y - 1) * 3 * bh.Width]);
 	heap_kernel_dealloc(buffer);

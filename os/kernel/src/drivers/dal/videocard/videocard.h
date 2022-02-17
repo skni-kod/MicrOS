@@ -302,7 +302,7 @@ int8_t video_card_set_char(uint16_t x, uint16_t y, char character);
 int8_t video_card_get_char(uint16_t x, uint16_t y, char* character);
 
 //TODO add documentation
-void video_card_set_swap_external_buffer(int8_t (*swap_external_buffer(uint8_t*, uint16_t)));
+void video_card_set_swap_external_buffer(int8_t (*swap_external_buffer)(uint8_t*, uint16_t));
 
 //! Set character color on given point on screen.
 /*!

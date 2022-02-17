@@ -1,4 +1,6 @@
 #include "floppy.h"
+//U SURE?
+#include "stdlib.h"
 
 volatile uint32_t floppy_sectors_per_track;
 volatile uint32_t time_of_last_activity = 0;
@@ -123,7 +125,7 @@ bool floppy_reset()
     uint8_t st0, cylinder;
 
     floppy_confirm_interrupt(&st0, &cylinder);
-    uint8_t tmp[8];
+    char tmp[8];
     itoa(st0, tmp, 16);
     logger_log_info(tmp);
     
@@ -549,10 +551,10 @@ uint8_t* floppy_read_continous(int device_number, int sector, int count){
         memcpy(buffer, tmp, offset*512);
     }
 
-    for (; offset < count; offset+=18)
+    for (; offset < (size_t)count; offset+=18)
     {
         floppy_lba_to_chs(sector+offset, &head, &track, &true_sector);
-        if (offset+18 <= count)
+        if (offset+18 <= (size_t)count)
         {
             uint8_t* tmp = read_track_from_floppy(device_number, head, track);
             //uint8_t* tmp = floppy_read_sectors(device_number, head, track, true_sector, 18);

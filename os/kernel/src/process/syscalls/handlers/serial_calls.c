@@ -22,7 +22,7 @@ void syscall_serial_send(interrupt_state *state)
 
 void syscall_serial_send_string(interrupt_state *state)
 {
-    serial_send_string(state->registers.ebx, state->registers.ecx);
+    serial_send_string(state->registers.ebx, (char*)state->registers.ecx);
 }
 
 void syscall_serial_receive(interrupt_state *state)

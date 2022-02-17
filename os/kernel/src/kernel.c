@@ -42,6 +42,10 @@
 
 #include "debug_helpers/library/kernel_stdio.h"
 
+//?
+void set_debug_traps (void);
+void breakpoint (void);
+
 typedef struct _linesStruct
 {
     uint16_t ax;
@@ -232,8 +236,8 @@ void startup()
 {
     // Must be done before any VGA operation
 
-    volatile uint8_t* scr_ptr = (uint8_t *)(VGA_MODE_03H_BASE_ADDR);
-    int i = 0;
+    //volatile uint8_t* scr_ptr = (uint8_t *)(VGA_MODE_03H_BASE_ADDR);
+    //int i = 0;
     gdt_init();
     paging_init();
     //Don't use VGA before calling VGA init

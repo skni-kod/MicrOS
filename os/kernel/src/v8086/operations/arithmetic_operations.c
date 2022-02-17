@@ -382,7 +382,7 @@ perform_multiplication_3_byte(v8086 *machine, void *dest, void *source, void *im
 }
 
 int16_t perform_division(v8086 *machine, void *source, uint8_t signed_div, uint8_t width) {
-    uint16_t temp_flags;
+    //uint16_t temp_flags;
     if (signed_div) {
         if (width == 8) {
             if(*((int8_t *) source) == 0)

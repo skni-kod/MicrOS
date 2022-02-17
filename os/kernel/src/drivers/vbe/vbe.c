@@ -60,9 +60,9 @@ VBEStatus VBE_get_svga_information(svga_information** information_struct_ptr){
     information_struct->vesa_standard_number = read_word_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E04));
     uint16_t off = read_word_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E06));
     uint16_t seg = read_word_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E08));
-    uint16_t len = strlen(machine->Memory + get_absolute_address(seg, off));
+    uint16_t len = strlen((char*)(machine->Memory + get_absolute_address(seg, off)));
     information_struct->producent_text = heap_kernel_alloc(len + 1, 0);
-    strcpy(information_struct->producent_text, machine->Memory + get_absolute_address(seg, off));
+    strcpy(information_struct->producent_text, (char*)(machine->Memory + get_absolute_address(seg, off)));
     information_struct->additional_info = read_dword_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E0A));
     off = read_word_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E0E));
     seg = read_word_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E10));
@@ -167,7 +167,7 @@ VBEStatus VBE_get_current_video_mode(uint16_t* mode_number)
 
 VBEStatus VBE_set_current_bank(uint32_t bank_number)
 {
-    if(bank_number != currentBank)
+    if(bank_number != (uint32_t)currentBank)
     {
         machine->regs.x.ax = 0x4f05;
         machine->regs.x.bx = 0;
@@ -616,9 +616,9 @@ void VBE_draw_pixel_8_8_8(uint32_t mode_width, uint32_t mode_height, uint32_t wi
     uint32_t offset = (y * 3) * mode_width + (x * 3);
     uint32_t position = offset / (granularity * 1024);
     offset = offset - (granularity * 1024) * position;
-    if(position != currentBank)
+    if(position != (uint32_t)currentBank)
     {
-        VBEStatus status = VBE_display_window_control_set_16bit(0, position);
+        VBE_display_window_control_set_16bit(0, position);
         currentBank = position;
     }
     mem_buff[offset] = b;

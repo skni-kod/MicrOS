@@ -12,6 +12,7 @@ uint16_t* get_word_register(v8086* machine, uint8_t reg_field);
 uint32_t* get_dword_register(v8086* machine, uint8_t reg_field);*/
 void* get_variable_length_register(v8086* machine, uint8_t reg_field, uint8_t width);
 
+//TODO: Seems like it shouldn't be done like that. Might be borked af.
 #define select_segment_register(machine, select) ((uint16_t*)(&((machine)->sregs.es) + (select)))
 
 //uint16_t* select_segment_register(v8086* machine, segment_register_select select);

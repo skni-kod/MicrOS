@@ -200,7 +200,7 @@ static char remcomOutBuffer[BUFMAX];
 unsigned char *
 getpacket (void)
 {
-  unsigned char *buffer = &remcomInBuffer[0];
+  unsigned char *buffer = (unsigned char*)&remcomInBuffer[0];
   unsigned char checksum;
   unsigned char xmitcsum;
   int count;
@@ -278,23 +278,23 @@ putpacket (unsigned char *buffer)
 
   /*  $<packet info>#<checksum>.  */
   do
+  {
+    putDebugChar ('$');
+    checksum = 0;
+    count = 0;
+
+    while ((ch = (char)buffer[count]))
     {
-      putDebugChar ('$');
-      checksum = 0;
-      count = 0;
-
-      while (ch = buffer[count])
-	{
-	  putDebugChar (ch);
-	  checksum += ch;
-	  count += 1;
-	}
-
-      putDebugChar ('#');
-      putDebugChar (hexchars[checksum >> 4]);
-      putDebugChar (hexchars[checksum % 16]);
-
+      putDebugChar (ch);
+      checksum += ch;
+      count += 1;
     }
+
+    putDebugChar ('#');
+    putDebugChar (hexchars[checksum >> 4]);
+    putDebugChar (hexchars[checksum % 16]);
+
+  }
   while (getDebugChar () != '+');
 }
 
@@ -490,12 +490,12 @@ handle_exception (exception_state *state)
   int sigval, stepping;
   int addr, length;
   char *ptr;
-  int newPC;
+  //int newPC;
   
   /*
   enum regnames {EAX, ECX, EDX, EBX, ESP, EBP, ESI, EDI,
-	       PC /* also known as eip ,
-	       PS /* also known as eflags ,
+	       PC  also known as eip ,
+	       PS  also known as eflags ,
 	       CS, SS, DS, ES, FS, GS};
   */
  
@@ -550,14 +550,14 @@ handle_exception (exception_state *state)
 
   *ptr = '\0';
 
-  putpacket (remcomOutBuffer);
+  putpacket ((unsigned char*)remcomOutBuffer);
 
   stepping = 0;
 
   while (1 == 1)
     {
       remcomOutBuffer[0] = 0;
-      ptr = getpacket ();
+      ptr = (char*)getpacket ();
 
       switch (*ptr++)
 	{
@@ -649,6 +649,7 @@ handle_exception (exception_state *state)
 	  /* sAA..AA   Step one instruction from AA..AA(optional) */
 	case 's':
 	  stepping = 1;
+    __attribute__((fallthrough));
 	case 'c':
 	  /* try to read optional parameter, pc unchanged if no parm */
 	  if (hexToInt (&ptr, &addr))
@@ -657,7 +658,7 @@ handle_exception (exception_state *state)
       state->eip = addr;
     }
 
-	  newPC = registers[PC];
+	  //newPC = registers[PC];
 
 	  /* clear the trace bit */
 	  registers[PS] &= 0xfffffeff;
@@ -685,34 +686,33 @@ handle_exception (exception_state *state)
 	}			/* switch */
 
       /* reply to the request */
-      putpacket (remcomOutBuffer);
+      putpacket ((unsigned char*)remcomOutBuffer);
     }
 }
 
 /* this function is used to set up exception handlers for tracing and
    breakpoints */
-void
-set_debug_traps (void)
+void set_debug_traps (void)
 {
-  stackPtr = &remcomStack[STACKSIZE / sizeof (int) - 1];
+    stackPtr = &remcomStack[STACKSIZE / sizeof (int) - 1];
 
-  exceptionHandler (0, handle_exception);
-  exceptionHandler (1, handle_exception);
-  exceptionHandler (3, handle_exception);
-  exceptionHandler (4, handle_exception);
-  exceptionHandler (5, handle_exception);
-  exceptionHandler (6, handle_exception);
-  exceptionHandler (7, handle_exception);
-  exceptionHandler (8, handle_exception);
-  exceptionHandler (9, handle_exception);
-  exceptionHandler (10, handle_exception);
-  exceptionHandler (11, handle_exception);
-  exceptionHandler (12, handle_exception);
-  exceptionHandler (13, handle_exception);
-  exceptionHandler (14, handle_exception);
-  exceptionHandler (16, handle_exception);
+    exceptionHandler (0, handle_exception);
+    exceptionHandler (1, handle_exception);
+    exceptionHandler (3, handle_exception);
+    exceptionHandler (4, handle_exception);
+    exceptionHandler (5, handle_exception);
+    exceptionHandler (6, handle_exception);
+    exceptionHandler (7, handle_exception);
+    exceptionHandler (8, handle_exception);
+    exceptionHandler (9, handle_exception);
+    exceptionHandler (10, handle_exception);
+    exceptionHandler (11, handle_exception);
+    exceptionHandler (12, handle_exception);
+    exceptionHandler (13, handle_exception);
+    exceptionHandler (14, handle_exception);
+    exceptionHandler (16, handle_exception);
 
-  initialized = 1;
+    initialized = 1;
 }
 
 /* This function will generate a breakpoint exception.  It is used at the
@@ -720,9 +720,8 @@ set_debug_traps (void)
    otherwise as a quick means to stop program execution and "break" into
    the debugger.  */
 
-void
-breakpoint (void)
+void breakpoint (void)
 {
-  if (initialized)
-    BREAKPOINT ();
+    if (initialized)
+        BREAKPOINT ();
 }

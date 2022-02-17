@@ -9,7 +9,8 @@ int hdd_wrapper_get_device_number(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_B
 int hdd_wrapper_get_type_by_device_number(int device);
 int hdd_wrapper_get_bus_by_device_number(int device);
 
-uint8_t *hdd_wrapper_read_sector(int device_number, int sector);
+//not used parameter count, added for compat.
+uint8_t *hdd_wrapper_read_sector(int device_number, int sector, int count);
 void hdd_wrapper_write_sector(int device_number, int sector, uint8_t *content);
 
 #endif

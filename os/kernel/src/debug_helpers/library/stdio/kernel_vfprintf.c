@@ -5,6 +5,7 @@
 #include "stdio.h"
 #include "stdbool.h"
 #include "stdint.h"
+#include "../kernel_stdio.h"
 #include "../../../memory/heap/heap.h"
 
 #define FLAGS_ZEROPAD (1U << 0U)
@@ -810,6 +811,7 @@ int kernel_vfprintf(FILE *stream, const char *format, va_list arg)
 
             case 'X':
                 flags |= FLAGS_UPPERCASE; // Uppercase X
+                 __attribute__ ((fallthrough));
             case 'x':                     // HEX INTEGER
             {
                 u64 int_arg;
@@ -868,6 +870,7 @@ int kernel_vfprintf(FILE *stream, const char *format, va_list arg)
 
             case 'E':
                 flags |= FLAGS_UPPERCASE;
+                 __attribute__ ((fallthrough));
             case 'e':
             {
                 long double d_arg;
@@ -885,6 +888,7 @@ int kernel_vfprintf(FILE *stream, const char *format, va_list arg)
 
             case 'G':
                 flags |= FLAGS_UPPERCASE;
+                __attribute__ ((fallthrough));
             case 'g':
             {
                 long double d_arg;
