@@ -19,51 +19,51 @@ uint64_t bytes_received_count = 0;
 
 bool network_manager_init()
 {
-    net_devices = heap_kernel_alloc(sizeof(kvector), 0);
-    kvector_init(net_devices);
-    //Initialize all NIC drivers
-    net_device_t dev;
-    dev.receive_packet = &network_manager_receive_packet;
+    // net_devices = heap_kernel_alloc(sizeof(kvector), 0);
+    // kvector_init(net_devices);
+    // //Initialize all NIC drivers
+    // net_device_t dev;
+    // dev.receive_packet = &network_manager_receive_packet;
 
-    //If RTL8139 is present
-    if (rtl8139_init(&dev))
-    {
-        net_device_t *tmp = heap_kernel_alloc(sizeof(net_device_t), 0);
-        memcpy(tmp, &dev, sizeof(net_device_t));
-        tmp->rx_queue = heap_kernel_alloc(sizeof(kvector), 0);
-        tmp->tx_queue = heap_kernel_alloc(sizeof(kvector), 0);
-        kvector_init(tmp->rx_queue);
-        kvector_init(tmp->tx_queue);
-        kvector_add(net_devices, tmp);
-        //Hardcode IPv4 address
-        __set_ipv4_addr(tmp->ipv4_address, 192,160,1,120);
-        __network_manager_print_device_info(tmp);
-    }
+    // //If RTL8139 is present
+    // if (rtl8139_init(&dev))
+    // {
+    //     net_device_t *tmp = heap_kernel_alloc(sizeof(net_device_t), 0);
+    //     memcpy(tmp, &dev, sizeof(net_device_t));
+    //     tmp->rx_queue = heap_kernel_alloc(sizeof(kvector), 0);
+    //     tmp->tx_queue = heap_kernel_alloc(sizeof(kvector), 0);
+    //     kvector_init(tmp->rx_queue);
+    //     kvector_init(tmp->tx_queue);
+    //     kvector_add(net_devices, tmp);
+    //     //Hardcode IPv4 address
+    //     __set_ipv4_addr(tmp->ipv4_address, 192,160,1,120);
+    //     __network_manager_print_device_info(tmp);
+    // }
 
-    //If VirtIO is present
-    if (virtio_nic_init(&dev))
-    {
-        net_device_t *tmp = heap_kernel_alloc(sizeof(net_device_t), 0);
-        memcpy(tmp, &dev, sizeof(net_device_t));
-        tmp->rx_queue = heap_kernel_alloc(sizeof(kvector), 0);
-        tmp->tx_queue = heap_kernel_alloc(sizeof(kvector), 0);
-        kvector_init(tmp->rx_queue);
-        kvector_init(tmp->tx_queue);
-        kvector_add(net_devices, tmp);
-        //Hardcode IPv4 address
-        __set_ipv4_addr(tmp->ipv4_address, 192,160,1,120);
-        __network_manager_print_device_info(tmp);
-    }
+    // //If VirtIO is present
+    // if (virtio_nic_init(&dev))
+    // {
+    //     net_device_t *tmp = heap_kernel_alloc(sizeof(net_device_t), 0);
+    //     memcpy(tmp, &dev, sizeof(net_device_t));
+    //     tmp->rx_queue = heap_kernel_alloc(sizeof(kvector), 0);
+    //     tmp->tx_queue = heap_kernel_alloc(sizeof(kvector), 0);
+    //     kvector_init(tmp->rx_queue);
+    //     kvector_init(tmp->tx_queue);
+    //     kvector_add(net_devices, tmp);
+    //     //Hardcode IPv4 address
+    //     __set_ipv4_addr(tmp->ipv4_address, 192,160,1,120);
+    //     __network_manager_print_device_info(tmp);
+    // }
 
-    // net_packet_t* test_packet = heap_kernel_alloc(sizeof(net_packet_t),0);
-    // memcpy(test_packet->device_mac,((net_device_t*)(net_devices->data[0]))->mac_address,MAC_ADDRESS_SIZE);
-    // char* data = heap_kernel_alloc(16,0);
-    // data = "Hello!";
-    // test_packet->packet_data = data;
-    // test_packet->packet_length = 16;
-    // network_manager_send_packet(test_packet);
+    // // net_packet_t* test_packet = heap_kernel_alloc(sizeof(net_packet_t),0);
+    // // memcpy(test_packet->device_mac,((net_device_t*)(net_devices->data[0]))->mac_address,MAC_ADDRESS_SIZE);
+    // // char* data = heap_kernel_alloc(16,0);
+    // // data = "Hello!";
+    // // test_packet->packet_data = data;
+    // // test_packet->packet_length = 16;
+    // // network_manager_send_packet(test_packet);
 
-    return true;
+    // return true;
 }
 
 void network_manager_send_packet(net_packet_t *packet)

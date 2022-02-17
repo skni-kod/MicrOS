@@ -351,6 +351,8 @@ int kmain()
     
     logger_log_ok("Loading shells...");
     
+    while(1);
+
     uint32_t d = 0;
     for (int i = 0; i < 4; i++)
     {

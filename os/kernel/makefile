@@ -23,7 +23,7 @@ GCC_LINK_FLAGS := -T ../linker.ld -L../../library/bin -lc -lgcc -nostdlib
 # GCC_COMPILE_FLAGS += -O2
 # GCC_LINK_FLAGS += -s -DNDEBUG
 # else
-GCC_COMPILE_FLAGS += -O0 -ggdb3 -fsanitize=undefined
+GCC_COMPILE_FLAGS += -O0 -ggdb3
 # endif
 
 $(OUTPUT_FILE): $(C_OBJECTS) $(ASM_OBJECTS)
