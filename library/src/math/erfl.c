@@ -2,30 +2,40 @@
 
 long double erfl(long double x)
 {
+    // Make it faster for obivious values
     if(x == 0)
     {
         return 0;
     }
-    long double sign;
-    long double factorial_of_j = 1;
-    long double sum = 0;
-    for(int i = 1, j = 0; i < 22; i+=2, j++)
+    if(x > 3.56)
     {
-        if(j % 2 == 0)
-        {
-            sign = 1;
-        }
-        else
-        {
-            sign = -1;
-        }
-        // Calculate factorial od j
-        if(j > 0)
-        {
-            factorial_of_j *= j;
-        }
-        sum = sum + (sign * powl(x, (long double)i)/((long double)i * factorial_of_j));   
+        return 1;
     }
-    sum = sum * 2/sqrt(M_PI);
+    if(x < -3.56)
+    {
+        return -1;
+    }
+
+    long double sum = 0;
+    long double span = 0.000000001;
+    long double current_piece = 0;
+
+    for(current_piece; current_piece < x; current_piece += span)
+	{
+		sum += exp(-pow(current_piece, 2)) * span;
+	}
+	sum = sum * (2.0/sqrt(M_PI));
+
+    // Mke sure result isn't higher than 1.0
+    if(sum > 1.0)
+    {
+        sum = 1.0;
+    }
+    // If argument was negative, neagte result
+    if(x < 0)
+    {
+        sum *= -1;
+    }
+
     return sum;
 }

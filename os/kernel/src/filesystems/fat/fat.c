@@ -41,7 +41,7 @@ bool fat_init()
 
 void fat_load_fat()
 {
-    for (int i = current_partition->header->reserved_sectors; i < current_partition->header->sectors_per_fat; i++)
+    for (int i = current_partition->header->reserved_sectors; i < current_partition->header->sectors_per_fat + current_partition->header->reserved_sectors; i++)
     {
         uint16_t cluster_number = i + current_partition->first_sector;
         uint32_t fat_offset = (uint32_t)current_partition->fat + (i - current_partition->header->reserved_sectors) * current_partition->header->bytes_per_sector;
@@ -53,7 +53,7 @@ void fat_load_fat()
 
 void fat_save_fat()
 {
-    for (int i = current_partition->header->reserved_sectors; i < current_partition->header->sectors_per_fat; i++)
+    for (int i = current_partition->header->reserved_sectors; i < current_partition->header->sectors_per_fat + current_partition->header->reserved_sectors; i++)
     {
         uint16_t cluster_number = i + current_partition->first_sector;
         uint32_t fat_offset = ((uint32_t)current_partition->fat + (i - current_partition->header->reserved_sectors) * current_partition->header->bytes_per_sector);
@@ -359,7 +359,7 @@ bool fat_read_file_from_path(char *path, uint8_t *buffer, uint32_t start_index, 
     uint32_t read_clusters = 0;
 
     uint8_t *result = fat_read_file_from_cluster(file_info->first_sector, initial_cluster, clusters_count, &read_clusters);
-    memcpy(buffer, result + (start_index % (current_partition->header->bytes_per_sector * current_partition->header->sectors_per_cluster)), length);
+    memcpy(buffer, result + (start_index % (current_partition->header->bytes_per_sector * current_partition->header->sectors_per_cluster)), (read_clusters) * current_partition->header->bytes_per_sector * current_partition->header->sectors_per_cluster);
 
     heap_kernel_dealloc(result);
     if(file_info != 0) heap_kernel_dealloc(file_info);
