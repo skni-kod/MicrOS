@@ -19,49 +19,6 @@
 ; %define PAGES_COUNT         6
 
 jmp main
-
-; Function for displaying debug text in real mode
-realstr:
-    
-    mov ax, 0xb800
-    mov es, ax
-    mov ax, 0x0c41
-    mov ecx, 10
-    xor edi, edi
-    rep stosw
-
-    ret
-
-realstr2:
-    
-    mov ax, 0xb800
-    mov es, ax
-    mov ax, 0xf941
-    mov ecx, 10
-    xor edi, edi
-    rep stosw
-
-    ret
-
-realstr_status:
-    
-    mov al, ah
-    xor ah, ah
-    mov bl, 64
-    div bl
-    xchg ah, al
-    add ah, 0x09
-    add al, 48
-
-    mov bx, 0xb800
-    mov es, bx
-    ;mov ax, 0x0c41
-    mov ecx, 10
-    xor edi, edi
-    rep stosw
-
-    ret
-
 ; Entry frame: https://wiki.osdev.org/GDT
 gdt_begin:
 ; Null segment, reserved by CPU
@@ -130,6 +87,91 @@ gdt_end:
 gdt_description:
     dw gdt_end - gdt_begin - 1
     dd gdt_begin
+
+; Function for displaying debug text in real mode
+realstr:
+    
+    mov ax, 0xb800
+    mov es, ax
+    mov ax, 0x0c41
+    mov ecx, 10
+    xor edi, edi
+    rep stosw
+
+    ret
+
+realstr2:
+    
+    mov ax, 0xb800
+    mov es, ax
+    mov ax, 0xf941
+    mov ecx, 10
+    xor edi, edi
+    rep stosw
+
+    ret
+
+realstr_status:
+    
+    mov al, ah
+    xor ah, ah
+    mov bl, 64
+    div bl
+    xchg ah, al
+    add ah, 0x09
+    add al, 48
+
+    mov bx, 0xb800
+    mov es, bx
+    ;mov ax, 0x0c41
+    mov ecx, 10
+    xor edi, edi
+    rep stosw
+
+    ret
+
+real_print_bx:
+
+    xor ecx, ecx
+    mov dx, bx
+    xor ax, ax
+    mov ah, 0x09
+    mov al, dh
+    and al, 0xF0
+    shr al, 4
+    mov cx, 0
+    call real_print_hex_char
+    mov al, dh
+    and al, 0x0F
+    mov cx, 2
+    call real_print_hex_char
+    mov al, dl
+    and al, 0xF0
+    shr al, 4
+    mov cx, 4
+    call real_print_hex_char
+    mov al, dl
+    and al, 0x0F
+    mov cx, 6
+    call real_print_hex_char  
+    ret
+
+real_print_hex_char:
+
+    add al, 0x30
+    cmp al, 0x3A
+    jl rpb_a_off
+    add al, 0x11
+rpb_a_off:
+    xor edi, edi
+    mov di, cx
+    mov bx, 0xb800
+    mov es, bx
+    mov ecx, 1
+    rep stosw
+
+    ret
+
 
 main:
     ; Load memory map before we will switch to the protected mode
@@ -233,14 +275,6 @@ load_memory_map:
     push eax
 
     load_memory_map_loop:
-    ; Increment pointer in buffer
-    add di, 24
-
-    ; Increment entries count
-    pop eax
-    inc eax
-    push eax
-
     ; Set magic number
     mov edx, 0x534d4150
 
@@ -254,6 +288,14 @@ load_memory_map:
     ; Disable interrupts (can be enabled by int 0x15)
     cli
 
+    ; Increment pointer in buffer
+    add di, 24
+
+    ; Increment entries count
+    pop eax
+    inc eax
+    push eax
+    
     ; Exit if ebx is equal to zero (reading has ended)
     cmp ebx, 0
     jne load_memory_map_loop
@@ -568,16 +610,8 @@ enable_paging:
 
     ; Enable paging
     mov eax, cr0
-    or eax, 0x80000020
+    or eax, 0x80000001
     mov cr0, eax
-
-    jmp .branch
-    nop
-    nop
-    nop
-    nop
-    nop
-    .branch:
 
     ret
 

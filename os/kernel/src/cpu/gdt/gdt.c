@@ -52,7 +52,7 @@ void gdt_fill_entry_as_tss(int index, tss_entry *tss)
     gdt[index].direction = 0;
     gdt[index].executable = 1;
     gdt[index].reserved_1 = 0;
-    gdt[index].privilege_level = 3;
+    gdt[index].privilege_level = 0;
     gdt[index].present = 1;
 
     gdt[index].limit_16_19 = tss_entry_size >> 16;
