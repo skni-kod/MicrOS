@@ -596,6 +596,11 @@ ghwu0123456789PCqegwehtyethtgwrtujeywerywryhetwuhetujretyerhjsyv7hsD012345678901
 
     logger_log_info("Hello, World!");
 
+    uint32_t value = 0;
+    value = 10;
+    value = 20;
+    value = 6969;
+
     //startup_music_play();
     logger_log_ok("READY.");
     
