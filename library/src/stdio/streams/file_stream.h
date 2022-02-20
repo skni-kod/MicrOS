@@ -1,7 +1,7 @@
 #ifndef FILE_STREAM_H
 #define FILE_STREAM_H
 
-#define CHUNK_SIZE 10*1024 // 10 KiB
+#define CHUNK_SIZE 20480
 
 #include <stdint.h>
 #include "../../stdio.h"

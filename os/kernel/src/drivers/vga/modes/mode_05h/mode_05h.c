@@ -110,6 +110,8 @@ int8_t mode05h_set_mode()
 	video_card_set_get_cursor_pos_func(NULL);
 	video_card_set_turn_cursor_on_func(NULL);
 	video_card_set_turn_cursor_off_func(NULL);
+
+
     return 0x05;
 }
 

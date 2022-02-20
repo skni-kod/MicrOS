@@ -348,10 +348,8 @@ void startup()
     //fat_init();
     //logger_log_ok("FAT12");
 
-    VBE_driver_init();
-    logger_log_ok("VBE");
-    
-    while(1);
+    // VBE_driver_init();
+    // logger_log_ok("VBE");
 
     init_terminal_manager();
     logger_log_ok("Terminal manager");
