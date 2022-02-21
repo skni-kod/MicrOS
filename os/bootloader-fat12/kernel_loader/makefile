@@ -1,24 +1,45 @@
 GCC := /opt/cross/bin/i386-elf-gcc
+OBJCOPY := /opt/cross/i386-elf/bin/objcopy
 NASM := "../../../tools/nasm"
 
 SRC_DIR := src
 OBJ_DIR := obj
 BIN_DIR := bin
-OUTPUT_FILE := $(BIN_DIR)/microldr.bin
+OUTPUT_FILE := $(BIN_DIR)/microldr.elf
+OUTPUT_BIN_FILE := $(BIN_DIR)/microldr.bin
+
+C_SOURCES := $(shell find $(SRC_DIR) -name "*.c")
+C_OBJECTS := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(C_SOURCES))
 
 ASM_SOUCES := $(shell find $(SRC_DIR) -name "*.asm")
 ASM_OBJECTS := $(patsubst $(SRC_DIR)/%.asm,$(OBJ_DIR)/%.o,$(ASM_SOUCES))
 
-$(OUTPUT_FILE): $(ASM_OBJECTS)
-	@echo "=== Copying output bootloader $(OUTPUT_FILE) ==="
+DEPS := $(C_OBJECTS:.o=.d)
+
+GCC_COMPILE_FLAGS := -I$(SRC_DIR) -I../../../../library/src -I$(SRC_DIR)/klibrary -ffreestanding -Wall -Wextra -Wno-unused-parameter -Wno-packed-bitfield-compat -fshort-enums
+GCC_LINK_FLAGS :=  -T linker.ld -L../../../library/bin -lc -lgcc -nostdlib
+
+GCC_COMPILE_FLAGS += -O0 -ggdb3
+
+$(OUTPUT_FILE): $(C_OBJECTS) $(ASM_OBJECTS)
+	@echo "=== Linking output file $(OUTPUT_FILE) ==="
 	@mkdir -p '$(@D)'
-	@cp $< $(OUTPUT_FILE)
+	@$(GCC) $(C_OBJECTS) $(ASM_OBJECTS) -o $(OUTPUT_FILE) $(GCC_LINK_FLAGS)
+	@echo "=== Creating binary version of kernel elf ==="
+	@$(OBJCOPY) -O binary $(OUTPUT_FILE) $(BIN_DIR)/microldr.bin
 	@echo "=== $(OUTPUT_FILE) done ==="
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.asm
-	@echo "=== Compiling asm file $(PWD)/$< into object $@ ==="
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	@echo "=== Compiling C file $< into object $@ ==="
 	@mkdir -p '$(@D)'
-	@$(NASM) $< -f bin -o $@
+	@$(GCC) -c $(CURDIR)/$< -o $@ -MMD -MF $(@:.o=.d) $(GCC_COMPILE_FLAGS)
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.asm
+	@echo "=== Compiling asm file $< into object $@ ==="
+	@mkdir -p '$(@D)'
+	@$(NASM) $(CURDIR)/$< -f elf32 -o $@
+
+-include $(DEPS)
 
 clean:
 	@echo "=== Clearing $(BIN_DIR) and $(OBJ_DIR) directories ==="
