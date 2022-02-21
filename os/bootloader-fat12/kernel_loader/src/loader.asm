@@ -1,6 +1,5 @@
 [BITS 16]
 [ORG 0xF000]
-
 jmp loaderMain
 
 ;GDT
@@ -76,10 +75,19 @@ gdt_description:
 ;Globals
 micros_loading db 'MicrOS is loading...',0
 a20_error db 'A20 Gate is not available. Critical ERROR...',0
+before_prot db 'This is exactly before turning on protection!',0
 
 loaderMain:
-    mov ax, 0xF00 ; effective address: 0xF000
-    mov ds, ax 
+    cli
+
+    xor ax, ax
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+
+    mov esp, 0x7C00
 
     ; Hide cursor
     mov ah, 0x01
@@ -105,6 +113,13 @@ loaderMain:
     mov si, micros_loading
     call print_line_16
 
+    ; Check If Line A20 Enabled
+    call check_a20
+    or ax, ax
+    jz enable_A20_BIOS
+
+    cli
+
     mov bx, 0x0000
     mov es, bx
     ; Buffer offset
@@ -113,15 +128,18 @@ loaderMain:
 
     call load_memory_map
 
+    sti
     ; Load GDT table
     lgdt [dword gdt_description]
 
-    ; Check If Line A20 Enabled
-    call check_a20
-    or ax, ax
-    jnz a20_enabled
-    jmp enable_A20_BIOS
 
+
+    ;enter protected mode (32 bit)
+    mov eax, cr0
+    or eax, 1
+    mov cr0, eax
+
+    jmp dword 0x08:main_protected_area
     jmp $
 
 print_line_16:
@@ -144,46 +162,6 @@ new_line_16:
     int 10h
     ret
 
-
-; Check if Enabled via BIOS
-a20_check_after_bios:
-    call check_a20
-    or ax, ax
-    jnz a20_enabled
-; Not Enabled via BIOS. Try by Keyboard Controller
-a20_bios_failed:
-    call enable_A20_keyboard
-; Check if Enabled via Keyboard Controller
-a20_keyboard_check:
-    call check_a20
-    or ax, ax
-    jnz a20_enabled
-; Not Enabled via Keyboard Controller, Try Fast A20
-a20_keyboard_failed:
-    in al, 0x92
-    or al, 2
-    out 0x92, al
-; Check if enabled via Fast A20
-a20_fast_a20_check:
-    call check_a20
-    or ax, ax
-    jnz a20_enabled
-; Not Enabled via A20. No idea what to do here
-    mov si, a20_error
-    call print_line_16
-    cli
-    hlt
-; Enabled Line A20
-a20_enabled:
-    mov ax, 0x7c0
-    mov ds, ax
-    cli
-    mov eax, cr0
-    or eax, 1
-    mov cr0, eax
-    ; Jump to protected area 
-    jmp dword 0x08:main_protected_area
-    jmp $
 check_a20:
     pushf
     push ds
@@ -281,6 +259,40 @@ a20wait2:
     jz      a20wait2
     ret
 
+
+; Check if Enabled via BIOS
+a20_check_after_bios:
+    call check_a20
+    or ax, ax
+    jnz a20_enabled
+; Not Enabled via BIOS. Try by Keyboard Controller
+a20_bios_failed:
+    call enable_A20_keyboard
+; Check if Enabled via Keyboard Controller
+a20_keyboard_check:
+    call check_a20
+    or ax, ax
+    jnz a20_enabled
+; Not Enabled via Keyboard Controller, Try Fast A20
+a20_keyboard_failed:
+    in al, 0x92
+    or al, 2
+    out 0x92, al
+; Check if enabled via Fast A20
+a20_fast_a20_check:
+    call check_a20
+    or ax, ax
+    jnz a20_enabled
+; Not Enabled via A20. No idea what to do here
+    mov si, a20_error
+    call print_line_16
+    cli
+    hlt
+; Enabled Line A20
+a20_enabled:
+    ; Jump to protected area 
+    ret
+
 ; Input:
 ;   es - buffer segment
 ;   di - buffer offset
@@ -331,7 +343,6 @@ load_memory_map:
 main_protected_area:
     ;call protstr
     cli
-    hlt
     ; Set data and stack segments to the third GDI descriptor
     mov ax, 0x10
     mov ds, ax
@@ -340,9 +351,40 @@ main_protected_area:
     mov gs, ax
     mov ss, ax
 
-    mov eax, 0xf930
-    mov ebx, 0xb8000
-    mov [ebx], eax
+    mov esi, protected_in
+    call protstr
     
     hlt
     jmp $
+
+; temporarily it is going to print at the beginning!
+; Function for displaying debug text in protected mode
+protstr:
+    mov dx,0x3D4       ; Tell the control I/O port to get the lower byte of
+    mov al,0x0F        ; the cursor offset
+    out dx,al
+    mov dx,0x3D5       ; Switch to data I/O port
+    in  al,dx          ; Get the cursor offset's lower byte
+
+    mov dx,0x3D5       ; Tell the control I/O port to get the higher byte of
+    mov al,0x0E        ; the cursor offset
+    out dx,al
+    mov dx,0x3D5       ; Switch to data I/O port
+    in  al,dx          ; Get the higher byte
+
+    imul ax,2
+    ;discard for now
+    mov ah, 09
+    mov ebx, 0xb8000
+protstr_loop:
+	lodsb
+    test al, al
+    je protstr_done
+    mov [ebx], ax
+    add ebx, 2
+    jmp protstr_loop
+protstr_done:
+    ret
+
+; 32bit globals
+protected_in db 'We are in protected mode now! Second stage worked!',0
