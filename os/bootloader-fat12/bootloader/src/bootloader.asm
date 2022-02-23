@@ -1,15 +1,17 @@
 ;                                            MicrOS physic memory layout
 ;
-; |------------|---------|------------|------------|----------------|---------|------------|------------|---------|---------|------------|------------|------------|------------|
-; |   1 KiB    |  256 B  |   21 KiB   |   1 KiB    |     4 KiB      |  3 KiB  |   512 B    |   28 KiB   | 578 KiB |  1 KiB  |  383 KiB   |   15 MiB   |   1 MiB    |   4 MiB    |
-; | Interrupts |   BDA   | Floppy DMA | Memory map | Page Directory |  Free   | Bootloader | FAT32 data |  Kernel |  EBDA   | Video, ROM |  Reserved  |   Stack    | Page Table |
-; |            |         |            |            |                |         |            |            |         |         |            |            |            |            |
-; |  0x00000   | 0x00400 |  0x00500   |  0x05C00   |    0x06000     | 0x07000 |  0x07C00   |  0x07E00   | 0x0F000 | 0x9FC00 |  0xA0000   | 0x00100000 | 0x01000000 | 0x01100000 |
-; |  0x003FF   | 0x004FF |  0x05BFF   |  0x05FFF   |    0x06FFF     | 0x07BFF |  0x07DFF   |  0x0EFFF   | 0x9FBDD | 0x9FFFF |  0xFFFFF   | 0x00FFFFFF | 0x010FFFFF | 0x014FFFFF |
-; |------------|---------|------------|------------|----------------|---------|------------|------------|---------|---------|------------|------------|------------|------------|
+; |------------|---------|------------|------------|----------------|--------------|--------------|------------|---------|---------|------------|------------|------------|------------|
+; |   1 KiB    |  256 B  |   21 KiB   |   1 KiB    |     4 KiB      |    3 KiB     |    512 B     |   28 KiB   | 578 KiB |  1 KiB  |  383 KiB   |   15 MiB   |   1 MiB    |   4 MiB    |
+; | Interrupts |   BDA   | Floppy DMA | Memory map | Page Directory | BootloaderS2 | BootloaderS1 | FAT32 data |  DataS2 |  EBDA   | Video, ROM |   Kernel   |   Stack    | Page Table |
+; |            |         |            |            |                |              |              |            |         |         |            |            |            |            |
+; |  0x00000   | 0x00400 |  0x00500   |  0x05C00   |    0x06000     |    0x07000   |   0x07C00    |  0x07E00   | 0x0F000 | 0x9FC00 |  0xA0000   | 0x00100000 | 0x01000000 | 0x01100000 |
+; |  0x003FF   | 0x004FF |  0x05BFF   |  0x05FFF   |    0x06FFF     |    0x07BFF   |   0x07DFF    |  0x0EFFF   | 0x9FBDD | 0x9FFFF |  0xFFFFF   | 0x00FFFFFF | 0x010FFFFF | 0x014FFFFF |
+; |------------|---------|------------|------------|----------------|--------------|--------------|------------|---------|---------|------------|------------|------------|------------|
 ; {                                        Segment 1                                                       }{                            Segment 2 - n                          }
 
 ; TODO - Memory physical and virtual memory layout has to be changed now.
+; Move Kernel to 0x00100000? This would give us about 15 MiB of memory just for kernel. If it gets problematic after this area it has to be refactored as kernel itself.
+; Move botloader stage 2 to 3 KiB area? (would it be enough tho?), if it is not using BSS section too much it should be possible.
 
 ; REMEMBER: THIS IS BOOTLOADER FOR FAT12 IN FLOPPY, THIS PART IS SUPPOSED TO VARY DEPENDING ON FILESYSTEM
 ; THIS IS FIRST STAGE OF BOOTLOADER. AFTER READING MICROLDR IT WILL JUMP TO IT AND PREPARE LOADING IN HIGH MEMORY AREA
@@ -423,7 +425,7 @@ LoadLoader:
     mov dx, 0x200
     mul dx
     mov bx, ax
-    add bx, 0xF000
+    add bx, 0x7000
     
     cmp bx, 0
     jne LoadLoader_Increment
@@ -469,7 +471,9 @@ LoadLoader:
 ; Input: nothing
 ; Output: nothing
 JumpToLoader:
-    jmp dword 0x0f00:0x0000
+    mov ax, [INT13Scratchpad]
+    push ax
+    jmp dword 0x0700:0x0000
 
 times 510 - ($ - $$) db 0
 dw 0xAA55

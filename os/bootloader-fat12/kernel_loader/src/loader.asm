@@ -1,5 +1,5 @@
 [BITS 16]
-[ORG 0xF000]
+[ORG 0x7000]
 jmp loaderMain
 
 ;GDT
@@ -9,8 +9,8 @@ gdt_null:
     dd 0x00000000
     dd 0x00000000
 
-; Code segment
-gdt_code:
+; Code segment 32 bit (0x08)
+gdt_code_32:
     ; Segment limit (4 GiB)
     dw 0xFFFF
 
@@ -38,8 +38,8 @@ gdt_code:
     ; Segment base address (8 bits)
     db 0x00
 
-; Data segment
-gdt_data:
+; Data segment 32 bit (0x10)
+gdt_data_32:
     ; Segment limit (4 GiB)
     dw 0xFFFF
 
@@ -66,6 +66,63 @@ gdt_data:
 
     ; Segment base address (8 bits)
     db 0x00
+    ; code segment 16 bit (0x18)
+gdt_code_16:
+    ; Segment limit (4 GiB)
+    dw 0xFFFF
+
+    ; Segment base address (16 bits)
+    dw 0x0000
+
+    ; Segment base address (8 bits)
+    db 0x00
+
+    ; 1 - present bit (1 for all valid sectors)
+    ; 00 - privilege (ring level), 00 is the higest
+    ; 1 - reserved
+    ; 1 - excebutable bit, code can be excecuted here
+    ; 0 - conforming bit, only kernel can execute code
+    ; 1 - segment can be read
+    ; 0 - access bit, default is zero
+    db 10011010b
+
+    ; 1 - granularity (0 = 1B block, 1 = 4 KiB block)
+    ; 1 - size bit (0 = 16b protected mode, 1 = 32b protected mode)
+    ; 00 - reserved
+    ; 1111 - segment base address (4 bits)
+    db 00000001b
+
+    ; Segment base address (8 bits)
+    db 0x00
+    ; data segment 16 bit (0x20)
+gdt_data_16:
+    ; Segment limit (4 GiB)
+    dw 0xFFFF
+
+    ; Segment base address (16 bits)
+    dw 0x0000
+
+    ; Segment base address (8 bits)
+    db 0x00
+
+    ; 1 - present bit (1 for all valid sectors)
+    ; 00 - privilege (ring level), 00 is the higest
+    ; 1 - reserved
+    ; 1 - excebutable bit, code can be excecuted here
+    ; 0 - conforming bit, only kernel can execute code
+    ; 1 - segment can be read
+    ; 0 - access bit, default is zero
+    db 10010010b
+
+    ; 1 - granularity (0 = 1B block, 1 = 4 KiB block)
+    ; 1 - size bit (0 = 16b protected mode, 1 = 32b protected mode)
+    ; 00 - reserved
+    ; 1111 - segment base address (4 bits)
+    db 00000001b
+
+    ; Segment base address (8 bits)
+    db 0x00
+
 gdt_end:
 gdt_description:
     dw gdt_end - gdt_begin - 1
@@ -77,8 +134,41 @@ micros_loading db 'MicrOS is loading...',0
 a20_error db 'A20 Gate is not available. Critical ERROR...',0
 before_prot db 'This is exactly before turning on protection!',0
 
+;Fat stuff?
+; FAT header
+BytesPerLogicalSector           dw 0x0200
+LogicalSectorsPerCluster        db 0x01
+ReservedLogicalSectors          dw 0x0001
+FileAllocationTables            db 0x02
+MaxRootDirectoryEntries         dw 0x00E0
+TotalLogicalSectors             dw 0x0B40
+MediaDescriptor                 db 0xF0
+LogicalSectorsPerFAT            dw 0x0009
+PhysicalSectorsPerTrack         dw 0x0012
+Heads                           dw 0x0002
+HiddenSectors                   dd 0x00000000
+
+KernelFileName                  db 'KERNEL  BIN'    ; 11 chars
+NonDataSectors                  dw 0x0000
+
+DriveNumber                 db 0
+
+LoadKernel.StackPointer     dw 0
+LoadKernel.KernelSize       dd 0
+LoadKernel.BufferSize       dd 0
+LoadKernel.CurrentSector    dw 0
+LoadKernel.LastSector       dw 0
+LoadKernel.SectorsToCopy    dw 0
+LoadKernel.TargetPointer    dd 0x100000
+
 loaderMain:
     cli
+
+    call GetNonDataSectorsCount
+    mov [NonDataSectors], cx
+
+    pop ax
+    mov [DriveNumber], al
 
     xor ax, ax
     mov ds, ax
@@ -132,14 +222,18 @@ loaderMain:
     ; Load GDT table
     lgdt [dword gdt_description]
 
+    call GetFirstKernelSector
 
+    call LoadKernel
+    mov si, micros_loading
+    call print_line_16
 
     ;enter protected mode (32 bit)
     mov eax, cr0
     or eax, 1
     mov cr0, eax
 
-    jmp dword 0x08:main_protected_area
+    jmp dword 0x08:0x100000
     jmp $
 
 print_line_16:
@@ -339,24 +433,305 @@ load_memory_map:
     
     ret
 
-[BITS 32]
-main_protected_area:
-    ;call protstr
+; Proper kernel loading code. IT WILL SWITCH TO AND FROM PROTECTED MODE FREQUENTLY
+; Input: nothing
+; Output:
+;   ax - kernel first sector number
+;   edx - kernel size in bytes
+GetFirstKernelSector:
+    ; Set initial offset of non data sectors loaded into memory
+    mov cx, 0x7E00
+
+    xor ax, ax
+    ; Add size of both File Allocations Tables to get root directory offset
+    mov al, [FileAllocationTables]
+    mov dx, [LogicalSectorsPerFAT]
+    mul dx
+
+    mov dx, [BytesPerLogicalSector]
+    mul dx
+
+    ; Now cx contains offset of root directory
+    add cx, ax
+
+    GetFirstKernelSector_BeginCompareLoop:
+    ; Load name of entry and expected kernel name offsets
+    mov si, cx
+    mov di, KernelFileName
+
+    ; Current string index will be stored in dx register
+    xor dx, dx
+
+    GetFirstKernelSector_CompareLoop:
+    ; Check if whole string has been compared
+    cmp dx, 10
+    je GetFirstKernelSector_KernelFound
+
+    ; Compare chars from both strings
+    mov ax, [si]
+    mov bx, [di]
+    cmp ax, bx
+
+    ; If chars aren't equal, go to next entry
+    jne GetFirstKernelSector_FilenameNotEqual
+
+    ; Increment index and char addresses
+    inc dx
+    inc si
+    inc di
+
+    ; Go to next iteration
+    jmp GetFirstKernelSector_CompareLoop
+
+    GetFirstKernelSector_FilenameNotEqual:
+    ; Go to next entry
+    add cx, 0x20
+    jmp GetFirstKernelSector_BeginCompareLoop
+
+    GetFirstKernelSector_KernelFound:
+    ; Move address with sector number to bx register due to Intel limitations and then move sector number to ax register
+    ; https://stackoverflow.com/questions/1797765/assembly-invalid-effective-address
+    mov bx, cx
+    add bx, 0x1A
+    mov ax, [bx]
+    add bx, 2
+    mov edx, dword [bx]
+
+    ret
+
+; Input:
+;   - bx - original sector number
+; Output:
+;   - cl - calculated sector number
+;   - ch - calculated track number
+;   - dh - calculated head number
+GetCHS:
+    push ebp
+    mov  ebp, esp
+
+    ; [ebp - 2] = Temp = LBA / (Sectors per Track)
+    ; [ebp - 4] = Sector = (LBA % (Sectors per Track)) + 1
+    mov ax, bx
+    xor dx, dx
+    mov cx, [PhysicalSectorsPerTrack]
+    div cx
+    push ax
+    
+    ;inc dx
+    push dx
+
+    ; [ebp - 6] = Head = Temp % (Number of Heads)
+    ; [ebp - 8] = Track = Temp / (Number of Heads)
+    mov ax, [ebp - 2]
+    xor dx, dx
+    mov bx, [Heads]
+    div bx
+
+    push dx
+    push ax
+
+    ; Sector number
+    mov al, [ebp - 4]
+
+    ; Track number
+    mov cx, [ebp - 8]
+    xchg ch, cl
+    ror cl, 1
+    ror cl, 1
+    or cl, al
+    inc cx
+
+    ; Head number
+    mov dh, [ebp - 6]
+
+    mov esp, ebp
+    pop ebp
+
+    ret
+
+GetNonDataSectorsCount:
+    ; Boot sector
+    mov cx, 1
+
+    ; FAT sectors (number of FATs * sectors per FAT)
+    xor ax, ax
+    mov al, [FileAllocationTables]
+    mov dx, [LogicalSectorsPerFAT]
+    mul dx
+    add cx, ax
+
+    ; Root directory sectors (number of root entries * 32 / bytes per sector)
+    mov ax, [MaxRootDirectoryEntries]
+    mov dx, 32
+    mul dx
+    xor dx, dx
+    mov bx, [BytesPerLogicalSector]
+    div bx
+    add cx, ax
+
+    ret
+
+LoadKernel:
+    push cs
+    push ds
+    push es
+    push ss
+    push fs
+    push gs
+    pusha
+
+    add ax, [NonDataSectors]
+    sub ax, 2
+
+    ; we're not going to use stack for storing values, since using it between real and protected mode is... weird.
+    mov [LoadKernel.StackPointer], sp
+    mov [LoadKernel.KernelSize], edx
+
+    ; round up to sector size and divide by that to get sector count.
+    add edx, 0x1FF
+    shr edx, 9
+
+    mov [LoadKernel.CurrentSector], ax
+    add dx, ax
+    mov [LoadKernel.LastSector], dx
+
+LoadKernel_LoadChunk:
+
+    sub dx, ax
+    mov cx, 128
+    cmp cx, dx
+    jb LoadKernel_Continue
+    mov cx, dx
+LoadKernel_Continue:
+
     cli
-    ; Set data and stack segments to the third GDI descriptor
+    mov [LoadKernel.SectorsToCopy], cx
+
+    mov bx, ax
+    call GetCHS
+    mov bx, 0x1000
+    mov es, bx
+    mov ah, 0x02
+    mov al, [LoadKernel.SectorsToCopy]
+    mov dl, [DriveNumber]
+    xor bx,bx
+
+    ; mov [0xF000], ax
+    ; mov [0xF002], bx
+    ; mov [0xF004], cx
+    ; mov [0xF006], dx
+    ; mov [0xF008], es
+    ; mov ax, [LoadKernel.SectorsToCopy]
+    ; mov [0xF00A], ax
+    ; mov ax, [LoadKernel.CurrentSector]
+    ; mov [0xF00C], ax
+    int 0x13
+
+LoadKernel_Prep32Bit:
+    cli
+
+    mov eax, cr0
+    or eax, 1
+    mov cr0, eax
+
+    jmp 0x08:LoadKernel_SwitchToProtected32
+
+[BITS 32]
+LoadKernel_SwitchToProtected32:
     mov ax, 0x10
     mov ds, ax
     mov es, ax
-    mov fs, ax
-    mov gs, ax
     mov ss, ax
 
-    mov esi, protected_in
-    call protstr
-    
-    hlt
-    jmp $
+    mov esp, 0x10000
 
+LoadKernel_CopyChunk:
+    xor ecx, ecx
+    xor esi, esi
+    xor edi, edi
+    mov bx, [LoadKernel.SectorsToCopy]
+    mov cx, bx
+    shl ecx, 9
+    mov esi, 0x10000
+    mov edi, [LoadKernel.TargetPointer]
+
+    ;INC
+    add [LoadKernel.TargetPointer], ecx
+    add [LoadKernel.CurrentSector], bx
+
+    ; Final copy
+    cld
+    shr ecx, 2
+    rep movsd
+
+LoadKernel_Prep16Bit:
+    jmp 0x18:LoadKernel_SwitchToProtected16
+
+[BITS 16]
+
+LoadKernel_SwitchToProtected16:
+    
+    mov ax, 0x20
+    mov ds, ax
+    mov es, ax
+    mov ss, ax
+
+LoadKernel_PrepRealMode:
+    mov eax, cr0
+    and eax, ~(1 << 0)
+    mov cr0, eax
+
+    jmp 0x0000:LoadKernel_SwitchToRealMode
+
+LoadKernel_SwitchToRealMode:
+
+    xor ax, ax
+    mov ds, ax
+    mov es, ax
+    mov ss, ax
+
+    xor esp, esp
+    mov sp, [LoadKernel.StackPointer]
+
+    sti
+
+LoadKernel_IsComplete:
+    clc
+    mov dx, [LoadKernel.LastSector]
+    mov ax, [LoadKernel.CurrentSector]
+    cmp dx, ax
+    je LoadKernel_Finish
+    jmp LoadKernel_LoadChunk
+
+LoadKernel_Finish:
+
+    ; clean memory
+    mov ax, 0x1000
+    mov es, ax
+    xor ax, ax
+    xor di, di
+    mov cx, 0xFFFF
+    rep stosb
+    inc cx
+    stosb
+
+
+    xor eax, eax
+    xor ebx, ebx
+    xor ecx, ecx
+    xor edx, edx
+
+    popa
+    pop gs
+    pop fs
+    pop ss
+    pop es
+    pop ds
+    pop cs
+
+    ret
+
+[BITS 32]
 ; temporarily it is going to print at the beginning!
 ; Function for displaying debug text in protected mode
 protstr:
