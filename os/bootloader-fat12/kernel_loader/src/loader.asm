@@ -206,7 +206,10 @@ loaderMain:
     ; Check If Line A20 Enabled
     call check_a20
     or ax, ax
-    jz enable_A20_BIOS
+    jnz A20Ready
+    jmp enable_A20_BIOS
+
+A20Ready:
 
     sti
     ; Load GDT table
@@ -289,6 +292,18 @@ check_a20__exit:
     popf
     ret
 
+a20wait:
+    in      al,0x64
+    test    al,2
+    jnz     a20wait
+    ret
+ 
+a20wait2:
+    in      al,0x64
+    test    al,1
+    jz      a20wait2
+    ret
+
 halt_a20:
     mov si, a20_error
     call print_line_16
@@ -307,7 +322,7 @@ enable_A20_BIOS:
     cmp     ah,0
     jnz     a20_bios_failed              ;couldn't get status
     cmp     al,1
-    jz      a20_enabled           ;A20 is already activated
+    jz      A20Ready           ;A20 is already activated
     mov     ax,2401h                ;--- A20-Gate Activate ---
     int     15h
     jb      a20_bios_failed              ;couldn't activate the gate
@@ -337,21 +352,6 @@ enable_A20_keyboard:
     out     0x64,al
     call    a20wait
     sti
-    ret
-
-a20wait:
-    in      al,0x64
-    test    al,2
-    jnz     a20wait
-    ret
- 
-a20wait2:
-    in      al,0x64
-    test    al,1
-    jz      a20wait2
-    ret
-
-
 ; Check if Enabled via BIOS
 a20_check_after_bios:
     call check_a20
@@ -383,7 +383,7 @@ a20_fast_a20_check:
 ; Enabled Line A20
 a20_enabled:
     ; Jump to protected area 
-    ret
+    jmp A20Ready
 
 ; Input:
 ;   es - buffer segment
