@@ -57,9 +57,9 @@ main_protected_area:
     ; Init FPU
     finit
     
-    ;call protstr
-    ;cli
-    ;hlt
+    ; call protstr
+    ; cli
+    ; hlt
 
     ; Jump to kmain and start kernel work
     extern kmain

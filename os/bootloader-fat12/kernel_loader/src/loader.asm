@@ -177,7 +177,7 @@ loaderMain:
     mov gs, ax
     mov ss, ax
 
-    mov esp, 0x7C00
+    ;mov esp, 0x7C00
 
     ; Hide cursor
     mov ah, 0x01
@@ -208,6 +208,14 @@ loaderMain:
     or ax, ax
     jz enable_A20_BIOS
 
+    sti
+    ; Load GDT table
+    lgdt [dword gdt_description]
+
+    call GetFirstKernelSector
+
+    call LoadKernel
+
     cli
 
     mov bx, 0x0000
@@ -217,16 +225,6 @@ loaderMain:
     mov di, bx
 
     call load_memory_map
-
-    sti
-    ; Load GDT table
-    lgdt [dword gdt_description]
-
-    call GetFirstKernelSector
-
-    call LoadKernel
-    mov si, micros_loading
-    call print_line_16
 
     ;enter protected mode (32 bit)
     mov eax, cr0
@@ -572,16 +570,12 @@ GetNonDataSectorsCount:
     ret
 
 LoadKernel:
-    push cs
-    push ds
     push es
-    push ss
-    push fs
-    push gs
     pusha
 
     add ax, [NonDataSectors]
     sub ax, 2
+
 
     ; we're not going to use stack for storing values, since using it between real and protected mode is... weird.
     mov [LoadKernel.StackPointer], sp
@@ -603,10 +597,7 @@ LoadKernel_LoadChunk:
     jb LoadKernel_Continue
     mov cx, dx
 LoadKernel_Continue:
-
-    cli
     mov [LoadKernel.SectorsToCopy], cx
-
     mov bx, ax
     call GetCHS
     mov bx, 0x1000
@@ -615,18 +606,7 @@ LoadKernel_Continue:
     mov al, [LoadKernel.SectorsToCopy]
     mov dl, [DriveNumber]
     xor bx,bx
-
-    ; mov [0xF000], ax
-    ; mov [0xF002], bx
-    ; mov [0xF004], cx
-    ; mov [0xF006], dx
-    ; mov [0xF008], es
-    ; mov ax, [LoadKernel.SectorsToCopy]
-    ; mov [0xF00A], ax
-    ; mov ax, [LoadKernel.CurrentSector]
-    ; mov [0xF00C], ax
     int 0x13
-
 LoadKernel_Prep32Bit:
     cli
 
@@ -637,6 +617,7 @@ LoadKernel_Prep32Bit:
     jmp 0x08:LoadKernel_SwitchToProtected32
 
 [BITS 32]
+
 LoadKernel_SwitchToProtected32:
     mov ax, 0x10
     mov ds, ax
@@ -696,7 +677,6 @@ LoadKernel_SwitchToRealMode:
     sti
 
 LoadKernel_IsComplete:
-    clc
     mov dx, [LoadKernel.LastSector]
     mov ax, [LoadKernel.CurrentSector]
     cmp dx, ax
@@ -705,6 +685,7 @@ LoadKernel_IsComplete:
 
 LoadKernel_Finish:
 
+    clc
     ; clean memory
     mov ax, 0x1000
     mov es, ax
@@ -715,19 +696,13 @@ LoadKernel_Finish:
     inc cx
     stosb
 
-
     xor eax, eax
     xor ebx, ebx
     xor ecx, ecx
     xor edx, edx
 
     popa
-    pop gs
-    pop fs
-    pop ss
     pop es
-    pop ds
-    pop cs
 
     ret
 
