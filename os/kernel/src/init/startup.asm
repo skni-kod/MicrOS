@@ -21,9 +21,7 @@
 jmp main_protected_area
 
 main_protected_area:
-    ;call protstr
     cli
-    ;hlt
     ; Set data and stack segments to the third GDI descriptor
     mov ax, 0x10
     mov ds, ax

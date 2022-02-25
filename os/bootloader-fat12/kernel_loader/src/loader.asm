@@ -133,6 +133,9 @@ gdt_description:
 micros_loading db 'MicrOS is loading...',0
 a20_error db 'A20 Gate is not available. Critical ERROR...',0
 before_prot db 'This is exactly before turning on protection!',0
+r_bios db 'BIOS',0
+r_keyb db 'KEYBOARD',0
+r_gate db 'GATE',0
 
 ;Fat stuff?
 ; FAT header
@@ -207,10 +210,9 @@ loaderMain:
     call check_a20
     or ax, ax
     jnz A20Ready
-    jmp enable_A20_BIOS
+    call enable_A20_BIOS
 
 A20Ready:
-
     sti
     ; Load GDT table
     lgdt [dword gdt_description]
@@ -313,7 +315,6 @@ halt_a20:
 enable_A20_BIOS:
     mov     ax,2403h                ;--- A20-Gate Support ---
     int     15h
-    jb      a20_bios_failed                  ;INT 15h is not supported
     cmp     ah,0
     jnz     a20_bios_failed                  ;INT 15h is not supported
     mov     ax,2402h                ;--- A20-Gate Status ---
@@ -322,36 +323,12 @@ enable_A20_BIOS:
     cmp     ah,0
     jnz     a20_bios_failed              ;couldn't get status
     cmp     al,1
-    jz      A20Ready           ;A20 is already activated
+    jz      a20_enabled           ;A20 is already activated
     mov     ax,2401h                ;--- A20-Gate Activate ---
     int     15h
     jb      a20_bios_failed              ;couldn't activate the gate
     cmp     ah,0
     jnz     a20_bios_failed              ;couldn't activate the gate
-    jmp     a20_check_after_bios
-enable_A20_keyboard:
-    cli
-    call    a20wait
-    mov     al,0xAD
-    out     0x64,al
-    call    a20wait
-    mov     al,0xD0
-    out     0x64,al
-    call    a20wait2
-    in      al,0x60
-    push    eax
-    call    a20wait
-    mov     al,0xD1
-    out     0x64,al
-    call    a20wait
-    pop     eax
-    or      al,2
-    out     0x60,al
-    call    a20wait
-    mov     al,0xAE
-    out     0x64,al
-    call    a20wait
-    sti
 ; Check if Enabled via BIOS
 a20_check_after_bios:
     call check_a20
@@ -382,8 +359,33 @@ a20_fast_a20_check:
     hlt
 ; Enabled Line A20
 a20_enabled:
-    ; Jump to protected area 
-    jmp A20Ready
+    ret
+
+enable_A20_keyboard:
+    cli
+    call    a20wait
+    mov     al,0xAD
+    out     0x64,al
+    call    a20wait
+    mov     al,0xD0
+    out     0x64,al
+    call    a20wait2
+    in      al,0x60
+    push    eax
+    call    a20wait
+    mov     al,0xD1
+    out     0x64,al
+    call    a20wait
+    pop     eax
+    or      al,2
+    out     0x60,al
+    call    a20wait
+    mov     al,0xAE
+    out     0x64,al
+    call    a20wait
+    sti
+    ret
+
 
 ; Input:
 ;   es - buffer segment
@@ -592,7 +594,7 @@ LoadKernel:
 LoadKernel_LoadChunk:
 
     sub dx, ax
-    mov cx, 128
+    mov cx, 1
     cmp cx, dx
     jb LoadKernel_Continue
     mov cx, dx
