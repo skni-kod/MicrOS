@@ -571,6 +571,94 @@ GetNonDataSectorsCount:
 
     ret
 
+; INPUT:
+; es:bx address in memory to load into
+; cx amount of sectors to load
+ReadFromFloppy:
+
+;   [bp - 2] - counter
+;   [bp - 4] - amount of sectors to load
+;   [bp - 6] - destination offset
+
+    push bp
+    mov bp, sp
+
+    xor ax, ax
+    push ax
+    push cx
+    push bx
+
+    mov bx, [LoadKernel.CurrentSector]
+    add bx, [bp - 2]
+    call GetCHS
+    push cx
+    xor ch, ch
+    and cl, 0x3F
+
+    mov ax, 18
+    sub ax, cx
+    inc ax
+    cmp [bp - 4], ax
+    jge RFF_InitialGE
+RFF_InitialB:
+    mov al, byte [bp-2]
+    jmp RFF_InitialRead
+RFF_InitialGE:
+    mov al, byte [bp-8]
+    jmp RFF_InitialRead
+RFF_InitialRead:
+    mov cx, [bp - 2]
+    add cx, ax
+    mov [bp - 2], cx
+    pop cx
+    mov dl, [DriveNumber]
+    mov ah, 0x02
+    mov bx, 0x0
+    int 0x13
+
+    xor bx, bx
+    mov bx, [bp - 2]
+    shl bx, 9
+    mov [bp - 6], bx
+
+RFF_Loop:
+    mov bx, [LoadKernel.CurrentSector]
+    add bx, [bp - 2]
+    call GetCHS
+
+    mov ax, [bp - 2]
+    add ax, 18
+    cmp ax, [bp - 2]
+    jg RFF_LoopLoadEnd
+RFF_LoopLoadTrack:
+    mov al, 18
+    jmp RFF_LoopLoad
+RFF_LoopLoadEnd:
+    mov ax, [bp - 4]
+    sub ax, [bp - 2]
+    jmp RFF_LoopLoad
+RFF_LoopLoad:
+    push cx
+    mov cx, [bp - 2]
+    add cl, al
+    mov [bp - 2], cx
+    pop cx
+    mov bx, [bp - 6]
+    mov dl, [DriveNumber]
+    mov ah, 0x02
+    int 0x13
+    mov bx, [bp - 2]
+    shl bx, 9
+    mov [bp - 6], bx
+    mov bx, [bp - 4]
+    cmp [bp - 2], bx
+    jne RFF_Loop
+
+    mov sp, bp
+    pop bp
+
+    ret
+
 LoadKernel:
     push es
     pusha
@@ -594,21 +682,17 @@ LoadKernel:
 LoadKernel_LoadChunk:
 
     sub dx, ax
-    mov cx, 1
+    mov cx, 128
     cmp cx, dx
     jb LoadKernel_Continue
     mov cx, dx
 LoadKernel_Continue:
-    mov [LoadKernel.SectorsToCopy], cx
-    mov bx, ax
-    call GetCHS
     mov bx, 0x1000
     mov es, bx
-    mov ah, 0x02
-    mov al, [LoadKernel.SectorsToCopy]
-    mov dl, [DriveNumber]
-    xor bx,bx
-    int 0x13
+    xor bx, bx
+    mov [LoadKernel.SectorsToCopy], cx
+    ; call read from floppy
+    call ReadFromFloppy
 LoadKernel_Prep32Bit:
     cli
 
