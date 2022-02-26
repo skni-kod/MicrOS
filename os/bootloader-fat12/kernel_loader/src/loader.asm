@@ -604,7 +604,7 @@ RFF_InitialB:
     mov al, byte [bp-2]
     jmp RFF_InitialRead
 RFF_InitialGE:
-    mov al, byte [bp-8]
+;    mov al, byte [bp-8]
     jmp RFF_InitialRead
 RFF_InitialRead:
     mov cx, [bp - 2]
@@ -628,7 +628,7 @@ RFF_Loop:
 
     mov ax, [bp - 2]
     add ax, 18
-    cmp ax, [bp - 2]
+    cmp ax, [bp - 4]
     jg RFF_LoopLoadEnd
 RFF_LoopLoadTrack:
     mov al, 18
