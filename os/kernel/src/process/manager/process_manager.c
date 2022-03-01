@@ -42,7 +42,6 @@ uint32_t process_manager_create_process(char *path, char *parameters, uint32_t p
     process->is_thread = false;
 
     process->page_directory = heap_kernel_alloc(1024 * 4, 1024 * 4);
-
     paging_table_entry *page_directory = paging_get_page_directory();
     memcpy(process->page_directory, (void *)paging_get_kernel_page_directory(), 1024 * 4);
 
@@ -51,10 +50,8 @@ uint32_t process_manager_create_process(char *path, char *parameters, uint32_t p
 
     filesystem_file_info process_file_info;
     filesystem_get_file_info(path_in_kernel_heap, &process_file_info);
-    
     uint8_t *process_content = heap_kernel_alloc(process_file_info.size, 0);
     filesystem_read_file(path_in_kernel_heap, process_content, 0, process_file_info.size);
-
     elf_header *app_header = elf_get_header(process_content);
     
     bool error = false;
@@ -122,7 +119,7 @@ release:
 
     paging_set_page_directory(page_directory);
     heap_set_user_heap(old_heap);
-    
+
     if(error)
     {
         return -1;
@@ -557,6 +554,17 @@ bool process_manager_keyboard_interrupt_handler(interrupt_state *state)
     }
     
     return false;
+}
+
+void process_manager_refresh_kernel_pages(uint32_t page_number)
+{
+    for (uint32_t i = 0; i < processes.count; i++)
+    {
+        process_info *process = (process_info *)processes.data[i];
+        uint32_t* kernel_page_directory = (uint32_t*)paging_get_kernel_page_directory();
+        uint32_t* process_page_directory = (uint32_t*)process->page_directory;
+        *(process_page_directory+page_number) = *(kernel_page_directory+page_number);
+    }
 }
 
 void process_manager_run()

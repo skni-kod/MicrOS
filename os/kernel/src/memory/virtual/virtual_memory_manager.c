@@ -1,5 +1,7 @@
 #include "virtual_memory_manager.h"
 
+#include "../../process/manager/process_manager.h"
+
 uint32_t kernel_base_page_index;
 uint32_t user_base_page_index;
 
@@ -25,6 +27,7 @@ uint32_t virtual_memory_alloc_page(bool supervisor)
     
     if(supervisor)
     {
+        process_manager_refresh_kernel_pages(virtual_page_index);
         paging_set_page_directory(userDirectory);
     }
 

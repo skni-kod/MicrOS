@@ -52,7 +52,7 @@ void paging_map_page(uint32_t physical_page_index, uint32_t virtual_page_index, 
     paging_table_entry *page_directory_entry = (paging_table_entry *)((uint32_t)page_directory + (virtual_page_index * 4));
     paging_table_entry *page_table = (paging_table_entry *)((uint32_t)page_tables + (physical_page_index << 12));
 
-    for (int i = 0; i < 1024; i++)
+    for (int i = 0; i < 1024; i++) 
     {
         page_table[i].physical_page_address = (physical_page_index * 1024) + i;
         page_table[i].present = 1;
