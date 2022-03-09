@@ -43,6 +43,7 @@ uint32_t process_manager_create_process(char *path, char *parameters, uint32_t p
 
     process->page_directory = heap_kernel_alloc(1024 * 4, 1024 * 4);
     paging_table_entry *page_directory = paging_get_page_directory();
+
     memcpy(process->page_directory, (void *)paging_get_kernel_page_directory(), 1024 * 4);
 
 
@@ -556,6 +557,7 @@ bool process_manager_keyboard_interrupt_handler(interrupt_state *state)
     return false;
 }
 
+//This is not efficient at all, rework asap.
 void process_manager_refresh_kernel_pages(uint32_t page_number)
 {
     for (uint32_t i = 0; i < processes.count; i++)

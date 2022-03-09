@@ -61,6 +61,7 @@ bool virtual_memory_dealloc_last_page(bool supervisor)
             
             if(supervisor)
             {
+                process_manager_refresh_kernel_pages(i);
                 paging_set_page_directory(userDirectory);
             }  
 
