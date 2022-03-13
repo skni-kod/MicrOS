@@ -114,6 +114,9 @@ if virtio-net device reports this feature.*/
 #define VIRTIO_NET_HDR_GSO_TCPV6 4
 #define VIRTIO_NET_HDR_GSO_ECN 0x80
 
+//
+#define VIRTIO_NET_HEADER_SIZE sizeof(virtio_nic_net_header)
+
 typedef struct
 {
     uint8_t flags;
@@ -122,7 +125,6 @@ typedef struct
     uint16_t segment_size;
     uint16_t checksum_start;
     uint16_t checksum_offset;
-    /* num_buffer is not part of struct if VIRTIO_NET_F_MRG_RXBUF isn't negotiated */
     uint16_t buffers_count; 
 } virtio_nic_net_header;
 

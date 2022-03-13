@@ -295,7 +295,7 @@ void startup()
     logger_log_ok("Signals manager");
 
     pci_init();
-    pci_print_devices(1);
+    //pci_print_devices(1);
     
     if (network_manager_init())
         logger_log_ok("Network manager");
@@ -349,9 +349,10 @@ int kmain()
     //startup_music_play();
     logger_log_ok("READY.");
     
-    logger_log_ok("Loading shells...");
-    
+    //TODO: Remove me!
     while(1);
+
+    logger_log_ok("Loading shells...");
 
     uint32_t d = 0;
     for (int i = 0; i < 4; i++)
