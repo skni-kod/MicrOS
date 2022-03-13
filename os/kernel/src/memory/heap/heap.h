@@ -39,4 +39,6 @@ bool heap_kernel_verify_integrity();
 bool heap_user_verify_integrity();
 bool heap_verify_integrity(bool supervisor);
 
+void heap_check_entries();
+
 #endif
