@@ -10,8 +10,6 @@ rtl8139_dev_t rtl8139_device = {0};
 void (*rtl8139_receive_packet)(net_packet_t *);
 
 uint32_t current_packet_ptr = 0;
-uint32_t sent_count = 0;
-uint32_t received_count = 0;
 
 //! Transmit start address of descritor (device has 4 descriptors)
 uint8_t TSAD_array[4] = {0x20, 0x24, 0x28, 0x2C};
@@ -103,8 +101,6 @@ bool rtl8139_init(net_device_t *net_dev)
     strcpy(net_dev->device_name, RTL8139_DEVICE_NAME);
     memcpy(net_dev->mac_address, rtl8139_device.mac_addr, sizeof(uint8_t) * 6);
     net_dev->send_packet = &rtl8139_send;
-    net_dev->sent_count = &rtl8139_get_sent_count;
-    net_dev->received_count = &rtl8139_get_received_count;
     rtl8139_receive_packet = net_dev->receive_packet;
 
     return true;
@@ -115,14 +111,8 @@ bool rtl8139_irq_handler()
     //Get status of device
     uint16_t status = io_in_word(rtl8139_device.io_base + INTRSTATUS);
 
-    if (status & TOK)
-        sent_count++;
-
     if (status & ROK)
-    {
-        received_count++;
         rtl8139_receive();
-    }
 
     io_out_word(rtl8139_device.io_base + INTRSTATUS, 0x5);
 
@@ -132,9 +122,7 @@ bool rtl8139_irq_handler()
 void rtl8139_read_mac()
 {
     for (uint8_t i = 0; i < 6; i++)
-    {
         rtl8139_device.mac_addr[i] = io_in_byte(rtl8139_device.io_base + i);
-    }
 }
 
 void rtl8139_get_mac(uint8_t *buffer)
@@ -196,20 +184,8 @@ void rtl8139_send(net_packet_t *packet)
     //Switch buffer
     rtl8139_device.tx_cur++;
     if (rtl8139_device.tx_cur > 3)
-    {
         rtl8139_device.tx_cur = 0;
-    }
 
     //Dealloc transmit data buffer
     heap_kernel_dealloc(data);
-}
-
-uint32_t rtl8139_get_sent_count()
-{
-    return sent_count;
-}
-
-uint32_t rtl8139_get_received_count()
-{
-    return received_count;
 }

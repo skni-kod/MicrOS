@@ -8,8 +8,6 @@
 pci_device pci_virtio_nic_device = {0};
 virtio_nic_dev virtio_nic = {0};
 
-uint32_t __virtio_nic_received_count = 0, __virtio_nic_sent_count = 0;
-
 virtq *receive_queue;
 virtq *transmit_queue;
 
@@ -133,15 +131,12 @@ bool virtio_nic_irq_handler()
                 transmit_queue->descriptor_area[descriptor_index].length = 0; 
             }
             transmit_queue->device_area++;
-
-            __virtio_nic_sent_count++;
         }
 
         // Receive packet
         if (receive_queue->device_area->index != receive_queue->last_device_index)
         {
             virtio_nic_receive();
-            __virtio_nic_received_count++;
         }
     }
 
@@ -171,17 +166,15 @@ void virtio_nic_init_queue(virtq *virtqueue, uint16_t queueIndex)
 
 void virtio_nic_setup_buffers()
 {
-    const uint16_t buffer_size = 1526; // as per virtio specs
-
     // Allocate and add 16 buffers to receive queue
     for (uint16_t i = 0; i < 16; ++i)
     {
-        uint32_t buffer = ((uint32_t)heap_kernel_alloc(buffer_size, 0) - DMA_ADDRESS_OFFSET);
+        uint32_t buffer = ((uint32_t)heap_kernel_alloc(VIRTIO_NET_MTU, 0) - DMA_ADDRESS_OFFSET);
 
         // Add buffer to the descriptor table
         receive_queue->descriptor_area[i].address = (uint64_t)buffer;
         receive_queue->descriptor_area[i].flags = VIRTQ_DESC_F_DEVICE_WRITE_ONLY;
-        receive_queue->descriptor_area[i].length = buffer_size;
+        receive_queue->descriptor_area[i].length = VIRTIO_NET_MTU;
         receive_queue->descriptor_area[i].next = 0;
 
         // Add index of descriptor to the driver ring
@@ -222,7 +215,6 @@ void virtio_nic_send(net_packet_t *packet)
     uint8_t *packet_buffer = heap_kernel_alloc(packet->packet_length, 0);
 
     memcpy(packet_buffer, packet->packet_data, packet->packet_length);
-    // (TODO: malloc returns identity-mapped addresses for now but later we'll need a function to convert virtual to physical)
 
     // fill descriptor with ethernet packet
     transmit_queue->descriptor_area[descriptor_index2].address = (uint64_t)(packet_buffer - DMA_ADDRESS_OFFSET);
@@ -245,17 +237,11 @@ void virtio_nic_receive()
 {
     while (receive_queue->device_area->index != receive_queue->last_device_index)
     {
-        // Get the index of the current descriptor from the device's ring buffer
         uint16_t ring_buffer_index = receive_queue->last_device_index % receive_queue->size;
         uint16_t descriptor_index = (uint16_t)receive_queue->device_area->ring_buffer[ring_buffer_index].index;
-
-        // Get pointer to the beginning of the buffer
         uint32_t *buffer_address = (uint32_t *)((uint32_t)receive_queue->descriptor_area[descriptor_index % receive_queue->size].address + DMA_ADDRESS_OFFSET);
+        uint16_t buffers = ((virtio_nic_net_header *)buffer_address)->buffers_count;
 
-        // See if the buffer spans multiple descriptor_area
-        int buffers = ((virtio_nic_net_header *)buffer_address)->buffers_count;
-
-        // TODO:
         if (buffers > 1)
         {
             uint32_t buffer_size = 0;
@@ -284,7 +270,7 @@ void virtio_nic_receive()
             }
         }
 
-        // Skip over virtio_net_hdr to get a pointer to the frame
+        // Skip over virtio_nic_net_header to get a pointer to the frame
         uint32_t *frame = ((uint32_t)buffer_address + sizeof(virtio_nic_net_header));
 
         // Get frame length by skipping packet header
@@ -308,7 +294,7 @@ void virtio_nic_receive()
             receive_queue->driver_area->ring_buffer[(receive_queue->driver_area->index++) % receive_queue->size] = descriptor_index + i;
             // restore descriptor settings
             receive_queue->descriptor_area[(descriptor_index + i) % receive_queue->size].flags = VIRTQ_DESC_F_DEVICE_WRITE_ONLY;
-            receive_queue->descriptor_area[(descriptor_index + i) % receive_queue->size].length = 1526;
+            receive_queue->descriptor_area[(descriptor_index + i) % receive_queue->size].length = VIRTIO_NET_MTU;
             receive_queue->descriptor_area[(descriptor_index + i) % receive_queue->size].next = 0;
         }
 

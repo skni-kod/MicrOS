@@ -6,9 +6,6 @@
 #include "network_manager.h"
 
 kvector *net_devices;
-uint64_t bytes_sent_count = 0;
-uint64_t bytes_received_count = 0;
-
 //TODO:
 /*
     When some day, multithreading will be on the agenda
@@ -41,7 +38,7 @@ bool network_manager_init()
         // kvector_init(tmp->tx_queue);
         kvector_add(net_devices, tmp);
         //Hardcode IPv4 address
-        __set_ipv4_addr(tmp->ipv4_address, 192,160,0,0+cnt);
+        __set_ipv4_addr(tmp->ipv4_address, 192,160,0,0+(++cnt));
         __network_manager_print_device_info(tmp);
     }
 
@@ -59,17 +56,9 @@ bool network_manager_init()
         // kvector_init(tmp->tx_queue);
         kvector_add(net_devices, tmp);
         //Hardcode IPv4 address
-        __set_ipv4_addr(tmp->ipv4_address, 192,160,0,0+cnt);
+        __set_ipv4_addr(tmp->ipv4_address, 192,168,1,200+(++cnt));
         __network_manager_print_device_info(tmp);
     }
-
-    net_packet_t* test_packet = heap_kernel_alloc(sizeof(net_packet_t),0);
-    memcpy(test_packet->device_mac,((net_device_t*)(net_devices->data[0]))->mac_address,MAC_ADDRESS_SIZE);
-    char* data = heap_kernel_alloc(11,0);
-    kernel_sprintf(data,"HelloWorld!");
-    test_packet->packet_data = data;
-    test_packet->packet_length = 11;
-    network_manager_send_packet(test_packet);
 
     return true;
 }
@@ -87,7 +76,8 @@ void network_manager_send_packet(net_packet_t *packet)
             //when all processes are sequential, there is no need to use buffers
             //just send packet
             ((net_device_t *)(net_devices->data[i]))->send_packet(packet);
-            bytes_sent_count += packet->packet_length;
+            ((net_device_t *)(net_devices->data[i]))->frames_sent++;
+            ((net_device_t *)(net_devices->data[i]))->bytes_sent += packet->packet_length;
             break;
         }
     }
@@ -105,7 +95,8 @@ void network_manager_receive_packet(net_packet_t *packet)
             //kvector_add(((net_device_t *)(net_devices->data[i]))->rx_queue, packet);
             //just process an packet
             network_manager_process_packet(packet);
-            bytes_received_count += packet->packet_length;
+            ((net_device_t *)(net_devices->data[i]))->frames_sent++;
+            ((net_device_t *)(net_devices->data[i]))->bytes_sent += packet->packet_length;
             break;
         }
     }
@@ -127,7 +118,6 @@ void network_manager_process_packet(net_packet_t *packet)
 
     char str[120];
     kernel_sprintf(str,"New frame No. %u",cnt);
-
     logger_log_info(str);
 
     switch (frame.type)
@@ -138,17 +128,9 @@ void network_manager_process_packet(net_packet_t *packet)
     case IPv4_PROTOCOL_TYPE:
         ipv4_process_packet((ipv4_packet_t *)data_ptr, packet->device_mac);
         break;
+    case IPv6_PROTOCOL_TYPE:
+        break;
     };
-}
-
-uint64_t network_manager_bytes_sent()
-{
-    return bytes_sent_count;
-}
-
-uint64_t network_manager_bytes_received()
-{
-    return bytes_received_count;
 }
 
 uint8_t *network_manager_verify_ipv4_address(uint8_t *ipv4_address)

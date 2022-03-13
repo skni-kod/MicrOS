@@ -22,6 +22,7 @@
 #define VIRTIO_NET_DEVICE_ID_BEGIN 0x1000
 #define VIRTIO_NET_DEVICE_ID_END 0x103F
 #define VIRTIO_NET_DEVICE_NAME "VirtIO NIC"
+#define VIRTIO_NET_MTU 1526
 
 /* Feature bits (5.1.3) */
 /* VIRTIO_NET_F_CSUM (0) Device handles packets with partial checksum. This “checksum offload” is a common feature on modern network cards. */

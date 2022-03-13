@@ -120,17 +120,4 @@ void rtl8139_read_mac();
 */
 void rtl8139_get_mac(uint8_t *buffer);
 
-//! rtl8139_get_sent_count
-/*!
-    Returns number of sent packets
-*/
-
-uint32_t rtl8139_get_sent_count();
-
-//! rtl8139_get_received_count
-/*!
-    Returns number of received packets
-*/
-uint32_t rtl8139_get_received_count();
-
 #endif

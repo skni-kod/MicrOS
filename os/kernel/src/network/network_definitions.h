@@ -56,8 +56,10 @@ typedef struct net_device
     uint8_t ipv4_address[IPv4_ADDRESS_LENGTH];
     void (*send_packet)(net_packet_t *packet);
     void (*receive_packet)(net_packet_t *packet);
-    uint32_t (*sent_count)(void);
-    uint32_t (*received_count)(void);
+    uint32_t frames_sent;
+    uint32_t frames_received;
+    uint32_t bytes_sent;
+    uint32_t bytes_received;
 } net_device_t;
 
 #endif

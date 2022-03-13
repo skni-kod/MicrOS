@@ -9,8 +9,6 @@ void arp_process_packet(arp_packet_t *packet, uint8_t *device_mac)
         return;
 
     __arp_flip_values(packet);
-    
-    logger_log_info("received packet");
 
     //Handle ARP request
     if (packet->opcode == ARP_OPCODE_REQUEST)

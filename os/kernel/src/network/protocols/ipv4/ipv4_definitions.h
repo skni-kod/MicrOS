@@ -12,6 +12,7 @@
 #define IPv4_PROTOCOL_TYPE 0x0800
 #define IPv4_PROTOCOL_VERSION 0x4
 
+
 typedef struct ipv4_packet
 {
     char version_ihl_ptr[0];

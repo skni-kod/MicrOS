@@ -349,9 +349,6 @@ int kmain()
     //startup_music_play();
     logger_log_ok("READY.");
     
-    //TODO: Remove me!
-    while(1);
-
     logger_log_ok("Loading shells...");
 
     uint32_t d = 0;

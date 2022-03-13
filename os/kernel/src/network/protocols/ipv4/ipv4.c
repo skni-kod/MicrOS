@@ -3,7 +3,6 @@
 void ipv4_process_packet(ipv4_packet_t *packet, uint8_t *device_mac)
 {
     __ipv4_flip_values(packet);
-    logger_log_warning("No i dupa, nie umiem w IPv4");
 
 }
 

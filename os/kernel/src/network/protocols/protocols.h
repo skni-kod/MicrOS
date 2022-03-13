@@ -8,5 +8,6 @@
 
 #include "arp/arp.h"
 #include "ipv4/ipv4.h"
+#include "ipv6/ipv6.h"
 
 #endif
