@@ -34,3 +34,8 @@ void *micros_heap_kernel_alloc(uint32_t size, uint32_t align)
 {
     return (void *)micros_interrupt_2a(0x00FF, size, align);
 }
+
+void *micros_heap_kernel_dealloc(void* address)
+{
+    return (void *)micros_interrupt_1a(0x00FE, (uint32_t)address);
+}

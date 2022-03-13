@@ -74,6 +74,7 @@ micros_heap_entry *micros_heap_get_process_heap();
 
 //DEBUG
 void *micros_heap_kernel_alloc(uint32_t size, uint32_t align);
+void *micros_heap_kernel_dealloc(void* address);
 
 #ifdef __cplusplus
 }

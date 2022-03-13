@@ -15,6 +15,7 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0x0005, syscall_heap_get_process_heap);
     //HEAP DEBUG
     syscalls_manager_attach_handler(0x00FF, syscall_heap_kernel_alloc);
+    syscalls_manager_attach_handler(0x00FE, syscall_heap_kernel_dealloc);
 
     // 0x01XX - VGA and generic VGA
     syscalls_manager_attach_handler(0x0100, syscall_terminal_print_char);

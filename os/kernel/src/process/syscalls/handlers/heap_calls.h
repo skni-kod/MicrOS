@@ -13,5 +13,6 @@ void syscall_heap_get_process_heap(interrupt_state *state);
 
 //DEBUG
 void syscall_heap_kernel_alloc(interrupt_state * state);
+void syscall_heap_kernel_dealloc(interrupt_state * state);
 
 #endif

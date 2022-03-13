@@ -36,3 +36,8 @@ void syscall_heap_kernel_alloc(interrupt_state * state)
 {
     state->registers.eax = (uint32_t)heap_kernel_alloc(state->registers.ebx, state->registers.ecx);
 }
+
+void syscall_heap_kernel_dealloc(interrupt_state* state)
+{
+    state->registers.eax = (uint32_t)heap_kernel_dealloc((void*)state->registers.ebx);
+}
