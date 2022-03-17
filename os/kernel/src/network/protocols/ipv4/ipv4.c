@@ -10,12 +10,7 @@ void __ipv4_flip_values(ipv4_packet_t *packet)
 {
     *(packet->version_ihl_ptr) = __uint8_flip(*(packet->version_ihl_ptr));
 
-    //TODO:
-    /*
-    (TOS)
-    FOR FUTURE USAGE OF DSCP and ECN, 
-    IT IS NECESSARY TO FLIP THEIR VALUES
-    */
+    //TOS
 
     packet->length = __uint16_flip(packet->length);
     packet->id = __uint16_flip(packet->id);
@@ -23,7 +18,7 @@ void __ipv4_flip_values(ipv4_packet_t *packet)
     uint16_t tmp = (packet->fragment_offset_high << 8);
     tmp |= packet->fragment_offset_low;
     tmp |= (packet->flags << 13);
-    memcpy(packet->flags_ptr, &tmp, sizeof(uint16_t));
+    memcpy(packet->flags_fragment_ptr, &tmp, sizeof(uint16_t));
 
     packet->header_checksum = __uint16_flip(packet->header_checksum);
 }

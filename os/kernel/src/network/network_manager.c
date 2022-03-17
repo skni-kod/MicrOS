@@ -21,9 +21,6 @@ bool network_manager_init()
     //Initialize all NIC drivers
     net_device_t dev;
 
-    // count available devices
-    uint8_t cnt = 0;
-
     //If RTL8139 is present
     memset(&dev,0,sizeof(net_device_t));
     dev.receive_packet = &network_manager_receive_packet;
@@ -38,7 +35,7 @@ bool network_manager_init()
         // kvector_init(tmp->tx_queue);
         kvector_add(net_devices, tmp);
         //Hardcode IPv4 address
-        __set_ipv4_addr(tmp->ipv4_address, 192,160,0,0+(++cnt));
+        __set_ipv4_addr(tmp->ipv4_address, 192,160,0,++net_devices->count);
         __network_manager_print_device_info(tmp);
     }
 
@@ -56,7 +53,7 @@ bool network_manager_init()
         // kvector_init(tmp->tx_queue);
         kvector_add(net_devices, tmp);
         //Hardcode IPv4 address
-        __set_ipv4_addr(tmp->ipv4_address, 192,168,1,200+(++cnt));
+        __set_ipv4_addr(tmp->ipv4_address, 192,160,0,++net_devices->count);
         __network_manager_print_device_info(tmp);
     }
 
@@ -112,13 +109,6 @@ void network_manager_process_packet(net_packet_t *packet)
     frame.type = __uint16_flip(frame.type);
     //last is offset of data ptr;
     void *data_ptr = packet->packet_data + sizeof(ethernet_frame_t) - sizeof(uint8_t *);
-    
-    static uint32_t cnt;
-    cnt++;
-
-    char str[120];
-    kernel_sprintf(str,"New frame No. %u",cnt);
-    logger_log_info(str);
 
     switch (frame.type)
     {
@@ -148,7 +138,6 @@ uint8_t *network_manager_verify_ipv4_address(uint8_t *ipv4_address)
                 break;
             }
         }
-
         //Found NIC with valid IPv4
         if (flag)
         {

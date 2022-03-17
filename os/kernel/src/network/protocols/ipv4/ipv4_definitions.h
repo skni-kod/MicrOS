@@ -21,7 +21,7 @@ typedef struct ipv4_packet
     uint8_t tos;
     uint16_t length;
     uint16_t id;
-    char flags_ptr[0];
+    char flags_fragment_ptr[0];
     uint8_t flags : 3;
     uint8_t fragment_offset_high : 5;
     uint8_t fragment_offset_low;

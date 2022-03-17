@@ -19,7 +19,25 @@
 #define MAC_ADDRESS_SIZE sizeof(uint8_t) * MAC_ADDRESS_LENGTH
 #define IPv4_ADDRESS_SIZE sizeof(uint8_t) * IPv4_ADDRESS_LENGTH
 
-//Stucture definitions
+// Stucture definitions
+
+//! Device configuration structure
+/* TODO: make more options
+    Device configuration structure
+*/
+typedef struct device_configuration
+{
+    //Mode 
+    /* 
+        bits:  MSB                           LSB
+               | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+        if all bits cleared -> device is in standby mode
+        if bit 0 set: receive
+        if bit 1 set: send           
+    */
+    uint8_t mode;
+} device_configuration_t;
+
 //! net_packet
 /*
     Packet that comes from NIC
@@ -49,8 +67,6 @@ typedef struct ethernet_frame
 */
 typedef struct net_device
 {
-    kvector *rx_queue;
-    kvector *tx_queue;
     char *device_name;
     uint8_t mac_address[MAC_ADDRESS_LENGTH];
     uint8_t ipv4_address[IPv4_ADDRESS_LENGTH];
@@ -60,6 +76,7 @@ typedef struct net_device
     uint32_t frames_received;
     uint32_t bytes_sent;
     uint32_t bytes_received;
+    device_configuration_t *configuration;
 } net_device_t;
 
 #endif
