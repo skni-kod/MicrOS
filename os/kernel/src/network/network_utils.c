@@ -2,7 +2,7 @@
 
 uint8_t __uint8_flip(uint8_t value)
 {
-    uint8_t out = 0;
+    uint8_t out;
     out = value << 4;
     out |= value >> 4;
     return out;

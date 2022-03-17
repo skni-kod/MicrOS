@@ -77,7 +77,7 @@ typedef struct rtl8139_dev
     uint32_t mem_base;
     int eeprom_exist;
     uint8_t mac_addr[6];
-    char *rx_buffer;
+    void *rx_buffer;
     int tx_cur;
 } rtl8139_dev_t;
 

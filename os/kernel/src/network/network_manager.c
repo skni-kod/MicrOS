@@ -43,6 +43,9 @@ bool network_manager_init()
 
         dev->receive_packet = &network_manager_receive_packet;
 
+        dev->send_packet = heap_kernel_alloc(500, 0);
+        memset(dev->send_packet,1,500);
+
         if (drivers[i](dev))
         {
             // TODO: Buffering
@@ -51,6 +54,7 @@ bool network_manager_init()
             __set_ipv4_addr(dev->ipv4_address, 192, 168, 1, 150 + (net_devices->count + 1));
             __network_manager_print_device_info(dev);
             kvector_add(net_devices, dev);
+            //set nic to send/receive mode
             dev->configuration->mode = 0x3;
         }else{
             heap_kernel_dealloc(dev->configuration);
@@ -70,7 +74,7 @@ void network_manager_send_packet(net_packet_t *packet)
         {
             // TODO: ADD BUFFERING
             ((net_device_t *)(net_devices->data[i]))->send_packet(packet);
-            ((net_device_t *)(net_devices->data[i]))->frames_sent++;
+            ++((net_device_t *)(net_devices->data[i]))->frames_sent;
             ((net_device_t *)(net_devices->data[i]))->bytes_sent += packet->packet_length;
             break;
         }
@@ -88,7 +92,7 @@ void network_manager_receive_packet(net_packet_t *packet)
             // buffers will be necessary, when we use multithreading
             // kvector_add(((net_device_t *)(net_devices->data[i]))->rx_queue, packet);
             network_manager_process_packet(packet);
-            ((net_device_t *)(net_devices->data[i]))->frames_sent++;
+            ++((net_device_t *)(net_devices->data[i]))->frames_received;
             ((net_device_t *)(net_devices->data[i]))->bytes_sent += packet->packet_length;
             break;
         }

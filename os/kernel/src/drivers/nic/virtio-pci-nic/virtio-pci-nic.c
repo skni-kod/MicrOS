@@ -5,14 +5,12 @@
 */
 #include "virtio-pci-nic.h"
 
-pci_device pci_virtio_nic_device = {0};
-virtio_nic_dev virtio_nic = {0};
-device_configuration_t *virtio_nic_configuration;
+pci_device pci_virtio_nic_device;
+virtio_nic_dev virtio_nic;
+net_device_t *virtio_nic_net_device;
 
 virtq *receive_queue;
 virtq *transmit_queue;
-
-void (*receive_packet)(net_packet_t *);
 
 bool virtio_nic_init(net_device_t *net_dev)
 {
@@ -95,10 +93,8 @@ bool virtio_nic_init(net_device_t *net_dev)
     net_dev->device_name = heap_kernel_alloc((uint32_t)strlen(VIRTIO_NET_DEVICE_NAME) + 1, 0);
     strcpy(net_dev->device_name, VIRTIO_NET_DEVICE_NAME);
     memcpy(net_dev->mac_address, virtio_nic.mac_addr, sizeof(uint8_t) * 6);
-
-    receive_packet = net_dev->receive_packet;
     net_dev->send_packet = virtio_nic_send;
-    virtio_nic_configuration = net_dev->configuration;
+    virtio_nic_net_device = net_dev;
 
     // Driver's ready to work
     virtio_nic_reg_write(REG_DEVICE_STATUS, STATUS_DRIVER_OK);
@@ -134,7 +130,7 @@ bool virtio_nic_irq_handler()
         }
 
         // Receive packet
-        if (receive_queue->device_area->index != receive_queue->last_device_index && virtio_nic_configuration->mode & 0x1)
+        if (receive_queue->device_area->index != receive_queue->last_device_index && virtio_nic_net_device->configuration->mode & 0x1)
             virtio_nic_receive();
     }
 
@@ -186,7 +182,7 @@ void virtio_nic_setup_buffers()
 
 void virtio_nic_send(net_packet_t *packet)
 {
-    if (virtio_nic_configuration->mode & 0x2)
+    if (virtio_nic_net_device->configuration->mode & 0x2)
     {
         // Allocate a buffer for the header
         virtio_nic_net_header *net_buffer = heap_kernel_alloc(VIRTIO_NET_HEADER_SIZE, 0);
@@ -252,7 +248,7 @@ void virtio_nic_receive()
                 buffer_size += receive_queue->descriptor_area[(descriptor_index + i) % receive_queue->size].length;
             }
 
-            buffer_address = heap_kernel_alloc(buffer_size, 0) - DMA_ADDRESS_OFFSET;
+            buffer_address = heap_kernel_alloc(buffer_size, 0);
             if (!buffer_address)
             {
                 logger_log_warning("Not enough memory\n");
@@ -286,7 +282,7 @@ void virtio_nic_receive()
         out->packet_length = frame_length;
         virtio_nic_get_mac(out->device_mac);
 
-        (*receive_packet)(out);
+        (*virtio_nic_net_device->receive_packet)(out);
 
         // Place the used descriptor indices back in driver area
         for (uint16_t i = 0; i < buffers; ++i)

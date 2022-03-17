@@ -267,6 +267,9 @@ void startup()
     dma_init(0xc0000500);
     logger_log_ok("DMA");
 
+    char *test = heap_kernel_alloc(64,0);
+    memset(test,'A',64);
+
     //TODO:
     // NOTE: it doesn't work well, so assume for now that floppy controller is always present
     //if (fdc_is_present())
