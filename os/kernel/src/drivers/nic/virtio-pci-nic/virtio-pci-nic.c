@@ -7,6 +7,7 @@
 
 pci_device pci_virtio_nic_device = {0};
 virtio_nic_dev virtio_nic = {0};
+device_configuration_t *virtio_nic_configuration;
 
 virtq *receive_queue;
 virtq *transmit_queue;
@@ -91,18 +92,17 @@ bool virtio_nic_init(net_device_t *net_dev)
     for (uint8_t i = 0; i < 6; i++)
         virtio_nic.mac_addr[i] = io_in_byte(virtio_nic.io_base + 0x14 + i);
 
-    net_dev->device_name = heap_kernel_alloc(strlen(VIRTIO_NET_DEVICE_NAME) + 1, 0);
+    net_dev->device_name = heap_kernel_alloc((uint32_t)strlen(VIRTIO_NET_DEVICE_NAME) + 1, 0);
     strcpy(net_dev->device_name, VIRTIO_NET_DEVICE_NAME);
     memcpy(net_dev->mac_address, virtio_nic.mac_addr, sizeof(uint8_t) * 6);
 
-    // Tell the device it's initialized
-    virtio_nic_reg_write(REG_DEVICE_STATUS, STATUS_DRIVER_OK);
-
-    // Remind the device that it has receive buffers.
-    virtio_nic_reg_write(REG_QUEUE_NOTIFY, VIRTIO_NET_RECEIVE_QUEUE_INDEX);
-
     receive_packet = net_dev->receive_packet;
     net_dev->send_packet = virtio_nic_send;
+    virtio_nic_configuration = net_dev->configuration;
+
+    // Driver's ready to work
+    virtio_nic_reg_write(REG_DEVICE_STATUS, STATUS_DRIVER_OK);
+    virtio_nic_reg_write(REG_QUEUE_NOTIFY, VIRTIO_NET_RECEIVE_QUEUE_INDEX);
 
     return true;
 }
@@ -115,29 +115,27 @@ bool virtio_nic_irq_handler()
         while (transmit_queue->device_area->index != transmit_queue->last_device_index)
         {
             // Free buffers after transmitting
-            uint16_t ring_index, descriptor_index; 
+            uint16_t ring_index, descriptor_index;
             ring_index = transmit_queue->last_device_index % transmit_queue->size;
             descriptor_index = (uint16_t)transmit_queue->device_area->ring_buffer[ring_index].index;
             descriptor_index %= transmit_queue->size;
 
             transmit_queue->descriptor_area[descriptor_index].address = 0xFFFFFFFFFFFFFFFF;
-            transmit_queue->descriptor_area[descriptor_index].length = 0; 
+            transmit_queue->descriptor_area[descriptor_index].length = 0;
 
             while (transmit_queue->descriptor_area[descriptor_index].next)
             {
                 transmit_queue->descriptor_area[descriptor_index++].next = 0;
                 descriptor_index %= transmit_queue->size;
                 transmit_queue->descriptor_area[descriptor_index].address = 0xFFFFFFFFFFFFFFFF;
-                transmit_queue->descriptor_area[descriptor_index].length = 0; 
+                transmit_queue->descriptor_area[descriptor_index].length = 0;
             }
             transmit_queue->device_area++;
         }
 
         // Receive packet
-        if (receive_queue->device_area->index != receive_queue->last_device_index)
-        {
+        if (receive_queue->device_area->index != receive_queue->last_device_index && virtio_nic_configuration->mode | 0x1)
             virtio_nic_receive();
-        }
     }
 
     return true;
@@ -188,49 +186,51 @@ void virtio_nic_setup_buffers()
 
 void virtio_nic_send(net_packet_t *packet)
 {
+    if (virtio_nic_configuration->mode | 0x2)
+    {
+        // Allocate a buffer for the header
+        virtio_nic_net_header *net_buffer = heap_kernel_alloc(VIRTIO_NET_HEADER_SIZE, 0);
 
-    // Allocate a buffer for the header
-    virtio_nic_net_header *net_buffer = heap_kernel_alloc(VIRTIO_NET_HEADER_SIZE, 0);
+        // Set parameters of net_buffer
+        memset(net_buffer, 0, sizeof(virtio_nic_net_header));
 
-    // Set parameters of net_buffer
-    memset(net_buffer, 0, sizeof(virtio_nic_net_header));
+        // Get indices for the next two descriptor_area
+        uint16_t descriptor_index = transmit_queue->next_descriptor % transmit_queue->size;
+        uint16_t descriptor_index2 = (descriptor_index + 1) % transmit_queue->size;
+        transmit_queue->next_descriptor += 2;
 
-    // Get indices for the next two descriptor_area
-    uint16_t descriptor_index = transmit_queue->next_descriptor % transmit_queue->size;
-    uint16_t descriptor_index2 = (descriptor_index + 1) % transmit_queue->size;
-    transmit_queue->next_descriptor += 2;
+        // Get index for the next entry into the device ring
+        uint16_t index = transmit_queue->driver_area->index % transmit_queue->size;
 
-    // Get index for the next entry into the device ring
-    uint16_t index = transmit_queue->driver_area->index % transmit_queue->size;
+        // fill descriptor with net header
+        transmit_queue->descriptor_area[descriptor_index].address = (uint64_t)net_buffer - DMA_ADDRESS_OFFSET;
+        if (transmit_queue->descriptor_area[descriptor_index].address == 0xdeadbeef || transmit_queue->descriptor_area[descriptor_index].address == 0xdeadbeefdeadbeef)
+            return;
+        transmit_queue->descriptor_area[descriptor_index].flags = VIRTQ_DESC_F_NEXT;
+        transmit_queue->descriptor_area[descriptor_index].length = VIRTIO_NET_HEADER_SIZE;
+        transmit_queue->descriptor_area[descriptor_index].next = descriptor_index2;
 
-    // fill descriptor with net header
-    transmit_queue->descriptor_area[descriptor_index].address = (uint64_t)net_buffer - DMA_ADDRESS_OFFSET;
-    if (transmit_queue->descriptor_area[descriptor_index].address == 0xdeadbeef || transmit_queue->descriptor_area[descriptor_index].address == 0xdeadbeefdeadbeef)
-        return;
-    transmit_queue->descriptor_area[descriptor_index].flags = VIRTQ_DESC_F_NEXT;
-    transmit_queue->descriptor_area[descriptor_index].length = VIRTIO_NET_HEADER_SIZE;
-    transmit_queue->descriptor_area[descriptor_index].next = descriptor_index2;
+        // copy packet to new buffer, because packet_buffer won't be a physical address
+        uint8_t *packet_buffer = heap_kernel_alloc(packet->packet_length, 0);
 
-    // copy packet to new buffer, because packet_buffer won't be a physical address
-    uint8_t *packet_buffer = heap_kernel_alloc(packet->packet_length, 0);
+        memcpy(packet_buffer, packet->packet_data, packet->packet_length);
 
-    memcpy(packet_buffer, packet->packet_data, packet->packet_length);
+        // fill descriptor with ethernet packet
+        transmit_queue->descriptor_area[descriptor_index2].address = (uint64_t)(packet_buffer - DMA_ADDRESS_OFFSET);
+        if (transmit_queue->descriptor_area[descriptor_index2].address == 0xdeadbeef || transmit_queue->descriptor_area[descriptor_index].address == 0xdeadbeefdeadbeef)
+            return;
+        transmit_queue->descriptor_area[descriptor_index2].flags = 0;
+        transmit_queue->descriptor_area[descriptor_index2].length = packet->packet_length;
+        transmit_queue->descriptor_area[descriptor_index2].next = 0;
 
-    // fill descriptor with ethernet packet
-    transmit_queue->descriptor_area[descriptor_index2].address = (uint64_t)(packet_buffer - DMA_ADDRESS_OFFSET);
-    if (transmit_queue->descriptor_area[descriptor_index2].address == 0xdeadbeef || transmit_queue->descriptor_area[descriptor_index].address == 0xdeadbeefdeadbeef)
-        return;
-    transmit_queue->descriptor_area[descriptor_index2].flags = 0;
-    transmit_queue->descriptor_area[descriptor_index2].length = packet->packet_length;
-    transmit_queue->descriptor_area[descriptor_index2].next = 0;
+        // Add descriptor chain to the available ring
+        transmit_queue->driver_area->ring_buffer[index] = descriptor_index;
 
-    // Add descriptor chain to the available ring
-    transmit_queue->driver_area->ring_buffer[index] = descriptor_index;
+        // Increase available ring index and notify the device
+        transmit_queue->driver_area->index++;
 
-    // Increase available ring index and notify the device
-    transmit_queue->driver_area->index++;
-
-    virtio_nic_reg_write(REG_QUEUE_NOTIFY, VIRTIO_NET_TRANSMIT_QUEUE_INDEX);
+        virtio_nic_reg_write(REG_QUEUE_NOTIFY, VIRTIO_NET_TRANSMIT_QUEUE_INDEX);
+    }
 }
 
 void virtio_nic_receive()

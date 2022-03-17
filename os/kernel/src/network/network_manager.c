@@ -39,15 +39,14 @@ bool network_manager_init()
         
         if (!dev->configuration)
             return -1;
-        memset(dev->configuration, 0, sizeof(net_device_t));
-
+        memset(dev->configuration, 0, sizeof(device_configuration_t));
 
         dev->receive_packet = &network_manager_receive_packet;
 
-        if (drivers[i](&dev))
+        if (drivers[i](dev))
         {
             // TODO: Buffering
-            // TODO: Hardcoding IP addr? it should be in IP made
+            // TODO: Hardcoding IP addr? it should be in IP part made
             // Hardcode IPv4 address
             __set_ipv4_addr(dev->ipv4_address, 192, 160, 0, ++net_devices->count);
             __network_manager_print_device_info(dev);
@@ -117,6 +116,8 @@ void network_manager_process_packet(net_packet_t *packet)
     case IPv6_PROTOCOL_TYPE:
         break;
     };
+
+    logger_log_info("RECEIVING FRAME");
 }
 
 uint8_t *network_manager_verify_ipv4_address(uint8_t *ipv4_address)

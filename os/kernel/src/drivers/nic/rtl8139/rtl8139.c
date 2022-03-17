@@ -76,7 +76,7 @@ bool rtl8139_init(net_device_t *net_dev)
     // RECEIVE BUFFER
     // Allocate receive buffer
     rtl8139_device.rx_buffer = heap_kernel_alloc(RTL8139_RX_BUFFER_SIZE, 0);
-    memset(rtl8139_device.rx_buffer, 0x0, RTL8139_RX_BUFFER_SIZE);
+    memset(rtl8139_device.rx_buffer, 0, RTL8139_RX_BUFFER_SIZE);
     io_out_long(rtl8139_device.io_base + RXBUF, (uint32_t)rtl8139_device.rx_buffer - DMA_ADDRESS_OFFSET);
 
     // (1 << 7) is the WRAP bit, 0xf is (promiscious) AB+AM+APM+AAP
@@ -85,11 +85,11 @@ bool rtl8139_init(net_device_t *net_dev)
     // AM - multicast
     // APM - physical match
     // AAP - all packets
-    io_out_long(rtl8139_device.io_base + RXCONFIG, 0xf | (1 << 7));
+    io_out_long(rtl8139_device.io_base + RXCONFIG, 0xF | (1 << 7));
 
     // Set TransmitterOK and ReceiveOK to HIGH
     io_out_word(rtl8139_device.io_base + INTRSTATUS, 0x0);
-    io_out_word(rtl8139_device.io_base + INTRMASK, 0xff);
+    io_out_word(rtl8139_device.io_base + INTRMASK, 0xFF);
 
     // Enable IRQ
     uint32_t irq_num = pci_rtl8139_device.interrupt_line;
@@ -98,7 +98,7 @@ bool rtl8139_init(net_device_t *net_dev)
 
     rtl8139_read_mac();
 
-    net_dev->device_name = heap_kernel_alloc(strlen(RTL8139_DEVICE_NAME) + 1, 0);
+    net_dev->device_name = heap_kernel_alloc((uint32_t)strlen(RTL8139_DEVICE_NAME) + 1, 0);
     strcpy(net_dev->device_name, RTL8139_DEVICE_NAME);
     memcpy(net_dev->mac_address, rtl8139_device.mac_addr, sizeof(uint8_t) * 6);
     net_dev->send_packet = &rtl8139_send;
