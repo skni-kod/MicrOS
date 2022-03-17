@@ -1,7 +1,7 @@
 /*
     @JakubPrzystasz
     Created: 06.02.2021
-    Last modified: 13.02.2022
+    Last modified: 17.03.2022
 */
 #include "rtl8139.h"
 
@@ -74,7 +74,7 @@ bool rtl8139_init(net_device_t *net_dev)
     io_out_long(rtl8139_device.io_base + RXCONFIG, 0x0300070A);
 
     // RECEIVE BUFFER
-    //  Allocate receive buffer
+    // Allocate receive buffer
     rtl8139_device.rx_buffer = heap_kernel_alloc(RTL8139_RX_BUFFER_SIZE, 0);
     memset(rtl8139_device.rx_buffer, 0x0, RTL8139_RX_BUFFER_SIZE);
     io_out_long(rtl8139_device.io_base + RXBUF, (uint32_t)rtl8139_device.rx_buffer - DMA_ADDRESS_OFFSET);

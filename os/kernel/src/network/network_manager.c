@@ -6,7 +6,7 @@
 #include "network_manager.h"
 
 kvector *net_devices;
-//TODO:
+// TODO:
 /*
     When some day, multithreading will be on the agenda
     there is some tasks to do:
@@ -14,47 +14,48 @@ kvector *net_devices;
     - put rx/tx packet routine to another thread
 */
 
+bool (*drivers[])(net_device_t *device) = {rtl8139_init, virtio_nic_init};
+uint8_t drivers_count = 2;
+
 bool network_manager_init()
 {
     net_devices = heap_kernel_alloc(sizeof(kvector), 0);
     kvector_init(net_devices);
-    //Initialize all NIC drivers
-    net_device_t dev;
 
-    //If RTL8139 is present
-    memset(&dev,0,sizeof(net_device_t));
-    dev.receive_packet = &network_manager_receive_packet;
-    if (rtl8139_init(&dev))
+    // Initialize all NIC drivers
+    for (volatile uint8_t i = 0; i < drivers_count; i++)
     {
-        net_device_t *tmp = heap_kernel_alloc(sizeof(net_device_t), 0);
-        memcpy(tmp, &dev, sizeof(net_device_t));
-        // TODO: Buffering
-        // tmp->rx_queue = heap_kernel_alloc(sizeof(kvector), 0);
-        // tmp->tx_queue = heap_kernel_alloc(sizeof(kvector), 0);
-        // kvector_init(tmp->rx_queue);
-        // kvector_init(tmp->tx_queue);
-        kvector_add(net_devices, tmp);
-        //Hardcode IPv4 address
-        __set_ipv4_addr(tmp->ipv4_address, 192,160,0,++net_devices->count);
-        __network_manager_print_device_info(tmp);
-    }
+        net_device_t *dev = 0;
 
-    //If VirtIO is present
-    memset(&dev,0,sizeof(net_device_t));
-    dev.receive_packet = &network_manager_receive_packet;
-    if (virtio_nic_init(&dev))
-    {
-        net_device_t *tmp = heap_kernel_alloc(sizeof(net_device_t), 0);
-        memcpy(tmp, &dev, sizeof(net_device_t));
-        //TODO: BUFFERING
-        // tmp->rx_queue = heap_kernel_alloc(sizeof(kvector), 0);
-        // tmp->tx_queue = heap_kernel_alloc(sizeof(kvector), 0);
-        // kvector_init(tmp->rx_queue);
-        // kvector_init(tmp->tx_queue);
-        kvector_add(net_devices, tmp);
-        //Hardcode IPv4 address
-        __set_ipv4_addr(tmp->ipv4_address, 192,160,0,++net_devices->count);
-        __network_manager_print_device_info(tmp);
+        //Prepare memory for device structure
+        dev = heap_kernel_alloc(sizeof(net_device_t), 0);
+        
+        if (!dev)
+            return -1;
+        memset(dev, 0, sizeof(net_device_t));
+
+        dev->configuration = 0;
+        dev->configuration = heap_kernel_alloc(sizeof(device_configuration_t),0);
+        
+        if (!dev->configuration)
+            return -1;
+        memset(dev->configuration, 0, sizeof(net_device_t));
+
+
+        dev->receive_packet = &network_manager_receive_packet;
+
+        if (drivers[i](&dev))
+        {
+            // TODO: Buffering
+            // TODO: Hardcoding IP addr? it should be in IP made
+            // Hardcode IPv4 address
+            __set_ipv4_addr(dev->ipv4_address, 192, 160, 0, ++net_devices->count);
+            __network_manager_print_device_info(dev);
+            kvector_add(net_devices, dev);
+        }else{
+            heap_kernel_dealloc(dev->configuration);
+            heap_kernel_dealloc(dev);
+        }
     }
 
     return true;
@@ -64,14 +65,10 @@ void network_manager_send_packet(net_packet_t *packet)
 {
     for (uint8_t i = 0; i < net_devices->count; i++)
     {
-        //Add packet to device RX queue
+        // Add packet to device RX queue
         if (__compare_mac_address(((net_device_t *)(net_devices->data[i]))->mac_address, packet->device_mac))
         {
-            //TODO: ADD BUFFERING
-            //buffers will be necessary, when we use multithreading
-            //kvector_add(((net_device_t *)(net_devices->data[i]))->rx_queue, packet);
-            //when all processes are sequential, there is no need to use buffers
-            //just send packet
+            // TODO: ADD BUFFERING
             ((net_device_t *)(net_devices->data[i]))->send_packet(packet);
             ((net_device_t *)(net_devices->data[i]))->frames_sent++;
             ((net_device_t *)(net_devices->data[i]))->bytes_sent += packet->packet_length;
@@ -84,13 +81,12 @@ void network_manager_receive_packet(net_packet_t *packet)
 {
     for (uint8_t i = 0; i < net_devices->count; i++)
     {
-        //Add packet to device RX queue
+        // Add packet to device RX queue
         if (__compare_mac_address(((net_device_t *)(net_devices->data[i]))->mac_address, packet->device_mac))
         {
-            //TODO: ADD BUFFERING
-            //buffers will be necessary, when we use multithreading
-            //kvector_add(((net_device_t *)(net_devices->data[i]))->rx_queue, packet);
-            //just process an packet
+            // TODO: ADD BUFFERING
+            // buffers will be necessary, when we use multithreading
+            // kvector_add(((net_device_t *)(net_devices->data[i]))->rx_queue, packet);
             network_manager_process_packet(packet);
             ((net_device_t *)(net_devices->data[i]))->frames_sent++;
             ((net_device_t *)(net_devices->data[i]))->bytes_sent += packet->packet_length;
@@ -98,7 +94,7 @@ void network_manager_receive_packet(net_packet_t *packet)
         }
     }
 
-    //packets are on heap, so free memory
+    // packets are on heap, so free memory
     heap_kernel_dealloc(packet->packet_data);
     heap_kernel_dealloc(packet);
 }
@@ -107,7 +103,7 @@ void network_manager_process_packet(net_packet_t *packet)
 {
     ethernet_frame_t frame = *(ethernet_frame_t *)packet->packet_data;
     frame.type = __uint16_flip(frame.type);
-    //last is offset of data ptr;
+    // last is offset of data ptr;
     void *data_ptr = packet->packet_data + sizeof(ethernet_frame_t) - sizeof(uint8_t *);
 
     switch (frame.type)
@@ -138,7 +134,7 @@ uint8_t *network_manager_verify_ipv4_address(uint8_t *ipv4_address)
                 break;
             }
         }
-        //Found NIC with valid IPv4
+        // Found NIC with valid IPv4
         if (flag)
         {
             uint8_t *ret = heap_kernel_alloc(sizeof(uint8_t) * MAC_ADDRESS_LENGTH, 0);
@@ -195,13 +191,13 @@ void __network_manager_print_device_info(net_device_t *device)
 {
     logger_log_ok(device->device_name);
 
-    char* logInfo[27];
+    char *logInfo[27];
     kernel_sprintf(logInfo, "MAC: %02x:%02x:%02x:%02x:%02x:%02x",
-                    device->mac_address[0],
-                    device->mac_address[1],
-                    device->mac_address[2],
-                    device->mac_address[3],
-                    device->mac_address[4],
-                    device->mac_address[5]);
+                   device->mac_address[0],
+                   device->mac_address[1],
+                   device->mac_address[2],
+                   device->mac_address[3],
+                   device->mac_address[4],
+                   device->mac_address[5]);
     logger_log_info(logInfo);
 }
