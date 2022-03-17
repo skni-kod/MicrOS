@@ -113,7 +113,7 @@ bool rtl8139_irq_handler()
     // Get status of device
     uint16_t status = io_in_word(rtl8139_device.io_base + INTRSTATUS);
 
-    if (status & ROK && rtl8139_configuration->mode | 0x1)
+    if (status & ROK && rtl8139_configuration->mode & 0x1)
         rtl8139_receive();
 
     io_out_word(rtl8139_device.io_base + INTRSTATUS, 0x5);
@@ -165,7 +165,7 @@ void rtl8139_receive()
 
 void rtl8139_send(net_packet_t *packet)
 {
-    if (rtl8139_configuration->mode | 0x2)
+    if (rtl8139_configuration->mode & 0x2)
     {
         void *data = heap_kernel_alloc(packet->packet_length, 0);
         memcpy(data, packet->packet_data, packet->packet_length);

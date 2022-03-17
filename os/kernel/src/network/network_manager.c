@@ -23,7 +23,7 @@ bool network_manager_init()
     kvector_init(net_devices);
 
     // Initialize all NIC drivers
-    for (volatile uint8_t i = 0; i < drivers_count; i++)
+    for (uint8_t i = 0; i < drivers_count; i++)
     {
         net_device_t *dev = 0;
 
@@ -48,9 +48,10 @@ bool network_manager_init()
             // TODO: Buffering
             // TODO: Hardcoding IP addr? it should be in IP part made
             // Hardcode IPv4 address
-            __set_ipv4_addr(dev->ipv4_address, 192, 160, 0, ++net_devices->count);
+            __set_ipv4_addr(dev->ipv4_address, 192, 168, 1, 150 + (net_devices->count + 1));
             __network_manager_print_device_info(dev);
             kvector_add(net_devices, dev);
+            dev->configuration->mode = 0x3;
         }else{
             heap_kernel_dealloc(dev->configuration);
             heap_kernel_dealloc(dev);
@@ -116,8 +117,6 @@ void network_manager_process_packet(net_packet_t *packet)
     case IPv6_PROTOCOL_TYPE:
         break;
     };
-
-    logger_log_info("RECEIVING FRAME");
 }
 
 uint8_t *network_manager_verify_ipv4_address(uint8_t *ipv4_address)
@@ -190,9 +189,10 @@ net_device_t *network_manager_get_nic()
 
 void __network_manager_print_device_info(net_device_t *device)
 {
+    char logInfo[27] = "";
+
     logger_log_ok(device->device_name);
 
-    char *logInfo[27];
     kernel_sprintf(logInfo, "MAC: %02x:%02x:%02x:%02x:%02x:%02x",
                    device->mac_address[0],
                    device->mac_address[1],
@@ -200,5 +200,6 @@ void __network_manager_print_device_info(net_device_t *device)
                    device->mac_address[3],
                    device->mac_address[4],
                    device->mac_address[5]);
+
     logger_log_info(logInfo);
 }

@@ -134,7 +134,7 @@ bool virtio_nic_irq_handler()
         }
 
         // Receive packet
-        if (receive_queue->device_area->index != receive_queue->last_device_index && virtio_nic_configuration->mode | 0x1)
+        if (receive_queue->device_area->index != receive_queue->last_device_index && virtio_nic_configuration->mode & 0x1)
             virtio_nic_receive();
     }
 
@@ -186,7 +186,7 @@ void virtio_nic_setup_buffers()
 
 void virtio_nic_send(net_packet_t *packet)
 {
-    if (virtio_nic_configuration->mode | 0x2)
+    if (virtio_nic_configuration->mode & 0x2)
     {
         // Allocate a buffer for the header
         virtio_nic_net_header *net_buffer = heap_kernel_alloc(VIRTIO_NET_HEADER_SIZE, 0);
