@@ -9,7 +9,7 @@ pci_device pci_rtl8139_device;
 rtl8139_dev_t rtl8139_device;
 net_device_t *rtl8139_net_device;
 
-uint32_t current_packet_ptr;
+uint32_t current_packet_ptr = 0;
 
 //! Transmit start address of descritor (device has 4 descriptors)
 uint8_t TSAD_array[4] = {0x20, 0x24, 0x28, 0x2C};
@@ -65,15 +65,15 @@ bool rtl8139_init(net_device_t *net_dev)
     rtl8139_device.tx_cur = 0;
 
     // Set ReceiverEnable and TransmitterEnable to HIGH
-    io_out_long(rtl8139_device.io_base + RXCONFIG, 0xF | (1 << 7));
     io_out_byte(rtl8139_device.io_base + CHIPCMD, 0x0C);
 
     // Set Transmit and Receive Configuration Registers
-    //TODO: 
-    //io_out_long(rtl8139_device.io_base + TXCONFIG, 0x03000700);
+    io_out_long(rtl8139_device.io_base + TXCONFIG, 0x03000700);
+    io_out_long(rtl8139_device.io_base + RXCONFIG, 0x0300070A);
 
     // RECEIVE BUFFER
     // Allocate receive buffer
+    rtl8139_device.rx_buffer = 0;
     rtl8139_device.rx_buffer = heap_kernel_alloc(RTL8139_RX_BUFFER_SIZE, 0);
     if(!rtl8139_device.rx_buffer)
         return -1;
@@ -102,7 +102,7 @@ bool rtl8139_init(net_device_t *net_dev)
 
     net_dev->device_name = heap_kernel_alloc((uint32_t)strlen(RTL8139_DEVICE_NAME) + 1, 0);
     strcpy(net_dev->device_name, RTL8139_DEVICE_NAME);
-    memcpy(net_dev->mac_address, rtl8139_device.mac_addr, MAC_ADDRESS_SIZE);
+    memcpy(net_dev->mac_address, rtl8139_device.mac_addr, sizeof(uint8_t) * 6);
     net_dev->send_packet = &rtl8139_send;
     rtl8139_net_device = net_dev;
 
@@ -111,6 +111,35 @@ bool rtl8139_init(net_device_t *net_dev)
 
 bool rtl8139_irq_handler()
 {
+//TODO: Buffer overflows handling
+/*
+RTL8139: in ring Rx mode ================
+RTL8139: received: rx buffer length 8192 head 0x0f78 read 0x10c4
+RTL8139: Set IRQ to 1 (0001 00ff)
+RTL8139: >>> received len=578
+RTL8139: >>> packet received in promiscuous mode
+RTL8139: in ring Rx mode ================
+RTL8139: rx overflow: rx buffer length 8192 head 0x0f78 read 0x10c4 === available 0x014c need 0x024a
+RTL8139: Set IRQ to 1 (0011 00ff)
+RTL8139: IntrStatus read(w) val=0x0011
+RTL8139: RxBufPtr write val=0x16a8
+RTL8139: >>> received len=578
+RTL8139: >>> packet received in promiscuous mode
+RTL8139: in ring Rx mode ================
+RTL8139: received: rx buffer length 8192 head 0x11c4 read 0x16b8
+RTL8139: Set IRQ to 1 (0011 00ff)
+RTL8139:  CAPR write: rx buffer length 8192 head 0x11c4 read 0x16b8
+RTL8139: IntrStatus write(w) val=0x0005
+RTL8139: Set IRQ to 0 (0000 00ff)
+RTL8139: entered rtl8139_set_next_tctr_time
+RTL8139: Set IRQ to 1 (0010 00ff)
+RTL8139: IntrStatus read(w) val=0x0010
+RTL8139: IntrStatus write(w) val=0x0005
+RTL8139: Set IRQ to 0 (0000 00ff)
+RTL8139: entered rtl8139_set_next_tctr_time
+RTL8139: Set IRQ to 1 (0010 00ff)
+*/
+
     // Get status of device
     uint16_t status = io_in_word(rtl8139_device.io_base + INTRSTATUS);
 
@@ -138,13 +167,14 @@ void rtl8139_get_mac(uint8_t *buffer)
 
 void rtl8139_receive()
 {
-    void *packet = (rtl8139_device.rx_buffer + current_packet_ptr);
+    uint32_t *packet = (uint32_t *)(rtl8139_device.rx_buffer + current_packet_ptr);
 
     // Get packet length by skipping packet header
-    uint16_t packet_length = *(uint16_t*)(packet + 2);
+    uint16_t packet_length = *packet >> 16;
+
     // Copy received data to heap
     void *packet_data = heap_kernel_alloc(packet_length, 0);
-    memcpy(packet_data, packet + 4, packet_length);
+    memcpy(packet_data, (uint32_t)packet + 4, packet_length);
 
     // Add packet to packets queue
     net_packet_t *out = heap_kernel_alloc(sizeof(net_packet_t), 0);
@@ -154,12 +184,15 @@ void rtl8139_receive()
 
     current_packet_ptr = (current_packet_ptr + packet_length + 7) & RX_READ_POINTER_MASK;
 
-    if (current_packet_ptr > RTL8139_RX_BUFFER_SIZE)
-        current_packet_ptr -= RTL8139_RX_BUFFER_SIZE;
-
     // Tell to device where put, next incoming packet
     io_out_word(rtl8139_device.io_base + CAPR, current_packet_ptr - 0x10);
 
+    current_packet_ptr %= 8192;
+
+    char str[50];
+    kernel_sprintf(str,"%d  %d",packet_length,current_packet_ptr);
+    logger_log_info(str);
+    
     (*rtl8139_net_device->receive_packet)(out);
 }
 

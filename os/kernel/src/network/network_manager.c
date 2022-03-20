@@ -34,6 +34,8 @@ bool network_manager_init()
             return -1;
         memset(dev, 0, sizeof(net_device_t));
 
+        dev->receive_packet = &network_manager_receive_packet;
+
         dev->configuration = 0;
         dev->configuration = heap_kernel_alloc(sizeof(device_configuration_t),0);
         
@@ -41,17 +43,12 @@ bool network_manager_init()
             return -1;
         memset(dev->configuration, 0, sizeof(device_configuration_t));
 
-        dev->receive_packet = &network_manager_receive_packet;
-
-        dev->send_packet = heap_kernel_alloc(500, 0);
-        memset(dev->send_packet,1,500);
-
         if (drivers[i](dev))
         {
             // TODO: Buffering
             // TODO: Hardcoding IP addr? it should be in IP part made
             // Hardcode IPv4 address
-            __set_ipv4_addr(dev->ipv4_address, 192, 168, 1, 150 + (net_devices->count + 1));
+            __set_ipv4_addr(dev->ipv4_address, 10, 0, 2, 15);
             __network_manager_print_device_info(dev);
             kvector_add(net_devices, dev);
             //set nic to send/receive mode

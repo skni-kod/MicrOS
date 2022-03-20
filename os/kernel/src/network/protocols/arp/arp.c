@@ -4,43 +4,47 @@ kvector *arp_table = 0;
 
 void arp_process_packet(arp_packet_t *packet, uint8_t *device_mac)
 {
-    //Prevent from processing broadcast packet multiple times
+    // Prevent from processing broadcast packet multiple times
     if (!__compare_mac_address(network_manager_verify_ipv4_address(packet->dst_pr), device_mac))
         return;
 
     __arp_flip_values(packet);
 
-    //Handle ARP request
-    if (packet->opcode == ARP_OPCODE_REQUEST)
+    switch (packet->opcode)
     {
-        arp_packet_t response;
-        response.opcode = ARP_OPCODE_REPLY;
-        response.hardware_type = ARP_HW_TYPE;
-        response.protocol_type = ARP_PR_TYPE;
-        __arp_flip_values(&response);
+        // Handle ARP request
+        case ARP_OPCODE_REQUEST:
+        {
+            arp_packet_t response;
+            response.opcode = ARP_OPCODE_REPLY;
+            response.hardware_type = ARP_HW_TYPE;
+            response.protocol_type = ARP_PR_TYPE;
+            __arp_flip_values(&response);
 
-        response.hardware_length = MAC_ADDRESS_LENGTH;
-        response.protocol_length = IPv4_ADDRESS_LENGTH;
+            response.hardware_length = MAC_ADDRESS_LENGTH;
+            response.protocol_length = IPv4_ADDRESS_LENGTH;
 
-        memcpy(response.src_hw, device_mac, MAC_ADDRESS_SIZE);
-        memcpy(response.dst_hw, packet->src_hw, MAC_ADDRESS_SIZE);
+            memcpy(response.src_hw, device_mac, MAC_ADDRESS_SIZE);
+            memcpy(response.dst_hw, packet->src_hw, MAC_ADDRESS_SIZE);
 
-        memcpy(response.src_pr, packet->dst_pr, IPv4_ADDRESS_SIZE);
-        memcpy(response.dst_pr, packet->src_pr, IPv4_ADDRESS_SIZE);
+            memcpy(response.src_pr, packet->dst_pr, IPv4_ADDRESS_SIZE);
+            memcpy(response.dst_pr, packet->src_pr, IPv4_ADDRESS_SIZE);
 
-        ethernet_frame_t *eth_frame = network_manager_make_frame(device_mac, packet->src_hw, ARP_PROTOCOL_TYPE);
-        eth_frame->data = (uint8_t *)&response;
-        network_manager_send_ethernet_frame(eth_frame, sizeof(arp_packet_t));
+            ethernet_frame_t *eth_frame = network_manager_make_frame(device_mac, packet->src_hw, ARP_PROTOCOL_TYPE);
+            eth_frame->data = (uint8_t *)&response;
+            network_manager_send_ethernet_frame(eth_frame, sizeof(arp_packet_t));
 
-        arp_add_entry(response.dst_hw, response.dst_pr);
+            arp_add_entry(response.dst_hw, response.dst_pr);
 
-        heap_kernel_dealloc(eth_frame);
-    }
-
-    //Handle ARP reply
-    if (packet->opcode == ARP_OPCODE_REPLY)
-    {
-        arp_add_entry(packet->src_hw, packet->src_pr);
+            heap_kernel_dealloc(eth_frame);
+        }
+        break;
+        // Handle ARP reply
+        case ARP_OPCODE_REPLY:
+        {
+            arp_add_entry(packet->src_hw, packet->src_pr);
+        }
+        break;
     }
 }
 
@@ -49,7 +53,7 @@ void arp_add_entry(uint8_t *mac_address, uint8_t *ip_address)
     if (mac_address == 0 || ip_address == 0)
         return;
 
-    //Initialize table
+    // Initialize table
     if (arp_table == 0)
     {
         arp_table = heap_kernel_alloc(sizeof(kvector), 0);
