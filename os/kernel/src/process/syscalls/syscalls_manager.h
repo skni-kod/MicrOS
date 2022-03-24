@@ -1,7 +1,7 @@
 #ifndef SYSCALLS_MANAGER_H
 #define SYSCALLS_MANAGER_H
 
-#define SYSCALLS_MANAGER_MAX_HANDLERS 256
+#define SYSCALLS_MANAGER_MAX_HANDLERS 65536
 
 #include "cpu/idt/idt.h"
 #include "handlers/heap_calls.h"
@@ -19,8 +19,8 @@
 #include "handlers/serial_calls.h"
 
 void syscalls_manager_init();
-void syscalls_manager_attach_handler(uint8_t function_number, void (*handler)(interrupt_state *state));
-void syscalls_manager_detach_handler(uint8_t function_number);
+void syscalls_manager_attach_handler(uint16_t function_number, void (*handler)(interrupt_state *state));
+void syscalls_manager_detach_handler(uint16_t function_number);
 void syscalls_manager_call(interrupt_state *state);
 
 #endif
