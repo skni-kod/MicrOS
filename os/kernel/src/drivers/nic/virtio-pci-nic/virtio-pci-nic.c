@@ -78,13 +78,8 @@ bool virtio_nic_init(net_device_t *net_dev)
 
     virtio_nic_init_queue(receive_queue, 0);
     virtio_nic_init_queue(transmit_queue, 1);
-    virtio_nic_setup_buffers();
+    virtio_nic_setup_buffers(32);
     receive_queue->device_area->flags = 0;
-
-    // Enable IRQ
-    uint32_t irq_num = pci_virtio_nic_device.interrupt_line;
-    pic_enable_irq(irq_num);
-    idt_attach_interrupt_handler(irq_num, virtio_nic_irq_handler);
 
     // Get mac address
     for (uint8_t i = 0; i < 6; i++)
@@ -99,6 +94,11 @@ bool virtio_nic_init(net_device_t *net_dev)
     // Driver's ready to work
     virtio_nic_reg_write(REG_DEVICE_STATUS, STATUS_DRIVER_OK);
     virtio_nic_reg_write(REG_QUEUE_NOTIFY, VIRTIO_NET_RECEIVE_QUEUE_INDEX);
+
+    // Enable IRQ
+    uint32_t irq_num = pci_virtio_nic_device.interrupt_line;
+    pic_enable_irq(irq_num);
+    idt_attach_interrupt_handler(irq_num, virtio_nic_irq_handler);
 
     return true;
 }
@@ -158,10 +158,10 @@ void virtio_nic_init_queue(virtq *virtqueue, uint16_t queueIndex)
     virtio_nic_reg_write(REG_QUEUE_ADDRESS, addr);
 }
 
-void virtio_nic_setup_buffers()
+void virtio_nic_setup_buffers(uint16_t buffers_count)
 {
-    // Allocate and add 16 buffers to receive queue
-    for (uint16_t i = 0; i < 16; ++i)
+    // Allocate and add buffers to receive queue
+    for (uint16_t i = 0; i < buffers_count; ++i)
     {
         uint32_t buffer = ((uint32_t)heap_kernel_alloc(VIRTIO_NET_MTU, 0) - DMA_ADDRESS_OFFSET);
 
@@ -176,7 +176,7 @@ void virtio_nic_setup_buffers()
     }
 
     // Update next available index
-    receive_queue->driver_area->index = 16;
+    receive_queue->driver_area->index = buffers_count;
     virtio_nic_reg_write(REG_QUEUE_NOTIFY, VIRTIO_NET_RECEIVE_QUEUE_INDEX);
 }
 

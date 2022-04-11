@@ -148,7 +148,7 @@ void virtio_nic_init_queue(virtq *virtqueue, uint16_t queueIndex);
 
 void virtio_nic_receive();
 
-void virtio_nic_setup_buffers();
+void virtio_nic_setup_buffers(uint16_t buffers_count);
 
 void virtio_nic_get_mac(uint8_t* buffer);
 
