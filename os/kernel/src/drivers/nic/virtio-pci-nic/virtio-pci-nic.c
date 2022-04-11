@@ -19,7 +19,7 @@ bool virtio_nic_init(net_device_t *net_dev)
     if (pci_virtio_nic_device.vendor_id != 0)
         return false;
 
-    for (int i = 0; i < pci_get_number_of_devices(); i++)
+    for (uint8_t i = 0; i < pci_get_number_of_devices(); i++)
     {
         pci_device *dev = pci_get_device(i);
 
@@ -39,8 +39,12 @@ bool virtio_nic_init(net_device_t *net_dev)
 
     // Now setup registers, and memory
     virtio_nic.bar_type = pci_virtio_nic_device.base_addres_0 & (0x1);
+    
+    if(!virtio_nic.bar_type)
+    // Now driver can only configure device via IO ports.
+        return false;
+    
     virtio_nic.io_base = pci_virtio_nic_device.base_addres_0 & (~0x3);
-    virtio_nic.mem_base = pci_virtio_nic_device.base_addres_0 & (~0xf);
 
     // Reset the virtio-network device
     virtio_nic_reg_write(REG_DEVICE_STATUS, STATUS_RESET_DEVICE);
@@ -310,24 +314,18 @@ uint32_t virtio_nic_reg_read(uint16_t reg)
 {
     if (reg < REG_QUEUE_SIZE)
         return io_in_long(virtio_nic.io_base + reg);
+    else if (reg <= REG_QUEUE_NOTIFY)
+        return io_in_word(virtio_nic.io_base + reg);
     else
-    {
-        if (reg <= REG_QUEUE_NOTIFY)
-            return io_in_word(virtio_nic.io_base + reg);
-        else
-            return io_in_byte(virtio_nic.io_base + reg);
-    }
+        return io_in_byte(virtio_nic.io_base + reg);
 }
 
 void virtio_nic_reg_write(uint16_t reg, uint32_t data)
 {
     if (reg < REG_QUEUE_SIZE)
         io_out_long(virtio_nic.io_base + reg, data);
+    else if (reg <= REG_QUEUE_NOTIFY)
+        io_out_word(virtio_nic.io_base + reg, (uint16_t)data);
     else
-    {
-        if (reg <= REG_QUEUE_NOTIFY)
-            io_out_word(virtio_nic.io_base + reg, (uint16_t)data);
-        else
-            io_out_byte(virtio_nic.io_base + reg, (uint8_t)data);
-    }
+        io_out_byte(virtio_nic.io_base + reg, (uint8_t)data);
 }
