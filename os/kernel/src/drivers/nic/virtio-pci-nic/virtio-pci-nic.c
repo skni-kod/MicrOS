@@ -37,11 +37,11 @@ bool virtio_nic_init(net_device_t *net_dev)
     if (pci_virtio_nic_device.vendor_id == 0)
         return false;
 
-    // Now setup registers, and memory
+    // Get device configuration address
     virtio_nic.bar_type = pci_virtio_nic_device.base_addres_0 & (0x1);
     
     if(!virtio_nic.bar_type)
-    // Now driver can only configure device via IO ports.
+    // Driver can only configure device via IO ports.
         return false;
     
     virtio_nic.io_base = pci_virtio_nic_device.base_addres_0 & (~0x3);
@@ -61,7 +61,7 @@ bool virtio_nic_init(net_device_t *net_dev)
     // Make sure the features we need are supported
     if ((features & REQUIRED_FEATURES) != REQUIRED_FEATURES)
     {
-        virtio_nic_reg_write(REG_DEVICE_STATUS, STATUS_DEVICE_NEEDS_RESET);
+        virtio_nic_reg_write(REG_DEVICE_STATUS, STATUS_DRIVER_FAILED);
         return;
     }
 
