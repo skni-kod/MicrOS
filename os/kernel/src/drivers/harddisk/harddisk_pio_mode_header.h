@@ -181,7 +181,7 @@ typedef struct harddisk_io_control_status_register_fields
     //! Corrected data. Always set to zero. (short: CORR).
     uint8_t corrected_data : 1;
     //! Set when the drive has PIO data to transfer, or is ready to accept PIO data. (short: DRQ).
-    uint8_t has_pio_data_to_transfer_or_ready_to_accept_pio_data : 1;
+    uint8_t drive_ready : 1;
     //! Overlapped Mode Service Request. (short: SRV).
     uint8_t overlapped_mode_service_request : 1;
     //! Drive Fault Error (does not set ERR). (short: DF).
