@@ -30,6 +30,7 @@ uint32_t loadFile(char* filename, uint8_t** dst)
         if(currentOffset + chunkSize > fileSize) chunkSize = fileSize - currentOffset;
         readLen += fread(contents+currentOffset, sizeof(uint8_t), chunkSize, in);
         currentOffset += chunkSize;
+        printf("Loaded %dK bytes of file...\n", currentOffset/1024);
     }
     if (fileSize != readLen)
     {

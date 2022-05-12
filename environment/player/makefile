@@ -1,4 +1,4 @@
-GCC := /opt/cross/bin/i386-elf-gcc
+GCC := /opt/cross/bin/i786-elf-gcc
 
 SRC_DIR := src
 OBJ_DIR := obj
@@ -13,15 +13,15 @@ ASM_OBJECTS := $(ASM_SOUCES:%.asm=$(OBJ_DIR)/%.o)
 
 DEPS := $(C_OBJECTS:.o=.d)
 
-GCC_COMPILE_FLAGS := -I../../library/src -ffreestanding -Wall -Wextra -Wno-unused-parameter -Wno-packed-bitfield-compat
+GCC_COMPILE_FLAGS := -I../../library/src -ffreestanding -Wall -Wextra -Wno-unused-parameter -Wno-packed-bitfield-compat -mfpmath=sse -mmmx -msse3
 GCC_LINK_FLAGS := -L../../library/bin -lc -lgcc -nostdlib
 
-# ifeq ($(MODE),release)
-# GCC_COMPILE_FLAGS += -O2
-# GCC_LINK_FLAGS += -s -DNDEBUG
-# else
+ifeq ($(MODE),release)
+GCC_COMPILE_FLAGS += -O2
+GCC_LINK_FLAGS += -s -DNDEBUG
+else
 GCC_COMPILE_FLAGS += -O0 -ggdb3
-# endif
+endif
 
 $(OUTPUT_FILE): $(C_OBJECTS) $(ASM_OBJECTS)
 	@echo "=== Linking output file $(OUTPUT_FILE) ==="

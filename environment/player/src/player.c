@@ -43,27 +43,33 @@ int main(int argc, char** argv)
     printf("Loading file %s...\n", argv[2]);
 
     uint8_t* data = NULL;
-    if(!loadFile(argv[2], &data))
+    uint32_t fileSize = 0;
+    fileSize = loadFile(argv[2], &data);
+    if(fileSize == 0)
     {
         return -2;
     }
 
     fbuffer = create_image(800,600,bpp);
 
-    plm_t* plm = plm_create_with_filename(argv[2]);
+    plm_t* plm = plm_create_with_memory(data, fileSize, 0);
+    //plm_t* plm = plm_create_with_filename(argv[2]);
 
     plm_set_video_decode_callback(plm, app_on_video, NULL);
 
     //Update & draw
 
-    double dt = 0.0167;
+    double dt = 0;
 
     micros_console_set_video_mode(vmd.mode_number);
 
+
+    clock_t beginTime;
     while(1)
     {
+        beginTime = clock();
         //CLEAR SURFACE
-        memset(fbuffer->data, 0, fbuffer->width*fbuffer->height*bpp);
+        //memset(fbuffer->data, 0, fbuffer->width*fbuffer->height*bpp);
 
         //LOGIC & DRAW
         if(plm->has_ended) break;
@@ -71,6 +77,7 @@ int main(int argc, char** argv)
 
         //BLIT SURFACE
         micros_console_copy_from_buffer(fbuffer->data, vmd.width*vmd.height*bpp);
+        dt = (clock() - beginTime)/1000.0;
     }
     //END OF LOGIC
 
