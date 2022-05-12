@@ -1,6 +1,9 @@
 #include "heap.h"
 #include "../../cpu/paging/paging.h"
 
+#include "../../debug_helpers/library/kernel_stdio.h"
+#include "../../logger/logger.h"
+
 heap_entry *kernel_heap;
 heap_entry *user_heap;
 
@@ -321,4 +324,35 @@ bool heap_verify_integrity(bool supervisor)
     {
         return true;
     }
+}
+
+//DEBUG STUFF
+
+//If this function is usefull I'll rework it to check both user and kernel heaps
+void heap_check_entries()
+{
+    char buffer[256];
+    heap_entry *current_entry = kernel_heap;
+    while(1)
+    {
+        if(current_entry->next != 0)
+        {
+            if(current_entry->size == 0)
+            {
+                kernel_sprintf(buffer, "%08X SIZE ERROR!", current_entry);
+                
+            }
+        }
+        else
+        {
+            if(current_entry->size == 0)
+            {
+                kernel_sprintf(buffer, "%08X  SIZE ERROR!", current_entry);
+                logger_log_warning(buffer);
+            }
+            break;
+        }
+        current_entry = current_entry->next;
+    }
+    logger_log_ok("KERNEL HEAP OK!");
 }
