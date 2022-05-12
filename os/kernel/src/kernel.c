@@ -282,7 +282,7 @@ void startup()
     harddisk_init();
     logger_log_ok("Hard Disks");
     print_harddisks_status();
-
+    
     keyboard_init();
     logger_log_ok("Keyboard");
 

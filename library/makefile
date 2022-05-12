@@ -17,12 +17,12 @@ DEPS := $(C_OBJECTS:.o=.d)
 
 GCC_COMPILE_FLAGS := -ffreestanding -Wall -Wextra -Wno-unused-parameter -Wno-packed-bitfield-compat -Wno-implicit-fallthrough
 
-ifeq ($(MODE),release)
-GCC_COMPILE_FLAGS += -O2
-GCC_LINK_FLAGS += -s -DNDEBUG
-else
+# ifeq ($(MODE),release)
+# GCC_COMPILE_FLAGS += -O2
+# GCC_LINK_FLAGS += -s -DNDEBUG
+# else
 GCC_COMPILE_FLAGS += -O0 -ggdb3
-endif
+# endif
 
 $(OUTPUT_FILE): $(C_OBJECTS) $(ASM_OBJECTS)
 	@echo "=== Linking output file $(OUTPUT_FILE) ==="
