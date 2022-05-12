@@ -1,23 +1,20 @@
-GCC := /opt/cross/bin/i786-elf-gcc
-OBJCOPY := /opt/cross/i786-elf/bin/objcopy
-NASM := "../../tools/nasm"
+GCC := /opt/cross/bin/i386-elf-gcc
 
 SRC_DIR := src
 OBJ_DIR := obj
 BIN_DIR := bin
-OUTPUT_FILE := $(BIN_DIR)/kernel.elf
-OUTPUT_BIN_FILE := $(BIN_DIR)/kernel.bin
+OUTPUT_FILE := $(BIN_DIR)/player.elf
 
 C_SOURCES := $(shell find $(SRC_DIR) -name "*.c")
 C_OBJECTS := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(C_SOURCES))
 
 ASM_SOUCES := $(shell find $(SRC_DIR) -name "*.asm")
-ASM_OBJECTS := $(patsubst $(SRC_DIR)/%.asm,$(OBJ_DIR)/%.o,$(ASM_SOUCES))
+ASM_OBJECTS := $(ASM_SOUCES:%.asm=$(OBJ_DIR)/%.o)
 
 DEPS := $(C_OBJECTS:.o=.d)
 
-GCC_COMPILE_FLAGS := -I$(SRC_DIR) -I../../library/src -I$(SRC_DIR)/klibrary -ffreestanding -Wall -Wextra -Wno-unused-parameter -Wno-packed-bitfield-compat -fshort-enums
-GCC_LINK_FLAGS := -T ../linker.ld -L../../library/bin -lc -lgcc -nostdlib
+GCC_COMPILE_FLAGS := -I../../library/src -ffreestanding -Wall -Wextra -Wno-unused-parameter -Wno-packed-bitfield-compat
+GCC_LINK_FLAGS := -L../../library/bin -lc -lgcc -nostdlib
 
 # ifeq ($(MODE),release)
 # GCC_COMPILE_FLAGS += -O2
@@ -29,9 +26,7 @@ GCC_COMPILE_FLAGS += -O0 -ggdb3
 $(OUTPUT_FILE): $(C_OBJECTS) $(ASM_OBJECTS)
 	@echo "=== Linking output file $(OUTPUT_FILE) ==="
 	@mkdir -p '$(@D)'
-	@$(GCC) $(C_OBJECTS) $(ASM_OBJECTS) -o $(OUTPUT_FILE) $(GCC_LINK_FLAGS)
-	@echo "=== Creating binary version of kernel elf ==="
-	@$(OBJCOPY) -O binary $(OUTPUT_FILE) $(BIN_DIR)/kernel.bin
+	@$(GCC) $(C_OBJECTS) -o $(OUTPUT_FILE) $(GCC_LINK_FLAGS)
 	@echo "=== $(OUTPUT_FILE) done ==="
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
