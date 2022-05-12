@@ -77,7 +77,6 @@ uint32_t micros_interrupt_4a(uint32_t function_number, uint32_t a, uint32_t b, u
         "mov %5, %%esi\n"
         "int $50\n"
         "mov %%eax, %0\n"
-
         : "=g"(result)
         : "g"(function_number), "g"(a), "g"(b), "g"(c), "g"(d)
         : "%eax", "%ebx", "%ecx", "%edx", "%esi");

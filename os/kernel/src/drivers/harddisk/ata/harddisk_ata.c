@@ -1,14 +1,14 @@
 #include "harddisk_ata.h"
 
-uint32_t __harddisk_ata_get_user_addressable_sectors(const harddisk_identify_device_data *data)
+uint64_t __harddisk_ata_get_user_addressable_sectors(const harddisk_identify_device_data *data)
 {
     return data->fields.total_number_of_user_addressable_sectors;
 }
 
-uint32_t __harddisk_ata_get_disk_space(const harddisk_identify_device_data *data)
+uint64_t __harddisk_ata_get_disk_space(const harddisk_identify_device_data *data)
 {
-    // Multiply total number of user addressable sectors by number of bytes per sector (currently hard coded).
-    return data->fields.total_number_of_user_addressable_sectors * 512;
+    // Multiply total number of user addressable sectors by number of bytes per sector.
+    return (uint64_t)data->fields.total_number_of_user_addressable_sectors * 512 * pow(2, data->fields.physical_logical_sector_size.logical_per_physical_sectors);
 }
 
 int8_t __harddisk_ata_read_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t *buffer)
@@ -179,7 +179,7 @@ int8_t __harddisk_ata_poll(uint16_t port)
             for(;;)
             {
                 result.value = io_in_byte(port);
-                if(result.fields.has_pio_data_to_transfer_or_ready_to_accept_pio_data == 1 || result.fields.overlapped_mode_service_request == 1)
+                if(result.fields.drive_ready == 1 || result.fields.overlapped_mode_service_request == 1)
                 {
                     return 1;
                 }

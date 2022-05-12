@@ -69,3 +69,30 @@ bool timer_interrupt()
     
     return false;
 }
+
+void timer_sleep(uint32_t time)
+{
+        uint32_t start_time = timer_get_system_clock();
+        uint32_t stop_time = 0;
+        for(;;)
+        {
+            stop_time = timer_get_system_clock();
+            if(stop_time - start_time >= time)
+            {
+                return;
+            }
+        }
+}
+
+bool timer_does_elapsed(uint32_t start_time, uint32_t time_to_elapsed)
+{
+    uint32_t stop_time = timer_get_system_clock();
+    if(stop_time - start_time >= time_to_elapsed)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
