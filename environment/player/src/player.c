@@ -92,23 +92,30 @@ int main(int argc, char** argv)
 
 void app_on_video(plm_t *player, plm_frame_t *frame, void *user)
 {
-    uint8_t* rgbdata = (uint8_t*)malloc(frame->width*frame->height*3);
-    plm_frame_to_rgb(frame,rgbdata, frame->width*3);
+    //plm_frame_to_rgb(frame,rgbdata, frame->width*3);
 
-    int rgbPos = 0;
-    int bufferPos = 0;
-    if(frame->height < fbuffer->height)
+    int offset = ((fbuffer->height - frame->height)/2)*fbuffer->width*bpp;
+
+    if(bpp > 3)
     {
-        bufferPos = ((fbuffer->height - frame->height)/2)*fbuffer->width*bpp;
+        plm_frame_to_bgra(frame, fbuffer->data+offset, frame->width*4);
+    }
+    else
+    {
+        plm_frame_to_bgr(frame, fbuffer->data+offset, frame->width*3);
     }
 
-    for(int i = 0; i < frame->width*frame->height; i++)
-    {
-        fbuffer->data[bufferPos++] = rgbdata[rgbPos+2];
-        fbuffer->data[bufferPos++] = rgbdata[rgbPos+1];
-        fbuffer->data[bufferPos++] = rgbdata[rgbPos];
-        if(bpp > 3) fbuffer->data[bufferPos++] = 0xFF;
-        rgbPos += 3;
-    }
-    free(rgbdata);
+    // if(frame->height < fbuffer->height)
+    // {
+    //     bufferPos = ((fbuffer->height - frame->height)/2)*fbuffer->width*bpp;
+    // }
+
+    // for(int i = 0; i < frame->width*frame->height; i++)
+    // {
+    //     fbuffer->data[bufferPos++] = rgbdata[rgbPos+2];
+    //     fbuffer->data[bufferPos++] = rgbdata[rgbPos+1];
+    //     fbuffer->data[bufferPos++] = rgbdata[rgbPos];
+    //     if(bpp > 3) fbuffer->data[bufferPos++] = 0xFF;
+    //     rgbPos += 3;
+    // }
 }
