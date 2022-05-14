@@ -286,8 +286,8 @@ void startup()
     keyboard_init();
     logger_log_ok("Keyboard");
 
-    partitions_init();
-    logger_log_ok("Partitions");
+    // partitions_init();
+    // logger_log_ok("Partitions");
 
     tss_init();
     logger_log_ok("TSS");
@@ -344,9 +344,13 @@ void startup()
     
 
     ide_pci_init();
+
+    partitions_init();
+    logger_log_ok("Partitions");
+
     //fat_init();
     //logger_log_ok("FAT12");
-    while(1);
+    //while(1);
     
     init_terminal_manager();
     logger_log_ok("Terminal manager");

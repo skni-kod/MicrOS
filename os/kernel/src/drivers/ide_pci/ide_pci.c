@@ -1,37 +1,44 @@
 #include "ide_pci.h"
 
+//! Current states of all hard drives.
+extern harddisk_states harddisk_current_states;
+//! Current configuration of harddisk
+extern harddisk_configuration harddisk_current_configuration;
+
+static channel_regs channels[2]; //Temporary. Array of channels on a single controller
+static ide_device devices[4]; //Temporary. Array of all devices on a single controller
+
 bool ide_pci_init(){
-	channel_regs channels[2]; //Temporary. Array of channels on a single controller
-	ide_device devices[4]; //Temporary. Array of all devices on a single controller
+
 
     for(int i = 0; i<pci_get_number_of_devices(); i++){
         pci_device* dev = pci_get_device(i);
 		char buff[64];
         if(dev->class_code == 0x1 && dev->subclass == 0x1){
-            logger_log_info("IDE Controller found!");
-            logger_log_info(itoa(dev->vendor_id, buff, 16));
-            logger_log_info(itoa(dev->header_type, buff, 16));
-            logger_log_info(itoa(dev->class_code, buff, 16));
-            logger_log_info(itoa(dev->subclass, buff, 16));
-            logger_log_info(itoa(dev->prog_if, buff, 16));
+            // logger_log_info("IDE Controller found!");
+            // logger_log_info(itoa(dev->vendor_id, buff, 16));
+            // logger_log_info(itoa(dev->header_type, buff, 16));
+            // logger_log_info(itoa(dev->class_code, buff, 16));
+            // logger_log_info(itoa(dev->subclass, buff, 16));
+            // logger_log_info(itoa(dev->prog_if, buff, 16));
 
             uint8_t status = dev->prog_if;
-            if(status & 0x1)
-                logger_log_info("Channel primary in native-PCI mode");
-            else
-                logger_log_info("Channel primary in compability mode");
-            if(status & 0x2)
-                logger_log_info("Channel primary can have it's operation mode changed");
-            else
-                logger_log_info("Channel primary has fixed operation mode");
-            if(status & 0x4)
-                logger_log_info("Channel secondary in native-PCI mode");
-            else
-                logger_log_info("Channel secondary in compability mode");
-            if(status & 0x8)
-                logger_log_info("Channel secondary can have it's operation mode changed");
-            else
-                logger_log_info("Channel secondary has fixed operation mode");
+            // if(status & 0x1)
+            //     logger_log_info("Channel primary in native-PCI mode");
+            // else
+            //     logger_log_info("Channel primary in compability mode");
+            // if(status & 0x2)
+            //     logger_log_info("Channel primary can have it's operation mode changed");
+            // else
+            //     logger_log_info("Channel primary has fixed operation mode");
+            // if(status & 0x4)
+            //     logger_log_info("Channel secondary in native-PCI mode");
+            // else
+            //     logger_log_info("Channel secondary in compability mode");
+            // if(status & 0x8)
+            //     logger_log_info("Channel secondary can have it's operation mode changed");
+            // else
+            //     logger_log_info("Channel secondary has fixed operation mode");
         
 			//Read address from base register, or use default values
 			channels[ATA_PRIMARY].base = (dev->base_addres_0 & 0xFFFFFFFC) + 0x1F0 * (!dev->base_addres_0);
@@ -56,8 +63,9 @@ bool ide_pci_init(){
 					logger_log_info(itoa(tmp, buff, 16));
 					if( tmp == 0) 
 						logger_log_info("NO DRIVE!");
-					else{
-						logger_log_info("Something detected");
+					else
+					{
+						//logger_log_info("Something detected");
 						while(1) {
 							status = ide_read(&channels[j], ATA_REG_STATUS);
 							if ((status & ATA_SR_ERR)) {
@@ -67,6 +75,30 @@ bool ide_pci_init(){
 							} // If Err, Device is not ATA.
 							if (!(status & ATA_SR_BSY) && (status & ATA_SR_DRQ)){
 								logger_log_info("Ready to read!");
+
+    							harddisk_identify_device_data *data;
+
+								if(j == 0 && k == 0)
+								{
+									harddisk_current_states.primary_master = HARDDISK_ATA_PRESENT;
+									data = &harddisk_current_states.primary_master_data;
+								}
+								if(j == 0 && k == 1)
+								{
+									harddisk_current_states.primary_slave = HARDDISK_ATA_PRESENT;
+									data = &harddisk_current_states.primary_slave_data;
+								}
+								if(j == 1 && k == 0)
+								{
+									harddisk_current_states.secondary_master = HARDDISK_ATA_PRESENT;
+									data = &harddisk_current_states.secondary_master_data;
+								}
+								if(j == 1 && k == 1)
+								{
+									harddisk_current_states.secondary_slave = HARDDISK_ATA_PRESENT;
+									data = &harddisk_current_states.secondary_slave_data;
+								}
+								ide__harddisk_get_identify_data(k+1,j+1, data, ATA_CMD_IDENTIFY);
 
 								break; // Everything is right.
 							}
@@ -81,8 +113,8 @@ bool ide_pci_init(){
 				}
 			}
 
-
-            
+			dev->base_addres_4 = 0x50000;
+            prd_table = 0x50000;
         }
     }
 	return false;
@@ -118,4 +150,111 @@ uint8_t ide_read(channel_regs* channel, uint8_t reg){
 	if (reg > 0x07 && reg < 0x0C)
 		ide_write(channel, ATA_REG_CONTROL, channel->ni);
 	return result;
+}
+
+int8_t ide__harddisk_get_identify_data(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, harddisk_identify_device_data *data, uint8_t identify_command)
+{
+    uint16_t io_port = 0;
+    uint16_t control_port = 0;
+    harddisk_io_drive_head_register message_to_drive = {.value = 0};
+
+    // Set port of drive
+    if (bus == HARDDISK_ATA_PRIMARY_BUS)
+    {
+        io_port = channels[ATA_PRIMARY].base;
+        control_port = channels[ATA_PRIMARY].control;
+    }
+    else if(bus == HARDDISK_ATA_SECONDARY_BUS)
+    {
+        io_port = channels[ATA_SECONDARY].base;
+        control_port = channels[ATA_SECONDARY].control;
+    }
+    else 
+    {
+        return -2;
+    }
+
+    // Set drive
+    switch (type)
+    {
+    case HARDDISK_ATA_MASTER:
+        // For master set it to 0xA0. We set 2 bits that should be always 1.
+        message_to_drive.fields.always_set_field_1 = 1;
+        message_to_drive.fields.always_set_field_2 = 1;
+        break;
+    case HARDDISK_ATA_SLAVE:
+        // For slave set it to 0xB0. We set 2 bits that should be always 1 and drive number to 1.
+        message_to_drive.fields.always_set_field_1 = 1;
+        message_to_drive.fields.always_set_field_2 = 1;
+        message_to_drive.fields.drive_number = 1;
+        break;
+    default:
+        return -2;
+    }
+
+
+    // Send message to drive
+    io_out_byte(io_port + HARDDISK_IO_DRIVE_HEAD_REGISTER_OFFSET, message_to_drive.value);
+
+    // Make 400ns delay
+    __harddisk_400ns_delay(control_port);
+
+    // Set the Sectorcount, LBAlo, LBAmid, and LBAhi IO ports to 0
+    io_out_word(io_port + HARDDISK_IO_SECTOR_COUNT_REGISTER_OFFSET, 0);
+    io_out_word(io_port + HARDDISK_IO_SECTOR_NUMBER_REGISTER_OFFSET, 0);
+    io_out_word(io_port + HARDDISK_IO_CYLINDER_LOW_REGISTER_OFFSET, 0);
+    io_out_word(io_port + HARDDISK_IO_CYLINDER_HIGH_REGISTER_OFFSET, 0);
+
+    // Send the specific IDENTIFY command to the Command IO port.
+    io_out_byte(io_port + HARDDISK_IO_COMMAND_REGISTER_OFFSET, identify_command);
+
+
+    // Read the Status port again.
+    harddisk_io_control_status_register result;
+    result.value = io_in_byte(io_port + HARDDISK_IO_STATUS_REGISTER_OFFSET);
+
+    // If the value read is 0, the drive does not exist.
+    if(result.value == 0)
+    {
+        return 0;
+    }  
+    else
+    {   // For any other value: poll the Status port until bit 7 (BSY, value = 0x80) clears.
+        for(;;)
+        {
+            if(result.fields.busy == 0)
+            {
+                //Check LBA mid and high to check if device follows ATA specification
+                uint8_t LBA_mid, LBA_hi;
+                LBA_mid = io_in_byte(io_port + HARDDISK_IO_CYLINDER_LOW_REGISTER_OFFSET);
+                LBA_hi = io_in_byte(io_port + HARDDISK_IO_CYLINDER_HIGH_REGISTER_OFFSET);
+                if(LBA_hi != 0 && LBA_mid != 0) return 1;
+                //TODO
+                //There should be a way to load the data from devices that do not follow the standard. Find this way
+
+                // Otherwise, continue polling one of the Status ports until bit 3 (DRQ, value = 8) sets, or until bit 0 (ERR, value = 1) sets.
+                for(;;)
+                {
+                    result.value = io_in_byte(io_port + HARDDISK_IO_STATUS_REGISTER_OFFSET);
+
+
+                    if(result.fields.drive_ready == 1 || result.fields.overlapped_mode_service_request == 1)
+                    {
+                        for(int i = 0; i < 256; i++)
+                        {
+                            //  Read 256 16-bit values, and store them.
+                            data->values[i] = io_in_word(io_port);
+                        }
+                        return 1;
+                    }
+                    else if(result.fields.error_occurred == 1 || result.fields.drive_fault_error == 1)
+                    {
+                        return -1;
+                    }
+                }
+                
+            }   
+            result.value = io_in_byte(io_port + HARDDISK_IO_STATUS_REGISTER_OFFSET);
+        }
+    }
 }

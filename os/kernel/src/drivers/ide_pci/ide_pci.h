@@ -9,10 +9,12 @@
 #include "../../logger/logger.h"
 #include <ktime.h>
 
+#include "../harddisk/harddisk_header.h"
+
 #define IDE_PCI_DEVICE_CLASS 1
 #define IDE_PCI_DEVICE_SUBCLASS 1
 
-//The following constants are derived from wiki.osdev.org, and should be treated with care and distrust
+//The following constants are derived from wiki.osdev.org, and should be treated with care and distrust (╬▔皿▔)╯
 
 //Status
 #define ATA_SR_BSY     0x80    // Busy
@@ -118,7 +120,15 @@ typedef struct _regs{
 	uint8_t ni; 		// No interrupt
 } channel_regs;
 
+typedef struct _prd_entry
+{
+	uint32_t address;
+	uint16_t; byte_count;
+	uint16_t flags;
+} __attribute__((packed)) prd_entry;
 
+#define PRD_MAX_ENTRY 8192
+prd_entry* prd_table;
 
 //! Initialization function
 /*!
@@ -130,5 +140,7 @@ bool ide_pci_init();
 //Following functions from osdev. To be adjusted
 void ide_write(channel_regs* channel, uint8_t reg, uint8_t data);
 uint8_t ide_read(channel_regs* channel, uint8_t reg);
+
+int8_t ide__harddisk_get_identify_data(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, harddisk_identify_device_data *data, uint8_t identify_command);
 
 #endif
