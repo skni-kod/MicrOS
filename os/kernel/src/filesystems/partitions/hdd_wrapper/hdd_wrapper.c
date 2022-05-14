@@ -24,20 +24,25 @@ int hdd_wrapper_get_bus_by_device_number(int device)
     else return HARDDISK_ATA_SECONDARY_BUS;
 }
 
-uint8_t *hdd_wrapper_read_sector(int device_number, int sector)
+uint8_t *hdd_wrapper_read_sector(int device_number, int sector, int count)
 {
+    //change this so it reads actual sector size of disk - typically it is 512B, but might be more/less.
+    uint8_t* data = (uint8_t*)heap_kernel_alloc(count*512, 0);
     HARDDISK_ATA_MASTER_SLAVE type = hdd_wrapper_get_type_by_device_number(device_number);
     HARDDISK_ATA_BUS_TYPE bus = hdd_wrapper_get_bus_by_device_number(device_number);
-    
-    int8_t result = harddisk_read_sector(type, bus, 0, sector, (uint16_t *)read_content);
-    switch (result)
+
+    for(uint32_t i = 0; i < count; i++)
     {
-        case 0: logger_log_error("harddisk_read_sector returned 0 - non-present HDD"); break;
-        case -1: logger_log_error("harddisk_read_sector returned -1 - disk error"); break;
-        case -2: logger_log_error("harddisk_read_sector returned -2 - parameters error"); break;
+        int8_t result = harddisk_read_sector(type, bus, 0, sector+i, (uint16_t *)read_content);
+        switch (result)
+        {
+            case 0: logger_log_error("harddisk_read_sector returned 0 - non-present HDD"); break;
+            case -1: logger_log_error("harddisk_read_sector returned -1 - disk error"); break;
+            case -2: logger_log_error("harddisk_read_sector returned -2 - parameters error"); break;
+        }
+        memcpy(data+(i*512), read_content, 512);
     }
-    
-    return read_content;
+    return data;
 }
 
 void hdd_wrapper_write_sector(int device_number, int sector, uint8_t *content)

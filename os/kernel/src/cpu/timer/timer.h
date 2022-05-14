@@ -17,4 +17,18 @@ uint32_t timer_get_expected_clock_fraction();
 uint32_t timer_get_system_clock();
 bool timer_interrupt();
 
+//! Function makes sleep by checking how much time elapsed.
+/*!
+    \param time Time for sleep in miliseonds.
+*/
+void timer_sleep(uint32_t time);
+
+//! Measures if enought time elapsed from start.
+/*!
+    \param start_time Time from which we start count in miliseconds.
+    \param time_to_elapsed Time in miliseonds that should elapsed since \a start_time.
+    \return true if \a time_to_elapsed elapsed since \a start_time
+*/
+bool timer_does_elapsed(uint32_t start_time, uint32_t time_to_elapsed);
+
 #endif

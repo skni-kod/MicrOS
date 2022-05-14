@@ -2,9 +2,12 @@
 
 //! Current states of all hard drives.
 extern harddisk_states harddisk_current_states;
+//! Current configuration of harddisk
+extern harddisk_configuration harddisk_current_configuration;
 
-void harddisk_init()
+void harddisk_init(harddisk_configuration configuration)
 {
+    harddisk_current_configuration = configuration;
     harddisk_current_states.primary_master = (HARDDISK_STATE) __harddisk_check_presence(HARDDISK_ATA_MASTER, HARDDISK_ATA_PRIMARY_BUS, &harddisk_current_states);
     harddisk_current_states.primary_slave = (HARDDISK_STATE) __harddisk_check_presence(HARDDISK_ATA_SLAVE, HARDDISK_ATA_PRIMARY_BUS, &harddisk_current_states);
     harddisk_current_states.secondary_master = (HARDDISK_STATE) __harddisk_check_presence(HARDDISK_ATA_MASTER, HARDDISK_ATA_SECONDARY_BUS, &harddisk_current_states);
@@ -107,7 +110,7 @@ char* harddisk_get_disk_model_number_terminated(HARDDISK_ATA_MASTER_SLAVE type, 
     return buffer;
 }
 
-uint32_t harddisk_get_user_addressable_sectors(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus)
+uint64_t harddisk_get_user_addressable_sectors(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus)
 {
     const HARDDISK_STATE *state;
     const harddisk_identify_device_data *data;
@@ -122,7 +125,7 @@ uint32_t harddisk_get_user_addressable_sectors(HARDDISK_ATA_MASTER_SLAVE type, H
     }
 }
 
-uint32_t harddisk_get_disk_space(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus)
+uint64_t harddisk_get_disk_space(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus)
 {
     const HARDDISK_STATE *state;
     const harddisk_identify_device_data *data;

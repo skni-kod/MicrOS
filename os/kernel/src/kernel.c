@@ -155,15 +155,15 @@ void print_harddisk_details(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYP
         strcat(buff2, buff);
         logger_log_info(buff2);
 
-        itoa(harddisk_get_user_addressable_sectors(type, bus), buff, 10);
+        itoa((int)(harddisk_get_user_addressable_sectors(type, bus)), buff, 10);
         strcpy(buff2, "Total number of user addressable sectors: ");
         strcat(buff2, buff);
         logger_log_info(buff2);
 
-        itoa(harddisk_get_disk_space(type, bus) / (1024 * 1024), buff, 10);
-        strcpy(buff2, "Total number of megabytes: ");
+        itoa((int)(harddisk_get_disk_space(type, bus) / (1024 * 1024)), buff, 10);
+        strcpy(buff2, "Size: ");
         strcat(buff2, buff);
-        strcat(buff2, " MB");
+        strcat(buff2, " MiB");
         logger_log_info(buff2);
 
         if(harddisk_get_is_removable_media_device(type, bus) == true)
@@ -282,7 +282,6 @@ void startup()
     //harddisk_init();
     //logger_log_ok("Hard Disks");
     //print_harddisks_status();
-
 
     keyboard_init();
     logger_log_ok("Keyboard");

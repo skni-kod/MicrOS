@@ -37,8 +37,12 @@ int8_t __harddisk_check_presence(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BU
 
 
     // Do soft reset
-    __harddisk_soft_reset_port(control_port);
-
+    int8_t result = __harddisk_soft_reset_port(control_port + HARDDISK_CONTROL_DEVICE_CONTROL_REGISTER_OFFSET);
+    if(result == -1)
+    {
+        // Harddisk error
+        return HARDDISK_ERROR;
+    }
 
     // Send message to drive
     io_out_byte(io_port + HARDDISK_IO_DRIVE_HEAD_REGISTER_OFFSET, message_to_drive.value);
@@ -46,6 +50,15 @@ int8_t __harddisk_check_presence(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BU
 
     // Make 400ns delay
     __harddisk_400ns_delay(control_port);
+
+
+    // Poll the Status port until bit 7 (BSY, value = 0x80) clears.
+    result = __harddisk_bsy_poll(control_port + HARDDISK_CONTROL_ALTERNATE_STATUS_REGISTER_OFFSET);
+    if(result == -1)
+    {
+        // Harddisk error
+        return HARDDISK_ERROR;
+    }
 
     uint8_t cylinder_low = io_in_byte(io_port +  HARDDISK_IO_CYLINDER_LOW_REGISTER_OFFSET);
     uint8_t cylinder_high = io_in_byte(io_port +  HARDDISK_IO_CYLINDER_HIGH_REGISTER_OFFSET);
@@ -160,7 +173,7 @@ int8_t __harddisk_get_identify_data(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA
                     result.value = io_in_byte(io_port + HARDDISK_IO_STATUS_REGISTER_OFFSET);
 
 
-                    if(result.fields.has_pio_data_to_transfer_or_ready_to_accept_pio_data == 1 || result.fields.overlapped_mode_service_request == 1)
+                    if(result.fields.drive_ready == 1 || result.fields.overlapped_mode_service_request == 1)
                     {
                         for(int i = 0; i < 256; i++)
                         {
