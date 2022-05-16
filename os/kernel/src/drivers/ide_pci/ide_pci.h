@@ -123,12 +123,11 @@ typedef struct _regs{
 typedef struct _prd_entry
 {
 	uint32_t address;
-	uint16_t; byte_count;
+	uint16_t byte_count;
 	uint16_t flags;
 } __attribute__((packed)) prd_entry;
 
 #define PRD_MAX_ENTRY 8192
-prd_entry* prd_table;
 
 //! Initialization function
 /*!
@@ -142,5 +141,7 @@ void ide_write(channel_regs* channel, uint8_t reg, uint8_t data);
 uint8_t ide_read(channel_regs* channel, uint8_t reg);
 
 int8_t ide__harddisk_get_identify_data(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, harddisk_identify_device_data *data, uint8_t identify_command);
+
+uint8_t* ide_read_data(int device_number, int sector, int count);
 
 #endif

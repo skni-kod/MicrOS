@@ -8,6 +8,13 @@ extern harddisk_configuration harddisk_current_configuration;
 static channel_regs channels[2]; //Temporary. Array of channels on a single controller
 static ide_device devices[4]; //Temporary. Array of all devices on a single controller
 
+static prd_entry prd_table[64] __attribute__((aligned(4)));
+
+uint32_t bar4_address;
+uint32_t bar4_command;
+uint32_t bar4_control;
+uint32_t bar4_prdt;
+
 bool ide_pci_init(){
 
 
@@ -113,8 +120,22 @@ bool ide_pci_init(){
 				}
 			}
 
-			dev->base_addres_4 = 0x50000;
-            prd_table = 0x50000;
+            bar4_address = dev->base_addres_4;
+
+            bar4_command = bar4_address;
+            bar4_control = bar4_address+2;
+            bar4_prdt = bar4_address+4;
+
+            uint32_t phys = paging_virtual_to_physical_address((uint32_t)prd_table);
+            logger_log_info(itoa(phys, buff, 16));
+
+            io_out_long(bar4_prdt, paging_virtual_to_physical_address(prd_table));
+
+            bar4_address = dev->base_addres_4;
+
+			
+            //dev->base_addres_4 = 0x50000;
+            //prd_table = 0x50000;
         }
     }
 	return false;
@@ -257,4 +278,112 @@ int8_t ide__harddisk_get_identify_data(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_
             result.value = io_in_byte(io_port + HARDDISK_IO_STATUS_REGISTER_OFFSET);
         }
     }
+}
+
+uint8_t* ide_read_data(int device_number, int sector, int count)
+{
+    char logBuffer[256];
+    logger_log_info(itoa(count*512, logBuffer, 16));
+    //beware, this is for 512 byte sectors, we should add detection if disk is AF.
+    uint8_t* buffer = heap_kernel_alloc(count*512, 0);
+
+    uint32_t virtOffset = 0;
+    uint32_t addr = paging_virtual_to_physical_address(buffer);
+
+    uint32_t sizeToPageEnd = 0x1000 - (addr & 0xFFF);
+
+    prd_entry e;
+
+    uint32_t totalBytesToRead = count*512;
+
+    uint32_t prdEntryCounter = 0;
+
+    if(totalBytesToRead <= sizeToPageEnd)
+    {
+        e.address = addr;
+        e.byte_count = totalBytesToRead;
+        e.flags = 0x8000;
+        prd_table[0] = e;
+    }
+    else
+    {
+        logger_log_info("NEED MOAR");
+        e.address = addr;
+        e.byte_count = sizeToPageEnd;
+        e.flags = 0x0;
+        prd_table[0] = e;
+        virtOffset += sizeToPageEnd;
+        totalBytesToRead -= sizeToPageEnd;
+        prdEntryCounter++;
+        while(true)
+        {
+            addr = paging_virtual_to_physical_address(buffer+virtOffset);
+            sizeToPageEnd = 0x1000 - (addr & 0xFFF);
+            if(totalBytesToRead <= sizeToPageEnd)
+            {
+                e.address = addr;
+                e.byte_count = totalBytesToRead;
+                e.flags = 0x8000;
+                prd_table[prdEntryCounter] = e;
+                prdEntryCounter++;
+                break;
+            }
+            else
+            {
+                e.address = addr;
+                e.byte_count = sizeToPageEnd;
+                e.flags = 0x0;
+                virtOffset += sizeToPageEnd;
+                totalBytesToRead -= sizeToPageEnd;
+                prdEntryCounter++;
+            }
+        }
+        //TODO: Add PRD fill for more than 4KB boundary reads!
+    }
+
+    io_out_byte(bar4_command, 0);
+
+    uint16_t io_port = channels[ATA_PRIMARY].base;
+
+    uint32_t high_lba = 0;
+    uint32_t low_lba = sector;
+
+    harddisk_io_drive_head_register message_to_drive = {.value = 0};
+    message_to_drive.fields.uses_lba = 1;
+
+    io_out_byte(io_port + HARDDISK_IO_DRIVE_HEAD_REGISTER_OFFSET, message_to_drive.value);
+
+    io_out_byte(io_port + HARDDISK_IO_SECTOR_COUNT_REGISTER_OFFSET, 0);
+    io_out_byte(io_port + HARDDISK_IO_SECTOR_NUMBER_REGISTER_OFFSET, (uint8_t)high_lba);
+    io_out_byte(io_port + HARDDISK_IO_CYLINDER_LOW_REGISTER_OFFSET, (uint8_t)(high_lba >> 8));
+    io_out_byte(io_port + HARDDISK_IO_CYLINDER_HIGH_REGISTER_OFFSET, (uint8_t)(high_lba >> 16));
+    io_out_byte(io_port + HARDDISK_IO_SECTOR_COUNT_REGISTER_OFFSET, 1);
+    io_out_byte(io_port + HARDDISK_IO_SECTOR_NUMBER_REGISTER_OFFSET, (uint8_t)low_lba);
+    io_out_byte(io_port + HARDDISK_IO_CYLINDER_LOW_REGISTER_OFFSET, (uint8_t)(low_lba >> 8));
+    io_out_byte(io_port + HARDDISK_IO_CYLINDER_HIGH_REGISTER_OFFSET, (uint8_t)(low_lba >> 16));
+
+    io_out_byte(io_port + HARDDISK_IO_COMMAND_REGISTER_OFFSET, 0x25);
+
+    io_out_byte(bar4_command, 0x8 | 0x1);
+
+    // Wait for dma write to complete
+    while (1)
+    {
+        int status = io_in_byte(bar4_control);
+        int dstatus = io_in_byte(channels[ATA_PRIMARY].control);
+        if (!(status & 0x04))
+        {
+            continue;
+        }
+        if (!(dstatus & 0x80))
+        {
+            break;
+        }
+    }
+
+    logger_log_info(itoa(addr, logBuffer, 16));
+
+
+    return buffer;
+    //while(1);
 }

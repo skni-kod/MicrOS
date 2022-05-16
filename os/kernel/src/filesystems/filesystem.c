@@ -32,7 +32,7 @@ bool filesystem_read_file(char *path, uint8_t *buffer, uint32_t start_index, uin
     
     char path_without_partition[128];
     filesystem_remove_partition_from_path(path, path_without_partition);
-    
+    //TODO: Change to filesystem generic (Support for more FS)
     return fat_generic_read_file(path_without_partition, buffer, start_index, length);
 }
 

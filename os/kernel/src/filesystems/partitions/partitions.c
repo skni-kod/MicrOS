@@ -78,8 +78,9 @@ void partitions_init_harddisks(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_
                 hdd_partition->symbol = 'A' + partitions.count;
                 hdd_partition->device_type = device_type_harddisk;
                 hdd_partition->device_number = hdd_wrapper_get_device_number(type, bus);
+                //temp
                 hdd_partition->write_on_device = hdd_wrapper_write_sector;
-                hdd_partition->read_from_device = hdd_wrapper_read_sector;
+                hdd_partition->read_from_device = ide_read_data;
                 hdd_partition->first_sector = fat_header_sector;
                 
                 fat_generic_set_current_partition(hdd_partition);

@@ -10,6 +10,7 @@
 #include "drivers/harddisk/harddisk.h"
 #include "filesystems/fat/fat_header.h"
 #include "hdd_wrapper/hdd_wrapper.h"
+#include "drivers/ide_pci/ide_pci.h"
 #include "partition_info.h"
 
 void partitions_init();

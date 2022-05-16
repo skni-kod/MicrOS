@@ -345,6 +345,8 @@ void startup()
 
     ide_pci_init();
 
+    //while(1);
+
     partitions_init();
     logger_log_ok("Partitions");
 
