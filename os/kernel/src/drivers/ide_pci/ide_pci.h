@@ -144,4 +144,6 @@ int8_t ide__harddisk_get_identify_data(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_
 
 uint8_t* ide_read_data(int device_number, int sector, int count);
 
+bool ide_pci_irq_handle(interrupt_state* irq_state);
+
 #endif
