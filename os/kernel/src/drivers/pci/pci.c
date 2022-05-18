@@ -7,7 +7,10 @@ static pci_device devices[32];
 pci_in_data d;
 pci_device dev;
 
+static pci_in_data pci_dev_data[32];
+
 uint8_t number_of_devices = 0;
+uint8_t number_of_devices_data = 0;
 
 void pci_init()
 {
@@ -51,6 +54,17 @@ void pci_get_device_info(pci_in_data *data, pci_device *info)
 pci_device *pci_get_device(uint8_t index)
 {
     return &devices[index];
+}
+
+pci_in_data pci_get_device_data(uint8_t index)
+{
+    return pci_dev_data[index];
+}
+
+void pci_insert_device_data(pci_in_data dev)
+{
+    pci_dev_data[number_of_devices_data] = dev;
+    number_of_devices_data++;
 }
 
 uint8_t pci_get_number_of_devices()
@@ -101,6 +115,7 @@ void pci_check_device(uint16_t bus, uint16_t dev)
             if (temp.vendor_id != 0xFFFF)
             {
                 pci_insert_device(&temp);
+                pci_insert_device_data(data);
                 pci_check_bridge(&temp);
             }
         }
@@ -136,4 +151,10 @@ void pci_check_all_buses()
             pci_check_bus(i);
         }
     }
+}
+
+void pci_write_register(pci_in_data* data, uint32_t value)
+{
+    io_out_long(PCI_CONFIG_ADDRESS, data->bits);
+    io_out_long(PCI_CONFIG_DATA, value);
 }

@@ -19,4 +19,9 @@ void pci_check_device(uint16_t bus, uint16_t dev);
 void pci_check_bus(uint16_t bus);
 void pci_check_all_buses();
 
+//Yep, we kinda need to set some stuff in PCI Configuration too ¯\_(ツ)_/¯
+void pci_write_register(pci_in_data* data, uint32_t value);
+pci_in_data pci_get_device_data(uint8_t index);
+void pci_insert_device_data(pci_in_data dev);
+
 #endif

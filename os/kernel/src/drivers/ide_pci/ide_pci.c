@@ -24,6 +24,14 @@ bool ide_pci_init(){
         pci_device* dev = pci_get_device(i);
 		char buff[64];
         if(dev->class_code == 0x1 && dev->subclass == 0x1){
+            //We kinda really need this thing
+            pci_in_data data = pci_get_device_data(i);
+            data.register_num = (0x04 & 0xFC) >> 2;
+            data.enable = 1;
+            uint32_t regVal = pci_get_register(&data);
+            regVal |= 0x4;
+            pci_write_register(&data, regVal);
+
             // logger_log_info("IDE Controller found!");
             // logger_log_info(itoa(dev->vendor_id, buff, 16));
             // logger_log_info(itoa(dev->header_type, buff, 16));
@@ -138,6 +146,7 @@ bool ide_pci_init(){
 
             io_out_long(bar4_prdt, paging_virtual_to_physical_address(prd_table));
 
+            pic_enable_irq(14);
             idt_attach_interrupt_handler(14, ide_pci_irq_handle);
 
 			
@@ -309,7 +318,7 @@ uint8_t* ide_read_data(int device_number, int sector, int count)
     if(totalBytesToRead <= sizeToPageEnd)
     {
         e.address = addr;
-        e.byte_count = sizeToPageEnd;
+        e.byte_count = totalBytesToRead;
         e.flags = 0x8000;
         prd_table[prdEntryCounter] = e;
         prdEntryCounter++;
@@ -381,7 +390,7 @@ uint8_t* ide_read_data(int device_number, int sector, int count)
 
     waitForInterrupt = true;
 
-    io_out_byte(bar4_command, 0x8 | 0x1);
+    io_out_byte(bar4_command, 0x1);
 
     // Wait for dma write to complete
     while (waitForInterrupt)
