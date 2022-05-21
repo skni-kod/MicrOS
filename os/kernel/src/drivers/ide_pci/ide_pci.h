@@ -122,9 +122,10 @@ typedef struct _regs{
 
 typedef struct _prd_entry
 {
-	uint32_t address;
-	uint16_t byte_count;
-	uint16_t flags;
+	uint32_t address : 32;
+	uint16_t byte_count : 16;
+	uint16_t reserved : 15;
+	uint8_t eot : 1;
 } __attribute__((packed)) prd_entry;
 
 #define PRD_MAX_ENTRY 8192

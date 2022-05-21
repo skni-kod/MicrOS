@@ -302,7 +302,7 @@ uint8_t* ide_read_data(int device_number, int sector, int count)
     logger_log_info(itoa(count*512, logBuffer, 16));
     //beware, this is for 512 byte sectors, we should add detection if disk is AF.
     uint8_t* buffer = heap_kernel_alloc(count*512, 0);
-    memset(buffer, 0, count*512);
+    memset(buffer, 0xB0, count*512);
 
     uint32_t virtOffset = 0;
     uint32_t addr = paging_virtual_to_physical_address(buffer);
@@ -319,7 +319,8 @@ uint8_t* ide_read_data(int device_number, int sector, int count)
     {
         e.address = addr;
         e.byte_count = totalBytesToRead;
-        e.flags = 0x8000;
+        e.reserved = 0;
+        e.eot = 1;
         prd_table[prdEntryCounter] = e;
         prdEntryCounter++;
     }
@@ -328,7 +329,8 @@ uint8_t* ide_read_data(int device_number, int sector, int count)
         logger_log_info("NEED MOAR");
         e.address = addr;
         e.byte_count = sizeToPageEnd;
-        e.flags = 0x0;
+        e.reserved = 0;
+        e.eot = 0;
         virtOffset += sizeToPageEnd;
         totalBytesToRead -= sizeToPageEnd;
         prd_table[prdEntryCounter] = e;
@@ -341,7 +343,8 @@ uint8_t* ide_read_data(int device_number, int sector, int count)
             {
                 e.address = addr;
                 e.byte_count = totalBytesToRead;
-                e.flags = 0x8000;
+                e.reserved = 0;
+                e.eot = 1;
                 prd_table[prdEntryCounter] = e;
                 prdEntryCounter++;
                 break;
@@ -350,7 +353,8 @@ uint8_t* ide_read_data(int device_number, int sector, int count)
             {
                 e.address = addr;
                 e.byte_count = sizeToPageEnd;
-                e.flags = 0x0;
+                e.reserved = 0;
+                e.eot = 1;
                 virtOffset += sizeToPageEnd;
                 totalBytesToRead -= sizeToPageEnd;
                 prd_table[prdEntryCounter] = e;
@@ -386,7 +390,7 @@ uint8_t* ide_read_data(int device_number, int sector, int count)
     io_out_byte(io_port + HARDDISK_IO_CYLINDER_LOW_REGISTER_OFFSET, (uint8_t)(low_lba >> 8));
     io_out_byte(io_port + HARDDISK_IO_CYLINDER_HIGH_REGISTER_OFFSET, (uint8_t)(low_lba >> 16));
 
-    io_out_byte(io_port + HARDDISK_IO_COMMAND_REGISTER_OFFSET, 0x25);
+    io_out_byte(io_port + HARDDISK_IO_COMMAND_REGISTER_OFFSET, 0xC8);
 
     waitForInterrupt = true;
 
