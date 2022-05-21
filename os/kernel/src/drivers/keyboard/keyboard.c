@@ -130,7 +130,7 @@ void keyboard_put_key_to_buffer(unsigned char scancode, unsigned char ascii)
         vga_printstring("\n _._     _,-'\"\"`-._       YEAH OKAY WE GET IT CRUMPY CAT IS FUNNY LOOKING\n");
         vga_printstring("(,-.`._,'(       |\\`-/|                                                  \n");
         vga_printstring("    `-.-' \\ )-`( , o o)                                                  \n");
-        vga_printstring("-bf-      `-    \\`_`\"'-   WE FUCKING GET IT ALREADY. WE PLUG THE BUFFER  \n");
+        vga_printstring("-bf-      `-    \\`_`\"'-   WE GET IT ALREADY. WE PLUG THE BUFFER  \n");
         return;
     }
 

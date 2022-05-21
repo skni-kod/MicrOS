@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <micros.h>
 
 #include "util/util.h"
@@ -7,17 +8,54 @@
 #include "mpeg/mpeg.h"
 #include "image/image.h"
 
+#include "util/keyboard.h"
+
 static uint8_t bpp;
 static image* fbuffer;
 
+static bool looping;
+
+
 void app_on_video(plm_t *player, plm_frame_t *frame, void *user);
+
+//string.h is supposed to be bugged, so I implement my own strcmp
+int compareString(char* a, char*b)
+{
+    if(a == NULL || b == NULL) return -2;
+    int i = 0;
+    while((a[i] != 0) && (b[i] != 0))
+    {
+        if(a[i] < b[i]) return -1;
+        if(a[i] > b[i]) return 1;
+        i++;
+    }
+    return 0;
+}
 
 int main(int argc, char** argv)
 {
-    if(argc != 4)
+    looping = false;
+    if(argc < 4)
     {
-        printf("Usage: player filename\n");
+        printf("Usage: player filename [-loop]\n");
+        printf("Possible files:\nB:10SEC.MPG (loads in few seconds)\nB:KONGMING.MPG (loads in about 2-3 minutes)\nB:BADAPPLE.MPG (needs about 10 minutes to load)\n");
+        printf("Press ESC to exit when video is playing.\n");
+        printf("When loop option is specified video playback will loop itself.\n");
         return 0;
+    }
+
+    initInput();
+
+    if(argc > 1)
+    {
+        for (int i = 1; i < argc; ++i)
+        {
+            if(argv[i] == NULL) continue;
+            if(!compareString(argv[i], "-loop"))
+            {
+                looping = true;
+            }
+        }
     }
 
     video_mode_descriptor vmd;
@@ -57,6 +95,8 @@ int main(int argc, char** argv)
 
     plm_set_video_decode_callback(plm, app_on_video, NULL);
 
+    plm_set_loop(plm, looping);
+
     //Update & draw
 
     double dt = 0;
@@ -67,6 +107,9 @@ int main(int argc, char** argv)
     clock_t beginTime;
     while(1)
     {
+        processInput();
+
+        if(getKeyDown(key_esc)) break;
         beginTime = clock();
         //CLEAR SURFACE
         //memset(fbuffer->data, 0, fbuffer->width*fbuffer->height*bpp);

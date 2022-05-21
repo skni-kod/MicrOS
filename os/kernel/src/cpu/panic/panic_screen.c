@@ -54,7 +54,7 @@ void panic_screen_display_intro(exception_state *state, uint32_t code, const cha
         vga_printstring(img[i]);
         vga_printchar('\n');
     }
-    vga_printstring("Robimy to z bolem serca, ale musimy Ciebie o tym poinformowac... Zjebalo sie.\n");
+    vga_printstring("Robimy to z bolem serca, ale musimy Ciebie o tym poinformowac... Zepsulo sie.\n");
     vga_printstring(panic_screen_value_to_string(buff, code));
     vga_printchar(' ');
     if (optString != 0x0)
