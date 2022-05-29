@@ -48,6 +48,7 @@ void fat_load_fat()
         uint8_t *buffer = current_partition->read_from_device(current_partition->device_number, cluster_number, 1);
         
         memcpy((void *)fat_offset, buffer, current_partition->header->bytes_per_sector);
+        heap_kernel_dealloc(buffer);
     }
 }
 
@@ -85,6 +86,7 @@ void fat_load_root()
 
         uint8_t *buffer = current_partition->read_from_device(current_partition->device_number, cluster_number, 1);
         memcpy((void *)root_offset, buffer, current_partition->header->bytes_per_sector);
+        heap_kernel_dealloc(buffer);
     }
 }
 

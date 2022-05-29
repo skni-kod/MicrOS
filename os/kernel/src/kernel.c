@@ -345,6 +345,8 @@ void startup()
 
     ide_pci_init();
 
+    uint8_t* data = ide_read_data(0, 872, 8);
+
     //while(1);
 
     partitions_init();

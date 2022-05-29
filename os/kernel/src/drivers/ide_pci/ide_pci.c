@@ -8,7 +8,7 @@ extern harddisk_configuration harddisk_current_configuration;
 static channel_regs channels[2]; //Temporary. Array of channels on a single controller
 static ide_device devices[4]; //Temporary. Array of all devices on a single controller
 
-static prd_entry prd_table[64] __attribute__((aligned(4)));
+static prd_entry prd_table[64] __attribute__((aligned(0x10000)));
 
 uint32_t bar4_address;
 uint32_t bar4_command;
@@ -17,20 +17,28 @@ uint32_t bar4_prdt;
 
 static bool waitForInterrupt;
 
-bool ide_pci_init(){
-
+bool ide_pci_init()
+{
     waitForInterrupt = false;
-    for(int i = 0; i<pci_get_number_of_devices(); i++){
+    for(int i = 0; i < pci_get_number_of_devices(); i++)
+    {
         pci_device* dev = pci_get_device(i);
 		char buff[64];
-        if(dev->class_code == 0x1 && dev->subclass == 0x1){
+        if(dev->class_code == 0x1 && dev->subclass == 0x1)
+        {
             //We kinda really need this thing
             pci_in_data data = pci_get_device_data(i);
             data.register_num = (0x04 & 0xFC) >> 2;
             data.enable = 1;
             uint32_t regVal = pci_get_register(&data);
             regVal |= 0x4;
+            regVal &= 0xFDFF;
             pci_write_register(&data, regVal);
+
+            data = pci_get_device_data(i);
+            data.register_num = (0x04 & 0xFC) >> 2;
+            data.enable = 1;
+            regVal = pci_get_register(&data);
 
             // logger_log_info("IDE Controller found!");
             // logger_log_info(itoa(dev->vendor_id, buff, 16));
@@ -63,14 +71,27 @@ bool ide_pci_init(){
 			channels[ATA_SECONDARY].base = (dev->base_addres_2 & 0xFFFFFFFC) + 0x170 * (!dev->base_addres_2);
 			channels[ATA_SECONDARY].control = (dev->base_addres_3 & 0xFFFFFFFC) + 0x376 * (!dev->base_addres_3);
 
+            //Soft reset both channels.
+
+
 			//What the actual fuck is this? (╯°□°）╯︵ ┻━┻
             //channels[ATA_PRIMARY].master = (dev->base_addres_4 & 0xFFFFFFFC);
 			//channels[ATA_SECONDARY].master = (dev->base_addres_4 & 0xFFFFFFFC) + 8;
 
 			ide_write(&channels[ATA_PRIMARY]  , ATA_REG_CONTROL, 2);
 			ide_write(&channels[ATA_SECONDARY], ATA_REG_CONTROL, 2);
-			for (int j = 0; j < 2; j++){
-				for (int k = 0; k < 2; k++){
+			for (int j = 0; j < 2; j++)
+            {
+				for (int k = 0; k < 2; k++)
+                {
+                    //do resets for each port
+                    int8_t resetRes = __harddisk_soft_reset_port(channels[j].control + HARDDISK_CONTROL_DEVICE_CONTROL_REGISTER_OFFSET);
+                    if(resetRes == -1)
+                    {
+                        continue;
+                    }
+
+
 					bool err = false;
 					uint8_t buffer[512];
 					ide_write(&channels[j], ATA_REG_HDDEVSEL, 0xA0 | k << 4);
@@ -79,15 +100,25 @@ bool ide_pci_init(){
 					sleep(10);
 
 					uint8_t tmp =ide_read(&channels[j], ATA_REG_STATUS); 
-					logger_log_info(itoa(tmp, buff, 16));
+					logger_log_info(itoa(tmp, buff, 16)); //first 160000?
 					if( tmp == 0) 
 						logger_log_info("NO DRIVE!");
 					else
 					{
-						//logger_log_info("Something detected");
-						while(1) {
-							status = ide_read(&channels[j], ATA_REG_STATUS);
-							if ((status & ATA_SR_ERR)) {
+						uint8_t pStatus = 0;
+                        char buf[64] = "STATUS CHANGED: ";
+                        //logger_log_info("Something detected");
+						while(1)
+                        {
+                            status = ide_read(&channels[j], ATA_REG_STATUS);
+							if(pStatus != status)
+                            {
+                                itoa(status, &buf[16], 16);
+                                logger_log_warning(buf);
+                            }
+                            pStatus = status;
+
+                            if ((status & ATA_SR_ERR)) {
 								logger_log_info("Error while identifying drive!");
 								err = true;
 								break;
@@ -298,16 +329,23 @@ int8_t ide__harddisk_get_identify_data(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_
 
 uint8_t* ide_read_data(int device_number, int sector, int count)
 {
-    char logBuffer[256];
-    logger_log_info(itoa(count*512, logBuffer, 16));
+    char logBuffer[2048];
+    ///logger_log_info(itoa(count*512, logBuffer, 16));
     //beware, this is for 512 byte sectors, we should add detection if disk is AF.
-    uint8_t* buffer = heap_kernel_alloc(count*512, 0);
-    memset(buffer, 0xB0, count*512);
+
+    // We need alignment to work, but it pagefaults... somehow
+    uint8_t* buffer = heap_kernel_alloc(count*512, 0x10000);
 
     uint32_t virtOffset = 0;
     uint32_t addr = paging_virtual_to_physical_address(buffer);
 
-    uint32_t sizeToPageEnd = 0x1000 - (addr & 0xFFF);
+    // logger_log_warning(itoa(addr, logBuffer, 16));
+
+    // keyboard_scan_ascii_pair kb;
+    // while(!keyboard_get_key_from_buffer(&kb));
+
+    //TODO reconsider if all of this cannot be simplified since we can now properly align memory addresses?
+    uint32_t sizeToPageEnd = 0x10000 - (addr & 0xFFFF);
 
     prd_entry e;
 
@@ -326,7 +364,7 @@ uint8_t* ide_read_data(int device_number, int sector, int count)
     }
     else
     {
-        logger_log_info("NEED MOAR");
+        //logger_log_info("NEED MOAR");
         e.address = addr;
         e.byte_count = sizeToPageEnd;
         e.reserved = 0;
@@ -338,7 +376,7 @@ uint8_t* ide_read_data(int device_number, int sector, int count)
         while(true)
         {
             addr = paging_virtual_to_physical_address(buffer+virtOffset);
-            sizeToPageEnd = 0x1000 - (addr & 0xFFF);
+            sizeToPageEnd = 0x10000 - (addr & 0xFFFF);
             if(totalBytesToRead <= sizeToPageEnd)
             {
                 e.address = addr;
@@ -354,7 +392,7 @@ uint8_t* ide_read_data(int device_number, int sector, int count)
                 e.address = addr;
                 e.byte_count = sizeToPageEnd;
                 e.reserved = 0;
-                e.eot = 1;
+                e.eot = 0;
                 virtOffset += sizeToPageEnd;
                 totalBytesToRead -= sizeToPageEnd;
                 prd_table[prdEntryCounter] = e;
@@ -372,39 +410,65 @@ uint8_t* ide_read_data(int device_number, int sector, int count)
 
     uint16_t io_port = channels[ATA_PRIMARY].base;
 
-    uint32_t high_lba = 0;
-    uint32_t low_lba = sector;
-
     harddisk_io_drive_head_register message_to_drive = {.value = 0};
     message_to_drive.fields.uses_lba = 1;
 
     //Change to Paweł's code with message (thing above)
     io_out_byte(io_port + HARDDISK_IO_DRIVE_HEAD_REGISTER_OFFSET, (0xe0 | 0 << 4 | (sector & 0x0f000000) >> 24));
 
-    io_out_byte(io_port + HARDDISK_IO_SECTOR_COUNT_REGISTER_OFFSET, 0);
-    io_out_byte(io_port + HARDDISK_IO_SECTOR_NUMBER_REGISTER_OFFSET, (uint8_t)high_lba);
-    io_out_byte(io_port + HARDDISK_IO_CYLINDER_LOW_REGISTER_OFFSET, (uint8_t)(high_lba >> 8));
-    io_out_byte(io_port + HARDDISK_IO_CYLINDER_HIGH_REGISTER_OFFSET, (uint8_t)(high_lba >> 16));
-    io_out_byte(io_port + HARDDISK_IO_SECTOR_COUNT_REGISTER_OFFSET, 1);
-    io_out_byte(io_port + HARDDISK_IO_SECTOR_NUMBER_REGISTER_OFFSET, (uint8_t)low_lba);
-    io_out_byte(io_port + HARDDISK_IO_CYLINDER_LOW_REGISTER_OFFSET, (uint8_t)(low_lba >> 8));
-    io_out_byte(io_port + HARDDISK_IO_CYLINDER_HIGH_REGISTER_OFFSET, (uint8_t)(low_lba >> 16));
+    //send higher bytes
+    io_out_byte(io_port + HARDDISK_IO_SECTOR_COUNT_REGISTER_OFFSET, (uint8_t)(count >> 8));
+    io_out_byte(io_port + HARDDISK_IO_SECTOR_NUMBER_REGISTER_OFFSET, (uint8_t)(sector >> 24));
+    //temporary, will be checked later, since LBA48 is 48 bits....
+    io_out_byte(io_port + HARDDISK_IO_CYLINDER_LOW_REGISTER_OFFSET, (uint8_t)(0));
+    io_out_byte(io_port + HARDDISK_IO_CYLINDER_HIGH_REGISTER_OFFSET, (uint8_t)(0));
+    //Send lower bytes
+    io_out_byte(io_port + HARDDISK_IO_SECTOR_COUNT_REGISTER_OFFSET, (uint8_t)count);
+    io_out_byte(io_port + HARDDISK_IO_SECTOR_NUMBER_REGISTER_OFFSET, (uint8_t)sector);
+    io_out_byte(io_port + HARDDISK_IO_CYLINDER_LOW_REGISTER_OFFSET, (uint8_t)(sector >> 8));
+    io_out_byte(io_port + HARDDISK_IO_CYLINDER_HIGH_REGISTER_OFFSET, (uint8_t)(sector >> 16));
 
-    io_out_byte(io_port + HARDDISK_IO_COMMAND_REGISTER_OFFSET, 0xC8);
+
+    // io_out_byte(io_port + HARDDISK_IO_SECTOR_NUMBER_REGISTER_OFFSET, (uint8_t)high_lba);
+    // io_out_byte(io_port + HARDDISK_IO_CYLINDER_LOW_REGISTER_OFFSET, (uint8_t)(high_lba >> 8));
+    // io_out_byte(io_port + HARDDISK_IO_CYLINDER_HIGH_REGISTER_OFFSET, (uint8_t)(high_lba >> 16));
+    // io_out_byte(io_port + HARDDISK_IO_SECTOR_COUNT_REGISTER_OFFSET, (uint16_t)count);
+    // io_out_byte(io_port + HARDDISK_IO_SECTOR_NUMBER_REGISTER_OFFSET, (uint8_t)low_lba);
+    // io_out_byte(io_port + HARDDISK_IO_CYLINDER_LOW_REGISTER_OFFSET, (uint8_t)(low_lba >> 8));
+    // io_out_byte(io_port + HARDDISK_IO_CYLINDER_HIGH_REGISTER_OFFSET, (uint8_t)(low_lba >> 16));
+
+    io_out_byte(io_port + HARDDISK_IO_COMMAND_REGISTER_OFFSET, 0x25);
 
     waitForInterrupt = true;
 
-    io_out_byte(bar4_command, 0x1);
+    io_out_byte(bar4_command, 0x8 | 0x1);
 
     // Wait for dma write to complete
     while (waitForInterrupt)
     {
-
+        uint8_t bmrCtrl = io_in_byte(bar4_control);
+        if(bmrCtrl & 0x2)
+        {
+            logger_log_warning("BUS MASTER ERROR!");
+            keyboard_scan_ascii_pair kb;
+            while(!keyboard_get_key_from_buffer(&kb));
+        }
     }
 
-    logger_log_info(itoa(addr, logBuffer, 16));
+    //logger_log_info(itoa(addr, logBuffer, 16));
 
 
+    // for(int i = 0; i < 32; i++)
+    // {
+    //     for(int j = 0; j < 16; j++)
+    //     {
+    //         itoa(buffer[i*16 + j], &logBuffer[j*2], 16);
+    //     }
+    //     logBuffer[33] = 0;
+    //     logger_log_info(logBuffer);
+    //     keyboard_scan_ascii_pair kb;
+    //     while(!keyboard_get_key_from_buffer(&kb));
+    // }
 
     return buffer;
     //while(1);
@@ -412,12 +476,14 @@ uint8_t* ide_read_data(int device_number, int sector, int count)
 
 bool ide_pci_irq_handle(interrupt_state* irq_state)
 {
-    logger_log_info("HDD IRQ RECEIVED!");
+    //logger_log_info("HDD IRQ RECEIVED!");
     uint8_t devCtrl = io_in_byte(channels[ATA_PRIMARY].control);
     uint8_t bmrCtrl = io_in_byte(bar4_control);
     if(bmrCtrl & (0x4 | 0x1) == 0)
     {
         logger_log_warning("SOME ERROR!");
+        // keyboard_scan_ascii_pair kb;
+        // while(!keyboard_get_key_from_buffer(&kb));
     }
     io_out_byte(bar4_command, 0x0);
     waitForInterrupt = false;
