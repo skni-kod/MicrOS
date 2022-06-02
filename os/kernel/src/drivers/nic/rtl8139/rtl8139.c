@@ -12,10 +12,10 @@ net_device_t *rtl8139_net_device;
 uint32_t current_packet_ptr = 0;
 
 //! Transmit start address of descritor (device has 4 descriptors)
-uint8_t TSAD_array[4] = {0x20, 0x24, 0x28, 0x2C};
+uint8_t const TSAD[4] = {0x20, 0x24, 0x28, 0x2C};
 
 //! Transmit status of descriptor
-uint8_t TSD_array[4] = {0x10, 0x14, 0x18, 0x1C};
+uint8_t const TSD[4] = {0x10, 0x14, 0x18, 0x1C};
 
 bool rtl8139_init(net_device_t *net_dev)
 {
@@ -91,7 +91,7 @@ bool rtl8139_init(net_device_t *net_dev)
 
     // Set TransmitterOK and ReceiveOK to HIGH
     io_out_word(rtl8139_device.io_base + INTRSTATUS, 0x0);
-    io_out_word(rtl8139_device.io_base + INTRMASK, 0xFF);
+    io_out_word(rtl8139_device.io_base + INTRMASK, 0xFFFF | 0xE07F);
 
     // Enable IRQ
     uint32_t irq_num = pci_rtl8139_device.interrupt_line;
@@ -111,37 +111,16 @@ bool rtl8139_init(net_device_t *net_dev)
 
 bool rtl8139_irq_handler()
 {
-//TODO: Buffer overflows handling
-/*
-RTL8139: in ring Rx mode ================
-RTL8139: received: rx buffer length 8192 head 0x0f78 read 0x10c4
-RTL8139: Set IRQ to 1 (0001 00ff)
-RTL8139: >>> received len=578
-RTL8139: >>> packet received in promiscuous mode
-RTL8139: in ring Rx mode ================
-RTL8139: rx overflow: rx buffer length 8192 head 0x0f78 read 0x10c4 === available 0x014c need 0x024a
-RTL8139: Set IRQ to 1 (0011 00ff)
-RTL8139: IntrStatus read(w) val=0x0011
-RTL8139: RxBufPtr write val=0x16a8
-RTL8139: >>> received len=578
-RTL8139: >>> packet received in promiscuous mode
-RTL8139: in ring Rx mode ================
-RTL8139: received: rx buffer length 8192 head 0x11c4 read 0x16b8
-RTL8139: Set IRQ to 1 (0011 00ff)
-RTL8139:  CAPR write: rx buffer length 8192 head 0x11c4 read 0x16b8
-RTL8139: IntrStatus write(w) val=0x0005
-RTL8139: Set IRQ to 0 (0000 00ff)
-RTL8139: entered rtl8139_set_next_tctr_time
-RTL8139: Set IRQ to 1 (0010 00ff)
-RTL8139: IntrStatus read(w) val=0x0010
-RTL8139: IntrStatus write(w) val=0x0005
-RTL8139: Set IRQ to 0 (0000 00ff)
-RTL8139: entered rtl8139_set_next_tctr_time
-RTL8139: Set IRQ to 1 (0010 00ff)
-*/
-
     // Get status of device
     uint16_t status = io_in_word(rtl8139_device.io_base + INTRSTATUS);
+
+
+    if(status & RXOVW){
+        current_packet_ptr = io_in_word(rtl8139_device.io_base + RXBUFADDR) % 8192;
+        io_out_word(rtl8139_device.io_base + CAPR, current_packet_ptr - 16);
+        io_out_word(rtl8139_device.io_base + INTRSTATUS, 0x1);
+        return;
+    }
 
     if (status & ROK && rtl8139_net_device->configuration->mode & 0x1)
         rtl8139_receive();
@@ -159,7 +138,7 @@ void rtl8139_read_mac()
 
 void rtl8139_get_mac(uint8_t *buffer)
 {
-    if (buffer == 0)
+    if (!buffer)
         return;
 
     memcpy(buffer, rtl8139_device.mac_addr, 6);
@@ -181,18 +160,16 @@ void rtl8139_receive()
     out->packet_data = packet_data;
     out->packet_length = packet_length;
     rtl8139_get_mac(out->device_mac);
-
+    /*
+    //4:for header length(PktLength include 4 bytes CRC)
+    //3:for dword alignment
+    RX_READ_POINTER_MASK - avoid overflow
+    */
     current_packet_ptr = (current_packet_ptr + packet_length + 7) & RX_READ_POINTER_MASK;
-
-    // Tell to device where put, next incoming packet
-    io_out_word(rtl8139_device.io_base + CAPR, current_packet_ptr - 0x10);
-
     current_packet_ptr %= 8192;
-
-    char str[50];
-    kernel_sprintf(str,"%d  %d",packet_length,current_packet_ptr);
-    logger_log_info(str);
-    
+    // Tell to device where put, next incoming packet, - 0x10 avoid overflow
+    io_out_word(rtl8139_device.io_base + CAPR, current_packet_ptr - 0x10);
+   
     (*rtl8139_net_device->receive_packet)(out);
 }
 
@@ -202,26 +179,26 @@ void rtl8139_send(net_packet_t *packet)
     {
         void *data = heap_kernel_alloc(packet->packet_length, 0);
         memcpy(data, packet->packet_data, packet->packet_length);
-        void *phys_addr = (void *)((uint32_t)data - DMA_ADDRESS_OFFSET);
+        uint32_t phys_addr = ((uint32_t)data - DMA_ADDRESS_OFFSET);
 
-        io_out_long(rtl8139_device.io_base + TSAD_array[rtl8139_device.tx_cur], (uint32_t)phys_addr);
+        io_out_long(rtl8139_device.io_base + TSAD[rtl8139_device.tx_cur], phys_addr);
 
         uint32_t status = 0;
         status |= packet->packet_length & 0x1FFF; // 0-12: Length
+        //There is new packet to transmit!
         status |= 0 << 13;                        // 13: OWN bit
-        io_out_long(rtl8139_device.io_base + TSD_array[rtl8139_device.tx_cur], status);
+        //Hey! Start  transmitting my packet!
+        io_out_long(rtl8139_device.io_base + TSD[rtl8139_device.tx_cur], status);
 
-        while (true)
+        while (1)
         {
             // Wait for TOK flag
-            if (io_in_long(rtl8139_device.io_base + TSD_array[rtl8139_device.tx_cur]) & TX_TOK)
+            if (io_in_long(rtl8139_device.io_base + TSD[rtl8139_device.tx_cur]) & TX_TOK)
                 break;
         }
 
         // Switch buffer
-        rtl8139_device.tx_cur++;
-        if (rtl8139_device.tx_cur > 3)
-            rtl8139_device.tx_cur = 0;
+        rtl8139_device.tx_cur = ++rtl8139_device.tx_cur % 4;
 
         // Dealloc transmit data buffer
         heap_kernel_dealloc(data);

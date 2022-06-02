@@ -27,6 +27,8 @@
 #define RER (1 << 1)
 #define TOK (1 << 2)
 #define TER (1 << 3)
+#define RXOVW (1 << 4)
+#define FOVW (1 << 6)
 #define TX_TOK (1 << 15)
 
 enum RTL8139_registers

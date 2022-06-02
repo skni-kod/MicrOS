@@ -66,7 +66,7 @@ void network_manager_send_packet(net_packet_t *packet)
 {
     for (uint8_t i = 0; i < net_devices->count; i++)
     {
-        // Add packet to device RX queue
+        // Add packet to device TX queue
         if (__compare_mac_address(((net_device_t *)(net_devices->data[i]))->mac_address, packet->device_mac))
         {
             // TODO: ADD BUFFERING
