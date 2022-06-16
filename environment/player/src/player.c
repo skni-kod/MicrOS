@@ -14,6 +14,7 @@ static uint8_t bpp;
 static image* fbuffer;
 
 static bool looping;
+static bool allowExit;
 
 
 void app_on_video(plm_t *player, plm_frame_t *frame, void *user);
@@ -35,9 +36,10 @@ int compareString(char* a, char*b)
 int main(int argc, char** argv)
 {
     looping = false;
+    allowExit = false;
     if(argc < 4)
     {
-        printf("Usage: player filename [-loop]\n");
+        printf("Usage: player filename [-loop] [-allow-exit]\n");
         printf("Possible files:\nB:10SEC.MPG (loads in few seconds)\nB:KONGMING.MPG (loads in about 2-3 minutes)\nB:BADAPPLE.MPG (needs about 10 minutes to load)\n");
         printf("Press ESC to exit when video is playing.\n");
         printf("When loop option is specified video playback will loop itself.\n");
@@ -54,6 +56,10 @@ int main(int argc, char** argv)
             if(!compareString(argv[i], "-loop"))
             {
                 looping = true;
+            }
+            if(!compareString(argv[i], "-allow-exit"))
+            {
+                allowExit = true;
             }
         }
     }
@@ -109,7 +115,7 @@ int main(int argc, char** argv)
     {
         processInput();
 
-        if(getKeyDown(key_esc)) break;
+        if(allowExit && getKeyDown(key_esc)) break;
         beginTime = clock();
         //CLEAR SURFACE
         //memset(fbuffer->data, 0, fbuffer->width*fbuffer->height*bpp);
