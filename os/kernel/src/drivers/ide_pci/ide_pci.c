@@ -17,15 +17,108 @@ uint32_t bar4_prdt;
 
 static bool waitForInterrupt;
 
+int8_t ide_pci_check_presence(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, harddisk_states *states)
+{
+    uint16_t io_port = 0;
+    uint16_t control_port = 0;
+    harddisk_io_drive_head_register message_to_drive = {.value = 0};
+
+    // Set port of drive
+    //Modify to use values from controller!
+    if (bus == HARDDISK_ATA_PRIMARY_BUS) {io_port = channels[ATA_PRIMARY].base; control_port = channels[ATA_PRIMARY].control;}
+    else if(bus == HARDDISK_ATA_SECONDARY_BUS) {io_port = channels[ATA_SECONDARY].base; control_port = channels[ATA_SECONDARY].control;}
+    else return -2;
+
+    // Set drive
+    switch (type)
+    {
+    case HARDDISK_ATA_MASTER:
+        // For master set it to 0xA0. We set 2 bits that should be always 1.
+        message_to_drive.fields.always_set_field_1 = 1;
+        message_to_drive.fields.always_set_field_2 = 1;
+        break;
+    case HARDDISK_ATA_SLAVE:
+        // For slave set it to 0xB0. We set 2 bits that should be always 1 and drive number to 1.
+        message_to_drive.fields.always_set_field_1 = 1;
+        message_to_drive.fields.always_set_field_2 = 1;
+        message_to_drive.fields.drive_number = 1;
+        break;
+    default:
+        return -2;
+    }
+
+    harddisk_identify_device_data *data;
+    if(type == HARDDISK_ATA_MASTER && bus == HARDDISK_ATA_PRIMARY_BUS) data = &states->primary_master_data;
+    else if(type == HARDDISK_ATA_SLAVE && bus == HARDDISK_ATA_PRIMARY_BUS) data = &states->primary_slave_data;
+    else if(type == HARDDISK_ATA_MASTER && bus == HARDDISK_ATA_SECONDARY_BUS) data = &states->secondary_master_data;
+    else if(type == HARDDISK_ATA_SLAVE && bus == HARDDISK_ATA_SECONDARY_BUS) data = &states->secondary_slave_data;
+
+
+    // Do soft reset
+    int8_t result = __harddisk_soft_reset_port(control_port + HARDDISK_CONTROL_DEVICE_CONTROL_REGISTER_OFFSET);
+    if(result == -1)
+    {
+        // Harddisk error
+        return HARDDISK_ERROR;
+    }
+
+    // Send message to drive
+    io_out_byte(io_port + HARDDISK_IO_DRIVE_HEAD_REGISTER_OFFSET, message_to_drive.value);
+
+
+    // Make 400ns delay
+    __harddisk_400ns_delay(control_port);
+
+
+    // Poll the Status port until bit 7 (BSY, value = 0x80) clears.
+    result = __harddisk_bsy_poll(control_port + HARDDISK_CONTROL_ALTERNATE_STATUS_REGISTER_OFFSET);
+    if(result == -1)
+    {
+        // Harddisk error
+        return HARDDISK_ERROR;
+    }
+
+    uint8_t cylinder_low = io_in_byte(io_port +  HARDDISK_IO_CYLINDER_LOW_REGISTER_OFFSET);
+    uint8_t cylinder_high = io_in_byte(io_port +  HARDDISK_IO_CYLINDER_HIGH_REGISTER_OFFSET);
+
+
+    /* differentiate ATA, ATAPI, SATA and SATAPI */
+    if (cylinder_low==0x3c && cylinder_high==0xc3)
+    {
+        return HARDDISK_SATA_PRESENT;
+    }
+    if (cylinder_low==0x69 && cylinder_high==0x96)
+    {
+        return HARDDISK_SATAPI_PRESENT;
+    }
+	if (cylinder_low==0x14 && cylinder_high==0xEB)
+    {
+        //__harddisk_get_identify_data(type, bus, data, HARDDISK_IDENTIFY_PACKET_DEVICE);
+        return HARDDISK_ATAPI_PRESENT;
+    }
+	if (cylinder_low==0 && cylinder_high == 0)
+    {
+        ide__harddisk_get_identify_data(type, bus, data, 0xEC);
+        return HARDDISK_ATA_PRESENT;
+    }
+	
+	return HARDDISK_NOT_PRESENT;
+}
+
 bool ide_pci_init()
 {
+    
+    static cntrlCount = 0;
     waitForInterrupt = false;
     for(int i = 0; i < pci_get_number_of_devices(); i++)
     {
         pci_device* dev = pci_get_device(i);
 		char buff[64];
+    
         if(dev->class_code == 0x1 && dev->subclass == 0x1)
         {
+            logger_log_warning("NEW DEVICE");
+            logger_log_warning(itoa(dev->device_id, buff, 16));
             //We kinda really need this thing
             pci_in_data data = pci_get_device_data(i);
             data.register_num = (0x04 & 0xFC) >> 2;
@@ -48,10 +141,10 @@ bool ide_pci_init()
             // logger_log_info(itoa(dev->prog_if, buff, 16));
 
             uint8_t status = dev->prog_if;
-            // if(status & 0x1)
-            //     logger_log_info("Channel primary in native-PCI mode");
-            // else
-            //     logger_log_info("Channel primary in compability mode");
+            if(status & 0x1)
+                logger_log_info("Channel primary in native-PCI mode");
+            else
+                logger_log_info("Channel primary in compability mode");
             // if(status & 0x2)
             //     logger_log_info("Channel primary can have it's operation mode changed");
             // else
@@ -66,109 +159,152 @@ bool ide_pci_init()
             //     logger_log_info("Channel secondary has fixed operation mode");
         
 			//Read address from base register, or use default values
-			channels[ATA_PRIMARY].base = (dev->base_addres_0 & 0xFFFFFFFC) + 0x1F0 * (!dev->base_addres_0);
-			channels[ATA_PRIMARY].control = (dev->base_addres_1 & 0xFFFFFFFC) + 0x3F6 * (!dev->base_addres_1);
-			channels[ATA_SECONDARY].base = (dev->base_addres_2 & 0xFFFFFFFC) + 0x170 * (!dev->base_addres_2);
-			channels[ATA_SECONDARY].control = (dev->base_addres_3 & 0xFFFFFFFC) + 0x376 * (!dev->base_addres_3);
+            //OSDEV special happened here.
+            // According to PCI IDE specification device reports IO ports in BARs only if it is in native PCI mode.
+            // That means we are supposed to completely ignore these adresses if we're in compat mode.
+            // Current code is reading BARs properly, but since bit 0 of each BAR is set to 1 our effective port address becomes 0.
+            // And this is causing detection code and later reading code to get fucked up.
+            // Conclusion: ALWAYS verify twice information comming from wiki.osdev.org (ಥ _ ಥ)
+            // Also comment from me (Minus): I think I might need to start working on articles on osdev...
+            if(status & 0x1)
+            {
+                channels[ATA_PRIMARY].base = (dev->base_addres_0 & 0xFFFFFFFC) + 0x1F0 * (!dev->base_addres_0);
+                channels[ATA_PRIMARY].control = (dev->base_addres_1 & 0xFFFFFFFC) + 0x3F6 * (!dev->base_addres_1);
+                channels[ATA_SECONDARY].base = (dev->base_addres_2 & 0xFFFFFFFC) + 0x170 * (!dev->base_addres_2);
+                channels[ATA_SECONDARY].control = (dev->base_addres_3 & 0xFFFFFFFC) + 0x376 * (!dev->base_addres_3);
+            }
+            else
+            {
+                channels[ATA_PRIMARY].base = 0x1F0;
+                channels[ATA_PRIMARY].control = 0x3F6;
+                channels[ATA_SECONDARY].base = 0x170;
+                channels[ATA_SECONDARY].control = 0x376; 
+            }
+            logger_log_error(itoa(dev->base_addres_0, buff, 16));
+            logger_log_error(itoa(dev->base_addres_1, buff, 16));
+            logger_log_error(itoa(dev->base_addres_2, buff, 16));
+            logger_log_error(itoa(dev->base_addres_3, buff, 16));
+
+            logger_log_error(itoa(channels[ATA_PRIMARY].base, buff, 16));
+            logger_log_error(itoa(channels[ATA_PRIMARY].control, buff, 16));
+            logger_log_error(itoa(channels[ATA_SECONDARY].base, buff, 16));
+            logger_log_error(itoa(channels[ATA_SECONDARY].control, buff, 16));
+
+            logger_log_warning("Getting devices ready");
+
+            //Check presence of devices on controller (each controller can at most have 2 channels)
+            //Also current approach assumes we have only one controller on board (THIS IS BAD!!! (⊙x⊙;)
+            harddisk_current_states.primary_master = (HARDDISK_STATE) ide_pci_check_presence(HARDDISK_ATA_MASTER, HARDDISK_ATA_PRIMARY_BUS, &harddisk_current_states);
+            harddisk_current_states.primary_slave = (HARDDISK_STATE) ide_pci_check_presence(HARDDISK_ATA_SLAVE, HARDDISK_ATA_PRIMARY_BUS, &harddisk_current_states);
+            harddisk_current_states.secondary_master = (HARDDISK_STATE) ide_pci_check_presence(HARDDISK_ATA_MASTER, HARDDISK_ATA_SECONDARY_BUS, &harddisk_current_states);
+            harddisk_current_states.secondary_slave = (HARDDISK_STATE) ide_pci_check_presence(HARDDISK_ATA_SLAVE, HARDDISK_ATA_SECONDARY_BUS, &harddisk_current_states);
+
+            logger_log_warning("Devices found and identified");
 
             //Soft reset both channels.
 
-
+            {
 			//What the actual fuck is this? (╯°□°）╯︵ ┻━┻
             //channels[ATA_PRIMARY].master = (dev->base_addres_4 & 0xFFFFFFFC);
 			//channels[ATA_SECONDARY].master = (dev->base_addres_4 & 0xFFFFFFFC) + 8;
 
-			ide_write(&channels[ATA_PRIMARY]  , ATA_REG_CONTROL, 2);
-			ide_write(&channels[ATA_SECONDARY], ATA_REG_CONTROL, 2);
-			for (int j = 0; j < 2; j++)
-            {
-				for (int k = 0; k < 2; k++)
-                {
-                    //do resets for each port
-                    int8_t resetRes = __harddisk_soft_reset_port(channels[j].control + HARDDISK_CONTROL_DEVICE_CONTROL_REGISTER_OFFSET);
-                    if(resetRes == -1)
-                    {
-                        continue;
-                    }
+			// ide_write(&channels[ATA_PRIMARY]  , ATA_REG_CONTROL, 2);
+			// ide_write(&channels[ATA_SECONDARY], ATA_REG_CONTROL, 2);
+			// for (int j = 0; j < 2; j++)
+            // {
+			// 	for (int k = 0; k < 2; k++)
+            //     {
+            //         //do resets for each port
+            //         int8_t resetRes = __harddisk_soft_reset_port(channels[j].control + HARDDISK_CONTROL_DEVICE_CONTROL_REGISTER_OFFSET);
+            //         if(resetRes == -1)
+            //         {
+            //             continue;
+            //         }
 
 
-					bool err = false;
-					uint8_t buffer[512];
-					ide_write(&channels[j], ATA_REG_HDDEVSEL, 0xA0 | k << 4);
-					sleep(10);
-					ide_write(&channels[j], ATA_REG_COMMAND, ATA_CMD_IDENTIFY);
-					sleep(10);
+			// 		bool err = false;
+			// 		uint8_t buffer[512];
+			// 		ide_write(&channels[j], ATA_REG_HDDEVSEL, 0xA0 | k << 4);
+			// 		sleep(10);
+			// 		ide_write(&channels[j], ATA_REG_COMMAND, ATA_CMD_IDENTIFY);
+			// 		sleep(10);
 
-					uint8_t tmp =ide_read(&channels[j], ATA_REG_STATUS); 
-					logger_log_info(itoa(tmp, buff, 16)); //first 160000?
-					if( tmp == 0) 
-						logger_log_info("NO DRIVE!");
-					else
-					{
-						uint8_t pStatus = 0;
-                        char buf[64] = "STATUS CHANGED: ";
-                        //logger_log_info("Something detected");
-						while(1)
-                        {
-                            status = ide_read(&channels[j], ATA_REG_STATUS);
-							if(pStatus != status)
-                            {
-                                itoa(status, &buf[16], 16);
-                                logger_log_warning(buf);
-                            }
-                            pStatus = status;
+			// 		uint8_t tmp =ide_read(&channels[j], ATA_REG_STATUS); 
+			// 		logger_log_info(itoa(tmp, buff, 16)); //first 160000?
+			// 		if( tmp == 0) 
+			// 			logger_log_info("NO DRIVE!");
+			// 		else
+			// 		{
+			// 			uint8_t pStatus = 0;
+            //             char buf[64] = "STATUS CHANGED: ";
+            //             //logger_log_info("Something detected");
+			// 			while(1)
+            //             {
+            //                 status = ide_read(&channels[j], ATA_REG_STATUS);
+			// 				if(pStatus != status)
+            //                 {
+            //                     itoa(status, &buf[16], 16);
+            //                     logger_log_warning(buf);
+            //                 }
+            //                 pStatus = status;
 
-                            if ((status & ATA_SR_ERR)) {
-								logger_log_info("Error while identifying drive!");
-								err = true;
-								break;
-							} // If Err, Device is not ATA.
-							if (!(status & ATA_SR_BSY) && (status & ATA_SR_DRQ)){
-								logger_log_info("Ready to read!");
+            //                 if ((status & ATA_SR_ERR)) {
+			// 					logger_log_info("Error while identifying drive!");
+			// 					err = true;
+			// 					break;
+			// 				} // If Err, Device is not ATA.
+			// 				if (!(status & ATA_SR_BSY) && (status & ATA_SR_DRQ)){
+			// 					logger_log_info("Ready to read!");
 
-    							harddisk_identify_device_data *data;
+    		// 					harddisk_identify_device_data *data;
 
-								if(j == 0 && k == 0)
-								{
-									harddisk_current_states.primary_master = HARDDISK_ATA_PRESENT;
-									data = &harddisk_current_states.primary_master_data;
-								}
-								if(j == 0 && k == 1)
-								{
-									harddisk_current_states.primary_slave = HARDDISK_ATA_PRESENT;
-									data = &harddisk_current_states.primary_slave_data;
-								}
-								if(j == 1 && k == 0)
-								{
-									harddisk_current_states.secondary_master = HARDDISK_ATA_PRESENT;
-									data = &harddisk_current_states.secondary_master_data;
-								}
-								if(j == 1 && k == 1)
-								{
-									harddisk_current_states.secondary_slave = HARDDISK_ATA_PRESENT;
-									data = &harddisk_current_states.secondary_slave_data;
-								}
-								ide__harddisk_get_identify_data(k+1,j+1, data, ATA_CMD_IDENTIFY);
+			// 					if(j == 0 && k == 0)
+			// 					{
+			// 						harddisk_current_states.primary_master = HARDDISK_ATA_PRESENT;
+			// 						data = &harddisk_current_states.primary_master_data;
+			// 					}
+			// 					if(j == 0 && k == 1)
+			// 					{
+			// 						harddisk_current_states.primary_slave = HARDDISK_ATA_PRESENT;
+			// 						data = &harddisk_current_states.primary_slave_data;
+			// 					}
+			// 					if(j == 1 && k == 0)
+			// 					{
+			// 						harddisk_current_states.secondary_master = HARDDISK_ATA_PRESENT;
+			// 						data = &harddisk_current_states.secondary_master_data;
+			// 					}
+			// 					if(j == 1 && k == 1)
+			// 					{
+			// 						harddisk_current_states.secondary_slave = HARDDISK_ATA_PRESENT;
+			// 						data = &harddisk_current_states.secondary_slave_data;
+			// 					}
+			// 					ide__harddisk_get_identify_data(k+1,j+1, data, ATA_CMD_IDENTIFY);
 
-								break; // Everything is right.
-							}
-						}
+			// 					break; // Everything is right.
+			// 				}
+			// 			}
 
-						if(!err){
-							for(int l = 0; l < 512; l++){
-								buffer[l] = ide_read(&channels[j], ATA_REG_DATA);
-							}
-						}
-					}
-				}
-			}
+			// 			if(!err){
+			// 				for(int l = 0; l < 512; l++){
+			// 					buffer[l] = ide_read(&channels[j], ATA_REG_DATA);
+			// 				}
+			// 			}
+			// 		}
+			// 	}
+			// }
+            }
 
-
+            //Remeber to disable SATA controller for testing purposes
             bar4_address = dev->base_addres_4 & 0xFFFFFFFC;
 
             bar4_command = bar4_address;
             bar4_control = bar4_address+2;
             bar4_prdt = bar4_address+4;
+
+            logger_log_error(itoa(bar4_command, buff, 16));
+            logger_log_error(itoa(bar4_control, buff, 16));
+            logger_log_error(itoa(bar4_prdt, buff, 16));
+
 
             //uint16_t bar4port = *((uint16_t*)bar4_command);
 
@@ -443,6 +579,8 @@ uint8_t* ide_read_data(int device_number, int sector, int count)
 
     io_out_byte(bar4_command, 0x8 | 0x1);
 
+
+    logger_log_warning("WAITING FOR INTERRUPT!");
     // Wait for dma write to complete
     while (waitForInterrupt)
     {
@@ -476,7 +614,7 @@ uint8_t* ide_read_data(int device_number, int sector, int count)
 
 bool ide_pci_irq_handle(interrupt_state* irq_state)
 {
-    //logger_log_info("HDD IRQ RECEIVED!");
+    logger_log_info("HDD IRQ RECEIVED!");
     uint8_t devCtrl = io_in_byte(channels[ATA_PRIMARY].control);
     uint8_t bmrCtrl = io_in_byte(bar4_control);
     if(bmrCtrl & (0x4 | 0x1) == 0)

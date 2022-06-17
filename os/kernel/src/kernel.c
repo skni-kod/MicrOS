@@ -342,12 +342,13 @@ void startup()
         vga_printchar('\n');
     }
     
-
+    logger_log_info("INIT IDE PCI");
     ide_pci_init();
+    logger_log_ok("IDE PCI");
 
     uint8_t* data = ide_read_data(0, 872, 8);
 
-    //while(1);
+    while(1);
 
     partitions_init();
     logger_log_ok("Partitions");
