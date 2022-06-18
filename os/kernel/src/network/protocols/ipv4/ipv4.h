@@ -14,7 +14,7 @@
 /*
     Process packet IPv4
 */
-void ipv4_process_packet(ipv4_packet_t *packet, uint8_t *device_mac);
+void ipv4_process_packet(net_packet_t *packet);
 
 //! __ipv4_flip_values
 /*

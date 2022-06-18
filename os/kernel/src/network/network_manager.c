@@ -113,7 +113,7 @@ void network_manager_process_packet(net_packet_t *packet)
         arp_process_packet((arp_packet_t *)data_ptr, packet->device_mac);
         break;
     case IPv4_PROTOCOL_TYPE:
-        ipv4_process_packet((ipv4_packet_t *)data_ptr, packet->device_mac);
+        ipv4_process_packet(packet);
         break;
     case IPv6_PROTOCOL_TYPE:
         break;

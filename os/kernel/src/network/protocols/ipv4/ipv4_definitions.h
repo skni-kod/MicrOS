@@ -33,4 +33,12 @@ typedef struct ipv4_packet
     uint8_t data[];
 } __attribute__((packed)) ipv4_packet_t;
 
+typedef struct icmp_header
+{
+    uint8_t type;
+    uint8_t code;
+    uint16_t checksum;
+    uint8_t data[];
+} __attribute__((packed)) icmp_header;
+
 #endif

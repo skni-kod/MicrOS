@@ -14,10 +14,10 @@
 #define IPv4_ADDRESS_LENGTH 4
 #define HW_TYPE_ETHERNET 0x1
 
-#define MAX_ETH_FRAME_SIZE 1792
+#define NET_MTU 1500
 
-#define MAC_ADDRESS_SIZE sizeof(uint8_t) * MAC_ADDRESS_LENGTH
-#define IPv4_ADDRESS_SIZE sizeof(uint8_t) * IPv4_ADDRESS_LENGTH
+#define MAC_ADDRESS_SIZE (sizeof(uint8_t) * MAC_ADDRESS_LENGTH)
+#define IPv4_ADDRESS_SIZE (sizeof(uint8_t) * IPv4_ADDRESS_LENGTH)
 
 // Stucture definitions
 
