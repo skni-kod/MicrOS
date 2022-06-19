@@ -263,9 +263,10 @@ void startup()
     idt_init();
     logger_log_ok("Interrupt Descriptor Table");
     
-
+    logger_log_info("Initializing Timer");
     timer_init();
-    logger_log_ok("Timer");
+    logger_replace_ok("Timer");
+
 
     dma_init(0xc0000500);
     logger_log_ok("DMA");
