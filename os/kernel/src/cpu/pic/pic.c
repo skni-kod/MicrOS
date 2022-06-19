@@ -144,7 +144,7 @@ uint16_t __pic_get_reg(uint8_t OCW3)
 
 void pic_delay()
 {
-	for (uint8_t i = 0; i < 4; i++)
+	for (uint8_t i = 0; i < 2; i++)
 		io_out_byte(0x80, 0);
 }
 

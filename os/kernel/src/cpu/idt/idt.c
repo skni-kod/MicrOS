@@ -294,12 +294,7 @@ void idt_global_int_handler(interrupt_state *state)
         {
             if (interrupt_handlers[i].interrupt_number == state->interrupt_number && interrupt_handlers[i].handler != 0)
             {
-                // Interrupt handler should return zero
-                if(!interrupt_handlers[i].handler(state))
-                    //Handler could not service properly the interrupt
-                    continue;
-                else
-                    break;
+                interrupt_handlers[i].handler(state);
             }
         }
 

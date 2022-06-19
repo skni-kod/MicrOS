@@ -23,7 +23,7 @@
 #define PIC_READ_IRR 0x0A 
 #define PIC_READ_ISR 0x0B
 
-#define PIC_EOI (1 << 20)
+#define PIC_EOI (1 << 5)
 #define PIC_MASTER_CASCADE_LINE 0x4
 #define PIC_SLAVE_CASCADE_LINE 0x2
 
