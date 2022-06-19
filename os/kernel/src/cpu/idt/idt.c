@@ -205,7 +205,7 @@ void idt_init()
 
     // Add system calls interrupt handler
     idt_attach_interrupt_handler(18, idt_syscalls_interrupt_handler);
-	io_enable_interrupts();
+    io_enable_interrupts();
 }
 
 void idt_set(uint8_t index, uint32_t (*handler)(interrupt_state *state), bool user_interrupt)
@@ -287,23 +287,28 @@ void idt_attach_syscalls_manager(void (*handler)(interrupt_state *state))
 
 void idt_global_int_handler(interrupt_state *state)
 {
-	//Note that we have offset in idt
-    pic_handle_irq(state->interrupt_number - 32);
-
-    for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
+    // Note that we have offset in idt
+    if (pic_handle_irq(state->interrupt_number - 32))
     {
-        if (interrupt_handlers[i].interrupt_number == state->interrupt_number && interrupt_handlers[i].handler != 0)
+        for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
         {
-            if (interrupt_handlers[i].handler(state))
-                break;
+            if (interrupt_handlers[i].interrupt_number == state->interrupt_number && interrupt_handlers[i].handler != 0)
+            {
+                // Interrupt handler should return zero
+                if(!interrupt_handlers[i].handler(state))
+                    //Handler could not service properly the interrupt
+                    continue;
+                else
+                    break;
+            }
         }
+
+        io_disable_interrupts();
+        pic_send_eoi(state->interrupt_number - 32);
+
+        if (process_manager_handler != 0)
+            process_manager_handler(state);
     }
-
-    io_disable_interrupts();
-    pic_send_eoi(state->interrupt_number - 32);
-
-    if (process_manager_handler != 0)
-        process_manager_handler(state);
 }
 
 void idt_global_exc_handler(exception_state *state)
@@ -314,16 +319,12 @@ void idt_global_exc_handler(exception_state *state)
         for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
         {
             if (exception_handlers[i].exception_number == state->interrupt_number && exception_handlers[i].handler != 0)
-            {
                 exception_handlers[i].handler(state);
-            }
         }
     }
 
     if (allow_exception_in_kernel)
-    {
         return;
-    }
 
     for (int i = 0; i < 32; i++)
     {
