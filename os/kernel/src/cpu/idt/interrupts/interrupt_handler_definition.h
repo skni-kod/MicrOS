@@ -2,6 +2,7 @@
 #define INTERRUPT_HANDLER_DEFINITION_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef struct interrupt_handler_definition
 {

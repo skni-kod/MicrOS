@@ -3,7 +3,7 @@
 //! Pointer to current screen
 /*!
     Points to array of characters
-*/ 
+*/
 volatile screen_char *vga_video;
 
 //! Current video screen.
@@ -32,72 +32,71 @@ uint16_t vga_current_screen_offset = 0;
 
 uint8_t vga_init(uint8_t mode)
 {
-    switch(mode)
+    switch (mode)
     {
-        case VGA_MODE_00H:
-            vga_current_mode = mode;
-            vga_current_columns = VGA_MODE_00H_SCREEN_COLUMNS;
-            vga_current_rows = VGA_MODE_00H_SCREEN_ROWS;
-            vga_current_max_screens = VGA_MODE_00H_MAX_SCREENS;
-            vga_current_screen_offset = VGA_MODE_00H_SCREEN_OFFSET;
-            vga_set_cursor_pos(0, 0);
-            vga_current_printing_screen = 0;
-            vga_screen_offset = 0;
-            vga_video = (volatile screen_char *)(VGA_MODE_00H_BASE_ADDR);
-            vga_clear_all_screens();
-            return 1;
-        case VGA_MODE_01H:
-            vga_current_mode = mode;
-            vga_current_columns = VGA_MODE_01H_SCREEN_COLUMNS;
-            vga_current_rows = VGA_MODE_01H_SCREEN_ROWS;
-            vga_current_max_screens = VGA_MODE_01H_MAX_SCREENS;
-            vga_current_screen_offset = VGA_MODE_01H_SCREEN_OFFSET;
-            vga_set_cursor_pos(0, 0);
-            vga_current_printing_screen = 0;
-            vga_screen_offset = 0;
-            vga_video = (volatile screen_char *)(VGA_MODE_01H_BASE_ADDR);
-            vga_clear_all_screens();
-            return 1;
-        case VGA_MODE_02H:
-            vga_current_mode = mode;
-            vga_current_columns = VGA_MODE_02H_SCREEN_COLUMNS;
-            vga_current_rows = VGA_MODE_02H_SCREEN_ROWS;
-            vga_current_max_screens = VGA_MODE_02H_MAX_SCREENS;
-            vga_current_screen_offset = VGA_MODE_02H_SCREEN_OFFSET;
-            vga_set_cursor_pos(0, 0);
-            vga_current_printing_screen = 0;
-            vga_screen_offset = 0;
-            vga_video = (volatile screen_char *)(VGA_MODE_02H_BASE_ADDR);
-            vga_clear_all_screens();
-            return 1;
-        case VGA_MODE_03H:
-            vga_current_mode = mode;
-            vga_current_columns = VGA_MODE_03H_SCREEN_COLUMNS;
-            vga_current_rows = VGA_MODE_03H_SCREEN_ROWS;
-            vga_current_max_screens = VGA_MODE_03H_MAX_SCREENS;
-            vga_current_screen_offset = VGA_MODE_03H_SCREEN_OFFSET;
-            vga_set_cursor_pos(0, 0);
-            vga_current_printing_screen = 0;
-            vga_screen_offset = 0;
-            vga_video = (volatile screen_char *)(VGA_MODE_03H_BASE_ADDR);
-            vga_clear_all_screens();
-            return 1;
-        case VGA_MODE_07H:
-            vga_current_mode = mode;
-            vga_current_columns = VGA_MODE_07H_SCREEN_COLUMNS;
-            vga_current_rows = VGA_MODE_07H_SCREEN_ROWS;
-            vga_current_max_screens = VGA_MODE_07H_MAX_SCREENS;
-            vga_current_screen_offset = VGA_MODE_07H_SCREEN_OFFSET;
-            vga_set_cursor_pos(0, 0);
-            vga_current_printing_screen = 0;
-            vga_screen_offset = 0;
-            vga_video = (volatile screen_char *)(VGA_MODE_07H_BASE_ADDR);
-            vga_clear_all_screens();
-            return 1;
-        default:
-            return -1;
+    case VGA_MODE_00H:
+        vga_current_mode = mode;
+        vga_current_columns = VGA_MODE_00H_SCREEN_COLUMNS;
+        vga_current_rows = VGA_MODE_00H_SCREEN_ROWS;
+        vga_current_max_screens = VGA_MODE_00H_MAX_SCREENS;
+        vga_current_screen_offset = VGA_MODE_00H_SCREEN_OFFSET;
+        vga_set_cursor_pos(0, 0);
+        vga_current_printing_screen = 0;
+        vga_screen_offset = 0;
+        vga_video = (volatile screen_char *)(VGA_MODE_00H_BASE_ADDR);
+        vga_clear_all_screens();
+        return 1;
+    case VGA_MODE_01H:
+        vga_current_mode = mode;
+        vga_current_columns = VGA_MODE_01H_SCREEN_COLUMNS;
+        vga_current_rows = VGA_MODE_01H_SCREEN_ROWS;
+        vga_current_max_screens = VGA_MODE_01H_MAX_SCREENS;
+        vga_current_screen_offset = VGA_MODE_01H_SCREEN_OFFSET;
+        vga_set_cursor_pos(0, 0);
+        vga_current_printing_screen = 0;
+        vga_screen_offset = 0;
+        vga_video = (volatile screen_char *)(VGA_MODE_01H_BASE_ADDR);
+        vga_clear_all_screens();
+        return 1;
+    case VGA_MODE_02H:
+        vga_current_mode = mode;
+        vga_current_columns = VGA_MODE_02H_SCREEN_COLUMNS;
+        vga_current_rows = VGA_MODE_02H_SCREEN_ROWS;
+        vga_current_max_screens = VGA_MODE_02H_MAX_SCREENS;
+        vga_current_screen_offset = VGA_MODE_02H_SCREEN_OFFSET;
+        vga_set_cursor_pos(0, 0);
+        vga_current_printing_screen = 0;
+        vga_screen_offset = 0;
+        vga_video = (volatile screen_char *)(VGA_MODE_02H_BASE_ADDR);
+        vga_clear_all_screens();
+        return 1;
+    case VGA_MODE_03H:
+        vga_current_mode = mode;
+        vga_current_columns = VGA_MODE_03H_SCREEN_COLUMNS;
+        vga_current_rows = VGA_MODE_03H_SCREEN_ROWS;
+        vga_current_max_screens = VGA_MODE_03H_MAX_SCREENS;
+        vga_current_screen_offset = VGA_MODE_03H_SCREEN_OFFSET;
+        vga_set_cursor_pos(0, 0);
+        vga_current_printing_screen = 0;
+        vga_screen_offset = 0;
+        vga_video = (volatile screen_char *)(VGA_MODE_03H_BASE_ADDR);
+        vga_clear_all_screens();
+        return 1;
+    case VGA_MODE_07H:
+        vga_current_mode = mode;
+        vga_current_columns = VGA_MODE_07H_SCREEN_COLUMNS;
+        vga_current_rows = VGA_MODE_07H_SCREEN_ROWS;
+        vga_current_max_screens = VGA_MODE_07H_MAX_SCREENS;
+        vga_current_screen_offset = VGA_MODE_07H_SCREEN_OFFSET;
+        vga_set_cursor_pos(0, 0);
+        vga_current_printing_screen = 0;
+        vga_screen_offset = 0;
+        vga_video = (volatile screen_char *)(VGA_MODE_07H_BASE_ADDR);
+        vga_clear_all_screens();
+        return 1;
+    default:
+        return -1;
     }
-    
 }
 
 void vga_printchar(char character)
@@ -312,7 +311,7 @@ void vga_clear_given_screen(uint8_t screen)
 void vga_clear_all_screens()
 {
     vga_clear_screen();
-    for(int i = 1; i < vga_current_max_screens; ++i)
+    for (int i = 1; i < vga_current_max_screens; ++i)
     {
         vga_clear_given_screen(i);
     }
@@ -391,6 +390,23 @@ void vga_newline()
     vga_set_cursor_pos_struct(vga_cursor_pos);
 }
 
+void vga_clearline()
+{
+    vga_screen_pos vga_cursor_pos = vga_get_cursor_pos();
+    vga_cursor_pos.x = 0;
+    vga_set_cursor_pos_struct(vga_cursor_pos);
+
+    vga_color col = __vga_get_default_terminal_color(vga_current_mode);
+    for (uint16_t i = 0; i < vga_current_columns; ++i)
+    {
+        uint16_t pos = __vga_calcualte_position_with_offset(i, vga_cursor_pos.y);
+        // Clear
+        vga_video[pos].character.ascii_code = 0;
+        vga_video[pos].character.color = col;
+    }
+
+}
+
 uint16_t __vga_calcualte_position_with_offset(uint16_t x, uint16_t y)
 {
     return (x + y * vga_current_columns) + vga_screen_offset;
@@ -419,32 +435,32 @@ void __vga_disable_cursor()
 vga_color __vga_get_default_terminal_color(uint8_t vga_current_mode)
 {
     vga_color col;
-    switch(vga_current_mode)
+    switch (vga_current_mode)
     {
-        case VGA_MODE_00H:
-            col.color_without_blink.background = VGA_MODE_00H_COLOR_BLACK;
-            col.color_without_blink.letter = VGA_MODE_00H_COLOR_LIGHT_GRAY; 
-            break;
-        case VGA_MODE_01H:
-            col.color_without_blink.background = VGA_MODE_01H_COLOR_BLACK;
-            col.color_without_blink.letter = VGA_MODE_01H_COLOR_LIGHT_GRAY;
-            break;
-        case VGA_MODE_02H:
-            col.color_without_blink.background = VGA_MODE_02H_COLOR_BLACK;
-            col.color_without_blink.letter = VGA_MODE_02H_COLOR_LIGHT_GRAY;
-            break;
-        case VGA_MODE_03H:
-            col.color_without_blink.background = VGA_MODE_03H_COLOR_BLACK;
-            col.color_without_blink.letter = VGA_MODE_03H_COLOR_LIGHT_GRAY;
-            break;
-        case VGA_MODE_07H:
-            col.color_without_blink.background = VGA_MODE_07H_COLOR_BLACK;
-            col.color_without_blink.letter = VGA_MODE_07H_COLOR_LIGHT_GRAY;
-            break;
-        default:
-            col.color_without_blink.background = VGA_MODE_03H_COLOR_BLACK;
-            col.color_without_blink.letter = VGA_MODE_03H_COLOR_LIGHT_GRAY;
-            break;
+    case VGA_MODE_00H:
+        col.color_without_blink.background = VGA_MODE_00H_COLOR_BLACK;
+        col.color_without_blink.letter = VGA_MODE_00H_COLOR_LIGHT_GRAY;
+        break;
+    case VGA_MODE_01H:
+        col.color_without_blink.background = VGA_MODE_01H_COLOR_BLACK;
+        col.color_without_blink.letter = VGA_MODE_01H_COLOR_LIGHT_GRAY;
+        break;
+    case VGA_MODE_02H:
+        col.color_without_blink.background = VGA_MODE_02H_COLOR_BLACK;
+        col.color_without_blink.letter = VGA_MODE_02H_COLOR_LIGHT_GRAY;
+        break;
+    case VGA_MODE_03H:
+        col.color_without_blink.background = VGA_MODE_03H_COLOR_BLACK;
+        col.color_without_blink.letter = VGA_MODE_03H_COLOR_LIGHT_GRAY;
+        break;
+    case VGA_MODE_07H:
+        col.color_without_blink.background = VGA_MODE_07H_COLOR_BLACK;
+        col.color_without_blink.letter = VGA_MODE_07H_COLOR_LIGHT_GRAY;
+        break;
+    default:
+        col.color_without_blink.background = VGA_MODE_03H_COLOR_BLACK;
+        col.color_without_blink.letter = VGA_MODE_03H_COLOR_LIGHT_GRAY;
+        break;
     }
     return col;
 }
