@@ -75,9 +75,9 @@ bool rtl8139_init(net_device_t *net_dev)
     // Allocate receive buffer
     rtl8139_device.rx_buffer = 0;
     rtl8139_device.rx_buffer = heap_kernel_alloc(RTL8139_RX_BUFFER_SIZE, 0);
-    if(!rtl8139_device.rx_buffer)
-        return -1;
-        
+    if (!rtl8139_device.rx_buffer)
+        return false;
+
     memset(rtl8139_device.rx_buffer, 0, RTL8139_RX_BUFFER_SIZE);
     io_out_long(rtl8139_device.io_base + RXBUF, (uint32_t)rtl8139_device.rx_buffer - DMA_ADDRESS_OFFSET);
 
@@ -114,12 +114,12 @@ bool rtl8139_irq_handler()
     // Get status of device
     uint16_t status = io_in_word(rtl8139_device.io_base + INTRSTATUS);
 
-
-    if(status & RXOVW){
+    if (status & RXOVW)
+    {
         current_packet_ptr = io_in_word(rtl8139_device.io_base + RXBUFADDR) % 8192;
         io_out_word(rtl8139_device.io_base + CAPR, current_packet_ptr - 16);
         io_out_word(rtl8139_device.io_base + INTRSTATUS, 0x1);
-        return;
+        return false;
     }
 
     if (status & ROK && rtl8139_net_device->configuration->mode & 0x1)
@@ -127,7 +127,7 @@ bool rtl8139_irq_handler()
 
     io_out_word(rtl8139_device.io_base + INTRSTATUS, 0x5);
 
-    return true;
+    return false;
 }
 
 void rtl8139_read_mac()
@@ -153,7 +153,7 @@ void rtl8139_receive()
 
     // Copy received data to heap
     void *packet_data = heap_kernel_alloc(packet_length, 0);
-    memcpy(packet_data, (uint32_t)packet + 4, packet_length);
+    memcpy(packet_data, (uint32_t *)(packet + 4), packet_length);
 
     // Add packet to packets queue
     net_packet_t *out = heap_kernel_alloc(sizeof(net_packet_t), 0);
@@ -169,7 +169,7 @@ void rtl8139_receive()
     current_packet_ptr %= 8192;
     // Tell to device where put, next incoming packet, - 0x10 avoid overflow
     io_out_word(rtl8139_device.io_base + CAPR, current_packet_ptr - 0x10);
-   
+
     (*rtl8139_net_device->receive_packet)(out);
 }
 
@@ -185,9 +185,9 @@ void rtl8139_send(net_packet_t *packet)
 
         uint32_t status = 0;
         status |= packet->packet_length & 0x1FFF; // 0-12: Length
-        //There is new packet to transmit!
-        status |= 0 << 13;                        // 13: OWN bit
-        //Hey! Start  transmitting my packet!
+        // There is new packet to transmit!
+        status |= 0 << 13; // 13: OWN bit
+        // Hey! Start  transmitting my packet!
         io_out_long(rtl8139_device.io_base + TSD[rtl8139_device.tx_cur], status);
 
         while (1)
@@ -198,7 +198,7 @@ void rtl8139_send(net_packet_t *packet)
         }
 
         // Switch buffer
-        rtl8139_device.tx_cur = ++rtl8139_device.tx_cur % 4;
+        rtl8139_device.tx_cur = (rtl8139_device.tx_cur + 1) % 4;
 
         // Dealloc transmit data buffer
         heap_kernel_dealloc(data);

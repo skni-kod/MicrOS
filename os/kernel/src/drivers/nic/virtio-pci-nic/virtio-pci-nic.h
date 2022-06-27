@@ -14,6 +14,7 @@
 #include "../../../klibrary/kvector.h"
 #include "../../../debug_helpers/library/kernel_stdio.h"
 #include "../../virtio/virtio-pci.h"
+#include "../../../logger/logger.h"
 #include <stdlib.h>
 
 /* Device specification for PCI (4.1.1) */

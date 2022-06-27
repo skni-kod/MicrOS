@@ -5,8 +5,6 @@
 // TODO: Make interface to show user this number:
 uint16_t spurious_count = 0;
 
-//Count
-uint16_t spurious_count = 0;
 
 void pic_init()
 {

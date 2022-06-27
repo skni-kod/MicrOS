@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "../cpu/dma/dma.h"
+#include "../memory/heap/heap.h"
 
 //! 
 /*

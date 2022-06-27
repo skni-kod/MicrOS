@@ -20,10 +20,10 @@
 #define MASTER_OFFSET 0x20
 #define SLAVE_OFFSET 0x28
 
+#define PIC_EOI 0x20
 #define PIC_READ_IRR 0x0A 
 #define PIC_READ_ISR 0x0B
 
-#define PIC_EOI (1 << 5)
 #define PIC_MASTER_CASCADE_LINE 0x4
 #define PIC_SLAVE_CASCADE_LINE 0x2
 
@@ -46,12 +46,6 @@
 
 #define PIC_GET_ISR __pic_get_reg(PIC_READ_ISR)
 #define PIC_GET_IRR __pic_get_reg(PIC_READ_IRR)
-
-
-#define PIC_READ_IRR 0x0a /* OCW3 irq ready next CMD read */
-#define PIC_READ_ISR 0x0b /* OCW3 irq service next CMD read */
-
-#define PIC_EOI 0x20
 
 #include <stdint.h>
 #include "assembly/io.h"

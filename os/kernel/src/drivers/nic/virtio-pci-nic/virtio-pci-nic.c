@@ -39,11 +39,11 @@ bool virtio_nic_init(net_device_t *net_dev)
 
     // Get device configuration address
     virtio_nic.bar_type = pci_virtio_nic_device.base_addres_0 & (0x1);
-    
-    if(!virtio_nic.bar_type)
-    // Driver can only configure device via IO ports.
+
+    if (!virtio_nic.bar_type)
+        // Driver can only configure device via IO ports.
         return false;
-    
+
     virtio_nic.io_base = pci_virtio_nic_device.base_addres_0 & (~0x3);
 
     // Reset the virtio-network device
@@ -62,7 +62,7 @@ bool virtio_nic_init(net_device_t *net_dev)
     if ((features & REQUIRED_FEATURES) != REQUIRED_FEATURES)
     {
         virtio_nic_reg_write(REG_DEVICE_STATUS, STATUS_DRIVER_FAILED);
-        return;
+        return false;
     }
 
     // Tell the device what features we'll be using
@@ -203,7 +203,7 @@ void virtio_nic_send(net_packet_t *packet)
         uint16_t index = transmit_queue->driver_area->index % transmit_queue->size;
 
         // fill descriptor with net header
-        transmit_queue->descriptor_area[descriptor_index].address = (uint64_t)net_buffer - DMA_ADDRESS_OFFSET;
+        transmit_queue->descriptor_area[descriptor_index].address = (uint64_t)((uint32_t)net_buffer - (uint32_t)DMA_ADDRESS_OFFSET);
         if (transmit_queue->descriptor_area[descriptor_index].address == 0xdeadbeef || transmit_queue->descriptor_area[descriptor_index].address == 0xdeadbeefdeadbeef)
             return;
         transmit_queue->descriptor_area[descriptor_index].flags = VIRTQ_DESC_F_NEXT;
@@ -216,7 +216,7 @@ void virtio_nic_send(net_packet_t *packet)
         memcpy(packet_buffer, packet->packet_data, packet->packet_length);
 
         // fill descriptor with ethernet packet
-        transmit_queue->descriptor_area[descriptor_index2].address = (uint64_t)(packet_buffer - DMA_ADDRESS_OFFSET);
+        transmit_queue->descriptor_area[descriptor_index2].address = (uint64_t)((uint32_t)packet_buffer - (uint32_t)DMA_ADDRESS_OFFSET);
         if (transmit_queue->descriptor_area[descriptor_index2].address == 0xdeadbeef || transmit_queue->descriptor_area[descriptor_index].address == 0xdeadbeefdeadbeef)
             return;
         transmit_queue->descriptor_area[descriptor_index2].flags = 0;
@@ -271,7 +271,7 @@ void virtio_nic_receive()
         }
 
         // Skip over virtio_nic_net_header to get a pointer to the frame
-        uint32_t *frame = ((uint32_t)buffer_address + sizeof(virtio_nic_net_header));
+        uint32_t *frame = (uint32_t *)((uint32_t)buffer_address + (uint32_t)sizeof(virtio_nic_net_header));
 
         // Get frame length by skipping packet header
         uint32_t frame_length = receive_queue->descriptor_area[descriptor_index % receive_queue->size].length;
