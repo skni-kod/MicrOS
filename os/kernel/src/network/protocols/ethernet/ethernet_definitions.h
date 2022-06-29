@@ -5,6 +5,8 @@
 #ifndef network_ethernet_definitions
 #define network_ethernet_definitions
 
+#define ETHERNET_FCS_LENGTH 4
+
 #include "../../network_definitions.h"
 #include <stdint.h>
 

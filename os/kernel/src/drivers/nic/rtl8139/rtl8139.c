@@ -95,7 +95,7 @@ bool rtl8139_init(net_device_t *net_dev)
     net_dev->device_name = heap_kernel_alloc((uint32_t)strlen(RTL8139_DEVICE_NAME) + 1, 0);
     strcpy(net_dev->device_name, RTL8139_DEVICE_NAME);
     memcpy(net_dev->configuration->mac_address, rtl8139_device.mac_addr, MAC_ADDRESS_SIZE);
-    net_dev->api.send = &rtl8139_send;
+    net_dev->dpi.send = &rtl8139_send;
     rtl8139_net_device = net_dev;
 
     // Driver is ready
@@ -154,14 +154,9 @@ void rtl8139_receive()
     uint16_t size = *data_ptr >> 16;
 
     // Copy received data to buffer, data is right after the header with length
-    uint8_t *data = rtl8139_net_device->api.get_receive_buffer(rtl8139_net_device, size);
-    memcpy((void *)data, &data_ptr[1], size);
+    nic_data_t *out = rtl8139_net_device->dpi.get_receive_buffer(rtl8139_net_device, size);
+    memcpy((void *)out->frame, &data_ptr[1], size);
 
-    // Add packet to packets queue
-    nic_data_t *out = rtl8139_net_device->api.get_receive_struct(rtl8139_net_device);
-    out->data = data;
-    out->length = size;
-    out->device = rtl8139_net_device;
     /*
         4 - header length (PktLength include 4 bytes CRC)
         3 - dword alignment
@@ -173,13 +168,13 @@ void rtl8139_receive()
     io_out_word(rtl8139_device.io_base + CAPR, current_packet_ptr - 0x10);
 
     // Notify network manager about incoming data
-    (*rtl8139_net_device->api.receive)(out);
+    (*rtl8139_net_device->dpi.receive)(out);
 
 }
 
 void rtl8139_send(nic_data_t *data)
 {
-    uint32_t phys_addr = GET_PHYSICAL_ADDRESS(data->data);
+    uint32_t phys_addr = GET_PHYSICAL_ADDRESS(data->frame);
 
     io_out_long(rtl8139_device.io_base + TSAD[rtl8139_device.tx_cur], phys_addr);
 

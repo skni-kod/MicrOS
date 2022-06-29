@@ -26,11 +26,6 @@ bool network_manager_init()
         {
             // TODO: Buffering, hardcoding ip??
             __set_ipv4_addr(dev->configuration->ipv4_address, 10, 0, 2, 15);
-
-            dev->api.get_receive_buffer = &network_manager_get_buffer;
-            dev->api.get_receive_struct = &network_manager_get_receive_struct;
-            dev->api.receive = &network_manager_receive_data;
-
             // set nic to send/receive mode
             dev->configuration->mode = 0x3;
             kvector_add(net_devices, dev);
@@ -46,54 +41,48 @@ bool network_manager_init()
     return true;
 }
 
-uint8_t *network_manager_get_buffer(net_device_t *device, uint32_t size)
+nic_data_t *network_manager_get_receive_buffer(net_device_t *device, uint32_t size)
 {
-    return (uint8_t *)heap_kernel_alloc(size, 0);
-}
-
-nic_data_t *network_manager_get_receive_struct(net_device_t *device)
-{
-    return (nic_data_t *)heap_kernel_alloc(sizeof(nic_data_t), 0);
+    if (0 != device && 0 < size)
+    {
+        nic_data_t *data = (nic_data_t *)heap_kernel_alloc(sizeof(nic_data_t), 0);
+        data->length = size;
+        data->device = device;
+        data->frame = (uint8_t *)heap_kernel_alloc(size, 0);
+        return data;
+    }
+    else
+        return 0;
 }
 
 void network_manager_send_data(nic_data_t *data)
 {
-    // for (uint8_t i = 0; i < net_devices->count; i++)
-    // {
-    //     // Add packet to device TX queue
-    //     if (((net_device_t *)(net_devices->data[i]))->mac_address, data->device_mac))
-    //     {
-    //         // TODO: ADD BUFFERING
-    //         ((net_device_t *)(net_devices->data[i]))->send_packet(data);
-    //         ++((net_device_t *)(net_devices->data[i]))->frames_sent;
-    //         ((net_device_t *)(net_devices->data[i]))->bytes_sent += data->packet_length;
-    //         break;
-    //     }
-    // }
+    //TODO: Do something with card config (TX_RX)
+    data->device->dpi.send(data);
+    ++data->device->frames_sent;
+    data->device->bytes_sent += data->length;
+
+    heap_kernel_dealloc(data->frame);
+    heap_kernel_dealloc(data);
 }
 
 void network_manager_receive_data(nic_data_t *data)
 {
-    heap_kernel_dealloc(data->data);
-    heap_kernel_dealloc(data);
-    // for (uint8_t i = 0; i < net_devices->count; i++)
-    // {
-    //     // Add packet to device RX queue
-    //     if (__compare_mac_address(((net_device_t *)(net_devices->data[i]))->mac_address, packet->device_mac))
-    //     {
-    //         // TODO: ADD BUFFERING
-    //         // buffers will be necessary, when we use multithreading
-    //         // kvector_add(((net_device_t *)(net_devices->data[i]))->rx_queue, packet);
-    //         network_manager_process_packet(packet);
-    //         ++((net_device_t *)(net_devices->data[i]))->frames_received;
-    //         ((net_device_t *)(net_devices->data[i]))->bytes_sent += packet->packet_length;
-    //         break;
-    //     }
-    // }
 
-    // // packets are on heap, so free memory
-    // heap_kernel_dealloc(packet->packet_data);
-    // heap_kernel_dealloc(packet);
+    //TODO: Do something with card config (TX_RX)
+    switch (data->device->configuration->frame_type)
+    {
+    case ethernet:
+    default:
+        ethernet_process_frame(data);
+        break;
+    }
+
+    ++data->device->frames_received;
+    data->device->bytes_received += data->length;
+
+    heap_kernel_dealloc(data->frame);
+    heap_kernel_dealloc(data);
 }
 
 net_device_t *network_manager_get_nic()
@@ -153,10 +142,13 @@ bool __network_manager_set_net_device(net_device_t *device)
         return 0;
     memset(device, 0, sizeof(net_device_t));
 
-    device->api.receive = &network_manager_receive_data;
+    device->dpi.receive = &network_manager_receive_data;
+    device->dpi.get_receive_buffer = &network_manager_get_receive_buffer;
 
-    device->configuration = 0;
     device->configuration = heap_kernel_alloc(sizeof(device_configuration_t), 0);
+
+    device->configuration->arp_entries = heap_kernel_alloc(sizeof(kvector), 0);
+    kvector_init(device->configuration->arp_entries);
 
     if (!device->configuration)
         return 0;

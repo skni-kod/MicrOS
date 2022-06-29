@@ -23,6 +23,10 @@
 
 typedef struct net_device net_device_t;
 
+typedef enum net_frame_type{
+    ethernet,
+}net_frame_type_t;
+
 //! nic_data
 /*
     Data that comes from NIC
@@ -31,17 +35,16 @@ typedef struct nic_data
 {
     uint32_t length;
     net_device_t *device;
-    uint8_t *data;
+    uint8_t *frame;
 } nic_data_t;
 
-typedef struct network_manager_api
+typedef struct network_manager_dpi
 {
     // return size of transferred data
     void (*send)(nic_data_t *data);
     void (*receive)(nic_data_t *data);
-    uint8_t *(*get_receive_buffer)(net_device_t *device, uint32_t size);
-    nic_data_t *(*get_receive_struct)(net_device_t *device);
-} network_manager_api;
+    nic_data_t *(*get_receive_buffer)(net_device_t *device, uint32_t size);
+} network_manager_dpi_t;
 
 //! Device configuration structure
 /* TODO: make more options
@@ -61,6 +64,8 @@ typedef struct device_configuration
     uint8_t mac_address[MAC_ADDRESS_LENGTH];
     uint8_t ipv4_address[IPv4_ADDRESS_LENGTH];
     uint16_t mtu;
+    net_frame_type_t frame_type;
+    kvector *arp_entries;
 } device_configuration_t;
 
 //! net_device
@@ -78,7 +83,7 @@ typedef struct net_device
     uint32_t bytes_sent;
     uint32_t bytes_received;
     device_configuration_t *configuration;
-    network_manager_api api;
+    network_manager_dpi_t dpi;
 } net_device_t;
 
 #endif

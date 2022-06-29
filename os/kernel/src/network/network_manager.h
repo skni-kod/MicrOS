@@ -68,10 +68,7 @@ net_device_t *network_manager_get_nic_by_mac(uint8_t *mac);
 */
 net_device_t *network_manager_get_nic();
 
-uint8_t *network_manager_get_buffer(net_device_t *device, uint32_t size);
-
-nic_data_t *network_manager_get_receive_struct(net_device_t *device);
-
+nic_data_t *network_manager_get_receive_buffer(net_device_t *device, uint32_t size);
 
 //! __network_manager_print_device_info
 /*

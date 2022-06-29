@@ -13,13 +13,13 @@
 /*
     Process incoming arp packet
 */
-void arp_process_packet(arp_packet_t *packet, uint8_t *device_mac);
+void arp_process_packet(nic_data_t *data);
 
 //! arp_add_entry
 /*
     Add arp entry to vector
 */
-void arp_add_entry(uint8_t *mac_address, uint8_t *ip_address);
+void arp_add_entry(net_device_t *device, uint8_t *mac_address, uint8_t *ip_address);
 
 //! arp_find_entry
 /*
