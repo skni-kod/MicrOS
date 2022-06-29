@@ -19,7 +19,8 @@
 #define RTL8139_DEVICE_ID_SECONDARY 0x8119
 #define RTL8139_DEVICE_NAME "RTL8139 NIC"
 
-#define RTL8139_RX_BUFFER_SIZE 8192 + 16 + 1500
+#define RTL8139_RX_BUFFER_BASE 8192
+#define RTL8139_RX_BUFFER_SIZE (RTL8139_RX_BUFFER_BASE + 16 + 1500)
 
 #define CAPR 0x38
 #define RX_READ_POINTER_MASK (~3)
@@ -95,11 +96,11 @@ bool rtl8139_init(net_device_t *net_dev);
 /*
     Send data, with desired length
 */
-void rtl8139_send(net_packet_t *packet);
+void rtl8139_send(nic_data_t *packet);
 
 //! rtl8139_receive
 /*
-    Receive packet
+    Receive data
 */
 void rtl8139_receive();
 

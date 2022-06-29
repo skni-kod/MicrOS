@@ -89,7 +89,17 @@ bool rtl8139_init(net_device_t *net_dev)
     // AAP - all packets
     io_out_long(rtl8139_device.io_base + RXCONFIG, 0xF | (1 << 7));
 
-    // Set TransmitterOK and ReceiveOK to HIGH
+    rtl8139_read_mac();
+
+    // Setup net device
+    net_dev->device_name = heap_kernel_alloc((uint32_t)strlen(RTL8139_DEVICE_NAME) + 1, 0);
+    strcpy(net_dev->device_name, RTL8139_DEVICE_NAME);
+    memcpy(net_dev->configuration->mac_address, rtl8139_device.mac_addr, MAC_ADDRESS_SIZE);
+    net_dev->api.send = &rtl8139_send;
+    rtl8139_net_device = net_dev;
+
+    // Driver is ready
+    //  Set TransmitterOK and ReceiveOK to HIGH
     io_out_word(rtl8139_device.io_base + INTRSTATUS, 0x0);
     io_out_word(rtl8139_device.io_base + INTRMASK, 0xFFFF | 0xE07F);
 
@@ -97,14 +107,6 @@ bool rtl8139_init(net_device_t *net_dev)
     uint32_t irq_num = pci_rtl8139_device.interrupt_line;
     pic_enable_irq(irq_num);
     idt_attach_interrupt_handler(irq_num, rtl8139_irq_handler);
-
-    rtl8139_read_mac();
-
-    net_dev->device_name = heap_kernel_alloc((uint32_t)strlen(RTL8139_DEVICE_NAME) + 1, 0);
-    strcpy(net_dev->device_name, RTL8139_DEVICE_NAME);
-    memcpy(net_dev->mac_address, rtl8139_device.mac_addr, sizeof(uint8_t) * 6);
-    net_dev->send_packet = &rtl8139_send;
-    rtl8139_net_device = net_dev;
 
     return true;
 }
@@ -146,61 +148,54 @@ void rtl8139_get_mac(uint8_t *buffer)
 
 void rtl8139_receive()
 {
-    uint32_t *packet = (uint32_t *)(rtl8139_device.rx_buffer + current_packet_ptr);
+    uint32_t *data_ptr = (uint32_t *)(rtl8139_device.rx_buffer + current_packet_ptr);
 
-    // Get packet length by skipping packet header
-    uint16_t packet_length = *packet >> 16;
+    // Get incoming data length by skipping packet header - 16 LSB bits of header
+    uint16_t size = *data_ptr >> 16;
 
-    // Copy received data to heap
-    void *packet_data = heap_kernel_alloc(packet_length, 0);
-    memcpy(packet_data, (uint32_t *)(packet + 4), packet_length);
+    // Copy received data to buffer, data is right after the header with length
+    uint8_t *data = rtl8139_net_device->api.get_receive_buffer(rtl8139_net_device, size);
+    memcpy((void *)data, &data_ptr[1], size);
 
     // Add packet to packets queue
-    net_packet_t *out = heap_kernel_alloc(sizeof(net_packet_t), 0);
-    out->packet_data = packet_data;
-    out->packet_length = packet_length;
-    rtl8139_get_mac(out->device_mac);
+    nic_data_t *out = rtl8139_net_device->api.get_receive_struct(rtl8139_net_device);
+    out->data = data;
+    out->length = size;
+    out->device = rtl8139_net_device;
     /*
-    //4:for header length(PktLength include 4 bytes CRC)
-    //3:for dword alignment
-    RX_READ_POINTER_MASK - avoid overflow
+        4 - header length (PktLength include 4 bytes CRC)
+        3 - dword alignment
+        RX_READ_POINTER_MASK - avoid overflow
     */
-    current_packet_ptr = (current_packet_ptr + packet_length + 7) & RX_READ_POINTER_MASK;
-    current_packet_ptr %= 8192;
-    // Tell to device where put, next incoming packet, - 0x10 avoid overflow
+    current_packet_ptr = (current_packet_ptr + size + 3 + 4) & RX_READ_POINTER_MASK;
+    current_packet_ptr %= RTL8139_RX_BUFFER_BASE;
+    // Tell to device where put, next incoming packet - 0x10 avoid overflow
     io_out_word(rtl8139_device.io_base + CAPR, current_packet_ptr - 0x10);
 
-    (*rtl8139_net_device->receive_packet)(out);
+    // Notify network manager about incoming data
+    (*rtl8139_net_device->api.receive)(out);
+
 }
 
-void rtl8139_send(net_packet_t *packet)
+void rtl8139_send(nic_data_t *data)
 {
-    if (rtl8139_net_device->configuration->mode & 0x2)
+    uint32_t phys_addr = GET_PHYSICAL_ADDRESS(data->data);
+
+    io_out_long(rtl8139_device.io_base + TSAD[rtl8139_device.tx_cur], phys_addr);
+
+    uint32_t status = 0;
+    status |= data->length & 0x1FFF; // 0-12: Length
+    status |= 0 << 13;               // 13: OWN bit
+
+    io_out_long(rtl8139_device.io_base + TSD[rtl8139_device.tx_cur], status);
+
+    while (1)
     {
-        void *data = heap_kernel_alloc(packet->packet_length, 0);
-        memcpy(data, packet->packet_data, packet->packet_length);
-        uint32_t phys_addr = ((uint32_t)data - DMA_ADDRESS_OFFSET);
-
-        io_out_long(rtl8139_device.io_base + TSAD[rtl8139_device.tx_cur], phys_addr);
-
-        uint32_t status = 0;
-        status |= packet->packet_length & 0x1FFF; // 0-12: Length
-        // There is new packet to transmit!
-        status |= 0 << 13; // 13: OWN bit
-        // Hey! Start  transmitting my packet!
-        io_out_long(rtl8139_device.io_base + TSD[rtl8139_device.tx_cur], status);
-
-        while (1)
-        {
-            // Wait for TOK flag
-            if (io_in_long(rtl8139_device.io_base + TSD[rtl8139_device.tx_cur]) & TX_TOK)
-                break;
-        }
-
-        // Switch buffer
-        rtl8139_device.tx_cur = (rtl8139_device.tx_cur + 1) % 4;
-
-        // Dealloc transmit data buffer
-        heap_kernel_dealloc(data);
+        // Wait for TOK flag
+        if (io_in_long(rtl8139_device.io_base + TSD[rtl8139_device.tx_cur]) & TX_TOK)
+            break;
     }
+
+    // Switch buffer
+    rtl8139_device.tx_cur = (rtl8139_device.tx_cur + 1) % 4;
 }

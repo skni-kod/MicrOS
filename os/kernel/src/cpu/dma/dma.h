@@ -11,6 +11,8 @@
 #define DMA_EXTERNAL_PAGE_REGISTER 0x81
 #define DMA_MODE_REGISTER 0x0B
 #define DMA_ADDRESS_OFFSET 0xC0000000
+#define GET_PHYSICAL_ADDRESS(x) ((uint32_t)x - DMA_ADDRESS_OFFSET)
+
 
 void dma_init(uint32_t buffer_address);
 void dma_init_transfer(uint8_t channel, bool read, uint16_t dataLen);

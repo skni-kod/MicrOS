@@ -28,8 +28,8 @@ typedef struct arp_packet
     uint8_t hardware_length;             // Hardware address length (Ethernet = 6)
     uint8_t protocol_length;             // Protocol address length (IPv4 = 4)
     uint16_t opcode;                     // ARP Operation Code
-    uint8_t src_hw[MAC_ADDRESS_LENGTH];  // Source hardware address - hlen bytes (see above)
-    uint8_t src_pr[IPv4_ADDRESS_LENGTH]; // Source protocol address - plen bytes (see above). If IPv4 can just be a "u32" type.
+    uint8_t src_hw[MAC_ADDRESS_LENGTH];  // Source hardware address - hardware_length (see above)
+    uint8_t src_pr[IPv4_ADDRESS_LENGTH]; // Source protocol address - hardware_length (see above). If IPv4 can just be a "u32" type.
     uint8_t dst_hw[MAC_ADDRESS_LENGTH];  // Destination hardware address - hlen bytes (see above)
     uint8_t dst_pr[IPv4_ADDRESS_LENGTH]; // Destination protocol address - plen bytes (see above). If IPv4 can just be a "u32" type.
 } __attribute__((packed)) arp_packet_t;

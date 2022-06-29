@@ -3,8 +3,8 @@
     Created: 12.02.2021
     Modify: 17.02.2021
 */
-#ifndef arp_protocol
-#define arp_protocol
+#ifndef network_arp
+#define network_arp
 #include "arp_definitions.h"
 #include "../../network_utils.h"
 #include "../../network_manager.h"
@@ -46,4 +46,5 @@ void arp_send_request(uint8_t *ip_address);
 */
 void __arp_flip_values(arp_packet_t *packet);
 
+bool __arp_compare_mac_address(uint8_t *addr1, uint8_t *addr2);
 #endif

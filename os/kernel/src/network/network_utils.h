@@ -26,18 +26,6 @@ uint16_t __uint16_flip(uint16_t value);
 */
 uint32_t __uint32_flip(uint32_t value);
 
-//! __compare_mac_address
-/*
-    Returns true if given MAC adresses are equal
-*/
-bool __compare_mac_address(uint8_t *first, uint8_t *second);
-
-//! __compare_ip_address
-/*
-    Returns true if given ip adresses are equal
-*/
-bool __compare_ip_address(uint8_t *first, uint8_t *second);
-
 //! __set_mac_addr
 /*
     Sets MAC addr

@@ -91,8 +91,8 @@ bool virtio_nic_init(net_device_t *net_dev)
 
     net_dev->device_name = heap_kernel_alloc((uint32_t)strlen(VIRTIO_NET_DEVICE_NAME) + 1, 0);
     strcpy(net_dev->device_name, VIRTIO_NET_DEVICE_NAME);
-    memcpy(net_dev->mac_address, virtio_nic.mac_addr, sizeof(uint8_t) * 6);
-    net_dev->send_packet = virtio_nic_send;
+    memcpy(net_dev->configuration->mac_address, virtio_nic.mac_addr, MAC_ADDRESS_SIZE);
+    net_dev->api.send = &virtio_nic_send;
     virtio_nic_net_device = net_dev;
 
     // Driver's ready to work
@@ -184,53 +184,45 @@ void virtio_nic_setup_buffers(uint16_t buffers_count)
     virtio_nic_reg_write(REG_QUEUE_NOTIFY, VIRTIO_NET_RECEIVE_QUEUE_INDEX);
 }
 
-void virtio_nic_send(net_packet_t *packet)
+void virtio_nic_send(nic_data_t *data)
 {
-    if (virtio_nic_net_device->configuration->mode & 0x2)
-    {
-        // Allocate a buffer for the header
-        virtio_nic_net_header *net_buffer = heap_kernel_alloc(VIRTIO_NET_HEADER_SIZE, 0);
+    // Allocate a buffer for the header
+    virtio_nic_net_header *net_buffer = heap_kernel_alloc(VIRTIO_NET_HEADER_SIZE, 0);
 
-        // Set parameters of net_buffer
-        memset(net_buffer, 0, sizeof(virtio_nic_net_header));
+    // Set parameters of net_buffer
+    memset(net_buffer, 0, sizeof(virtio_nic_net_header));
 
-        // Get indices for the next two descriptor_area
-        uint16_t descriptor_index = transmit_queue->next_descriptor % transmit_queue->size;
-        uint16_t descriptor_index2 = (descriptor_index + 1) % transmit_queue->size;
-        transmit_queue->next_descriptor += 2;
+    // Get indices for the next two descriptor_area
+    uint16_t descriptor_index = transmit_queue->next_descriptor % transmit_queue->size;
+    uint16_t descriptor_index2 = (descriptor_index + 1) % transmit_queue->size;
+    transmit_queue->next_descriptor += 2;
 
-        // Get index for the next entry into the device ring
-        uint16_t index = transmit_queue->driver_area->index % transmit_queue->size;
+    // Get index for the next entry into the device ring
+    uint16_t index = transmit_queue->driver_area->index % transmit_queue->size;
 
-        // fill descriptor with net header
-        transmit_queue->descriptor_area[descriptor_index].address = (uint64_t)((uint32_t)net_buffer - (uint32_t)DMA_ADDRESS_OFFSET);
-        if (transmit_queue->descriptor_area[descriptor_index].address == 0xdeadbeef || transmit_queue->descriptor_area[descriptor_index].address == 0xdeadbeefdeadbeef)
-            return;
-        transmit_queue->descriptor_area[descriptor_index].flags = VIRTQ_DESC_F_NEXT;
-        transmit_queue->descriptor_area[descriptor_index].length = VIRTIO_NET_HEADER_SIZE;
-        transmit_queue->descriptor_area[descriptor_index].next = descriptor_index2;
+    // fill descriptor with net header
+    transmit_queue->descriptor_area[descriptor_index].address = (uint64_t)((uint32_t)net_buffer - (uint32_t)DMA_ADDRESS_OFFSET);
+    if (transmit_queue->descriptor_area[descriptor_index].address == 0xdeadbeef || transmit_queue->descriptor_area[descriptor_index].address == 0xdeadbeefdeadbeef)
+        return;
+    transmit_queue->descriptor_area[descriptor_index].flags = VIRTQ_DESC_F_NEXT;
+    transmit_queue->descriptor_area[descriptor_index].length = VIRTIO_NET_HEADER_SIZE;
+    transmit_queue->descriptor_area[descriptor_index].next = descriptor_index2;
 
-        // copy packet to new buffer, because packet_buffer won't be a physical address
-        uint8_t *packet_buffer = heap_kernel_alloc(packet->packet_length, 0);
+    // fill descriptor with ethernet packet
+    transmit_queue->descriptor_area[descriptor_index2].address = (uint64_t)(GET_PHYSICAL_ADDRESS(data->data));
+    if (transmit_queue->descriptor_area[descriptor_index2].address == 0xdeadbeef || transmit_queue->descriptor_area[descriptor_index].address == 0xdeadbeefdeadbeef)
+        return;
+    transmit_queue->descriptor_area[descriptor_index2].flags = 0;
+    transmit_queue->descriptor_area[descriptor_index2].length = data->length;
+    transmit_queue->descriptor_area[descriptor_index2].next = 0;
 
-        memcpy(packet_buffer, packet->packet_data, packet->packet_length);
+    // Add descriptor chain to the available ring
+    transmit_queue->driver_area->ring_buffer[index] = descriptor_index;
 
-        // fill descriptor with ethernet packet
-        transmit_queue->descriptor_area[descriptor_index2].address = (uint64_t)((uint32_t)packet_buffer - (uint32_t)DMA_ADDRESS_OFFSET);
-        if (transmit_queue->descriptor_area[descriptor_index2].address == 0xdeadbeef || transmit_queue->descriptor_area[descriptor_index].address == 0xdeadbeefdeadbeef)
-            return;
-        transmit_queue->descriptor_area[descriptor_index2].flags = 0;
-        transmit_queue->descriptor_area[descriptor_index2].length = packet->packet_length;
-        transmit_queue->descriptor_area[descriptor_index2].next = 0;
+    // Increase available ring index and notify the device
+    transmit_queue->driver_area->index++;
 
-        // Add descriptor chain to the available ring
-        transmit_queue->driver_area->ring_buffer[index] = descriptor_index;
-
-        // Increase available ring index and notify the device
-        transmit_queue->driver_area->index++;
-
-        virtio_nic_reg_write(REG_QUEUE_NOTIFY, VIRTIO_NET_TRANSMIT_QUEUE_INDEX);
-    }
+    virtio_nic_reg_write(REG_QUEUE_NOTIFY, VIRTIO_NET_TRANSMIT_QUEUE_INDEX);
 }
 
 void virtio_nic_receive()
@@ -271,22 +263,22 @@ void virtio_nic_receive()
         }
 
         // Skip over virtio_nic_net_header to get a pointer to the frame
-        uint32_t *frame = (uint32_t *)((uint32_t)buffer_address + (uint32_t)sizeof(virtio_nic_net_header));
+        uint32_t *data_ptr = (uint32_t *)((uint32_t)buffer_address + (uint32_t)sizeof(virtio_nic_net_header));
 
         // Get frame length by skipping packet header
-        uint32_t frame_length = receive_queue->descriptor_area[descriptor_index % receive_queue->size].length;
+        uint32_t size = receive_queue->descriptor_area[descriptor_index % receive_queue->size].length;
 
-        // Copy received data to heap
-        void *packet_data = heap_kernel_alloc(frame_length, 0);
-        memcpy(packet_data, frame, frame_length);
+        // Copy received data to buffer, data is right after the header with length
+        uint8_t *data = virtio_nic_net_device->api.get_receive_buffer(virtio_nic_net_device, size);
+        memcpy((void *)data, &data_ptr[1], size);
 
         // Add packet to packets queue
-        net_packet_t *out = heap_kernel_alloc(sizeof(net_packet_t), 0);
-        out->packet_data = packet_data;
-        out->packet_length = frame_length;
-        virtio_nic_get_mac(out->device_mac);
+        nic_data_t *out = virtio_nic_net_device->api.get_receive_struct(virtio_nic_net_device);
+        out->data = data;
+        out->length = size;
+        out->device = virtio_nic_net_device;
 
-        (*virtio_nic_net_device->receive_packet)(out);
+        (*virtio_nic_net_device->api.receive)(out);
 
         // Place the used descriptor indices back in driver area
         for (uint16_t i = 0; i < buffers; ++i)

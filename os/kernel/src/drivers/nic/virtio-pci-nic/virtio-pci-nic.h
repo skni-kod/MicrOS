@@ -143,7 +143,7 @@ bool virtio_nic_init(net_device_t *net_dev);
 
 bool virtio_nic_irq_handler();
 
-void virtio_nic_send(net_packet_t *packet);
+void virtio_nic_send(nic_data_t *data);
 
 void virtio_nic_init_queue(virtq *virtqueue, uint16_t queueIndex);
 

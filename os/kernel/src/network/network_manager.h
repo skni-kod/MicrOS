@@ -5,6 +5,7 @@
 #ifndef network_manager
 #define network_manager
 
+//TODO: This sould not be here:
 #include "../drivers/nic/rtl8139/rtl8139.h"
 #include "../drivers/nic/virtio-pci-nic/virtio-pci-nic.h"
 
@@ -19,60 +20,58 @@
 */
 bool network_manager_init();
 
-//! network_manager_send_packet
+//! network_manager_send_data
 /*
-    Send packet, it can be just "HelloWorld!"
+    Send data
 */
-void network_manager_send_packet(net_packet_t *packet);
+void network_manager_send_data(nic_data_t *data);
 
-//! network_manager_receive_packet
+//! network_manager_receive_data
 /*
-    Function triggers when packet incomes to OS,
-    given packet must be on heap
+    Function triggers when data incomes to system
 */
-void network_manager_receive_packet(net_packet_t *packet);
+void network_manager_receive_data(nic_data_t *data);
 
-//! network_manager_process_packet
+//! network_manager_process_data
 /*
-    Process incoming packet
+    Process incoming data
 */
-void network_manager_process_packet(net_packet_t *packet);
+void network_manager_process_data(nic_data_t *data);
 
 //! network_manager_bytes_sent
 /*
-    Returns number of bytes sent over Ethernet
+    Returns number of bytes sent from system
 */
 uint64_t network_manager_bytes_sent(void);
 
 //! network_manager_bytes_received
 /*
-    Returns number of bytes received over Ethernet
+    Returns number of bytes received to system
 */
 uint64_t network_manager_bytes_received(void);
 
-//! network_manager_verify_ipv4_address
+//! network_manager_get_nic_by_ipv4
 /*
-    Returns MAC address of NIC that has IPv4 address passed in arg
+    Returns address of NIC that has IPv4 address passed in arg
 */
-uint8_t *network_manager_verify_ipv4_address(uint8_t *ipv4_address);
+net_device_t *network_manager_get_nic_by_ipv4(uint8_t *ipv4_address);
 
-//! network_manager_send_ethernet_frame
+//! network_manager_get_nic_by_mac
 /*
-    Send ethernet frame
+    Returns address of NIC that has MAC address passed in arg
 */
-bool network_manager_send_ethernet_frame(ethernet_frame_t *frame, uint32_t data_len);
+net_device_t *network_manager_get_nic_by_mac(uint8_t *mac);
 
-//! network_manager_make_frame
+//! network_manager_get_nic
 /*
-    Make ethernet frame, with specified data and type
-*/
-ethernet_frame_t *network_manager_make_frame(uint8_t *src_hw, uint8_t *dst_hw, uint16_t type);
-
-//! network_manager_get_machine_ip
-/*
-    Returns main NIC
+    Return main NIC
 */
 net_device_t *network_manager_get_nic();
+
+uint8_t *network_manager_get_buffer(net_device_t *device, uint32_t size);
+
+nic_data_t *network_manager_get_receive_struct(net_device_t *device);
+
 
 //! __network_manager_print_device_info
 /*
@@ -80,4 +79,5 @@ net_device_t *network_manager_get_nic();
 */
 void __network_manager_print_device_info(net_device_t *device);
 
+bool __network_manager_set_net_device(net_device_t *device);
 #endif

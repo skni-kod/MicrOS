@@ -4,6 +4,8 @@
 #define KERNEL_PAGE_DIRECTORY_ADDRESS 0xC0006000
 #define PAGE_TABLES_ADDRESS 0xC1100000
 #define DMA_ADDRESS_OFFSET 0xC0000000
+#define GET_PHYSICAL_ADDRESS(x) ((uint32_t)x - DMA_ADDRESS_OFFSET)
+
 
 #include <stdint.h>
 #include <stdbool.h>

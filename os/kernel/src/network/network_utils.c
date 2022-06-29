@@ -27,34 +27,6 @@ uint32_t __uint32_flip(uint32_t value)
     return (bytes[0]) << 24 | (bytes[1] << 16) | (bytes[2] << 8) | (bytes[3]);
 }
 
-bool __compare_mac_address(uint8_t *first, uint8_t *second)
-{
-    if (first == 0 || second == 0)
-        return false;
-
-    for (char i = 0; i < 6; i++)
-    {
-        if (*(first + i) != *(second + i))
-            return false;
-    }
-
-    return true;
-}
-
-bool __compare_ip_address(uint8_t *first, uint8_t *second)
-{
-    if (first == 0 || second == 0)
-        return false;
-
-    for (char i = 0; i < 4; i++)
-    {
-        if (*(first + i) != *(second + i))
-            return false;
-    }
-
-    return true;
-}
-
 void __set_mac_addr(uint8_t *mac_addr, uint8_t oct1, uint8_t oct2, uint8_t oct3, uint8_t oct4, uint8_t oct5, uint8_t oct6)
 {
     if (mac_addr == 0)
