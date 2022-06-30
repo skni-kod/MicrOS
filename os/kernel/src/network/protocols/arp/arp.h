@@ -19,20 +19,14 @@ void arp_process_packet(nic_data_t *data);
 /*
     Add arp entry to vector
 */
-void arp_add_entry(net_device_t *device, uint8_t *mac_address, uint8_t *ip_address);
-
-//! arp_find_entry
-/*
-    Find entry in arp table
-*/
-uint8_t *arp_find_entry(uint8_t *ip_address);
+void arp_add_entry(net_device_t *device, uint8_t *mac_address, uint8_t *ip_address, arp_entry_type_t type);
 
 //! arp_get_entry
 /*
     Returns MAC address of desired IP.
-    If not present in arp table, sends request, and waits up to ARP_TIMEOUT
+    If not present in arp table, sends request
 */
-uint8_t *arp_get_entry(uint8_t *ip_address);
+arp_entry_t *arp_get_entry(net_device_t *device, uint8_t *ip_address);
 
 //! arp_send_request
 /*
