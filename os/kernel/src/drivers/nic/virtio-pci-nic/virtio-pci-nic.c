@@ -270,7 +270,7 @@ void virtio_nic_receive()
 
         // Copy received data to buffer, data is right after the header with length
         nic_data_t *out =  virtio_nic_net_device->dpi.get_receive_buffer(virtio_nic_net_device, size);
-        memcpy((void *)out->frame, &data_ptr[1], size);
+        memcpy((void *)out->frame, data_ptr, size);
 
         // Place the used descriptor indices back in driver area
         for (uint16_t i = 0; i < buffers; ++i)

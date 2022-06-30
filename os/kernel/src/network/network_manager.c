@@ -25,7 +25,7 @@ bool network_manager_init()
         if (__network_manager_set_net_device(dev) && drivers[i](dev))
         {
             // TODO: Buffering, hardcoding ip??
-            __set_ipv4_addr(dev->configuration->ipv4_address, 10, 0, 2, 15);
+            __set_ipv4_addr(dev->configuration->ipv4_address, 192, 168, 1, 150 + net_devices->count);
             // set nic to send/receive mode
             dev->configuration->mode = 0x3;
             kvector_add(net_devices, dev);

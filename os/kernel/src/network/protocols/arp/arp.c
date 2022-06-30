@@ -18,9 +18,9 @@ void arp_process_packet(nic_data_t *data)
                 ARP_PROTOCOL_TYPE,
                 sizeof(arp_packet_t));
 
-            arp_packet_t *response = (arp_packet_t *)(frame->data + sizeof(ethernet_frame_t));
-            response->opcode = ARP_OPCODE_REPLY;
+            arp_packet_t *response = (arp_packet_t *)((void*)frame->data);
             response->hardware_type = ARP_HW_TYPE;
+            response->opcode = ARP_OPCODE_REPLY;
             response->protocol_type = ARP_PR_TYPE;
 
             __arp_flip_values(response);
