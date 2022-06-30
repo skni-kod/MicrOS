@@ -15,11 +15,13 @@
 #define ARP_HW_TYPE 0x1
 #define ARP_PR_TYPE 0x0800
 
-#define ARP_ENTRY_DYNAMIC 0x1
-#define ARP_ENTRY_STATIC 0x2
-
 #define ARP_TIMEOUT 5000
 #define ARP_RETRY_INTERVAL 200
+
+typedef enum arp_entry_type {
+    ARP_ENTRY_TYPE_STATIC,
+    ARP_ENTRY_TYPE_DYNAMIC
+} arp_entry_type_t;
 
 typedef struct arp_packet
 {
@@ -38,8 +40,8 @@ typedef struct arp_entry
 {
     uint8_t mac_address[MAC_ADDRESS_LENGTH];
     uint8_t ip_address[IPv4_ADDRESS_LENGTH];
-    uint32_t income_time;
-    uint8_t type;
+    uint32_t add_time;
+    arp_entry_type type;
 } arp_entry_t;
 
 #endif

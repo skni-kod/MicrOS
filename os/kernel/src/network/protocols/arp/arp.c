@@ -35,87 +35,52 @@ void arp_process_packet(nic_data_t *data)
 
             ethernet_send_frame(data->device, sizeof(arp_packet_t), frame);
 
-            arp_add_entry(data->device, response->dst_hw, response->dst_pr);
+            arp_add_entry(data->device, response->dst_hw, response->dst_pr, ARP_ENTRY_TYPE_DYNAMIC);
         }
         break;
     case ARP_OPCODE_REPLY:
         // Handle ARP reply
-        arp_add_entry(data->device, packet->src_hw, packet->src_pr);
+        arp_add_entry(data->device, packet->src_hw, packet->src_pr, ARP_ENTRY_TYPE_DYNAMIC);
         break;
     }
 }
 
-void arp_add_entry(net_device_t *device, uint8_t *mac_address, uint8_t *ip_address)
+void arp_add_entry(net_device_t *device, uint8_t *mac_address, uint8_t *ip_address, arp_entry_type_t type)
 {
-    char str[128] = "";
-    kernel_sprintf(str, "New ARP entry: %d %d %d %d", ip_address[0], ip_address[1], ip_address[2], ip_address[3]);
-    logger_log_info(str);
-    // if (mac_address == 0 || ip_address == 0)
-    //     return;
+    if (mac_address == 0 || ip_address == 0)
+        return;
 
-    // arp_entry_t *new_entry = heap_kernel_alloc(sizeof(arp_entry_t), 0);
+    // Entry is present
+    if (arp_get_entry(device, ip_address))
+        return;
 
-    // new_entry->income_time = get_time();
-    // new_entry->type = ARP_ENTRY_DYNAMIC;
+    arp_entry_t *entry = heap_kernel_alloc(sizeof(arp_entry_t), 0);
 
-    // memcpy(new_entry->mac_address, mac_address, MAC_ADDRESS_SIZE);
-    // memcpy(new_entry->ip_address, ip_address, IPv4_ADDRESS_SIZE);
+    entry->add_time = get_time();
+    entry->type = type;
 
-    // kvector_add(arp_table, new_entry);
+    memcpy(entry->mac_address, mac_address, MAC_ADDRESS_SIZE);
+    memcpy(entry->ip_address, ip_address, IPv4_ADDRESS_SIZE);
+
+    kvector_add(device->configuration->arp_entries, entry);
 }
 
-// uint8_t *arp_find_entry(uint8_t *ip_address)
-// {
-//     if (ip_address == 0 || arp_table == 0)
-//         return 0;
+arp_entry_t *arp_get_entry(net_device_t *device, uint8_t *ip_address)
+{
+    if (!ip_address || !device->configuration->arp_entries->count)
+        return 0;
 
-//     if (arp_table->count < 1)
-//         return 0;
+    arp_entry_t *entry;
 
-//     arp_entry_t *ptr;
-//     for (uint8_t i = 0; i < arp_table->count; i++)
-//     {
-//         ptr = ((arp_entry_t *)arp_table->data[i]);
-//         if (__compare_ip_address(ip_address, ptr->ip_address))
-//         {
-//             uint8_t *ret = heap_kernel_alloc(MAC_ADDRESS_SIZE, 0);
-//             memcpy(ret, ptr->mac_address, MAC_ADDRESS_SIZE);
-//             return ret;
-//         }
-//     }
+    for (uint32_t i = 0; i < device->configuration->arp_entries->count; i++)
+    {
+        entry = ((arp_entry_t *)device->configuration->arp_entries->data[i]);
+        if (__compare_ip_address(ip_address, entry->ip_address))
+            return entry;
+    }
 
-//     return 0;
-// }
-
-// uint8_t *arp_get_entry(uint8_t *ip_address)
-// {
-//     if (ip_address == 0)
-//         return 0;
-
-//     uint8_t *ret = arp_find_entry(ip_address);
-
-//     if (ret != 0)
-//         return ret;
-
-//     uint32_t request_time = get_time();
-
-//     arp_send_request(ip_address);
-
-//     while (true)
-//     {
-//         if ((get_time() - request_time) >= ARP_TIMEOUT)
-//             break;
-//         if ((get_time() - request_time) % ARP_RETRY_INTERVAL == 0)
-//         {
-//             ret = arp_find_entry(ip_address);
-//             if (ret != 0)
-//                 return ret;
-//             arp_send_request(ip_address);
-//         }
-//     }
-
-//     return 0;
-// }
+    return 0;
+}
 
 void arp_send_request(net_device_t *device, uint8_t *ip_address)
 {
