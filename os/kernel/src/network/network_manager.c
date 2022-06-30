@@ -150,6 +150,10 @@ bool __network_manager_set_net_device(net_device_t *device)
     device->configuration->arp_entries = heap_kernel_alloc(sizeof(kvector), 0);
     kvector_init(device->configuration->arp_entries);
 
+
+    //TODO: get mtu from driver
+    device->configuration->mtu = 1500;
+
     if (!device->configuration)
         return 0;
     memset(device->configuration, 0, sizeof(device_configuration_t));

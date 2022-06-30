@@ -38,7 +38,7 @@ uint8_t *arp_get_entry(uint8_t *ip_address);
 /*
     Send ARP request
 */
-void arp_send_request(uint8_t *ip_address);
+void arp_send_request(net_device_t *device, uint8_t *ip_address);
 
 //! __arp_flip_values
 /*

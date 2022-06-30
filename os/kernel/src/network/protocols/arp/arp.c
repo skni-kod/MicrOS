@@ -11,14 +11,13 @@ void arp_process_packet(nic_data_t *data)
     case ARP_OPCODE_REQUEST:
         // Handle ARP request
         {
-            heap_kernel_verify_integrity();
             ethernet_frame_t *frame = ethernet_make_frame(
                 data->device->configuration->mac_address,
                 packet->src_hw,
                 ARP_PROTOCOL_TYPE,
                 sizeof(arp_packet_t));
 
-            arp_packet_t *response = (arp_packet_t *)((void*)frame->data);
+            arp_packet_t *response = (arp_packet_t *)(frame->data);
             response->hardware_type = ARP_HW_TYPE;
             response->opcode = ARP_OPCODE_REPLY;
             response->protocol_type = ARP_PR_TYPE;
@@ -34,7 +33,7 @@ void arp_process_packet(nic_data_t *data)
             memcpy(response->dst_hw, packet->src_hw, MAC_ADDRESS_SIZE);
             memcpy(response->dst_pr, packet->src_pr, IPv4_ADDRESS_SIZE);
 
-            ethernet_send_frame(data->device,sizeof(arp_packet_t),frame);
+            ethernet_send_frame(data->device, sizeof(arp_packet_t), frame);
 
             arp_add_entry(data->device, response->dst_hw, response->dst_pr);
         }
@@ -49,7 +48,7 @@ void arp_process_packet(nic_data_t *data)
 void arp_add_entry(net_device_t *device, uint8_t *mac_address, uint8_t *ip_address)
 {
     char str[128] = "";
-    kernel_sprintf(str,"New ARP entry: %d %d %d %d",ip_address[0],ip_address[1],ip_address[2],ip_address[3]);
+    kernel_sprintf(str, "New ARP entry: %d %d %d %d", ip_address[0], ip_address[1], ip_address[2], ip_address[3]);
     logger_log_info(str);
     // if (mac_address == 0 || ip_address == 0)
     //     return;
@@ -118,36 +117,34 @@ void arp_add_entry(net_device_t *device, uint8_t *mac_address, uint8_t *ip_addre
 //     return 0;
 // }
 
-// void arp_send_request(uint8_t *ip_address)
-// {
-//     net_device_t *nic = network_manager_get_nic();
-//     if (nic == 0)
-//         return;
+void arp_send_request(net_device_t *device, uint8_t *ip_address)
+{
+    uint8_t broadcast[MAC_ADDRESS_LENGTH] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
-//     arp_packet_t request;
-//     request.opcode = ARP_OPCODE_REQUEST;
-//     request.hardware_type = ARP_HW_TYPE;
-//     request.protocol_type = ARP_PR_TYPE;
-//     __arp_flip_values(&request);
+    ethernet_frame_t *frame = ethernet_make_frame(
+        device->configuration->mac_address,
+        broadcast,
+        ARP_PROTOCOL_TYPE,
+        sizeof(arp_packet_t));
 
-//     request.hardware_length = MAC_ADDRESS_LENGTH;
-//     request.protocol_length = IPv4_ADDRESS_LENGTH;
+    arp_packet_t *request = (arp_packet_t *)(frame->data);
 
-//     memcpy(request.src_hw, nic->mac_address, MAC_ADDRESS_SIZE);
+    request->opcode = ARP_OPCODE_REQUEST;
+    request->hardware_type = ARP_HW_TYPE;
+    request->protocol_type = ARP_PR_TYPE;
+    __arp_flip_values(request);
 
-//     __set_mac_addr(request.dst_hw, 0, 0, 0, 0, 0, 0);
+    request->hardware_length = MAC_ADDRESS_LENGTH;
+    request->protocol_length = IPv4_ADDRESS_LENGTH;
 
-//     memcpy(request.src_pr, nic->ipv4_address, IPv4_ADDRESS_SIZE);
-//     memcpy(request.dst_pr, ip_address, IPv4_ADDRESS_SIZE);
+    memcpy(request->src_hw, device->configuration->mac_address, MAC_ADDRESS_SIZE);
+    memcpy(request->dst_pr, ip_address, IPv4_ADDRESS_SIZE);
 
-//     uint8_t dst_mac_addr[MAC_ADDRESS_LENGTH];
-//     __set_mac_addr(dst_mac_addr, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
+    memcpy(request->src_pr, device->configuration->ipv4_address, IPv4_ADDRESS_SIZE);
+    __set_mac_addr(request->dst_hw, 0, 0, 0, 0, 0, 0);
 
-//     ethernet_frame_t *eth_frame = network_manager_make_frame(nic->mac_address, dst_mac_addr, ARP_PROTOCOL_TYPE);
-//     eth_frame->data = (uint8_t *)&request;
-//     network_manager_send_ethernet_frame(eth_frame, sizeof(arp_packet_t));
-//     heap_kernel_dealloc(eth_frame);
-// }
+    ethernet_send_frame(device, sizeof(arp_packet_t), frame);
+}
 
 void __arp_flip_values(arp_packet_t *packet)
 {

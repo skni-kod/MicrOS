@@ -4,7 +4,7 @@ void ethernet_process_frame(nic_data_t *data)
 {
     ethernet_frame_t frame = *(ethernet_frame_t *)data->frame;
     frame.type = __uint16_flip(frame.type);
-    
+
     switch (frame.type)
     {
     case ARP_PROTOCOL_TYPE:
@@ -39,6 +39,7 @@ void ethernet_process_frame(nic_data_t *data)
 ethernet_frame_t *ethernet_make_frame(uint8_t *src_hw, uint8_t *dst_hw, uint16_t type, uint32_t payload_size)
 {
     ethernet_frame_t *frame = heap_kernel_alloc(sizeof(ethernet_frame_t) + payload_size + ETHERNET_FCS_LENGTH, 0);
+    
     memcpy(frame->dst_mac_addr, dst_hw, MAC_ADDRESS_SIZE);
     memcpy(frame->src_mac_addr, src_hw, MAC_ADDRESS_SIZE);
 
