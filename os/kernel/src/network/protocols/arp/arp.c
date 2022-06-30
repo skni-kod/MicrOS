@@ -75,7 +75,7 @@ arp_entry_t *arp_get_entry(net_device_t *device, uint8_t *ip_address)
     for (uint32_t i = 0; i < device->configuration->arp_entries->count; i++)
     {
         entry = ((arp_entry_t *)device->configuration->arp_entries->data[i]);
-        if (__compare_ip_address(ip_address, entry->ip_address))
+        if (__ipv4_compare_address(ip_address, entry->ip_address))
             return entry;
     }
 

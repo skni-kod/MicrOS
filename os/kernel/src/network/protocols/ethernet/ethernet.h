@@ -1,7 +1,7 @@
 /*
     @JakubPrzystasz
     Created: 12.02.2021
-    Modify: 17.02.2021
+    Modified: 17.02.2021
 */
 #ifndef network_ethernet
 #define network_ethernet
@@ -23,5 +23,5 @@ bool network_manager_send_ethernet_frame(ethernet_frame_t *frame, uint32_t data_
 */
 ethernet_frame_t *ethernet_make_frame(uint8_t *src_hw, uint8_t *dst_hw, uint16_t type, uint32_t payload_size);
 
-void ethernet_send_frame(net_device_t *device, uint32_t payload_size, uint8_t* frame);
+void ethernet_send_frame(net_device_t *device, uint32_t payload_size, ethernet_frame_t* frame);
 #endif

@@ -14,7 +14,7 @@
 /*
     Process packet IPv4
 */
-void ipv4_process_packet(ethernet_frame_t *frame);
+void ipv4_process_packet(nic_data_t *data);
 
 //! __ipv4_flip_values
 /*

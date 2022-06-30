@@ -1,7 +1,7 @@
 /*
     @JakubPrzystasz
     Created: 17.02.2021
-    Modify: 
+    Modified: 
 */
 #ifndef network_ipv6_definitions
 #define network_ipv6_definitions

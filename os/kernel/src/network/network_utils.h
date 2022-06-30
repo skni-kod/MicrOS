@@ -1,7 +1,7 @@
 /*
     @JakubPrzystasz
     Created: 13.02.2021
-    Modify: 17.02.2021
+    Modified: 17.02.2021
 */
 #ifndef network_utils
 #define network_utils

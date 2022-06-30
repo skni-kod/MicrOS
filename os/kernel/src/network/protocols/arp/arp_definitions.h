@@ -1,7 +1,7 @@
 /*
     @JakubPrzystasz
     Created: 13.02.2021
-    Modify: 17.02.2021
+    Modified: 17.02.2021
 */
 #ifndef network_arp_definitions
 #define network_arp_definitions
@@ -18,7 +18,8 @@
 #define ARP_TIMEOUT 5000
 #define ARP_RETRY_INTERVAL 200
 
-typedef enum arp_entry_type {
+typedef enum arp_entry_type
+{
     ARP_ENTRY_TYPE_STATIC,
     ARP_ENTRY_TYPE_DYNAMIC
 } arp_entry_type_t;
@@ -41,7 +42,7 @@ typedef struct arp_entry
     uint8_t mac_address[MAC_ADDRESS_LENGTH];
     uint8_t ip_address[IPv4_ADDRESS_LENGTH];
     uint32_t add_time;
-    arp_entry_type type;
+    arp_entry_type_t type;
 } arp_entry_t;
 
 #endif

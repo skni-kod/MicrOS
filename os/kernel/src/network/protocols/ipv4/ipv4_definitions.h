@@ -1,7 +1,7 @@
 /*
     @JakubPrzystasz
     Created: 17.02.2021
-    Modify: 
+    Modified: 30.06.2022
 */
 #ifndef network_ipv4_definitions
 #define network_ipv4_definitions
@@ -11,6 +11,11 @@
 
 #define IPv4_PROTOCOL_TYPE 0x0800
 #define IPv4_PROTOCOL_VERSION 0x4
+
+typedef enum ipv4_protocol {
+    IP_PROTOCOL_ICMP = 1,
+    IP_PROTOCOL_UDP = 17
+} ipv4_protocol_t;
 
 typedef struct ipv4_packet
 {
@@ -31,13 +36,5 @@ typedef struct ipv4_packet
     uint8_t dst_ip[4];
     uint8_t data[];
 } __attribute__((packed)) ipv4_packet_t;
-
-typedef struct icmp_header
-{
-    uint8_t type;
-    uint8_t code;
-    uint16_t checksum;
-    uint8_t data[];
-} __attribute__((packed)) icmp_header;
 
 #endif

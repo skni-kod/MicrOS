@@ -1,7 +1,7 @@
 /*
     @JakubPrzystasz
     Created: 06.02.2021
-    Modify: 15.02.2021
+    Modified: 15.02.2021
 */
 #ifndef network_definitions
 #define network_definitions

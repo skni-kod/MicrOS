@@ -1,7 +1,7 @@
 /*
     @JakubPrzystasz
     Created: 28.07.2021
-    Modify: 28.07.2021
+    Modified: 28.07.2021
 */
 #ifndef VIRTIO_NET_PCI_H
 #define VIRTIO_NET_PCI_H

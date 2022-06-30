@@ -1,7 +1,7 @@
 /*
     @JakubPrzystasz
     Created: 12.02.2021
-    Modify: 17.02.2021
+    Modified: 17.02.2021
 */
 #ifndef network_arp
 #define network_arp

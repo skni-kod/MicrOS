@@ -1,7 +1,7 @@
 /*
     @JakubPrzystasz
     Created: 17.02.2021
-    Modify: 
+    Modified: 
 */
 #ifndef ipv6_protocol
 #define ipv6_protocol
