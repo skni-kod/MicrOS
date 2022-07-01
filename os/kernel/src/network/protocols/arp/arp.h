@@ -28,6 +28,8 @@ void arp_add_entry(net_device_t *device, uint8_t *mac_address, uint8_t *ip_addre
 */
 arp_entry_t *arp_get_entry(net_device_t *device, uint8_t *ip_address);
 
+arp_entry_t *arp_request_entry(net_device_t *device, uint8_t *ip_address);
+
 //! arp_send_request
 /*
     Send ARP request

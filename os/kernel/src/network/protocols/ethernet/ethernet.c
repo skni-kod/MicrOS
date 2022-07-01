@@ -13,8 +13,7 @@ void ethernet_process_frame(nic_data_t *data)
     case IPv4_PROTOCOL_TYPE:
         ipv4_process_packet(data);
         break;
-    case IPv6_PROTOCOL_TYPE:
-        break;
+        
     };
 }
 

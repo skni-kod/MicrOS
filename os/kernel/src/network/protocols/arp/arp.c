@@ -82,6 +82,30 @@ arp_entry_t *arp_get_entry(net_device_t *device, uint8_t *ip_address)
     return 0;
 }
 
+arp_entry_t *arp_request_entry(net_device_t *device, uint8_t *ip_address)
+{
+    arp_entry_t *entry = arp_get_entry(device, ip_address);
+    if (entry)
+        return entry;
+
+    arp_send_request(device, ip_address);
+
+    uint32_t request_time = get_time();
+
+    while (true)
+    {
+        if ((get_time() - request_time) >= ARP_TIMEOUT)
+            return 0;
+        if ((get_time() - request_time) % ARP_RETRY_INTERVAL == 0)
+        {
+            entry = arp_get_entry(device, ip_address);
+            if (entry)
+                return entry;
+            arp_send_request(device, ip_address);
+        }
+    }
+}
+
 void arp_send_request(net_device_t *device, uint8_t *ip_address)
 {
     uint8_t broadcast[MAC_ADDRESS_LENGTH] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};

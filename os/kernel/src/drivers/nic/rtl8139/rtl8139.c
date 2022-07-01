@@ -124,7 +124,7 @@ bool rtl8139_irq_handler()
         return false;
     }
 
-    if (status & ROK && rtl8139_net_device->configuration->mode & 0x1)
+    if (status & ROK)
         rtl8139_receive();
 
     io_out_word(rtl8139_device.io_base + INTRSTATUS, 0x5);
@@ -168,6 +168,7 @@ void rtl8139_receive()
     io_out_word(rtl8139_device.io_base + CAPR, current_packet_ptr - 0x10);
 
     // Notify network manager about incoming data
+
     (*rtl8139_net_device->dpi.receive)(out);
 
 }

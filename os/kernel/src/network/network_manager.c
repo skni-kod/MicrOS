@@ -21,13 +21,12 @@ bool network_manager_init()
     for (uint8_t i = 0; i < drivers_count; i++)
     {
         net_device_t *dev = heap_kernel_alloc(sizeof(net_device_t), 0);
-
         if (__network_manager_set_net_device(dev) && drivers[i](dev))
         {
             // TODO: Buffering, hardcoding ip??
             __set_ipv4_addr(dev->configuration->ipv4_address, 192, 168, 1, 150 + net_devices->count);
             // set nic to send/receive mode
-            dev->configuration->mode = 0x3;
+            dev->configuration->mode = 0x0;
             kvector_add(net_devices, dev);
             __network_manager_print_device_info(dev);
         }
@@ -36,6 +35,12 @@ bool network_manager_init()
             heap_kernel_dealloc(dev->configuration);
             heap_kernel_dealloc(dev);
         }
+    }
+
+    //when all devices are up, lets initalize them!
+    for(uint32_t devices = 0; devices < net_devices->count; devices++){
+        net_device_t *dev = (net_device_t*)net_devices->data[devices];
+        dev->configuration->mode = 0x3;
     }
 
     return true;
@@ -57,10 +62,13 @@ nic_data_t *network_manager_get_receive_buffer(net_device_t *device, uint32_t si
 
 void network_manager_send_data(nic_data_t *data)
 {
-    //TODO: Do something with card config (TX_RX)
-    data->device->dpi.send(data);
-    ++data->device->frames_sent;
-    data->device->bytes_sent += data->length;
+    // TODO: Do something with card config (TX_RX)
+    if (data->device->configuration->mode & NETWORK_MANAGER_CONFIGURATION_TX)
+    {
+        data->device->dpi.send(data);
+        ++data->device->frames_sent;
+        data->device->bytes_sent += data->length;
+    }
 
     heap_kernel_dealloc(data->frame);
     heap_kernel_dealloc(data);
@@ -69,17 +77,20 @@ void network_manager_send_data(nic_data_t *data)
 void network_manager_receive_data(nic_data_t *data)
 {
 
-    //TODO: Do something with card config (TX_RX)
-    switch (data->device->configuration->frame_type)
+    if (data->device->configuration->mode & NETWORK_MANAGER_CONFIGURATION_RX)
     {
-    case ethernet:
-    default:
-        ethernet_process_frame(data);
-        break;
-    }
+        // TODO: Do something with card config (TX_RX)
+        switch (data->device->configuration->frame_type)
+        {
+        case ethernet:
+        default:
+            ethernet_process_frame(data);
+            break;
+        }
 
-    ++data->device->frames_received;
-    data->device->bytes_received += data->length;
+        ++data->device->frames_received;
+        data->device->bytes_received += data->length;
+    }
 
     heap_kernel_dealloc(data->frame);
     heap_kernel_dealloc(data);
@@ -146,17 +157,18 @@ bool __network_manager_set_net_device(net_device_t *device)
     device->dpi.get_receive_buffer = &network_manager_get_receive_buffer;
 
     device->configuration = heap_kernel_alloc(sizeof(device_configuration_t), 0);
-
-    device->configuration->arp_entries = heap_kernel_alloc(sizeof(kvector), 0);
-    kvector_init(device->configuration->arp_entries);
-
-
-    //TODO: get mtu from driver
-    device->configuration->mtu = 1500;
-
     if (!device->configuration)
         return 0;
+
     memset(device->configuration, 0, sizeof(device_configuration_t));
+
+    device->configuration->arp_entries = heap_kernel_alloc(sizeof(kvector), 0);
+    if (!device->configuration->arp_entries)
+        return 0;
+    kvector_init(device->configuration->arp_entries);
+
+    // TODO: get mtu from driver
+    device->configuration->mtu = 1500;
 
     return 1;
 }

@@ -15,8 +15,8 @@
 #define ARP_HW_TYPE 0x1
 #define ARP_PR_TYPE 0x0800
 
-#define ARP_TIMEOUT 5000
-#define ARP_RETRY_INTERVAL 200
+#define ARP_TIMEOUT 50
+#define ARP_RETRY_INTERVAL 10
 
 typedef enum arp_entry_type
 {
