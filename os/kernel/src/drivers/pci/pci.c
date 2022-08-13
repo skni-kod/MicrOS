@@ -146,7 +146,6 @@ void pci_busmaster_set(pci_device *device,bool value){
     pci_bus_config |= value ? (PCI_COMMAND_BUSMASTER_FLAG) : 0x0;
     pci_io_out(device, PCI_COMMAND_REGISTER, pci_bus_config);
 }
-
 void pci_print_devices(uint32_t delay){
     char buff[50];
 

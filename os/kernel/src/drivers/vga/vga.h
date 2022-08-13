@@ -469,6 +469,11 @@ void vga_cursor_off();
 */
 void vga_newline();
 
+//! Clear current line.
+/*!
+*/
+void vga_clearline();
+
 // Helpers
 
 //! Calculate position with offset.

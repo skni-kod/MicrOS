@@ -31,6 +31,7 @@
 #include "drivers/harddisk/ata/harddisk_ata.h"
 #include "drivers/harddisk/harddisk_identify_device_data.h"
 #include "filesystems/partitions/partitions.h"
+#include "network/network_manager.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
@@ -75,13 +76,13 @@ void print_processor_status()
     strcat(buff2, buff);
     logger_log_info(buff2);
 
-    if(cores > 1)
+    if (cores > 1)
     {
         logger_log_warning("But only one core is used :v");
         logger_log_info("For future SKNI members: add support for more cores");
     }
 
-    for(int i = 0; i < cpuid_get_valid_number_cache_entries(); i++)
+    for (int i = 0; i < cpuid_get_valid_number_cache_entries(); i++)
     {
         cpuid_cache_struct cache = cpuid_get_cache_data(i);
 
@@ -89,21 +90,21 @@ void print_processor_status()
         itoa(cache.level, buff, 10);
         strcat(buff2, buff);
 
-        switch(cache.type)
+        switch (cache.type)
         {
-            case DATA_CACHE:
-                strcat(buff2, ", type: data, size: ");
-                break;
-            case INSTRUCTION_CACHE:
-                strcat(buff2, ", type: instruction, size: ");
-                break;
-            case UNIFIED_CACHE:
-                strcat(buff2, ", type: unified, size: ");
-                break;
+        case DATA_CACHE:
+            strcat(buff2, ", type: data, size: ");
+            break;
+        case INSTRUCTION_CACHE:
+            strcat(buff2, ", type: instruction, size: ");
+            break;
+        case UNIFIED_CACHE:
+            strcat(buff2, ", type: unified, size: ");
+            break;
         }
 
         uint32_t size = cache.size / 1024;
-        if(size < 1024)
+        if (size < 1024)
         {
             itoa(size, buff, 10);
             strcat(buff2, buff);
@@ -126,13 +127,13 @@ void print_processor_status()
     \param bus Type of bus for hard disk.
     \param name Name for hard disk eg. "Primary Master", that is printed during boot to specify disk.
  */
-void print_harddisk_details(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, char* name)
+void print_harddisk_details(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, char *name)
 {
     char buff[50];
     char buff2[100];
     HARDDISK_STATE state = harddisk_get_state(type, bus);
 
-    if(state == HARDDISK_ATA_PRESENT)
+    if (state == HARDDISK_ATA_PRESENT)
     {
         strcpy(buff2, name);
         strcat(buff2, ": ATA device");
@@ -164,7 +165,7 @@ void print_harddisk_details(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYP
         strcat(buff2, " MiB");
         logger_log_info(buff2);
 
-        if(harddisk_get_is_removable_media_device(type, bus) == true)
+        if (harddisk_get_is_removable_media_device(type, bus) == true)
         {
             logger_log_info("Removable media: true");
         }
@@ -173,7 +174,7 @@ void print_harddisk_details(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYP
             logger_log_info("Removable media: false");
         }
     }
-    else if(state == HARDDISK_ATAPI_PRESENT)
+    else if (state == HARDDISK_ATAPI_PRESENT)
     {
         strcpy(buff2, name);
         strcat(buff2, ": ATAPI device");
@@ -194,7 +195,7 @@ void print_harddisk_details(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYP
         strcat(buff2, buff);
         logger_log_info(buff2);
 
-        if(harddisk_get_is_removable_media_device(type, bus) == true)
+        if (harddisk_get_is_removable_media_device(type, bus) == true)
         {
             logger_log_info("Removable media: true");
         }
@@ -203,7 +204,7 @@ void print_harddisk_details(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYP
             logger_log_info("Removable media: false");
         }
     }
-    else if(state == HARDDISK_NOT_PRESENT)
+    else if (state == HARDDISK_NOT_PRESENT)
     {
         strcpy(buff2, name);
         strcat(buff2, ": not detected");
@@ -231,9 +232,7 @@ void print_harddisks_status()
 void startup()
 {
     // Must be done before any VGA operation
-
     volatile uint8_t* scr_ptr = (uint8_t *)(VGA_MODE_03H_BASE_ADDR);
-    int i = 0;
     gdt_init();
     paging_init();
     //Don't use VGA before calling VGA init
@@ -259,19 +258,23 @@ void startup()
     pic_init();
     logger_log_ok("Programmable Interrupt Controller");
 
-
     idt_init();
     logger_log_ok("Interrupt Descriptor Table");
     
-
+    logger_log_info("Initializing Timer");
     timer_init();
-    logger_log_ok("Timer");
+    logger_replace_ok("Timer");
+
 
     dma_init(0xc0000500);
     logger_log_ok("DMA");
 
+    char *test = heap_kernel_alloc(64,0);
+    memset(test,'A',64);
+
+    //TODO:
     // NOTE: it doesn't work well, so assume for now that floppy controller is always present
-    // if(fdc_is_present())
+    //if (fdc_is_present())
     {
         fdc_init();
         logger_log_ok("Floppy Disc Controller");
@@ -292,64 +295,20 @@ void startup()
     tss_init();
     logger_log_ok("TSS");
 
-
     syscalls_manager_init();
     logger_log_ok("Syscalls manager");
 
     signals_manager_init();
     logger_log_ok("Signals manager");
 
-    /*pci_init();
-    logger_log_ok("PCI");
-    logger_log_info("Number of devices: ");
-    uint8_t nd = pci_get_number_of_devices();
-    logger_log_info(itoa(nd, buff, 10));
-    logger_log_info("Devices: ");
-    vga_color col;
-    col.color_without_blink.background = VGA_COLOR_BLACK;
-    col.color_without_blink.letter = VGA_COLOR_BLUE;
-    vga_printstring_color("vendor_id ", &col);
-    col.color_without_blink.letter = VGA_COLOR_GREEN;
-    vga_printstring_color("device_id ", &col);
-    col.color_without_blink.letter = VGA_COLOR_LIGHT_BLUE;
-    vga_printstring_color("header_type ", &col);
-    col.color_without_blink.letter = VGA_COLOR_LIGHT_RED;
-    vga_printstring_color("class_code ", &col);
-    col.color_without_blink.letter = VGA_COLOR_YELLOW;
-    vga_printstring_color("subclass ", &col);
-    col.color_without_blink.letter = VGA_COLOR_MAGENTA;
-    vga_printstring_color("prog_if\n", &col);
-    for (int i = 0; i < pci_get_number_of_devices(); i++)
-    {
-        pci_device *dev = pci_get_device(i);
-        col.color_without_blink.letter = VGA_COLOR_BLUE;
-        vga_printstring_color(itoa(dev->vendor_id, buff, 16), &col);
-        vga_printchar(' ');
-        col.color_without_blink.letter = VGA_COLOR_GREEN;
-        vga_printstring_color(itoa(dev->device_id, buff, 16), &col);
-        vga_printchar(' ');
-        col.color_without_blink.letter = VGA_COLOR_LIGHT_BLUE;
-        vga_printstring_color(itoa(dev->header_type, buff, 16), &col);
-        vga_printchar(' ');
-        col.color_without_blink.letter = VGA_COLOR_LIGHT_RED;
-        vga_printstring_color(itoa(dev->class_code, buff, 16), &col);
-        vga_printchar(' ');
-        col.color_without_blink.letter = VGA_COLOR_YELLOW;
-        vga_printstring_color(itoa(dev->subclass, buff, 16), &col);
-        vga_printchar(' ');
-        col.color_without_blink.letter = VGA_COLOR_MAGENTA;
-        vga_printstring_color(itoa(dev->prog_if, buff, 16), &col);
-        vga_printchar('\n');
-    }
-    pci_dev* dev = get_device(0);
-    log_info(itoa(dev->vendor_id, buff, 16));
-    log_info(itoa(dev->header_type, buff, 16));
-    log_info(itoa(dev->class_code, buff, 16));
-    log_info(itoa(dev->subclass, buff, 16));
-    log_info(itoa(dev->prog_if, buff, 16));*/
-    //fat_init();
-    //logger_log_ok("FAT12");
+    pci_init();
+    //pci_print_devices(1);
     
+    if (network_manager_init())
+        logger_log_ok("Network manager");
+    else
+        logger_log_warning("Network manager not initialized");
+
     init_terminal_manager();
     logger_log_ok("Terminal manager");
 
@@ -398,7 +357,7 @@ int kmain()
     logger_log_ok("READY.");
     
     logger_log_ok("Loading shells...");
-    
+
     uint32_t d = 0;
     for (int i = 0; i < 4; i++)
     {
