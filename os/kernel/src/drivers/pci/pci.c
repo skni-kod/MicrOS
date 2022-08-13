@@ -138,6 +138,14 @@ uint32_t pci_io_in(pci_device *dev, uint8_t desc_index)
     return io_in_long(PCI_CONFIG_DATA);
 }
 
+void pci_busmaster_set(pci_device *device,bool value){
+    uint32_t pci_bus_config = pci_io_in(device, PCI_COMMAND_REGISTER);
+    //clear bus master flag
+    pci_bus_config &= ~(PCI_COMMAND_BUSMASTER_FLAG);
+    //set new value
+    pci_bus_config |= value ? (PCI_COMMAND_BUSMASTER_FLAG) : 0x0;
+    pci_io_out(device, PCI_COMMAND_REGISTER, pci_bus_config);
+}
 void pci_print_devices(uint32_t delay){
     char buff[50];
 
