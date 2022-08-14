@@ -69,9 +69,10 @@ bool virtio_nic_init(net_device_t *net_dev)
     virtio_nic_reg_write(REG_DRIVER_FEATURES, REQUIRED_FEATURES);
 
     // PCI bus mastering
-    uint32_t pci_bus_config = pci_io_in(&pci_virtio_nic_device, 1);
-    pci_bus_config |= 0x4;
-    pci_io_out(&pci_virtio_nic_device, 1, pci_bus_config);
+    // uint32_t pci_bus_config = pci_io_in(&pci_virtio_nic_device, 1);
+    // pci_bus_config |= 0x4;
+    // pci_io_out(&pci_virtio_nic_device, 1, pci_bus_config);
+    pci_busmaster_set(&pci_virtio_nic_device, true);
 
     /*
         // Init virtqueues (see 4.1.5.1.3 of virtio-v1.0-cs04.pdf)

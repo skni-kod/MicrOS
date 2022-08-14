@@ -49,9 +49,7 @@ bool rtl8139_init(net_device_t *net_dev)
     rtl8139_device.mem_base = pci_rtl8139_device.base_addres_0 & (~0xf);
 
     // PCI bus mastering
-    uint32_t pci_bus_config = pci_io_in(&pci_rtl8139_device, 1);
-    pci_bus_config |= 0x4;
-    pci_io_out(&pci_rtl8139_device, 1, pci_bus_config);
+    pci_busmaster_set(&pci_rtl8139_device, true);
 
     // Power on device
     io_out_byte(rtl8139_device.io_base + CONFIG1, 0x0);
