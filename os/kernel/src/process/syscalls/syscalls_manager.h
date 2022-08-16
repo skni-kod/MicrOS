@@ -1,7 +1,7 @@
 #ifndef SYSCALLS_MANAGER_H
 #define SYSCALLS_MANAGER_H
 
-#define SYSCALLS_MANAGER_MAX_HANDLERS 1024 * 1024
+#define SYSCALLS_MANAGER_MAX_HANDLERS 65536
 
 #include "cpu/idt/idt.h"
 #include "handlers/heap_calls.h"

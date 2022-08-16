@@ -13,8 +13,7 @@ uint64_t __harddisk_ata_get_disk_space(const harddisk_identify_device_data *data
 
 int8_t __harddisk_ata_read_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t *buffer)
 {
-    if (buffer == NULL)
-        return -2;
+    if(buffer == NULL) return -2;
     uint16_t io_port = 0;
     uint16_t control_port = 0;
     harddisk_io_drive_head_register message_to_drive = {.value = 0};
@@ -25,13 +24,12 @@ int8_t __harddisk_ata_read_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_B
         io_port = HARDDISK_ATA_PRIMARY_BUS_IO_PORT;
         control_port = HARDDISK_ATA_PRIMARY_BUS_CONTROL_PORT;
     }
-    else if (bus == HARDDISK_ATA_SECONDARY_BUS)
+    else if(bus == HARDDISK_ATA_SECONDARY_BUS)
     {
         io_port = HARDDISK_ATA_SECONDARY_BUS_IO_PORT;
         control_port = HARDDISK_ATA_SECONDARY_BUS_CONTROL_PORT;
     }
-    else
-        return -2;
+    else return -2;
 
     // Set drive
     switch (type)
@@ -71,7 +69,7 @@ int8_t __harddisk_ata_read_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_B
     int8_t pooling_result = __harddisk_ata_poll(io_port + HARDDISK_IO_STATUS_REGISTER_OFFSET);
     if(pooling_result == 1)
     {
-        for (int i = 0; i < 256; i++)
+        for(int i = 0; i < 256; i++)
         {
             // Read 256 16-bit values, and store them.
             buffer[i] = io_in_word(io_port);
@@ -84,12 +82,12 @@ int8_t __harddisk_ata_read_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_B
         // Error occured
         return -1;
     }
+
 }
 
 int8_t __harddisk_ata_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t *buffer)
 {
-    if (buffer == NULL)
-        return -2;
+    if(buffer == NULL) return -2;
     uint16_t io_port = 0;
     uint16_t control_port = 0;
     harddisk_io_drive_head_register message_to_drive = {.value = 0};
@@ -100,13 +98,12 @@ int8_t __harddisk_ata_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_
         io_port = HARDDISK_ATA_PRIMARY_BUS_IO_PORT;
         control_port = HARDDISK_ATA_PRIMARY_BUS_CONTROL_PORT;
     }
-    else if (bus == HARDDISK_ATA_SECONDARY_BUS)
+    else if(bus == HARDDISK_ATA_SECONDARY_BUS)
     {
         io_port = HARDDISK_ATA_SECONDARY_BUS_IO_PORT;
         control_port = HARDDISK_ATA_SECONDARY_BUS_CONTROL_PORT;
     }
-    else
-        return -2;
+    else return -2;
 
     // Set drive
     switch (type)
@@ -152,10 +149,10 @@ int8_t __harddisk_ata_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_
     int8_t pooling_result = __harddisk_ata_poll(io_port + HARDDISK_IO_STATUS_REGISTER_OFFSET);
     if(pooling_result == 1)
     {
-        for (int i = 0; i < 256; i++)
+        for(int i = 0; i < 256; i++)
         {
             // Write 256 16-bit values.
-            io_out_word(io_port, buffer[i]);
+            io_out_word(io_port, buffer[i]); 
         }
         // Cache flush.
         io_out_byte(io_port + HARDDISK_IO_COMMAND_REGISTER_OFFSET, 0xE7);
@@ -167,29 +164,31 @@ int8_t __harddisk_ata_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_
         // Error occured
         return -1;
     }
+
 }
 
 int8_t __harddisk_ata_poll(uint16_t port)
 {
     harddisk_io_control_status_register result;
-    for (;;)
+    for(;;)
     {
         result.value = io_in_byte(port);
         if(result.fields.busy == 0)
         {
             // Otherwise, continue polling one of the Status ports until bit 3 (DRQ, value = 8) sets, or until bit 0 (ERR, value = 1) sets.
-            for (;;)
+            for(;;)
             {
                 result.value = io_in_byte(port);
                 if(result.fields.drive_ready == 1 || result.fields.overlapped_mode_service_request == 1)
                 {
                     return 1;
                 }
-                else if (result.fields.error_occurred == 1 || result.fields.drive_fault_error == 1)
+                else if(result.fields.error_occurred == 1 || result.fields.drive_fault_error == 1)
                 {
                     return -1;
                 }
             }
         }
+ 
     }
 }

@@ -191,7 +191,7 @@ void idt_init()
     idt_set(40, idt_int40, false); // CMOS
     idt_set(41, idt_int41, false); // Free
     idt_set(42, idt_int42, false); // Free
-    idt_set(43, idt_int43, false); // NIC
+    idt_set(43, idt_int43, false); // Free
     idt_set(44, idt_int44, false); // Mouse
     idt_set(45, idt_int45, false); // FPU
     idt_set(46, idt_int46, false); // Primary ATA Hard Disk
@@ -205,7 +205,7 @@ void idt_init()
 
     // Add system calls interrupt handler
     idt_attach_interrupt_handler(18, idt_syscalls_interrupt_handler);
-    io_enable_interrupts();
+	io_enable_interrupts();
 }
 
 void idt_set(uint8_t index, uint32_t (*handler)(interrupt_state *state), bool user_interrupt)
@@ -287,22 +287,23 @@ void idt_attach_syscalls_manager(void (*handler)(interrupt_state *state))
 
 void idt_global_int_handler(interrupt_state *state)
 {
-    // Note that we have offset in idt
-    if (pic_handle_irq(state->interrupt_number - 32))
+    state->interrupt_number - 32 < 8 ? pic_confirm_master() : pic_confirm_master_and_slave();
+
+    for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
     {
-        for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
+        if (interrupt_handlers[i].interrupt_number == state->interrupt_number && interrupt_handlers[i].handler != 0)
         {
-            if (interrupt_handlers[i].interrupt_number == state->interrupt_number && interrupt_handlers[i].handler != 0)
+            if (interrupt_handlers[i].handler(state))
             {
-                interrupt_handlers[i].handler(state);
+                break;
             }
         }
+    }
 
-        io_disable_interrupts();
-        pic_send_eoi(state->interrupt_number - 32);
-
-        if (process_manager_handler != 0)
-            process_manager_handler(state);
+    io_disable_interrupts();
+    if (process_manager_handler != 0)
+    {
+        process_manager_handler(state);
     }
 }
 
@@ -314,13 +315,17 @@ void idt_global_exc_handler(exception_state *state)
         for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
         {
             if (exception_handlers[i].exception_number == state->interrupt_number && exception_handlers[i].handler != 0)
+            {
                 exception_handlers[i].handler(state);
+            }
         }
     }
-
+    
     if (allow_exception_in_kernel)
+    {
         return;
-
+    }
+    
     for (int i = 0; i < 32; i++)
     {
         if (exceptions[i].interrupt_number == state->interrupt_number)

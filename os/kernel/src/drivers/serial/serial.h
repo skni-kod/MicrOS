@@ -2,7 +2,6 @@
 #define SERIAL_H
 
 #include <stdbool.h>
-#include <stdio.h>
 #include "assembly/io.h"
 
 #define COM1_PORT 0x3F8

@@ -12,8 +12,3 @@ void sleep(uint32_t ms)
         current_system_clock = timer_get_system_clock();
     }
 }
-
-uint32_t get_time()
-{
-    return timer_get_system_clock();
-}

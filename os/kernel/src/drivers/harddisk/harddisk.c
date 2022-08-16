@@ -28,7 +28,7 @@ HARDDISK_STATE harddisk_get_state(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_B
     return *state;
 }
 
-const harddisk_identify_device_data *harddisk_get_identify_data(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus)
+const harddisk_identify_device_data* harddisk_get_identify_data(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus)
 {
     const HARDDISK_STATE *state;
     const harddisk_identify_device_data *data;
@@ -37,14 +37,14 @@ const harddisk_identify_device_data *harddisk_get_identify_data(HARDDISK_ATA_MAS
     return data;
 }
 
-char *harddisk_get_disk_serial_number_terminated(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, char *buffer)
+char* harddisk_get_disk_serial_number_terminated(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, char *buffer)
 {
     const HARDDISK_STATE *state;
     const harddisk_identify_device_data *data;
     __harddisk_get_pointers(type, bus, &state, &data);
 
     // Copy serial number to buffer
-    for (int i = 0; i < HARDDISK_SERIAL_NUMBER_LENGTH; i += 2)
+    for(int i = 0; i < HARDDISK_SERIAL_NUMBER_LENGTH; i += 2)
     {
         buffer[i] = data->fields.serial_number[i + 1];
         buffer[i + 1] = data->fields.serial_number[i];
@@ -53,23 +53,23 @@ char *harddisk_get_disk_serial_number_terminated(HARDDISK_ATA_MASTER_SLAVE type,
     return buffer;
 }
 
-char *harddisk_get_disk_firmware_version_terminated(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, char *buffer)
+char* harddisk_get_disk_firmware_version_terminated(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, char *buffer)
 {
     const HARDDISK_STATE *state;
     const harddisk_identify_device_data *data;
     __harddisk_get_pointers(type, bus, &state, &data);
 
     // Copy firmware version to buffer
-    for (int i = 0; i < HARDDISK_FIRMWARE_VERSION_LENGTH; i += 2)
+    for(int i = 0; i < HARDDISK_FIRMWARE_VERSION_LENGTH; i += 2)
     {
         buffer[i] = data->fields.firmware_version[i + 1];
         buffer[i + 1] = data->fields.firmware_version[i];
     }
     buffer[HARDDISK_FIRMWARE_VERSION_LENGTH] = '\0';
     // Remove additional spaces
-    for (int i = HARDDISK_FIRMWARE_VERSION_LENGTH - 1; i >= 0; i--)
+    for(int i = HARDDISK_FIRMWARE_VERSION_LENGTH - 1; i >=0; i--)
     {
-        if (buffer[i] == ' ')
+        if(buffer[i] == ' ')
         {
             buffer[i] = '\0';
         }
@@ -81,23 +81,23 @@ char *harddisk_get_disk_firmware_version_terminated(HARDDISK_ATA_MASTER_SLAVE ty
     return buffer;
 }
 
-char *harddisk_get_disk_model_number_terminated(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, char *buffer)
+char* harddisk_get_disk_model_number_terminated(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, char *buffer)
 {
     const HARDDISK_STATE *state;
     const harddisk_identify_device_data *data;
     __harddisk_get_pointers(type, bus, &state, &data);
 
     // Copy model number to buffer
-    for (int i = 0; i < HARDDISK_MODEL_NUMBER_LENGTH; i += 2)
+    for(int i = 0; i < HARDDISK_MODEL_NUMBER_LENGTH; i += 2)
     {
         buffer[i] = data->fields.model_number[i + 1];
         buffer[i + 1] = data->fields.model_number[i];
     }
     buffer[HARDDISK_MODEL_NUMBER_LENGTH] = '\0';
     // Remove additional spaces
-    for (int i = HARDDISK_MODEL_NUMBER_LENGTH - 1; i >= 0; i--)
+    for(int i = HARDDISK_MODEL_NUMBER_LENGTH - 1; i >=0; i--)
     {
-        if (buffer[i] == ' ')
+        if(buffer[i] == ' ')
         {
             buffer[i] = '\0';
         }
@@ -106,7 +106,7 @@ char *harddisk_get_disk_model_number_terminated(HARDDISK_ATA_MASTER_SLAVE type, 
             break;
         }
     }
-
+    
     return buffer;
 }
 
@@ -115,13 +115,13 @@ uint64_t harddisk_get_user_addressable_sectors(HARDDISK_ATA_MASTER_SLAVE type, H
     const HARDDISK_STATE *state;
     const harddisk_identify_device_data *data;
     __harddisk_get_pointers(type, bus, &state, &data);
-    switch (*state)
+    switch(*state)
     {
-    case HARDDISK_ATA_PRESENT:
-        return __harddisk_ata_get_user_addressable_sectors(data);
-        break;
-    default:
-        return 0;
+        case HARDDISK_ATA_PRESENT:
+            return __harddisk_ata_get_user_addressable_sectors(data);
+            break;
+        default:
+            return 0;
     }
 }
 
@@ -130,13 +130,13 @@ uint64_t harddisk_get_disk_space(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BU
     const HARDDISK_STATE *state;
     const harddisk_identify_device_data *data;
     __harddisk_get_pointers(type, bus, &state, &data);
-    switch (*state)
+    switch(*state)
     {
-    case HARDDISK_ATA_PRESENT:
-        return __harddisk_ata_get_disk_space(data);
-        break;
-    default:
-        return 0;
+        case HARDDISK_ATA_PRESENT:
+            return __harddisk_ata_get_disk_space(data);
+            break;
+        default:
+            return 0;
     }
 }
 
@@ -154,13 +154,13 @@ int8_t harddisk_read_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYP
     const HARDDISK_STATE *state;
     const harddisk_identify_device_data *data;
     __harddisk_get_pointers(type, bus, &state, &data);
-    switch (*state)
+    switch(*state)
     {
-    case HARDDISK_ATA_PRESENT:
-        return __harddisk_ata_read_sector(type, bus, high_lba, low_lba, buffer);
-        break;
-    default:
-        return 0;
+        case HARDDISK_ATA_PRESENT:
+            return __harddisk_ata_read_sector(type, bus, high_lba, low_lba, buffer);
+            break;
+        default:
+            return 0;
     }
 }
 
@@ -169,17 +169,12 @@ int8_t harddisk_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TY
     const HARDDISK_STATE *state;
     const harddisk_identify_device_data *data;
     __harddisk_get_pointers(type, bus, &state, &data);
-    switch (*state)
+    switch(*state)
     {
-    case HARDDISK_ATA_PRESENT:
-        return __harddisk_ata_write_sector(type, bus, high_lba, low_lba, buffer);
-        break;
-    default:
-        return 0;
+        case HARDDISK_ATA_PRESENT:
+            return __harddisk_ata_write_sector(type, bus, high_lba, low_lba, buffer);
+            break;
+        default:
+            return 0;
     }
-}
-
-void harddisk_handle_irq()
-{
-    return;
 }
