@@ -38,4 +38,10 @@ void __set_mac_addr(uint8_t *mac_addr, uint8_t oct1, uint8_t oct2, uint8_t oct3,
 */
 void __set_ipv4_addr(uint8_t *ip_addr, uint8_t oct1, uint8_t oct2, uint8_t oct3, uint8_t oct4);
 
+//! __checksum
+/*
+    One's compliement checksum
+*/
+uint16_t __checksum(uint16_t *data, uint16_t len);
+
 #endif

@@ -24,7 +24,10 @@ void ipv4_process_packet(nic_data_t *data)
     }
     break;
     case IP_PROTOCOL_UDP:
-        break;
+    {
+        udp_process_datagram(data);
+    }
+    break;
     default:
         break;
     }
@@ -44,9 +47,4 @@ void __ipv4_flip_values(ipv4_packet_t *packet)
     // memcpy(packet->flags_fragment_ptr, &tmp, sizeof(uint16_t));
 
     packet->header_checksum = __uint16_flip(packet->header_checksum);
-}
-
-bool __ipv4_compare_address(uint8_t *addr1, uint8_t *addr2)
-{
-    return !memcmp(addr1, addr2, IPv4_ADDRESS_LENGTH);
 }

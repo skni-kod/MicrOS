@@ -11,10 +11,14 @@
 
 #define IPv4_PROTOCOL_TYPE 0x0800
 #define IPv4_PROTOCOL_VERSION 0x4
+#define IPv4_ADDRESS_LENGTH 4
+
+#define __ipv4_compare_address(addr1, addr2) (!memcmp(addr1, addr2, IPv4_ADDRESS_LENGTH))
 
 typedef enum ipv4_protocol {
     IP_PROTOCOL_ICMP = 1,
-    IP_PROTOCOL_UDP = 17
+    IP_PROTOCOL_TCP = 6,
+    IP_PROTOCOL_UDP = 17,
 } ipv4_protocol_t;
 
 typedef struct ipv4_packet

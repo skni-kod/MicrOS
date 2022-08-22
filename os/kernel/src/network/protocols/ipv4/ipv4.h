@@ -22,10 +22,4 @@ void ipv4_process_packet(nic_data_t *data);
 */
 void __ipv4_flip_values(ipv4_packet_t *packet);
 
-//! __ipv4_compare_address
-/*
-    Returns true if both addresses are the same
-*/
-bool __ipv4_compare_address(uint8_t *addr1, uint8_t *addr2);
-
 #endif

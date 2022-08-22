@@ -102,8 +102,8 @@ bool virtio_nic_init(net_device_t *net_dev)
 
     // Enable IRQ
     uint32_t irq_num = pci_virtio_nic_device.interrupt_line;
-    pic_enable_irq(irq_num);
     idt_attach_interrupt_handler(irq_num, virtio_nic_irq_handler);
+    pic_enable_irq(irq_num);
 
     return true;
 }

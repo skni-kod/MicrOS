@@ -103,8 +103,8 @@ bool rtl8139_init(net_device_t *net_dev)
 
     // Enable IRQ
     uint32_t irq_num = pci_rtl8139_device.interrupt_line;
-    pic_enable_irq(irq_num);
     idt_attach_interrupt_handler(irq_num, rtl8139_irq_handler);
+    pic_enable_irq(irq_num);
 
     return true;
 }

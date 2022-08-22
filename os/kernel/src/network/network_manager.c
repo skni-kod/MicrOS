@@ -37,9 +37,10 @@ bool network_manager_init()
         }
     }
 
-    //when all devices are up, lets initalize them!
-    for(uint32_t devices = 0; devices < net_devices->count; devices++){
-        net_device_t *dev = (net_device_t*)net_devices->data[devices];
+    // when all devices are up, lets initalize them!
+    for (uint32_t devices = 0; devices < net_devices->count; devices++)
+    {
+        net_device_t *dev = (net_device_t *)net_devices->data[devices];
         dev->configuration->mode = 0x3;
     }
 
