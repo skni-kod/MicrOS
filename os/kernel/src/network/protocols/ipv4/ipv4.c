@@ -10,7 +10,7 @@
 void ipv4_process_packet(nic_data_t *data)
 {
     ipv4_packet_t *packet = (ipv4_packet_t *)(data->frame + sizeof(ethernet_frame_t));
-    __ipv4_flip_values(packet);
+    //__ipv4_flip_values(packet);
 
     // TOS
     // https://datatracker.ietf.org/doc/html/rfc2474

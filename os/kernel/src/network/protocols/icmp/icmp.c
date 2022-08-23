@@ -15,7 +15,7 @@ void icmp_process_packet(nic_data_t *data)
                 data->device->configuration->mac_address,
                 dst_mac,
                 IPv4_PROTOCOL_TYPE,
-                packet->length);
+                ntohs(packet->length));
             {
                 ipv4_packet_t *reply = (ipv4_packet_t *)frame->data;
                 memcpy(reply, packet, sizeof(ipv4_packet_t));
@@ -32,7 +32,7 @@ void icmp_process_packet(nic_data_t *data)
                 reply->checksum = ~(reply->type | reply->code | reply->checksum);
                 memcpy(reply->data, header->data, packet->length - (sizeof(ipv4_packet_t) + sizeof(icmp_header_t)));
             }
-            ethernet_send_frame(data->device, packet->length, frame);
+            ethernet_send_frame(data->device, ntohs(packet->length), frame);
         }
     }
 }

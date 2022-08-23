@@ -6,6 +6,13 @@
 #ifndef network_utils
 #define network_utils
 
+#define ntohl(x) (__uint32_flip(x))
+#define ntohs(x) (__uint16_flip(x))
+
+#define htonl(x) (__uint32_flip(x))
+#define htons(x) (__uint16_flip(x))
+
+
 #include <stdint.h>
 #include <stdbool.h>
 
