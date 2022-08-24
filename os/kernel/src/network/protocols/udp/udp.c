@@ -1,43 +1,10 @@
 #include "udp.h"
 
-uint32_t
-checksum(unsigned char *buf, uint32_t nbytes, uint32_t sum)
-{
-	unsigned int	 i;
-
-	/* Checksum all the pairs of bytes first. */
-	for (i = 0; i < (nbytes & ~1U); i += 2) {
-		sum += (uint16_t)ntohs(*((uint16_t *)(buf + i)));
-		if (sum > 0xFFFF)
-			sum -= 0xFFFF;
-	}
-
-	/*
-	 * If there's a single byte left over, checksum it, too.
-	 * Network byte order is big-endian, so the remaining byte is
-	 * the high byte.
-	 */
-	if (i < nbytes) {
-		sum += buf[i] << 8;
-		if (sum > 0xFFFF)
-			sum -= 0xFFFF;
-	}
-
-	return sum;
-}
-
-uint32_t
-wrapsum(uint32_t sum)
-{
-	sum = ~sum & 0xFFFF;
-	return htons((uint16_t)sum);
-}
-
 void udp_process_datagram(nic_data_t *data)
 {
     ipv4_packet_t *packet = (ipv4_packet_t *)(data->frame + sizeof(ethernet_frame_t));
     udp_datagram_t *datagram = (udp_datagram_t *)(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t));
-    
+
     char str[120];
     // kernel_sprintf(str, "%d.%d.%d.%d:%d",
     //                packet->dst_ip[0],
@@ -86,80 +53,78 @@ uint16_t compute_udp_checksum(nic_data_t *data)
     ipv4_packet_t *packet = (ipv4_packet_t *)(data->frame + sizeof(ethernet_frame_t));
 
     /* Check the IP header checksum - it should be zero. */
-	if (wrapsum(checksum((unsigned char *)packet, sizeof(ipv4_packet_t), 0)) != 0) {
-		//bad checksum
-		return -1;
-	}
+    if (__ip_wrapsum(__ip_checksum((unsigned char *)packet, sizeof(ipv4_packet_t), 0)) != 0)
+    {
+        // bad checksum
+        return -1;
+    }
 
-	// if (ntohs(packet->length) != buflen)
-	// 	log_debug("%s: ip length %hu disagrees with bytes received %d",
-	// 	    log_procname, ntohs(ip->ip_len), buflen);
+    // if (ntohs(packet->length) != buflen)
+    // 	log_debug("%s: ip length %hu disagrees with bytes received %d",
+    // 	    log_procname, ntohs(ip->ip_len), buflen);
 
-	/* Assure that the entire IP packet is within the buffer. */
-	// if (ntohs(ip->ip_len) > buflen)
-	// 	return -1;
+    /* Assure that the entire IP packet is within the buffer. */
+    // if (ntohs(ip->ip_len) > buflen)
+    // 	return -1;
 
-	// /* Assure that the UDP header is within the buffer. */
-	// if (ip_len + sizeof(*udp) > buflen)
-	// 	return -1;
+    // /* Assure that the UDP header is within the buffer. */
+    // if (ip_len + sizeof(*udp) > buflen)
+    // 	return -1;
 
-	udp_datagram_t *datagram = (udp_datagram_t *)(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t));
+    udp_datagram_t *datagram = (udp_datagram_t *)(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t));
 
-	/*
-	 * Compute UDP checksums, including the ``pseudo-header'', the
-	 * UDP header and the data. If the UDP checksum field is zero,
-	 * we're not supposed to do a checksum.
-	 */
-	uint32_t len = ntohs(datagram->length) - sizeof(udp_datagram_t);
+    /*
+     * Compute UDP checksums, including the ``pseudo-header'', the
+     * UDP header and the data. If the UDP checksum field is zero,
+     * we're not supposed to do a checksum.
+     */
+    uint32_t len = ntohs(datagram->length) - sizeof(udp_datagram_t);
 
-	// if ((len < 0) || (len + data > buf + buflen)) {
-	// 	// udp_packets_length_overflow++;
-	// 	// if (udp_packets_length_checked > 4 &&
-	// 	//     udp_packets_length_overflow != 0 &&
-	// 	//     (udp_packets_length_checked /
-	// 	//     udp_packets_length_overflow) < 2) {
-	// 	// 	log_debug("%s: %d udp packets in %d too long - dropped",
-	// 	// 	    log_procname, udp_packets_length_overflow,
-	// 	// 	    udp_packets_length_checked);
-	// 	// 	udp_packets_length_overflow =
-	// 	// 	    udp_packets_length_checked = 0;
-	// 	// }
-	// 	return -1;
-	// }
+    // if ((len < 0) || (len + data > buf + buflen)) {
+    // 	// udp_packets_length_overflow++;
+    // 	// if (udp_packets_length_checked > 4 &&
+    // 	//     udp_packets_length_overflow != 0 &&
+    // 	//     (udp_packets_length_checked /
+    // 	//     udp_packets_length_overflow) < 2) {
+    // 	// 	log_debug("%s: %d udp packets in %d too long - dropped",
+    // 	// 	    log_procname, udp_packets_length_overflow,
+    // 	// 	    udp_packets_length_checked);
+    // 	// 	udp_packets_length_overflow =
+    // 	// 	    udp_packets_length_checked = 0;
+    // 	// }
+    // 	return -1;
+    // }
 
-	// if (len + data != buf + buflen)
-	// 	log_debug("%s: accepting packet with data after udp payload",
-	// 	    log_procname);
+    // if (len + data != buf + buflen)
+    // 	log_debug("%s: accepting packet with data after udp payload",
+    // 	    log_procname);
 
-	uint32_t usum = datagram->checksum;
-	datagram->checksum = 0;
-    //data = buf + ip_len + sizeof(*udp);
-	uint32_t sum = wrapsum(
-            checksum(
-                (unsigned char *)datagram, sizeof(udp_datagram_t),
-	            checksum(datagram->data, len, 
-                        checksum((unsigned char *)&(packet->src_ip), 2 * IPv4_ADDRESS_LENGTH,
-	                        IP_PROTOCOL_UDP + ntohs((uint32_t)datagram->length)
-                        )
-                )
-            )
-            );
+    uint32_t usum = datagram->checksum;
+    datagram->checksum = 0;
+    // data = buf + ip_len + sizeof(*udp);
+    uint32_t sum = __ip_wrapsum(
+        __ip_checksum(
+            (unsigned char *)datagram, sizeof(udp_datagram_t),
+            __ip_checksum(datagram->data, len,
+                          __ip_checksum((unsigned char *)&(packet->src_ip), 2 * IPv4_ADDRESS_LENGTH,
+                                        IP_PROTOCOL_UDP + ntohs((uint32_t)datagram->length)))));
 
-	if (usum != 0 && usum != sum) {
-		// udp_packets_bad_checksum++;
-		// if (udp_packets_seen > 4 && udp_packets_bad_checksum != 0 &&
-		//     (udp_packets_seen / udp_packets_bad_checksum) < 2) {
-		// 	log_debug("%s: %d bad udp checksums in %d packets",
-		// 	    log_procname, udp_packets_bad_checksum,
-		// 	    udp_packets_seen);
-		// 	udp_packets_seen = udp_packets_bad_checksum = 0;
-		// }
-		// return -1;
-	}
+    if (usum != 0 && usum != sum)
+    {
+        // udp_packets_bad_checksum++;
+        // if (udp_packets_seen > 4 && udp_packets_bad_checksum != 0 &&
+        //     (udp_packets_seen / udp_packets_bad_checksum) < 2) {
+        // 	log_debug("%s: %d bad udp checksums in %d packets",
+        // 	    log_procname, udp_packets_bad_checksum,
+        // 	    udp_packets_seen);
+        // 	udp_packets_seen = udp_packets_bad_checksum = 0;
+        // }
+        // return -1;
+    }
 
-	//memcpy(&from->sin_port, &udp->uh_sport, sizeof(udp->uh_sport));
+    // memcpy(&from->sin_port, &udp->uh_sport, sizeof(udp->uh_sport));
 
-	return sum; //ip_len + sizeof(*udp);
+    return sum; // ip_len + sizeof(*udp);
 
     // register uint32_t sum = 0;
     // udp_datagram_t *udphdrp = (udp_datagram_t *)(ipPayload);
@@ -191,7 +156,7 @@ uint16_t compute_udp_checksum(nic_data_t *data)
 
     // sum = ~sum;
     // udphdrp->checksum = ((unsigned short)sum == 0x0000) ? 0xFFFF : (unsigned short)sum;
-    
+
     // return udphdrp->checksum;
 }
 

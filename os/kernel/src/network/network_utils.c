@@ -53,20 +53,56 @@ void __set_ipv4_addr(uint8_t *ip_addr, uint8_t oct1, uint8_t oct2, uint8_t oct3,
 
 uint16_t __checksum(uint16_t *addr, uint16_t count)
 {
-  register unsigned long sum = 0;
-  while (count > 1) {
-    sum += * addr++;
-    count -= 2;
-  }
-  //if any bytes left, pad the bytes and add
-  if(count > 0) {
-    sum += ((*addr)&__uint16_flip(0xFF00));
-  }
-  //Fold sum to 16 bits: add carrier to result
-  while (sum>>16) {
-      sum = (sum & 0xffff) + (sum >> 16);
-  }
-  //one's complement
-  sum = ~sum;
-  return ((unsigned short)sum);
+    register unsigned long sum = 0;
+    while (count > 1)
+    {
+        sum += *addr++;
+        count -= 2;
+    }
+    // if any bytes left, pad the bytes and add
+    if (count > 0)
+    {
+        sum += ((*addr) & __uint16_flip(0xFF00));
+    }
+    // Fold sum to 16 bits: add carrier to result
+    while (sum >> 16)
+    {
+        sum = (sum & 0xffff) + (sum >> 16);
+    }
+    // one's complement
+    sum = ~sum;
+    return ((unsigned short)sum);
+}
+
+uint32_t __ip_checksum(unsigned char *buf, uint32_t nbytes, uint32_t sum)
+{
+    unsigned int i;
+
+    /* Checksum all the pairs of bytes first. */
+    for (i = 0; i < (nbytes & ~1U); i += 2)
+    {
+        sum += (uint16_t)ntohs(*((uint16_t *)(buf + i)));
+        if (sum > 0xFFFF)
+            sum -= 0xFFFF;
+    }
+
+    /*
+     * If there's a single byte left over, checksum it, too.
+     * Network byte order is big-endian, so the remaining byte is
+     * the high byte.
+     */
+    if (i < nbytes)
+    {
+        sum += buf[i] << 8;
+        if (sum > 0xFFFF)
+            sum -= 0xFFFF;
+    }
+
+    return sum;
+}
+
+uint32_t __ip_wrapsum(uint32_t sum)
+{
+    sum = ~sum & 0xFFFF;
+    return htons((uint16_t)sum);
 }

@@ -22,4 +22,6 @@ void ipv4_process_packet(nic_data_t *data);
 */
 void __ipv4_flip_values(ipv4_packet_t *packet);
 
+void ipv4_checksum(ipv4_packet_t *packet);
+
 #endif

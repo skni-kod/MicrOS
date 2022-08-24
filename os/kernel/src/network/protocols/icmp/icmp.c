@@ -19,9 +19,9 @@ void icmp_process_packet(nic_data_t *data)
             {
                 ipv4_packet_t *reply = (ipv4_packet_t *)frame->data;
                 memcpy(reply, packet, sizeof(ipv4_packet_t));
-                __ipv4_flip_values(reply);
                 memcpy(reply->dst_ip, packet->src_ip, IPv4_ADDRESS_LENGTH);
                 memcpy(reply->src_ip, packet->dst_ip, IPv4_ADDRESS_LENGTH);
+                ipv4_checksum(packet);
             }
 
             {
@@ -29,8 +29,8 @@ void icmp_process_packet(nic_data_t *data)
                 reply->type = 0;
                 reply->code = 0;
                 reply->checksum = 0;
-                reply->checksum = ~(reply->type | reply->code | reply->checksum);
-                memcpy(reply->data, header->data, packet->length - (sizeof(ipv4_packet_t) + sizeof(icmp_header_t)));
+                reply->checksum = __ip_wrapsum(__ip_checksum((unsigned char *)reply, ntohs(packet->length) - sizeof(ipv4_packet_t), 0));
+                memcpy(reply->data, header->data, ntohs(packet->length) - (sizeof(ipv4_packet_t) + sizeof(icmp_header_t)));
             }
             ethernet_send_frame(data->device, ntohs(packet->length), frame);
         }

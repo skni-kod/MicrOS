@@ -45,10 +45,15 @@ void __set_mac_addr(uint8_t *mac_addr, uint8_t oct1, uint8_t oct2, uint8_t oct3,
 */
 void __set_ipv4_addr(uint8_t *ip_addr, uint8_t oct1, uint8_t oct2, uint8_t oct3, uint8_t oct4);
 
-//! __checksum
+//! __ip_checksum
 /*
     One's compliement checksum
 */
-uint16_t __checksum(uint16_t *data, uint16_t len);
+uint32_t __ip_checksum(unsigned char *buf, uint32_t nbytes, uint32_t sum);
 
+//! __ip_wrapsum
+/*
+    One's compliement checksum
+*/
+uint32_t __ip_wrapsum(uint32_t sum);
 #endif
