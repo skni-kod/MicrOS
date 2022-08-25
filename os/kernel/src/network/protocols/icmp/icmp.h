@@ -9,7 +9,10 @@
 #include "../../network_utils.h"
 #include "../../network_manager.h"
 
-void icmp_process_packet(nic_data_t *data);
+void icmp_process_datagram(nic_data_t *data);
+
+//length - length of IP PACKET
+void icmp_checksum(icmp_header_t *datagram, uint32_t packet_length);
 
 
 #endif

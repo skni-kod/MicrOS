@@ -15,6 +15,12 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "protocols/ethernet/ethernet_definitions.h"
+#include "protocols/ipv4/ipv4_definitions.h"
+#include "protocols/udp/udp_definitions.h"
+#include "protocols/tcp/tcp_definitions.h"
+
+
 
 //! __uint8_flip
 /*
@@ -56,4 +62,11 @@ uint32_t __ip_checksum(unsigned char *buf, uint32_t nbytes, uint32_t sum);
     One's compliement checksum
 */
 uint32_t __ip_wrapsum(uint32_t sum);
+
+//! __ip_tcp_udp_checksum
+/*
+    TCP/UDP checksum
+*/
+uint32_t __ip_tcp_udp_checksum(nic_data_t *data);
+
 #endif

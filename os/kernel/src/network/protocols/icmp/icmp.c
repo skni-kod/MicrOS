@@ -5,7 +5,9 @@ void icmp_process_packet(nic_data_t *data)
     ipv4_packet_t *packet = (ipv4_packet_t *)(data->frame + sizeof(ethernet_frame_t));
     icmp_header_t *header = (icmp_header_t *)(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t));
 
-    if (header->type == 8)
+    switch (header->type)
+    {
+    case ICMP_TYPE_ECHO_REQUEST:
     {
         uint8_t *dst_mac = arp_request_entry(data->device, packet->src_ip)->mac_address;
         if (dst_mac)
@@ -26,13 +28,18 @@ void icmp_process_packet(nic_data_t *data)
 
             {
                 icmp_header_t *reply = (icmp_header_t *)(frame->data + sizeof(ipv4_packet_t));
-                reply->type = 0;
-                reply->code = 0;
-                reply->checksum = 0;
-                reply->checksum = __ip_wrapsum(__ip_checksum((unsigned char *)reply, ntohs(packet->length) - sizeof(ipv4_packet_t), 0));
+                reply->type = ICMP_TYPE_ECHO_REPLY;
+                reply->code = ICMP_CODE_NO_CODE;
                 memcpy(reply->data, header->data, ntohs(packet->length) - (sizeof(ipv4_packet_t) + sizeof(icmp_header_t)));
+                reply->checksum = 0;
+                reply->checksum = __ip_wrapsum(__ip_checksum((uint8_t *)reply, ntohs(packet->length) - sizeof(ipv4_packet_t), 0U));
             }
             ethernet_send_frame(data->device, ntohs(packet->length), frame);
         }
+    }
+    break;
+
+    default:
+        break;
     }
 }

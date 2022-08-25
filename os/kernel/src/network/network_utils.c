@@ -51,49 +51,24 @@ void __set_ipv4_addr(uint8_t *ip_addr, uint8_t oct1, uint8_t oct2, uint8_t oct3,
     ip_addr[3] = oct4;
 }
 
-uint16_t __checksum(uint16_t *addr, uint16_t count)
+uint32_t __ip_checksum(uint8_t *data, uint32_t length, uint32_t sum)
 {
-    register unsigned long sum = 0;
-    while (count > 1)
-    {
-        sum += *addr++;
-        count -= 2;
-    }
-    // if any bytes left, pad the bytes and add
-    if (count > 0)
-    {
-        sum += ((*addr) & __uint16_flip(0xFF00));
-    }
-    // Fold sum to 16 bits: add carrier to result
-    while (sum >> 16)
-    {
-        sum = (sum & 0xffff) + (sum >> 16);
-    }
-    // one's complement
-    sum = ~sum;
-    return ((unsigned short)sum);
-}
+    uint32_t i;
 
-uint32_t __ip_checksum(unsigned char *buf, uint32_t nbytes, uint32_t sum)
-{
-    unsigned int i;
-
-    /* Checksum all the pairs of bytes first. */
-    for (i = 0; i < (nbytes & ~1U); i += 2)
+    // sum all byte pairs
+    for (i = 0; i < (length & ~1U); i += 2)
     {
-        sum += (uint16_t)ntohs(*((uint16_t *)(buf + i)));
+        sum += ntohs(*((uint16_t *)(data + i)));
         if (sum > 0xFFFF)
             sum -= 0xFFFF;
     }
 
     /*
-     * If there's a single byte left over, checksum it, too.
-     * Network byte order is big-endian, so the remaining byte is
-     * the high byte.
+     * if length is odd, sum up leftover byte with padding
      */
-    if (i < nbytes)
+    if (i < length)
     {
-        sum += buf[i] << 8;
+        sum += data[i] << 8;
         if (sum > 0xFFFF)
             sum -= 0xFFFF;
     }
@@ -103,6 +78,53 @@ uint32_t __ip_checksum(unsigned char *buf, uint32_t nbytes, uint32_t sum)
 
 uint32_t __ip_wrapsum(uint32_t sum)
 {
-    sum = ~sum & 0xFFFF;
-    return htons((uint16_t)sum);
+    return htons((uint16_t)(~sum & 0xFFFF));
+}
+
+uint32_t __ip_tcp_udp_checksum(nic_data_t *data)
+{
+    ipv4_packet_t *packet = (ipv4_packet_t *)(data->frame + sizeof(ethernet_frame_t));
+
+    /* Check the IP header checksum - it should be zero. */
+    if (__ip_wrapsum(__ip_checksum((unsigned char *)packet, sizeof(ipv4_packet_t), 0)) != 0)
+        return -1;
+
+    uint32_t protocol = 0;
+    uint32_t length = 0;
+    uint32_t len = 0;
+    uint32_t usum = 0;
+    uint32_t sum = 0;
+    uint32_t header_size = 0;
+    void *datagram = (data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t));
+    void *data_ptr;
+
+    switch (packet->protocol)
+    {
+        case IP_PROTOCOL_UDP:
+        {
+            udp_datagram_t *datagram = (udp_datagram_t *)(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t));
+            len = ntohs(datagram->length) - sizeof(udp_datagram_t);
+            length = ntohs((uint32_t)datagram->length);
+            usum = datagram->checksum;
+            datagram->checksum = 0;
+            data_ptr = datagram->data;
+            protocol = IP_PROTOCOL_UDP;
+        }
+    }
+
+    sum = __ip_wrapsum(
+        __ip_checksum(
+            (uint8_t *)datagram, header_size,
+            __ip_checksum(data_ptr, len,
+                          __ip_checksum((uint8_t *)&(packet->src_ip), 2 * IPv4_ADDRESS_LENGTH,
+                                        protocol + length))));
+
+    if (usum != 0 && usum != sum)
+    {
+        // 	log_debug("%s: %d bad udp checksums in %d packets",
+        // 	    log_procname, udp_packets_bad_checksum,
+        // 	    udp_packets_seen);
+    }
+
+    return sum;
 }

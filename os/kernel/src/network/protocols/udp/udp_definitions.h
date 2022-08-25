@@ -9,7 +9,6 @@
 #include "../../network_definitions.h"
 #include <stdint.h>
 
-
 typedef struct udp_datagram
 {
     uint16_t src_port;
@@ -31,6 +30,5 @@ typedef struct udp_pheader
     uint16_t length;
     uint16_t checksum;
 } __attribute__((packed)) udp_pheader_t;
-
 
 #endif
