@@ -1,0 +1,28 @@
+var genericvga_8h =
+[
+    [ "INPUT_STATUS_1", "genericvga_8h.html#a03293b7e4d132cb8402d72072ed437dd", null ],
+    [ "VRETRACE", "genericvga_8h.html#ac606e9733c1af3b71d46f36cf4b13098", null ],
+    [ "generic_vga_clear_screen_external_buffer", "genericvga_8h.html#abb56199e893d43a7a68c67270afb9bb2", null ],
+    [ "generic_vga_create_external_buffer", "genericvga_8h.html#a462a7c642932e0be63495fb65a9105a9", null ],
+    [ "generic_vga_destroy_external_buffer", "genericvga_8h.html#acd3a8fd118339597d2597503e700b440", null ],
+    [ "generic_vga_draw_circle_external_buffer", "genericvga_8h.html#aa3db87d1d5e1b3b9bdd6f4eb45c121fd", null ],
+    [ "generic_vga_draw_line_external_buffer", "genericvga_8h.html#a0dde925f3110ca5168774ea49d017630", null ],
+    [ "generic_vga_draw_pixel_external_buffer", "genericvga_8h.html#a8c3dbd354004374a2a1c381fb70a6123", null ],
+    [ "generic_vga_draw_rectangle_external_buffer", "genericvga_8h.html#a457a4988d9d9be98ed0399a70e37abf5", null ],
+    [ "generic_vga_driver_init", "genericvga_8h.html#a2fc8ba475e07855a02ae10abbdaccad3", null ],
+    [ "generic_vga_get_char_and_color_external_buffer", "genericvga_8h.html#a665da8d4ec5a552dfcc6c183630a8dbd", null ],
+    [ "generic_vga_get_char_external_buffer", "genericvga_8h.html#a64d24053a3e85a9759dad21d31e26c73", null ],
+    [ "generic_vga_get_color_external_buffer", "genericvga_8h.html#a1ebfa4671aace540ed92d77d92964420", null ],
+    [ "generic_vga_get_current_video_mode", "genericvga_8h.html#a8eedc94faf418e8821e72c7ff8c38466", null ],
+    [ "generic_vga_is_text_mode", "genericvga_8h.html#ae12a79f29139040ad2f11bfff5a57336", null ],
+    [ "generic_vga_is_vretrace", "genericvga_8h.html#af709ee07aaa84b14a6edba9a9044da99", null ],
+    [ "generic_vga_print_char_color_external_buffer", "genericvga_8h.html#a355136191a36117b9e05855a684f1aec", null ],
+    [ "generic_vga_print_char_external_buffer", "genericvga_8h.html#a8aef65efc98f79fbcbeb45b1e26ddddc", null ],
+    [ "generic_vga_print_string_color_external_buffer", "genericvga_8h.html#adf37cd24b8996bf3e4977a0aae544e49", null ],
+    [ "generic_vga_print_string_external_buffer", "genericvga_8h.html#a2981c3fd335f8ff4c3106501d7fdd64c", null ],
+    [ "generic_vga_set_char_and_color_external_buffer", "genericvga_8h.html#ae59d59da5857ff74d080a0cf63c11fa3", null ],
+    [ "generic_vga_set_char_external_buffer", "genericvga_8h.html#a13bab7a22abaaa870c015726ed2bbcd9", null ],
+    [ "generic_vga_set_color_external_buffer", "genericvga_8h.html#a5250e1aaefc749f9f78d0eaf684e624c", null ],
+    [ "generic_vga_set_video_mode", "genericvga_8h.html#a7f56dbdd156ba0a59d955ecada48ce2b", null ],
+    [ "generic_vga_swap_external_buffer", "genericvga_8h.html#a93abad48046c7fb413d9a37b0219fa79", null ]
+];

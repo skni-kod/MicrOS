@@ -1,0 +1,14 @@
+var searchData=
+[
+  ['between',['between',['../physical__memory__manager_8c.html#a9451abfe32a803460f99cbc0e4815c7a',1,'physical_memory_manager.c']]],
+  ['between_5for_5feq',['between_or_eq',['../physical__memory__manager_8c.html#ad15143c2ef62f08abb9267343cd48240',1,'physical_memory_manager.c']]],
+  ['bintobcd',['BINtoBCD',['../rtc_8c.html#a037f0e2923dfdad81d7d9a69017a6396',1,'rtc.c']]],
+  ['bit_5fscan_5fbackward',['bit_scan_backward',['../bit__operations_8c.html#ad6a71d19a1ebd53c883e49f474daba5d',1,'bit_scan_backward(v8086 *machine, uint8_t width):&#160;bit_operations.c'],['../bit__operations_8h.html#ad6a71d19a1ebd53c883e49f474daba5d',1,'bit_scan_backward(v8086 *machine, uint8_t width):&#160;bit_operations.c']]],
+  ['bit_5fscan_5fforward',['bit_scan_forward',['../bit__operations_8c.html#aed0c0f2aa7e3ca89683e2ce83e6b1380',1,'bit_scan_forward(v8086 *machine, uint8_t width):&#160;bit_operations.c'],['../bit__operations_8h.html#aed0c0f2aa7e3ca89683e2ce83e6b1380',1,'bit_scan_forward(v8086 *machine, uint8_t width):&#160;bit_operations.c']]],
+  ['bit_5ftest',['bit_test',['../bit__operations_8c.html#a092bec94a430a82ffd646179f993c016',1,'bit_test(v8086 *machine, uint8_t width):&#160;bit_operations.c'],['../bit__operations_8h.html#a092bec94a430a82ffd646179f993c016',1,'bit_test(v8086 *machine, uint8_t width):&#160;bit_operations.c']]],
+  ['bit_5ftest_5fcomplement',['bit_test_complement',['../bit__operations_8c.html#ae2aeaa807a9505aa44422c184f627b65',1,'bit_test_complement(v8086 *machine, uint8_t width):&#160;bit_operations.c'],['../bit__operations_8h.html#ae2aeaa807a9505aa44422c184f627b65',1,'bit_test_complement(v8086 *machine, uint8_t width):&#160;bit_operations.c']]],
+  ['bit_5ftest_5freset',['bit_test_reset',['../bit__operations_8c.html#a9d6941bd59d3defb1007f4bae5263f68',1,'bit_test_reset(v8086 *machine, uint8_t width):&#160;bit_operations.c'],['../bit__operations_8h.html#a9d6941bd59d3defb1007f4bae5263f68',1,'bit_test_reset(v8086 *machine, uint8_t width):&#160;bit_operations.c']]],
+  ['bit_5ftest_5fset',['bit_test_set',['../bit__operations_8c.html#ac3a2da0564c5469babf1d5741ed4af02',1,'bit_test_set(v8086 *machine, uint8_t width):&#160;bit_operations.c'],['../bit__operations_8h.html#ac3a2da0564c5469babf1d5741ed4af02',1,'bit_test_set(v8086 *machine, uint8_t width):&#160;bit_operations.c']]],
+  ['breakpoint',['breakpoint',['../gdb__stub_8c.html#aef5ea7360080a589bedb934b57656cb9',1,'gdb_stub.c']]],
+  ['bsearch',['bsearch',['../bsearch_8c.html#a0f036d87a9786abb174546cbc5a11146',1,'bsearch(const void *key, const void *base, size_t num, size_t size, int(*compar)(const void *, const void *)):&#160;bsearch.c'],['../stdlib_8h.html#a0f036d87a9786abb174546cbc5a11146',1,'bsearch(const void *key, const void *base, size_t num, size_t size, int(*compar)(const void *, const void *)):&#160;bsearch.c']]]
+];

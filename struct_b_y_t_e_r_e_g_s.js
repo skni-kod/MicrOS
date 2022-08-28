@@ -1,0 +1,25 @@
+var struct_b_y_t_e_r_e_g_s =
+[
+    [ "_upper_ax", "struct_b_y_t_e_r_e_g_s.html#ae29f43bc099b72d4bfd6cb96eac2da17", null ],
+    [ "_upper_bp", "struct_b_y_t_e_r_e_g_s.html#a5ba70ffbb8f342cce833752449575e17", null ],
+    [ "_upper_bx", "struct_b_y_t_e_r_e_g_s.html#a680f9b2652f24d25c9baa203d4a78a52", null ],
+    [ "_upper_cx", "struct_b_y_t_e_r_e_g_s.html#ae9f00d0bb7f77069ad365d838593ef54", null ],
+    [ "_upper_di", "struct_b_y_t_e_r_e_g_s.html#afd093e1e3579cbd53f74075a664baeda", null ],
+    [ "_upper_dx", "struct_b_y_t_e_r_e_g_s.html#a1d7f8d0d999da798cb4c04d356b15c91", null ],
+    [ "_upper_si", "struct_b_y_t_e_r_e_g_s.html#aecce9eef44f78216f244029748a7bed8", null ],
+    [ "_upper_sp", "struct_b_y_t_e_r_e_g_s.html#a668ba0b496700bc59409db26bdbadacc", null ],
+    [ "ah", "struct_b_y_t_e_r_e_g_s.html#a4cb9d486c06e528b9f67ed734905fcc3", null ],
+    [ "al", "struct_b_y_t_e_r_e_g_s.html#a3cfb7ef45b9c65b867bfb006cc7ce1ae", null ],
+    [ "bh", "struct_b_y_t_e_r_e_g_s.html#a235a80281768642834d81922e8876fa1", null ],
+    [ "bl", "struct_b_y_t_e_r_e_g_s.html#a50eecb58112a4dfb73d07a135572a9f7", null ],
+    [ "bp", "struct_b_y_t_e_r_e_g_s.html#a20ce7e5159aae03a1cd799059917861d", null ],
+    [ "cflag", "struct_b_y_t_e_r_e_g_s.html#a78fbca0bd6fcda2939a3f94685df9378", null ],
+    [ "ch", "struct_b_y_t_e_r_e_g_s.html#a9c5d213df05cc921fe29ca219006e466", null ],
+    [ "cl", "struct_b_y_t_e_r_e_g_s.html#a79889746a1e48bab7c0f995ccef07b06", null ],
+    [ "dh", "struct_b_y_t_e_r_e_g_s.html#a5431edeb7c7a2805ef96b23242e53466", null ],
+    [ "di", "struct_b_y_t_e_r_e_g_s.html#aac1251f0bf02d5a8253e13bb16476daa", null ],
+    [ "dl", "struct_b_y_t_e_r_e_g_s.html#a00c1bc039015af61718ebf7c9a36edbb", null ],
+    [ "flags", "struct_b_y_t_e_r_e_g_s.html#aa8c9b6e70b49e57b36c3fb39d718c5db", null ],
+    [ "si", "struct_b_y_t_e_r_e_g_s.html#ad0e5cb10dc45f79a8535ed53611972a7", null ],
+    [ "sp", "struct_b_y_t_e_r_e_g_s.html#a915e417a4a0d51426c3ff325e9324306", null ]
+];
