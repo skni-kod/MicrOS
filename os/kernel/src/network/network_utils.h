@@ -69,4 +69,6 @@ uint32_t __ip_wrapsum(uint32_t sum);
 */
 uint32_t __ip_tcp_udp_checksum(nic_data_t *data);
 
+
+uint32_t __crc32(uint8_t *data, uint32_t length);
 #endif

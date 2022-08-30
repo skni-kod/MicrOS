@@ -5,9 +5,12 @@
 */
 #ifndef network_ethernet
 #define network_ethernet
+
 #include "ethernet_definitions.h"
+#include "../../network_definitions.h"
 #include "../../network_utils.h"
 #include "../../network_manager.h"
+
 
 void ethernet_process_frame(nic_data_t *data);
 

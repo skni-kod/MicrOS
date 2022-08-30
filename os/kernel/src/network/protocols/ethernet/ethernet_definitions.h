@@ -7,8 +7,9 @@
 
 #define ETHERNET_FCS_LENGTH 4
 
-#include "../../network_definitions.h"
 #include <stdint.h>
+#include "../../network_definitions.h"
+
 
 //! ethernet_frame
 /*

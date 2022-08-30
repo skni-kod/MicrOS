@@ -100,16 +100,16 @@ uint32_t __ip_tcp_udp_checksum(nic_data_t *data)
 
     switch (packet->protocol)
     {
-        case IP_PROTOCOL_UDP:
-        {
-            udp_datagram_t *datagram = (udp_datagram_t *)(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t));
-            len = ntohs(datagram->length) - sizeof(udp_datagram_t);
-            length = ntohs((uint32_t)datagram->length);
-            usum = datagram->checksum;
-            datagram->checksum = 0;
-            data_ptr = datagram->data;
-            protocol = IP_PROTOCOL_UDP;
-        }
+    case IP_PROTOCOL_UDP:
+    {
+        udp_datagram_t *datagram = (udp_datagram_t *)(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t));
+        len = ntohs(datagram->length) - sizeof(udp_datagram_t);
+        length = ntohs((uint32_t)datagram->length);
+        usum = datagram->checksum;
+        datagram->checksum = 0;
+        data_ptr = datagram->data;
+        protocol = IP_PROTOCOL_UDP;
+    }
     }
 
     sum = __ip_wrapsum(
@@ -127,4 +127,22 @@ uint32_t __ip_tcp_udp_checksum(nic_data_t *data)
     }
 
     return sum;
+}
+
+uint32_t __crc32(uint8_t *data, uint32_t length)
+{
+    // https://lxp32.github.io/docs/a-simple-example-crc32-calculation/
+    if (data == NULL)
+        return 0;
+
+    uint32_t crc = 0xFFFFFFFF;
+
+    while (length--)
+    {
+        crc ^= *data++;
+        for (unsigned k = 0; k < 8; k++)
+            crc = crc & 1 ? (crc >> 1) ^ 0xEDB88320 : crc >> 1;
+    }
+
+    return crc ^ 0xFFFFFFFF;
 }
