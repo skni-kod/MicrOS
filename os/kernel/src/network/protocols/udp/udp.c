@@ -27,7 +27,7 @@ void udp_process_datagram(nic_data_t *data)
     }
     nic_data_t tmp;
     tmp.frame = frame;
-    ((udp_datagram_t *)(frame->data + sizeof(ipv4_packet_t)))->checksum = __ip_tcp_udp_checksum(&tmp);
+    __ip_tcp_udp_checksum(&tmp);
     datagram->checksum = __uint16_flip(datagram->checksum);
     ethernet_send_frame(data->device, htons(packet->length), frame);
 }

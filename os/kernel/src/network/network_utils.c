@@ -88,22 +88,44 @@ uint32_t __ip_tcp_udp_checksum(nic_data_t *data)
     // /* Check the IP header checksum - it should be zero. */
     // if (__ip_wrapsum(__ip_checksum((unsigned char *)packet, sizeof(ipv4_packet_t), 0)) != 0)
     //     return -1;
+    if (packet->protocol == IP_PROTOCOL_UDP)
+    {
+        udp_datagram_t *datagram = (udp_datagram_t *)(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t));
 
-    udp_datagram_t *datagram = (udp_datagram_t *)(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t));
+        uint32_t len = ntohs(datagram->length) - sizeof(udp_datagram_t);
 
-    uint32_t len = ntohs(datagram->length) - sizeof(udp_datagram_t);
+        uint32_t usum = datagram->checksum;
+        datagram->checksum = 0;
 
-    uint32_t usum = datagram->checksum;
-    datagram->checksum = 0;
+        uint32_t sum = __ip_wrapsum(
+            __ip_checksum(
+                (unsigned char *)datagram, sizeof(udp_datagram_t),
+                __ip_checksum(datagram->data, len,
+                              __ip_checksum((unsigned char *)&(packet->src_ip), 2 * IPv4_ADDRESS_LENGTH,
+                                            IP_PROTOCOL_UDP + ntohs((uint32_t)datagram->length)))));
+        datagram->checksum = sum;
+        return sum;
+    }
 
-    uint32_t sum = __ip_wrapsum(
-        __ip_checksum(
-            (unsigned char *)datagram, sizeof(udp_datagram_t),
-            __ip_checksum(datagram->data, len,
-                          __ip_checksum((unsigned char *)&(packet->src_ip), 2 * IPv4_ADDRESS_LENGTH,
-                                        IP_PROTOCOL_UDP + ntohs((uint32_t)datagram->length)))));
+    //TODO: Fix calculation
+    if (packet->protocol == IP_PROTOCOL_TCP)
+    {
+        tcp_datagram_t *datagram = (tcp_datagram_t *)(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t));
 
-    return sum;
+        uint32_t len = ntohs(packet->length) - TCP_OPTIONS_OFFSET;
+
+        uint32_t usum = datagram->checksum;
+        datagram->checksum = 0;
+
+        uint32_t sum = __ip_wrapsum(
+            __ip_checksum(
+                (unsigned char *)datagram, sizeof(udp_datagram_t),
+                __ip_checksum(datagram->options_data, len,
+                              __ip_checksum((unsigned char *)&(packet->src_ip), 2 * IPv4_ADDRESS_LENGTH,
+                                            IP_PROTOCOL_TCP + (uint16_t)len))));
+        datagram->checksum = sum;
+        return sum;
+    }
 }
 
 uint32_t __crc32(uint8_t *data, uint32_t length)

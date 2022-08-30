@@ -20,6 +20,6 @@ void tcp_process_datagram(nic_data_t *data);
 /*
     Process TCP datagram
 */
-uint32_t tcp_header_size(ipv4_packet_t *packet);
+uint32_t tcp_data_size(ipv4_packet_t *packet);
 
 #endif
