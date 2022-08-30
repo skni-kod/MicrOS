@@ -1,10 +1,12 @@
 #ifndef PCI_DEVICE
 #define PCI_DEVICE
 
-typedef union pci_device {
+typedef union pci_device
+{
     uint8_t bits_8[64];
     uint16_t bits_16[32];
-    uint32_t bits_32[16];
+    //addinational 16 descriptors
+    uint32_t bits_32[32];
     struct
     {
         uint16_t vendor_id;
@@ -35,6 +37,7 @@ typedef union pci_device {
         uint8_t interrupt_pin;
         uint8_t min_grant;
         uint8_t max_latency;
+        uint32_t descriptors[16];
     };
 } __attribute__((packed)) pci_device;
 
