@@ -28,6 +28,11 @@ void ipv4_process_packet(nic_data_t *data)
         udp_process_datagram(data);
     }
     break;
+    case IP_PROTOCOL_TCP:
+    {
+        tcp_process_datagram(data);
+    }
+    break;
     default:
         break;
     }

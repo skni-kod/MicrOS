@@ -16,10 +16,10 @@
 */
 void tcp_process_datagram(nic_data_t *data);
 
-//! tcp_checksum
+//! tcp_process_datagram
 /*
-    Returns datagram checksum
+    Process TCP datagram
 */
-uint16_t tcp_checksum(nic_data_t *data);
+uint32_t tcp_header_size(ipv4_packet_t *packet);
 
 #endif

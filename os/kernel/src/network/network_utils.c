@@ -85,46 +85,23 @@ uint32_t __ip_tcp_udp_checksum(nic_data_t *data)
 {
     ipv4_packet_t *packet = (ipv4_packet_t *)(data->frame + sizeof(ethernet_frame_t));
 
-    /* Check the IP header checksum - it should be zero. */
-    if (__ip_wrapsum(__ip_checksum((unsigned char *)packet, sizeof(ipv4_packet_t), 0)) != 0)
-        return -1;
+    // /* Check the IP header checksum - it should be zero. */
+    // if (__ip_wrapsum(__ip_checksum((unsigned char *)packet, sizeof(ipv4_packet_t), 0)) != 0)
+    //     return -1;
 
-    uint32_t protocol = 0;
-    uint32_t length = 0;
-    uint32_t len = 0;
-    uint32_t usum = 0;
-    uint32_t sum = 0;
-    uint32_t header_size = 0;
-    void *datagram = (data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t));
-    void *data_ptr;
+    udp_datagram_t *datagram = (udp_datagram_t *)(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t));
 
-    switch (packet->protocol)
-    {
-    case IP_PROTOCOL_UDP:
-    {
-        udp_datagram_t *datagram = (udp_datagram_t *)(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t));
-        len = ntohs(datagram->length) - sizeof(udp_datagram_t);
-        length = ntohs((uint32_t)datagram->length);
-        usum = datagram->checksum;
-        datagram->checksum = 0;
-        data_ptr = datagram->data;
-        protocol = IP_PROTOCOL_UDP;
-    }
-    }
+    uint32_t len = ntohs(datagram->length) - sizeof(udp_datagram_t);
 
-    sum = __ip_wrapsum(
+    uint32_t usum = datagram->checksum;
+    datagram->checksum = 0;
+
+    uint32_t sum = __ip_wrapsum(
         __ip_checksum(
-            (uint8_t *)datagram, header_size,
-            __ip_checksum(data_ptr, len,
-                          __ip_checksum((uint8_t *)&(packet->src_ip), 2 * IPv4_ADDRESS_LENGTH,
-                                        protocol + length))));
-
-    if (usum != 0 && usum != sum)
-    {
-        // 	log_debug("%s: %d bad udp checksums in %d packets",
-        // 	    log_procname, udp_packets_bad_checksum,
-        // 	    udp_packets_seen);
-    }
+            (unsigned char *)datagram, sizeof(udp_datagram_t),
+            __ip_checksum(datagram->data, len,
+                          __ip_checksum((unsigned char *)&(packet->src_ip), 2 * IPv4_ADDRESS_LENGTH,
+                                        IP_PROTOCOL_UDP + ntohs((uint32_t)datagram->length)))));
 
     return sum;
 }

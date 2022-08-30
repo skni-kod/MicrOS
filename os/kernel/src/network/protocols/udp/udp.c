@@ -27,7 +27,7 @@ void udp_process_datagram(nic_data_t *data)
     }
     nic_data_t tmp;
     tmp.frame = frame;
-    ((udp_datagram_t *)(frame->data + sizeof(ipv4_packet_t)))->checksum = udp_checksum(&tmp);
+    ((udp_datagram_t *)(frame->data + sizeof(ipv4_packet_t)))->checksum = __ip_tcp_udp_checksum(&tmp);
     datagram->checksum = __uint16_flip(datagram->checksum);
     ethernet_send_frame(data->device, htons(packet->length), frame);
 }
@@ -53,13 +53,6 @@ uint16_t udp_checksum(nic_data_t *data)
             __ip_checksum(datagram->data, len,
                           __ip_checksum((unsigned char *)&(packet->src_ip), 2 * IPv4_ADDRESS_LENGTH,
                                         IP_PROTOCOL_UDP + ntohs((uint32_t)datagram->length)))));
-
-    if (usum != 0 && usum != sum)
-    {
-        // 	log_debug("%s: %d bad udp checksums in %d packets",
-        // 	    log_procname, udp_packets_bad_checksum,
-        // 	    udp_packets_seen);
-    }
 
     return sum;
 }
