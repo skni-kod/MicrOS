@@ -14,6 +14,7 @@ void udp_process_datagram(nic_data_t *data)
     {
         ipv4_packet_t *reply = (ipv4_packet_t *)frame->data;
         memcpy(reply, packet, sizeof(ipv4_packet_t));
+        packet->flags_mf = IPv4_FLAG_DONT_FRAGMENT;
         memcpy(reply->dst_ip, packet->src_ip, IPv4_ADDRESS_LENGTH);
         memcpy(reply->src_ip, packet->dst_ip, IPv4_ADDRESS_LENGTH);
     }

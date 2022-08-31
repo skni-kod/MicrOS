@@ -24,4 +24,6 @@ void __ipv4_flip_values(ipv4_packet_t *packet);
 
 void ipv4_checksum(ipv4_packet_t *packet);
 
+void ipv4_init();
+
 #endif

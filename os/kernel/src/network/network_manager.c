@@ -16,6 +16,7 @@ bool network_manager_init()
 {
     net_devices = heap_kernel_alloc(sizeof(kvector), 0);
     kvector_init(net_devices);
+    ipv4_init();
 
     // Initialize all NIC drivers
     for (uint8_t i = 0; i < drivers_count; i++)
@@ -55,6 +56,7 @@ nic_data_t *network_manager_get_receive_buffer(net_device_t *device, uint32_t si
         data->length = size;
         data->device = device;
         data->frame = (uint8_t *)heap_kernel_alloc(size, 0);
+        data->keep = false;
         return data;
     }
     else
@@ -63,7 +65,6 @@ nic_data_t *network_manager_get_receive_buffer(net_device_t *device, uint32_t si
 
 void network_manager_send_data(nic_data_t *data)
 {
-    // TODO: Do something with card config (TX_RX)
     if (data->device->configuration->mode & NETWORK_MANAGER_CONFIGURATION_TX)
     {
         data->device->dpi.send(data);
@@ -80,7 +81,6 @@ void network_manager_receive_data(nic_data_t *data)
 
     if (data->device->configuration->mode & NETWORK_MANAGER_CONFIGURATION_RX)
     {
-        // TODO: Do something with card config (TX_RX)
         switch (data->device->configuration->frame_type)
         {
         case ethernet:
@@ -92,9 +92,11 @@ void network_manager_receive_data(nic_data_t *data)
         ++data->device->frames_received;
         data->device->bytes_received += data->length;
     }
-
-    heap_kernel_dealloc(data->frame);
-    heap_kernel_dealloc(data);
+    if (!(data->keep))
+    {
+        heap_kernel_dealloc(data->frame);
+        heap_kernel_dealloc(data);
+    }
 }
 
 net_device_t *network_manager_get_nic()

@@ -33,9 +33,10 @@ typedef enum net_frame_type{
 */
 typedef struct nic_data
 {
-    uint32_t length;
+    uint16_t length;
     net_device_t *device;
     uint8_t *frame;
+    bool keep;
 } nic_data_t;
 
 typedef struct network_manager_dpi
