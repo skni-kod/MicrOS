@@ -1,16 +1,5 @@
 #include "ipv4.h"
 
-#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
-#define BYTE_TO_BINARY(byte)       \
-    (byte & 0x80 ? '1' : '0'),     \
-        (byte & 0x40 ? '1' : '0'), \
-        (byte & 0x20 ? '1' : '0'), \
-        (byte & 0x10 ? '1' : '0'), \
-        (byte & 0x08 ? '1' : '0'), \
-        (byte & 0x04 ? '1' : '0'), \
-        (byte & 0x02 ? '1' : '0'), \
-        (byte & 0x01 ? '1' : '0')
-
 // TODO:
 //  add function to track stack, so in ICMP be able to get header size etc
 //  add function like ethernet_make_frame, ethernet_send_frame in IPv4,
@@ -26,15 +15,8 @@ void ipv4_process_packet(nic_data_t *data)
 
     if (packet->version != 4)
         return;
-    // char str[120];
-    // memset(str, 0, 120);
-    // uint16_t offset = (packet->offset << 8 | packet->offset2);
-    // // kernel_sprintf(str, " " BYTE_TO_BINARY_PATTERN "  "  BYTE_TO_BINARY_PATTERN,
-    // //      BYTE_TO_BINARY(*packet->offset_ptr), 
-    // //      BYTE_TO_BINARY(*(packet->offset_ptr+1)));
-    // kernel_sprintf(str,"%d ", offset);
-    // logger_log_info(str);
 
+    //TODO: replying fragmented data
     // Assembly packet if it is fragmented
     for (uint16_t i = 0; i < fragments->count; i++)
     {
@@ -88,17 +70,8 @@ process:
 
 void __ipv4_flip_values(ipv4_packet_t *packet)
 {
-    *(packet->version_ihl_ptr) = __uint8_flip(*(packet->version_ihl_ptr));
-
     packet->length = __uint16_flip(packet->length);
     packet->id = __uint16_flip(packet->id);
-
-    // FLAGS AND FRAGMENT OFFSET
-    // uint16_t tmp = (packet->fragment_offset_high << 8);
-    // tmp |= packet->fragment_offset_low;
-    // tmp |= (packet->flags << 13);
-    // memcpy(packet->flags_fragment_ptr, &tmp, sizeof(uint16_t));
-
     packet->header_checksum = __uint16_flip(packet->header_checksum);
 }
 

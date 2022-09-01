@@ -12,7 +12,6 @@
 #define htonl(x) (__uint32_flip(x))
 #define htons(x) (__uint16_flip(x))
 
-
 #include <stdint.h>
 #include <stdbool.h>
 #include "protocols/ethernet/ethernet_definitions.h"
@@ -20,7 +19,16 @@
 #include "protocols/udp/udp_definitions.h"
 #include "protocols/tcp/tcp_definitions.h"
 
-
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
+#define BYTE_TO_BINARY(byte)       \
+    (byte & 0x80 ? '1' : '0'),     \
+        (byte & 0x40 ? '1' : '0'), \
+        (byte & 0x20 ? '1' : '0'), \
+        (byte & 0x10 ? '1' : '0'), \
+        (byte & 0x08 ? '1' : '0'), \
+        (byte & 0x04 ? '1' : '0'), \
+        (byte & 0x02 ? '1' : '0'), \
+        (byte & 0x01 ? '1' : '0')
 
 //! __uint8_flip
 /*
@@ -49,7 +57,7 @@ void __set_mac_addr(uint8_t *mac_addr, uint8_t oct1, uint8_t oct2, uint8_t oct3,
 /*
     Sets IP addr
 */
-void __set_ipv4_addr(uint8_t *ip_addr, uint8_t oct1, uint8_t oct2, uint8_t oct3, uint8_t oct4);
+void __set_ipv4_addr(uint32_t *ip_addr, uint8_t oct1, uint8_t oct2, uint8_t oct3, uint8_t oct4);
 
 //! __ip_checksum
 /*
@@ -63,12 +71,10 @@ uint32_t __ip_checksum(unsigned char *buf, uint32_t nbytes, uint32_t sum);
 */
 uint32_t __ip_wrapsum(uint32_t sum);
 
-//! __ip_tcp_udp_checksum
+
+//! __crc32
 /*
-    TCP/UDP checksum
+    CRC32 checksum
 */
-uint32_t __ip_tcp_udp_checksum(nic_data_t *data);
-
-
 uint32_t __crc32(uint8_t *data, uint32_t length);
 #endif

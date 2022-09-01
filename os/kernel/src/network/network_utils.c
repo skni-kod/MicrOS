@@ -40,15 +40,15 @@ void __set_mac_addr(uint8_t *mac_addr, uint8_t oct1, uint8_t oct2, uint8_t oct3,
     mac_addr[5] = oct6;
 }
 
-void __set_ipv4_addr(uint8_t *ip_addr, uint8_t oct1, uint8_t oct2, uint8_t oct3, uint8_t oct4)
+void __set_ipv4_addr(uint32_t *ip_addr, uint8_t oct1, uint8_t oct2, uint8_t oct3, uint8_t oct4)
 {
     if (ip_addr == 0)
         return;
 
-    ip_addr[0] = oct1;
-    ip_addr[1] = oct2;
-    ip_addr[2] = oct3;
-    ip_addr[3] = oct4;
+    (((uint8_t *)ip_addr)[0]) = oct1;
+    (((uint8_t *)ip_addr)[1]) = oct2;
+    (((uint8_t *)ip_addr)[2]) = oct3;
+    (((uint8_t *)ip_addr)[3]) = oct4;
 }
 
 uint32_t __ip_checksum(uint8_t *data, uint32_t length, uint32_t sum)
@@ -63,9 +63,7 @@ uint32_t __ip_checksum(uint8_t *data, uint32_t length, uint32_t sum)
             sum -= 0xFFFF;
     }
 
-    /*
-     * if length is odd, sum up leftover byte with padding
-     */
+    // sum leftover byte with zero padding
     if (i < length)
     {
         sum += data[i] << 8;
@@ -79,53 +77,6 @@ uint32_t __ip_checksum(uint8_t *data, uint32_t length, uint32_t sum)
 uint32_t __ip_wrapsum(uint32_t sum)
 {
     return htons((uint16_t)(~sum & 0xFFFF));
-}
-
-uint32_t __ip_tcp_udp_checksum(nic_data_t *data)
-{
-    ipv4_packet_t *packet = (ipv4_packet_t *)(data->frame + sizeof(ethernet_frame_t));
-
-    // /* Check the IP header checksum - it should be zero. */
-    // if (__ip_wrapsum(__ip_checksum((unsigned char *)packet, sizeof(ipv4_packet_t), 0)) != 0)
-    //     return -1;
-    if (packet->protocol == IP_PROTOCOL_UDP)
-    {
-        udp_datagram_t *datagram = (udp_datagram_t *)(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t));
-
-        uint32_t len = ntohs(datagram->length) - sizeof(udp_datagram_t);
-
-        uint32_t usum = datagram->checksum;
-        datagram->checksum = 0;
-
-        uint32_t sum = __ip_wrapsum(
-            __ip_checksum(
-                (unsigned char *)datagram, sizeof(udp_datagram_t),
-                __ip_checksum(datagram->data, len,
-                              __ip_checksum((unsigned char *)&(packet->src_ip), 2 * IPv4_ADDRESS_LENGTH,
-                                            IP_PROTOCOL_UDP + ntohs((uint32_t)datagram->length)))));
-        datagram->checksum = sum;
-        return sum;
-    }
-
-    //TODO: Fix calculation
-    if (packet->protocol == IP_PROTOCOL_TCP)
-    {
-        tcp_datagram_t *datagram = (tcp_datagram_t *)(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t));
-
-        uint32_t len = ntohs(packet->length) - TCP_OPTIONS_OFFSET;
-
-        uint32_t usum = datagram->checksum;
-        datagram->checksum = 0;
-
-        uint32_t sum = __ip_wrapsum(
-            __ip_checksum(
-                (unsigned char *)datagram, sizeof(udp_datagram_t),
-                __ip_checksum(datagram->options_data, len,
-                              __ip_checksum((unsigned char *)&(packet->src_ip), 2 * IPv4_ADDRESS_LENGTH,
-                                            IP_PROTOCOL_TCP + (uint16_t)len))));
-        datagram->checksum = sum;
-        return sum;
-    }
 }
 
 uint32_t __crc32(uint8_t *data, uint32_t length)

@@ -20,12 +20,6 @@ void udp_process_datagram(nic_data_t *data);
 /*
     Returns datagram checksum
 */
-uint16_t udp_checksum(nic_data_t *packet);
-
-//! __udp_flip_values
-/*
-    Flip values
-*/
-void __udp_flip_values(udp_datagram_t *datagram);
+uint16_t udp_checksum(ipv4_packet_t *packet);
 
 #endif

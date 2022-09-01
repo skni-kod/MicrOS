@@ -137,9 +137,9 @@ void arp_send_request(net_device_t *device, uint8_t *ip_address)
 
 void __arp_flip_values(arp_packet_t *packet)
 {
-    packet->opcode = __uint16_flip(packet->opcode);
-    packet->hardware_type = __uint16_flip(packet->hardware_type);
-    packet->protocol_type = __uint16_flip(packet->protocol_type);
+    packet->opcode = ntohs(packet->opcode);
+    packet->hardware_type = ntohs(packet->hardware_type);
+    packet->protocol_type = ntohs(packet->protocol_type);
 }
 
 bool __arp_compare_mac_address(uint8_t *addr1, uint8_t *addr2)
