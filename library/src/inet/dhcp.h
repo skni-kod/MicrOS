@@ -3,10 +3,9 @@
     Created: 01.09.2022
     Modified: 
 */
-#ifndef network_dhcp_definitions
-#define network_dhcp_definitions
+#ifndef INET_DHCP_H
+#define INET_DHCP_H
 
-#include "../../network_definitions.h"
 #include <stdint.h>
 
 typedef struct dhcp_message

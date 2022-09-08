@@ -6,8 +6,8 @@ void udp_process_datagram(nic_data_t *data)
     udp_datagram_t *datagram = (udp_datagram_t *)(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t));
 
     ethernet_frame_t *frame = ethernet_make_frame(
-        data->device->configuration->mac_address,
-        ((ethernet_frame_t *)data->frame)->src_mac_addr,
+        &data->device->interface->mac,
+        &((ethernet_frame_t *)data->frame)->src,
         IPv4_PROTOCOL_TYPE,
         htons(packet->length));
     
@@ -15,8 +15,8 @@ void udp_process_datagram(nic_data_t *data)
     {
         memcpy(ip_reply, packet, sizeof(ipv4_packet_t));
         packet->flags_mf = IPv4_FLAG_DONT_FRAGMENT;
-        memcpy(&ip_reply->dst_ip, &packet->src_ip, IPv4_ADDRESS_LENGTH);
-        memcpy(&ip_reply->src_ip, &packet->dst_ip, IPv4_ADDRESS_LENGTH);
+        memcpy(&ip_reply->dst, &packet->src, IPv4_ADDRESS_LENGTH);
+        memcpy(&ip_reply->src, &packet->dst, IPv4_ADDRESS_LENGTH);
     }
 
     {
@@ -48,7 +48,7 @@ uint16_t udp_checksum(ipv4_packet_t *packet)
         __ip_checksum(
             (unsigned char *)datagram, sizeof(udp_datagram_t),
             __ip_checksum(datagram->data, len,
-                          __ip_checksum((unsigned char *)&(packet->src_ip), 2 * IPv4_ADDRESS_LENGTH,
+                          __ip_checksum((unsigned char *)&(packet->src), 2 * IPv4_ADDRESS_LENGTH,
                                         IP_PROTOCOL_UDP + ntohs((uint32_t)datagram->length)))));
     datagram->checksum = sum;
     return sum;

@@ -6,7 +6,14 @@
 #ifndef ipv4_protocol
 #define ipv4_protocol
 
-#include "ipv4_definitions.h"
+#include <inet/ethernet.h>
+#include <inet/ipv4.h>
+
+#include "../icmp/icmp.h"
+#include "../dhcp/dhcp.h"
+#include "../udp/udp.h"
+#include "../tcp/tcp.h"
+
 #include "../../network_utils.h"
 #include "../../network_manager.h"
 

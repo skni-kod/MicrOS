@@ -92,7 +92,7 @@ bool rtl8139_init(net_device_t *net_dev)
     // Setup net device
     net_dev->device_name = heap_kernel_alloc((uint32_t)strlen(RTL8139_DEVICE_NAME) + 1, 0);
     strcpy(net_dev->device_name, RTL8139_DEVICE_NAME);
-    memcpy(net_dev->configuration->mac_address, rtl8139_device.mac_addr, MAC_ADDRESS_SIZE);
+    memcpy(&net_dev->interface->mac, rtl8139_device.mac_addr, sizeof(mac_addr_t));
     net_dev->dpi.send = &rtl8139_send;
     rtl8139_net_device = net_dev;
 
@@ -144,7 +144,7 @@ void rtl8139_get_mac(uint8_t *buffer)
     memcpy(buffer, rtl8139_device.mac_addr, 6);
 }
 
-void rtl8139_receive()
+uint32_t rtl8139_receive()
 {
     uint32_t *data_ptr = (uint32_t *)(rtl8139_device.rx_buffer + current_packet_ptr);
 
@@ -171,7 +171,7 @@ void rtl8139_receive()
 
 }
 
-void rtl8139_send(nic_data_t *data)
+uint32_t rtl8139_send(nic_data_t *data)
 {
     uint32_t phys_addr = GET_PHYSICAL_ADDRESS(data->frame);
 

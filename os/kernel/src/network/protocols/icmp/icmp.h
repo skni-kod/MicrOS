@@ -5,7 +5,11 @@
 #ifndef icmp_protocol
 #define icmp_protocol
 
-#include "icmp_definitions.h"
+#include <inet/ethernet.h>
+#include <inet/ipv4.h>
+#include <inet/icmp.h>
+
+#include "../arp/arp.h"
 #include "../../network_utils.h"
 #include "../../network_manager.h"
 

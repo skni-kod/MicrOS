@@ -96,13 +96,13 @@ bool rtl8139_init(net_device_t *net_dev);
 /*
     Send data, with desired length
 */
-void rtl8139_send(nic_data_t *packet);
+uint32_t rtl8139_send(nic_data_t *packet);
 
 //! rtl8139_receive
 /*
     Receive data
 */
-void rtl8139_receive();
+uint32_t rtl8139_receive();
 
 //! rtl8139_irq_handler
 /*!

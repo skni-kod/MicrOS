@@ -3,10 +3,9 @@
     Created: 17.02.2021
     Modified: 
 */
-#ifndef network_ipv6_definitions
-#define network_ipv6_definitions
+#ifndef INET_IPV6_H
+#define INET_IPV6_H
 
-#include "../../network_definitions.h"
 #include <stdint.h>
 
 #define IPv6_PROTOCOL_TYPE 0x86DD

@@ -92,7 +92,7 @@ bool virtio_nic_init(net_device_t *net_dev)
 
     net_dev->device_name = heap_kernel_alloc((uint32_t)strlen(VIRTIO_NET_DEVICE_NAME) + 1, 0);
     strcpy(net_dev->device_name, VIRTIO_NET_DEVICE_NAME);
-    memcpy(net_dev->configuration->mac_address, virtio_nic.mac_addr, MAC_ADDRESS_SIZE);
+    memcpy(&net_dev->interface->mac, virtio_nic.mac_addr, sizeof(mac_addr_t));
     net_dev->dpi.send = &virtio_nic_send;
     virtio_nic_net_device = net_dev;
 
@@ -135,7 +135,7 @@ bool virtio_nic_irq_handler()
         }
 
         // Receive packet
-        if (receive_queue->device_area->index != receive_queue->last_device_index && virtio_nic_net_device->configuration->mode & 0x1)
+        if (receive_queue->device_area->index != receive_queue->last_device_index)
             virtio_nic_receive();
     }
 

@@ -22,7 +22,7 @@ void ipv4_process_packet(nic_data_t *data)
     {
         nic_data_t *nic = (nic_data_t *)fragments->data[i];
         ipv4_packet_t *pkt = (ipv4_packet_t *)(nic->frame + sizeof(ethernet_frame_t));
-        if (*(uint32_t *)pkt->src_ip == *(uint32_t *)packet->src_ip && pkt->id == packet->id)
+        if (pkt->src.address == packet->src.address && pkt->id == packet->id)
         {
             // assume that data->frame buffer is big enought(driver sets its size to 1.5KB)
             uint16_t offset = (packet->offset << 8 | packet->offset2);
@@ -70,9 +70,9 @@ process:
 
 void __ipv4_flip_values(ipv4_packet_t *packet)
 {
-    packet->length = __uint16_flip(packet->length);
-    packet->id = __uint16_flip(packet->id);
-    packet->header_checksum = __uint16_flip(packet->header_checksum);
+    packet->length = htons(packet->length);
+    packet->id = htons(packet->id);
+    packet->header_checksum = htons(packet->header_checksum);
 }
 
 void ipv4_init()

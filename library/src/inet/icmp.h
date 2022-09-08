@@ -3,10 +3,9 @@
     Created: 30.06.2022
     Modified:
 */
-#ifndef network_icmp_definitions
-#define network_icmp_definitions
+#ifndef INET_ICMP_H
+#define INET_ICMP_H
 
-#include "../../network_definitions.h"
 #include <stdint.h>
 
 typedef struct icmp_header

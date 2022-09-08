@@ -6,7 +6,11 @@
 #ifndef network_ethernet
 #define network_ethernet
 
-#include "ethernet_definitions.h"
+#include <inet/ethernet.h>
+#include <inet/inet.h>
+#include <inet/arp.h>
+#include "../ipv4/ipv4.h"
+
 #include "../../network_definitions.h"
 #include "../../network_utils.h"
 #include "../../network_manager.h"
@@ -24,7 +28,7 @@ bool network_manager_send_ethernet_frame(ethernet_frame_t *frame, uint32_t data_
 /*
     Make ethernet frame, with specified data and type
 */
-ethernet_frame_t *ethernet_make_frame(uint8_t *src_hw, uint8_t *dst_hw, uint16_t type, uint32_t payload_size);
+ethernet_frame_t *ethernet_make_frame(mac_addr_t *src, mac_addr_t *dst, uint16_t type, uint32_t payload_size);
 
 //! network_manager_send_frame
 /*

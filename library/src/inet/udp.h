@@ -3,10 +3,9 @@
     Created: 17.02.2021
     Modified: 30.06.2022
 */
-#ifndef network_udp_definitions
-#define network_udp_definitions
+#ifndef INET_UDP_H
+#define INET_UDP_H
 
-#include "../../network_definitions.h"
 #include <stdint.h>
 
 typedef struct udp_datagram

@@ -9,9 +9,10 @@
 #include "../drivers/nic/rtl8139/rtl8139.h"
 #include "../drivers/nic/virtio-pci-nic/virtio-pci-nic.h"
 
+#include "protocols/ipv4/ipv4.h"
+
 #include "../logger/logger.h"
 #include "network_definitions.h"
-#include "protocols/protocols.h"
 #include "network_utils.h"
 
 //! network_manager_init

@@ -6,7 +6,7 @@
 #ifndef dhcp_protocol
 #define dhcp_protocol
 
-#include "dhcp_definitions.h"
+#include <inet/dhcp.h>
 #include "../../network_utils.h"
 #include "../../network_manager.h"
 

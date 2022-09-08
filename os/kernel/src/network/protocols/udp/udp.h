@@ -6,7 +6,7 @@
 #ifndef udp_protocol
 #define udp_protocol
 
-#include "udp_definitions.h"
+#include <inet/udp.h>
 #include "../../network_utils.h"
 #include "../../network_manager.h"
 
