@@ -15,6 +15,7 @@
 #include "network_definitions.h"
 #include "network_utils.h"
 
+
 //! network_manager_init
 /*
     Initialize network manager

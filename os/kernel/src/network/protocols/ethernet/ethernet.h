@@ -28,7 +28,7 @@ bool network_manager_send_ethernet_frame(ethernet_frame_t *frame, uint32_t data_
 /*
     Make ethernet frame, with specified data and type
 */
-ethernet_frame_t *ethernet_make_frame(mac_addr_t *src, mac_addr_t *dst, uint16_t type, uint32_t payload_size);
+ethernet_frame_t *ethernet_create_frame(mac_addr_t *src, mac_addr_t *dst, uint16_t type, uint32_t payload_size);
 
 //! network_manager_send_frame
 /*

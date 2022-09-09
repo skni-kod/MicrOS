@@ -5,7 +5,7 @@ void udp_process_datagram(nic_data_t *data)
     ipv4_packet_t *packet = (ipv4_packet_t *)(data->frame + sizeof(ethernet_frame_t));
     udp_datagram_t *datagram = (udp_datagram_t *)(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t));
 
-    ethernet_frame_t *frame = ethernet_make_frame(
+    ethernet_frame_t *frame = ethernet_create_frame(
         &data->device->interface->mac,
         &((ethernet_frame_t *)data->frame)->src,
         IPv4_PROTOCOL_TYPE,

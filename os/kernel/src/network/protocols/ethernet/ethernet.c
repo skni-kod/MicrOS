@@ -16,7 +16,7 @@ void ethernet_process_frame(nic_data_t *data)
     };
 }
 
-ethernet_frame_t *ethernet_make_frame(mac_addr_t *src, mac_addr_t *dst, uint16_t type, uint32_t payload_size)
+ethernet_frame_t *ethernet_create_frame(mac_addr_t *src, mac_addr_t *dst, uint16_t type, uint32_t payload_size)
 {
     ethernet_frame_t *frame = heap_kernel_alloc(sizeof(ethernet_frame_t) + payload_size + ETHERNET_FCS_LENGTH, 0);
 

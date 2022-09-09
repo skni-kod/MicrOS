@@ -30,15 +30,15 @@ typedef enum arp_entry_type
 
 typedef struct arp_packet
 {
-    uint16_t hardware_type;              // Hardware type
-    uint16_t protocol_type;              // Protocol type
-    uint8_t hardware_length;             // Hardware address length (Ethernet = 6)
-    uint8_t protocol_length;             // Protocol address length (IPv4 = 4)
-    uint16_t opcode;                     // ARP Operation Code
-    mac_addr_t src_hw;                   // Source hardware address - hardware_length (see above)
-    ipv4_addr_t src_pr;                  // Source protocol address - hardware_length (see above). If IPv4 can just be a "u32" type.
-    mac_addr_t dst_hw;                   // Destination hardware address - hlen bytes (see above)
-    ipv4_addr_t dst_pr; // Destination protocol address - plen bytes (see above). If IPv4 can just be a "u32" type.
+    uint16_t hardware_type;
+    uint16_t protocol_type;
+    uint8_t hardware_length;
+    uint8_t protocol_length;
+    uint16_t opcode;
+    mac_addr_t src_hw;
+    ipv4_addr_t src_pr;
+    mac_addr_t dst_hw;
+    ipv4_addr_t dst_pr;
 } __attribute__((packed)) arp_packet_t;
 
 typedef struct arp_entry

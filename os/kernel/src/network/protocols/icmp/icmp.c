@@ -15,7 +15,7 @@ void icmp_process_packet(nic_data_t *data)
         mac_addr_t dst_mac = entry->mac;
 
         // echo request
-        ethernet_frame_t *frame = ethernet_make_frame(
+        ethernet_frame_t *frame = ethernet_create_frame(
             &data->device->interface->mac,
             &dst_mac,
             IPv4_PROTOCOL_TYPE,
@@ -37,6 +37,20 @@ void icmp_process_packet(nic_data_t *data)
             reply->checksum = __ip_wrapsum(__ip_checksum((uint8_t *)reply, ntohs(packet->length) - sizeof(ipv4_packet_t), 0U));
         }
         ethernet_send_frame(data->device, ntohs(packet->length), frame);
+        
+        
+        
+        char str[120];
+        
+        kernel_sprintf(str, "MAC: %02x:%02x:%02x:%02x:%02x:%02x",
+                   data->device->interface->mac.octet_a,
+                   data->device->interface->mac.octet_b,
+                   data->device->interface->mac.octet_c,
+                   data->device->interface->mac.octet_d,
+                   data->device->interface->mac.octet_e,
+                   data->device->interface->mac.octet_f);
+        
+        logger_log_info(str);
     }
     break;
 

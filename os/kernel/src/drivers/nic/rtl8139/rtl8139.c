@@ -11,7 +11,7 @@ net_device_t *rtl8139_net_device;
 
 uint32_t current_packet_ptr = 0;
 
-//! Transmit start address of descritor (device has 4 descriptors)
+//! Transmit start address of descriptor (device has 4 descriptors)
 uint8_t const TSAD[4] = {0x20, 0x24, 0x28, 0x2C};
 
 //! Transmit status of descriptor

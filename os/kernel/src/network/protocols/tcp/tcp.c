@@ -10,7 +10,7 @@ void tcp_process_datagram(nic_data_t *data)
     //     return 1;
 
     // // echo request
-    // ethernet_frame_t *frame = ethernet_make_frame(
+    // ethernet_frame_t *frame = ethernet_create_frame(
     //     data->device->configuration->mac_address,
     //     ((ethernet_frame_t *)data->frame)->src_mac_addr,
     //     IPv4_PROTOCOL_TYPE,

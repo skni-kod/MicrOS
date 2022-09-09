@@ -1,5 +1,12 @@
 #include "arp.h"
 
+arp_packet_t arp_packet_base = {
+    .hardware_type = ARP_HW_TYPE_ETHERNET,
+    .protocol_type = ARP_PR_TYPE,
+    .hardware_length = MAC_ADDRESS_LENGTH,
+    .protocol_length = IPv4_ADDRESS_LENGTH,
+};
+
 void arp_process_packet(nic_data_t *data)
 {
     arp_packet_t *packet = (arp_packet_t *)(data->frame + sizeof(ethernet_frame_t));
@@ -10,22 +17,17 @@ void arp_process_packet(nic_data_t *data)
     {
     case ARP_OPCODE_REQUEST:
         // Handle ARP request
+        if (packet->dst_pr.address == data->device->interface->ipv4.address)
         {
-            ethernet_frame_t *frame = ethernet_make_frame(
+            ethernet_frame_t *frame = ethernet_create_frame(
                 &data->device->interface->mac,
                 &packet->src_hw,
                 ARP_PROTOCOL_TYPE,
                 sizeof(arp_packet_t));
 
             arp_packet_t *response = (arp_packet_t *)(frame->data);
-            response->hardware_type = ARP_HW_TYPE_ETHERNET;
-            response->opcode = ARP_OPCODE_REPLY;
-            response->protocol_type = ARP_PR_TYPE;
-
+            memcpy(response, &arp_packet_base, sizeof(arp_packet_t));
             __arp_flip_values(response);
-
-            response->hardware_length = MAC_ADDRESS_LENGTH;
-            response->protocol_length = IPv4_ADDRESS_LENGTH;
 
             memcpy(&response->src_hw, &data->device->interface->mac, sizeof(mac_addr_t));
             memcpy(&response->src_pr, &packet->dst_pr, sizeof(ipv4_addr_t));
@@ -84,7 +86,7 @@ arp_entry_t *arp_get_entry(net_device_t *device, ipv4_addr_t *ip)
 
 arp_entry_t *arp_request_entry(net_device_t *device, ipv4_addr_t *ip)
 {
-    if(!ip)
+    if (!ip)
         return 0;
 
     arp_entry_t *entry = arp_get_entry(device, ip);
@@ -113,7 +115,7 @@ void arp_send_request(net_device_t *device, ipv4_addr_t *ip)
 {
     uint8_t broadcast[MAC_ADDRESS_LENGTH] = {[0 ...(MAC_ADDRESS_LENGTH - 1)] = 0xFF};
 
-    ethernet_frame_t *frame = ethernet_make_frame(
+    ethernet_frame_t *frame = ethernet_create_frame(
         &device->interface->mac,
         broadcast,
         ARP_PROTOCOL_TYPE,
@@ -133,7 +135,7 @@ void arp_send_request(net_device_t *device, ipv4_addr_t *ip)
     memcpy(&request->dst_pr, ip, sizeof(ipv4_addr_t));
 
     memcpy(&request->src_pr, &device->interface->ipv4, sizeof(ipv4_addr_t));
-    
+
     request->dst_hw.octet_a = 0,
     request->dst_hw.octet_b = 0,
     request->dst_hw.octet_c = 0,

@@ -5,6 +5,7 @@
 */
 
 #include "network_manager.h"
+#include <test/test.h>
 
 kvector *net_devices;
 bool (*drivers[])(net_device_t *device) = {rtl8139_init, virtio_nic_init};
@@ -16,6 +17,9 @@ bool network_manager_init()
     kvector_init(net_devices);
 
     ipv4_init();
+
+    int a = test(2);
+    
 
     // Initialize all NIC drivers
     for (uint8_t i = 0; i < drivers_count; i++)

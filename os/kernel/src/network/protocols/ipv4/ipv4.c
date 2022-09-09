@@ -1,8 +1,6 @@
 #include "ipv4.h"
 
 // TODO:
-//  add function to track stack, so in ICMP be able to get header size etc
-//  add function like ethernet_make_frame, ethernet_send_frame in IPv4,
 //  rewrite defintions in protorols
 //  eg: IPv4 PROTOCOL_TYPE
 //  add ICMP enums
@@ -13,11 +11,11 @@ void ipv4_process_packet(nic_data_t *data)
 {
     ipv4_packet_t *packet = (ipv4_packet_t *)(data->frame + sizeof(ethernet_frame_t));
 
-    if (packet->version != 4)
+    if (packet->version != IPv4_PROTOCOL_VERSION)
         return;
 
-    //TODO: replying fragmented data
-    // Assembly packet if it is fragmented
+    // TODO: replying fragmented data
+    //  Assembly packet if it is fragmented
     for (uint16_t i = 0; i < fragments->count; i++)
     {
         nic_data_t *nic = (nic_data_t *)fragments->data[i];
@@ -26,7 +24,7 @@ void ipv4_process_packet(nic_data_t *data)
         {
             // assume that data->frame buffer is big enought(driver sets its size to 1.5KB)
             uint16_t offset = (packet->offset << 8 | packet->offset2);
-            memcpy(pkt->data+offset*8, packet->data, ntohs(packet->length) - packet->ihl);
+            memcpy(pkt->data + offset * 8, packet->data, ntohs(packet->length) - packet->ihl);
             data->keep = false;
             if (packet->flags_mf == IPv4_FLAG_LAST_FRAGMENT)
             {
