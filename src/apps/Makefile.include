@@ -1,0 +1,119 @@
+include ../../Makefile
+
+build_dir    = $(target_build_dir)/apps/src/userland/$(bin_name)
+dist_dir     = $(target_build_dir)/dist
+bin_dir      = $(dist_dir)/apps/bin
+target       = $(bin_dir)/$(bin_name)
+
+
+###############################################################################
+# Options for the different tools
+###############################################################################
+
+###############################################################################
+# Source files
+###############################################################################
+
+objs += $(patsubst %.c, $(build_dir)/%.o, $(shell find . -name '*.c'))
+objs += $(addprefix $(build_dir)/$(external_dir)/, $(external_objs))
+
+###############################################################################
+# Custom configuration
+###############################################################################
+
+# Variables that may be affected by the custom configuration.
+CFLAGS ?=
+
+-include $(root_dir)/config
+include $(root_dir)/Makefile-cfg.include
+
+ifeq ($(UBSAN), 1)
+	CFLAGS += -fsanitize=undefined
+endif
+
+# This file exists in a Docker container because we copy it in `Dockerfile`.
+in_docker = $(wildcard /tmp/install-linux-deps)
+ifneq ($(in_docker),)
+	LLVM_PREFIX =
+	LLVM_SUFFIX = -13
+endif
+
+###############################################################################
+# Flags
+###############################################################################
+
+LD_FLAGS += -nostdlib
+
+ifeq ($(ARCH), aarch32)
+	# We need -march to avoid the following error: "lld uses blx instruction, no
+	# object with architecture supporting feature detected".
+	CFLAGS   += --target=arm-none-eabi -march=armv5te
+	LD_FLAGS += $(shell $(ARM_GCC) -print-libgcc-file-name)
+endif
+
+ifeq ($(ARCH), aarch64)
+	CFLAGS += --target=aarch64-elf
+endif
+
+ifeq ($(ARCH), x86_64)
+	CFLAGS += --target=x86_64 -fstack-protector-strong
+	CFLAGS += -mno-mmx -mno-sse -mno-sse2 -mno-avx -mno-avx2
+	# Add `-no-pie` to disable the PIE feature that causes `gcc` to not create an
+	# executable if needed, see:
+	# https://access.redhat.com/blogs/766093/posts/1975793
+	CFLAGS += -fno-pie
+
+	LD_FLAGS += --image-base=0x40000000
+	LD_FLAGS += -no-pie
+endif
+
+WERRORS += -Wall -Wextra -Werror
+WERRORS += -Werror=implicit-function-declaration
+WERRORS += -Werror=int-conversion
+WERRORS += -Werror=incompatible-pointer-types
+WERRORS += -Werror=shift-count-overflow
+WERRORS += -Werror=switch
+
+COMMON_CFLAGS += -O2 -std=c11
+COMMON_CFLAGS += $(WERRORS)
+COMMON_CFLAGS += $(addprefix -I$(external_dir)/, $(external_deps))
+
+CFLAGS += -ffreestanding -nostdlib -fno-builtin
+CFLAGS += $(COMMON_CFLAGS)
+CFLAGS += -I$(root_dir)/include/libc/ -I$(external_dir)/printf/
+
+ifeq ($(ENABLE_USERLAND_DEBUG), 1)
+	CFLAGS += -DENABLE_USERLAND_DEBUG
+endif
+
+LD_FLAGS += $(target_build_dir)/dist/libc-$(OS_NAME)-$(ARCH).a
+
+###############################################################################
+# Rules and targets
+###############################################################################
+
+all: $(target)
+.PHONY: all
+
+$(target): $(objs)
+	$(progress) "LD" $@
+	mkdir -p $(bin_dir)
+	$(LD) -o $@ $^ $(LD_FLAGS)
+
+$(objs): $(build_dir)/%.o : %.c
+	$(progress) "CC" $<
+	mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+local: CFLAGS  = $(COMMON_CFLAGS)
+local: LD_FLAGS = -fuse-ld=lld
+local: $(objs)
+	$(progress) "LD" $(local_target)
+	mkdir -p $(local_build_dir)
+	$(CC) $(LD_FLAGS) -o $(local_target) $^
+.PHONY: local
+
+clean:
+	$(progress) "CLEAN"
+	rm -f $(target) $(local_target) $(objs)
+.PHONY: clean

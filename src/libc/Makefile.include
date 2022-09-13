@@ -1,55 +1,44 @@
-libk_bin 			= $(dist_dir)/libk.a
+libc_bin 			= $(dist_dir)/libc.a
+libc_objs_dir    	= $(build_dir)/obj/libc
 
-libk_c_files       += $(shell find $(libk_src_dir) -name "*.c")
-libk_c_files       += $(shell find $(external_dir)/libk -name "*.c")
-libk_asm_files     += $(shell find $(libk_src_dir) -name "*.asm")
-libk_asm_files     += $(shell find $(external_dir)/libk -name "*.asm")
-# define dependencies from stdlib:
-libk_c_files       += $(shell find $(libc_src_dir)/stdio -name "*.c")
-libk_c_files       += $(shell find $(libc_src_dir)/string -name "*.c")
-libk_c_files       += $(shell find $(libc_src_dir)/stdlib -name "*.c")
-libk_c_files       += $(shell find $(libc_src_dir)/gcc -name "*.c")
+# libc specific source files:
+libc_c_files       += $(shell find $(libc_src_dir) -name "*.c")
+libc_c_files       += $(shell find $(external_dir)/libc -name "*.c")
+libc_asm_files     += $(shell find $(libc_src_dir) -name "*.asm")
+libc_asm_files     += $(shell find $(external_dir)/libc -name "*.asm")
 
-# libk: object files
-libk_c_objects     = $(patsubst %.c, $(libk_objs_dir)/%.o, $(libk_c_files))
-libk_asm_objects   = $(patsubst %.asm, $(libk_objs_dir)/%.o, $(libk_asm_files))
-libk_extra_objects =
+# libc: object files
+libc_c_objects     = $(patsubst %.c, $(libc_objs_dir)/%.o, $(libc_c_files))
+libc_asm_objects   = $(patsubst %.asm, $(libc_objs_dir)/%.o, $(libc_asm_files))
+libc_extra_objects =
 # external dependencies
-libk_external_deps = 
-libk_external_dirs = $(addprefix $(external_dir)/libk/,$(external_deps))
+libc_external_deps = 
+libc_external_dirs = $(addprefix $(external_dir)/libc/,$(external_deps))
 
+# libc flags
+libc_INCLUDES  += -I$(include_dir)/libc 
+libc_ASM_FLAGS += -f elf32 
+libc_CFLAGS    += -ffreestanding
+libc_CFLAGS    += $(WERRORS) 
+libc_CFLAGS    += $(LIBC_CONFIG) 
 
-# libk flags
-LIBK_INCLUDES  += $(INCLUDES)
-LIBK_INCLUDES  += -I$(include_dir)/libk/
-LIBK_INCLUDES  += -I$(addprefix -I$(external_dir)/libk,$(addsuffix /, $(libk_external_deps)))
-LIBK_ASM_FLAGS += -f elf32
-LIBK_CFLAGS    += -ffreestanding -nostdlib -fno-builtin
-LIBK_CFLAGS    += $(WERRORS)
-LIBK_CFLAGS    += $(LIBK_CONFIG)
+libc_deps = $(libc_c_objects:%.o=%.d)
+libc_deps += $(libc_extra_objects:%.o=%.d)
 
-libk_deps = $(libk_c_objects:%.o=%.d)
-libk_deps += $(libk_extra_objects:%.o=%.d)
+-include $(libc_deps)
 
--include $(libk_deps)
-
-
-# libk
-$(libk_asm_objects): $(libk_objs_dir)/%.o: %.asm
-	$(progress) "LIBC ASM" $<
+# libc
+$(libc_asm_objects): $(libc_objs_dir)/%.o: %.asm
+	$(progress) "ASM" $<
 	$(MKDIR) -p $(@D)
-	$(ASM) $(LIBK_ASM_FLAGS) $< -o $@
+	$(ASM) $(libc_ASM_FLAGS) $< -o $@
 
-$(libk_c_objects): $(libk_objs_dir)/%.o: %.c
-	$(progress) "LIBC CC" $<
+$(libc_c_objects): $(libc_objs_dir)/%.o: %.c
+	$(progress) "CC" $<
 	$(MKDIR) -p $(@D)
-	$(CC) -MMD -MF $(@:.o=.d) $(LIBK_CFLAGS) $(LIBK_INCLUDES) -c $< -o $@ 
+	$(CC) -MMD -MF $(@:.o=.d) $(libc_INCLUDES) $(libc_CFLAGS) -c $< -o $@ 
 
-$(libk_bin): $(libk_c_objects) $(libk_asm_objects)
-	$(progress) "LIBC AR" $@
+$(libc_bin): $(header_files) $(libc_c_objects) $(libc_asm_objects)
+	$(progress) "AR" $@
 	$(MKDIR) -p $(@D)
-	$(AR) rcs $@ $(libk_c_objects) $(libk_asm_objects) 
-
-libk: ## build standard library for kernel
-libk: $(libk_bin)
-.PHONY: libk
+	$(AR) rcs $@ $(libc_c_objects) $(libc_asm_objects)

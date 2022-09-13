@@ -30,13 +30,17 @@ bootloader_src_dir	= $(src_dir)/bootloader
 libk_src_dir     	= $(src_dir)/libk
 libc_src_dir     	= $(src_dir)/libc
 kernel_src_dir 		= $(src_dir)/kernel
+apps_src_dir		= $(src_dir)/apps
 
 # build directories
 dist_dir         	= $(build_dir)/dist
-kernel_objs_dir    	= $(build_dir)/obj/kernel
 output_dir    	    = $(build_dir)/output
 # tools directories
-cross_dir 			= /home/jp/ramdisk/MicrOS/tools/cross
+ifndef CROSS
+	cross_dir 		= $(tools_dir)/cross
+else
+	cross_dir 		= ${CROSS}
+endif
 
 # files
 src_header_files 	+= $(shell find $(kernel_src_dir) -name "*.h")
@@ -49,54 +53,10 @@ log_file 			= $(log_dir)/qemu.log
 output_image 		= $(output_dir)/floppy.img
 gdbconfig          	= .gdbconfig
 
-# This is from: https://github.com/nuta and it allows to print nice progress messages
-progress := printf "  \\033[1;96m%-8s\\033[0m  \\033[1;m%s\\033[0m\\n"
-
-###############################################################################
-# Tools
-###############################################################################
-CC       = $(cross_dir)/bin/$(ARCH)-elf-gcc
-LD       = $(cross_dir)/bin/$(ARCH)-elf-ld
-AR       = $(cross_dir)/bin/$(ARCH)-elf-ar
-NM       = $(cross_dir)/bin/$(ARCH)-elf-nm
-OBJCOPY  = $(cross_dir)/$(ARCH)-elf/bin/objcopy
-CWD 	 = $(shell pwd)
-DD		 = dd
-MCOPY    = mcopy
-CP 		 = cp
-LN		 = ln
-MKFS_DOS = /sbin/mkfs.msdos
-ASM 	 = nasm
-QEMU     = qemu-system-$(QEMU_ARCH)
-TAR      = tar
-MKDIR    = mkdir
-CURL     = curl
-RM		 = rm
 
 # ifeq ($(UBSAN), 1)
 # 	KERNEL_CFLAGS += -fsanitize=undefined
 # endif
-
-# ###############################################################################
-# # Flags
-# ###############################################################################
-LD_FLAGS += -nostdlib -lc -lgcc
-
-WERRORS  += -Wall
-WERRORS  += -Wextra 
-WERRORS  += -Wno-unused-parameter 
-WERRORS  += -Wno-packed-bitfield-compat 
-WERRORS  += -Wno-implicit-fallthrough
-
-$(include_dir)/%.h: $(src_dir)/%.h
-	$(progress) "LN" $@
-	$(MKDIR) -p $(dir $@)
-	ln -sf $(CWD)/$< $(CWD)/$@
-
-#INCLUDES += -I$(include_dir)/libc/
-
-# DEBUG_CFLAGS  += -O0 -g3 -DDEBUG_MODE
-
 # ifeq ($(ENABLE_KERNEL_DEBUG), 1)
 # 	DEBUG_CFLAGS += -DENABLE_KERNEL_DEBUG
 # endif
@@ -110,6 +70,14 @@ include $(libk_src_dir)/Makefile.include
 # include kernel
 include $(kernel_src_dir)/Makefile.include
 
+# include libc
+include $(libc_src_dir)/Makefile.include
+
+$(include_dir)/%.h: $(src_dir)/%.h
+	$(progress) "LN" $@
+	$(MKDIR) -p $(dir $@)
+	ln -sf $(CWD)/$< $(CWD)/$@
+
 $(log_dir):
 	$(progress) "MKDIR" $@
 	$(MKDIR) -p $@
@@ -119,18 +87,13 @@ $(output_image):
 	$(progress) "GENERATE OUTPUT IMAGE"
 	$(MKDIR) -p $(@D)
 	$(MKFS_DOS) -C $@ 1440
-	$(MCOPY) -oi $@ $(kernel_bin) ::KERNEL.BIN
-
+# copy files from data directory to 
 $(data_files):
 	$(progress) "MCOPY" $@ 
 	$(MCOPY) -oi $(output_image) $(data_dir)/$@ ::$@
 
-regenerate-image: 
-	$(RM) -rf $(output_dir)
-.PHONY: regenerate-image
-
 release: ## build the project in release mode
-release: kernel regenerate-image $(output_image) bootloader $(data_files)
+release: $(output_image) $(header_files) bootloader kernel $(data_files) $(libc_bin)
 .PHONY: release
 
 run-qemu: ## run qemu

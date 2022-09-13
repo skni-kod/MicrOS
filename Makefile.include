@@ -23,3 +23,38 @@ QEMU_OPTIONS += -serial file:$(log_file)
 QEMU_OPTIONS += -netdev user,id=u1,ipv6=off,dhcpstart=10.0.2.20
 QEMU_OPTIONS += -device rtl8139,netdev=u1
 QEMU_OPTIONS += -object filter-dump,id=f1,netdev=u1,file=$(log_dir)/traffic.pcap
+
+# This is from: https://github.com/nuta and it allows to print nice progress messages
+progress := printf "  \\033[1;96m%-8s\\033[0m  \\033[1;m%s\\033[0m\\n"
+
+###############################################################################
+# Tools
+###############################################################################
+CC       			= $(cross_dir)/bin/$(ARCH)-elf-gcc
+LD       			= $(cross_dir)/bin/$(ARCH)-elf-ld
+AR       			= $(cross_dir)/bin/$(ARCH)-elf-ar
+NM       			= $(cross_dir)/bin/$(ARCH)-elf-nm
+OBJCOPY  			= $(cross_dir)/$(ARCH)-elf/bin/objcopy
+CWD 	 			= $(shell pwd)
+DD		 			= dd
+MCOPY    			= mcopy
+CP 		 			= cp
+LN		 			= ln
+MKFS_DOS 			= /sbin/mkfs.msdos
+ASM 	 			= nasm
+QEMU     			= qemu-system-$(QEMU_ARCH)
+TAR      			= tar
+MKDIR    			= mkdir
+CURL     			= curl
+RM		 			= rm
+
+
+# ###############################################################################
+# # Flags
+# ###############################################################################		
+WERRORS  			+= -Wall
+WERRORS  			+= -Wextra 
+WERRORS  			+= -Wno-unused-parameter 
+WERRORS  			+= -Wno-packed-bitfield-compat 
+WERRORS  			+= -Wno-implicit-fallthrough
+
