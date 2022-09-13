@@ -56,11 +56,11 @@ dkms.conf
 tools
 build
 scripts
+include
 .vscode
 docs
+tools/cross/*
 
-cloc.exe
-cloc.bat
 .idea/vcs.xml
 .idea/MicrOS.iml
 .idea/misc.xml

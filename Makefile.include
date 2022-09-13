@@ -1,0 +1,25 @@
+NAME           		= MicrOS
+VERSION		   		= 1.1
+BUILD_TARGET   		= debug # debug,release
+ARCH           		= i386
+QEMU_ARCH	   		= $(ARCH)
+GCC_OPTIMIZATION 	= 02
+C_STANDARD 			= c11
+
+# tools remote repo
+TOOLS_REPO = https://kod.prz.edu.pl/repository/micros_devtools_linux
+CROSS_COMPILER = cross.tar.gz
+
+UBSAN                   ?=
+KERNEL_CFLAGS           ?=
+KERNEL_CONFIG           ?=
+LIBC_CONFIG             ?=
+LIBK_CONFIG             ?=
+
+ENABLE_KERNEL_DEBUG ?= 1
+
+QEMU_OPTIONS += -m 512M
+QEMU_OPTIONS += -serial file:$(log_file)
+QEMU_OPTIONS += -netdev user,id=u1,ipv6=off,dhcpstart=10.0.2.20
+QEMU_OPTIONS += -device rtl8139,netdev=u1
+QEMU_OPTIONS += -object filter-dump,id=f1,netdev=u1,file=$(log_dir)/traffic.pcap

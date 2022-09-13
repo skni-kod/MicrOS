@@ -1,0 +1,52 @@
+kernel_bin = $(dist_dir)/kernel.bin
+
+kernel_linker_ld = $(kernel_src_dir)/linker.ld
+
+# kernel specific source files:
+kernel_c_files       += $(shell find $(kernel_src_dir) -name "*.c")
+kernel_c_files       += $(shell find $(external_dir)/kernel -name "*.c")
+kernel_asm_files     += $(shell find $(kernel_src_dir) -name "*.asm")
+kernel_asm_files     += $(shell find $(external_dir)/kernel -name "*.asm")
+# kernel: object files
+kernel_c_objects     = $(patsubst %.c, $(kernel_objs_dir)/%.o, $(kernel_c_files))
+kernel_asm_objects   = $(patsubst %.asm, $(kernel_objs_dir)/%.o, $(kernel_asm_files))
+kernel_extra_objects =
+# external dependencies
+kernel_external_deps = 
+kernel_external_dirs = $(addprefix $(external_dir)/kernel/,$(external_deps))
+
+# kernel flags
+kernel_INCLUDES  += -I$(include_dir)/libk/
+kernel_INCLUDES  += -I$(include_dir)/libc/
+kernel_INCLUDES  += -I$(include_dir)/kernel/
+kernel_INCLUDES  += -I$(addprefix -I$(external_dir)/kernel,$(addsuffix /, $(kernel_external_deps)))
+
+kernel_ASM_FLAGS += -f elf32
+kernel_CFLAGS    += -ffreestanding -nostdlib -fno-builtin -fshort-enums
+kernel_CFLAGS    += $(WERRORS)
+kernel_CFLAGS    += $(KERNEL_CONFIG)
+
+kernel_deps = $(kernel_c_objects:%.o=%.d)
+kernel_deps += $(kernel_extra_objects:%.o=%.d)
+
+-include $(kernel_deps)
+
+$(kernel_asm_objects): $(kernel_objs_dir)/%.o: %.asm
+	$(progress) "ASM" $<
+	$(MKDIR) -p $(@D)
+	$(ASM) $(kernel_ASM_FLAGS) $< -o $@
+
+$(kernel_c_objects): $(kernel_objs_dir)/%.o: %.c
+	$(progress) "CC" $<
+	$(MKDIR) -p $(@D)
+	$(CC) -MMD -MF $(@:.o=.d) $(kernel_CFLAGS) $(kernel_INCLUDES) -D__kernel -c $< -o $@ 
+
+$(kernel_bin): $(kernel_linker_ld) $(libk_c_objects) $(libk_asm_objects) $(libk_extra_objects) $(kernel_c_objects) $(kernel_asm_objects) $(kernel_extra_objects)
+	$(progress) "LD" $@
+	$(MKDIR) -p $(@D)
+	$(LD) --output=$@ --script=$(kernel_linker_ld) $(LD_FLAGS)  $(libk_c_objects) $(libk_asm_objects) $(libk_extra_objects) $(kernel_c_objects) $(kernel_asm_objects) $(kernel_extra_objects)
+
+
+kernel: ## build standard library for kernel
+kernel: $(header_files) $(kernel_bin)
+.PHONY: kernel
