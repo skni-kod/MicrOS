@@ -1,6 +1,7 @@
 #include <memory/heap/heap.h>
-
 #include <logger/logger.h>
+#include <stdio.h>
+
 heap_entry *kernel_heap;
 heap_entry *user_heap;
 
@@ -326,7 +327,7 @@ void heap_check_entries()
         {
             if(current_entry->size == 0)
             {
-                kernel_sprintf(buffer, "%08X SIZE ERROR!", current_entry);
+                sprintf(buffer, "%08X SIZE ERROR!", current_entry);
                 
             }
         }
@@ -334,7 +335,7 @@ void heap_check_entries()
         {
             if(current_entry->size == 0)
             {
-                kernel_sprintf(buffer, "%08X  SIZE ERROR!", current_entry);
+                sprintf(buffer, "%08X  SIZE ERROR!", current_entry);
                 logger_log_warning(buffer);
             }
             break;

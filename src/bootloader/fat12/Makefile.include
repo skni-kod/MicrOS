@@ -18,5 +18,6 @@ $(b_fat12_objects): $(b_fat12_objs_dir)/%.o: $(b_fat12_src_dir)/%.asm
 bootloader: $(b_fat12_objects)
 	$(progress) "INSTALL BOOTLOADER" $<
 	$(DD) if=$(b_fat12_first_stage)  of=$(output_image) bs=512 conv=notrunc
-	$(MCOPY) -vi $(output_image) $(b_fat12_second_stage) ::MICROLDR.BIN
+	$(progress) "MCOPY" MICROLDR.BIN 
+	$(MCOPY) -i $(output_image) $(b_fat12_second_stage) ::MICROLDR.BIN
 .PHONY: bootloader

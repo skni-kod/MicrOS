@@ -60,6 +60,7 @@ include
 .vscode
 docs
 tools/cross/*
+log/*
 
 .idea/vcs.xml
 .idea/MicrOS.iml

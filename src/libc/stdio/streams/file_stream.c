@@ -1,5 +1,6 @@
 #include <stdio/streams/file_stream.h>
 
+
 FILE *streams_set_stream_as_file(const char *filename, const char *mode, FILE *stream)
 {
     micros_filesystem_file_info info;

@@ -2,6 +2,8 @@
 
 uint32_t micros_interrupt_0a(uint32_t function_number)
 {
+#ifndef __libk 
+
     uint32_t result;
     __asm__(
         "mov %1, %%eax\n"
@@ -13,10 +15,16 @@ uint32_t micros_interrupt_0a(uint32_t function_number)
         : "%eax");
 
     return result;
+
+#else
+
+#endif
 }
 
 uint32_t micros_interrupt_1a(uint32_t function_number, uint32_t a)
 {
+#ifndef __libk 
+
     uint32_t result;
     __asm__(
         "mov %1, %%eax\n"
@@ -29,10 +37,16 @@ uint32_t micros_interrupt_1a(uint32_t function_number, uint32_t a)
         : "%eax", "%ebx");
 
     return result;
+
+#else
+
+#endif
 }
 
 uint32_t micros_interrupt_2a(uint32_t function_number, uint32_t a, uint32_t b)
 {
+#ifndef __libk 
+
     uint32_t result;
     __asm__(
         "mov %1, %%eax\n"
@@ -46,10 +60,16 @@ uint32_t micros_interrupt_2a(uint32_t function_number, uint32_t a, uint32_t b)
         : "%eax", "%ebx", "%ecx");
 
     return result;
+
+#else
+
+#endif
 }
 
 uint32_t micros_interrupt_3a(uint32_t function_number, uint32_t a, uint32_t b, uint32_t c)
 {
+#ifndef __libk 
+
     uint32_t result;
     __asm__(
         "mov %1, %%eax\n"
@@ -64,10 +84,16 @@ uint32_t micros_interrupt_3a(uint32_t function_number, uint32_t a, uint32_t b, u
         : "%eax", "%ebx", "%ecx", "%edx");
 
     return result;
+
+#else
+
+#endif
 }
 
 uint32_t micros_interrupt_4a(uint32_t function_number, uint32_t a, uint32_t b, uint32_t c, uint32_t d)
 {
+#ifndef __libk 
+
     uint32_t result;
     __asm__(
         "mov %1, %%eax\n"
@@ -82,10 +108,16 @@ uint32_t micros_interrupt_4a(uint32_t function_number, uint32_t a, uint32_t b, u
         : "%eax", "%ebx", "%ecx", "%edx", "%esi");
 
     return result;
+
+#else
+
+#endif
 }
 
 uint32_t micros_interrupt_5a(uint32_t function_number, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e)
 {
+#ifndef __libk 
+
     uint32_t result;
     __asm__(
         "mov %1, %%eax\n"
@@ -102,4 +134,8 @@ uint32_t micros_interrupt_5a(uint32_t function_number, uint32_t a, uint32_t b, u
         : "%eax", "%ebx", "%ecx", "%edx", "%esi", "%edi");
 
     return result;
+
+#else
+
+#endif
 }

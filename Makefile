@@ -32,22 +32,20 @@ libc_src_dir     	= $(src_dir)/libc
 kernel_src_dir 		= $(src_dir)/kernel
 
 # build directories
-rootfs_dir		 	= $(build_dir)/rootfs
 dist_dir         	= $(build_dir)/dist
 kernel_objs_dir    	= $(build_dir)/obj/kernel
 output_dir    	    = $(build_dir)/output
-CWD 				= $(shell pwd)
-
 # tools directories
-cross_dir 			= $(tools_dir)/cross
+cross_dir 			= /home/jp/ramdisk/MicrOS/tools/cross
 
 # files
-src_header_files 		+= $(shell find $(kernel_src_dir) -name "*.h")
-src_header_files 		+= $(shell find $(libk_src_dir) -name "*.h")
-src_header_files 		+= $(shell find $(libc_src_dir) -name "*.h")
-header_files = $(addprefix $(include_dir)/, $(patsubst src/%,%,$(src_header_files)))
-
-
+src_header_files 	+= $(shell find $(kernel_src_dir) -name "*.h")
+src_header_files 	+= $(shell find $(libk_src_dir) -name "*.h")
+src_header_files 	+= $(shell find $(libc_src_dir) -name "*.h")
+header_files 		= $(addprefix $(include_dir)/, $(patsubst $(src_dir)/%,%,$(src_header_files)))
+src_data_files 		+= $(shell find $(data_dir))
+data_files 			= $(patsubst $(data_dir)/%,%,$(src_data_files))
+log_file 			= $(log_dir)/qemu.log
 output_image 		= $(output_dir)/floppy.img
 gdbconfig          	= .gdbconfig
 
@@ -62,7 +60,7 @@ LD       = $(cross_dir)/bin/$(ARCH)-elf-ld
 AR       = $(cross_dir)/bin/$(ARCH)-elf-ar
 NM       = $(cross_dir)/bin/$(ARCH)-elf-nm
 OBJCOPY  = $(cross_dir)/$(ARCH)-elf/bin/objcopy
-
+CWD 	 = $(shell pwd)
 DD		 = dd
 MCOPY    = mcopy
 CP 		 = cp
@@ -82,7 +80,7 @@ RM		 = rm
 # ###############################################################################
 # # Flags
 # ###############################################################################
-LD_FLAGS += -nostdlib
+LD_FLAGS += -nostdlib -lc -lgcc
 
 WERRORS  += -Wall
 WERRORS  += -Wextra 
@@ -112,34 +110,32 @@ include $(libk_src_dir)/Makefile.include
 # include kernel
 include $(kernel_src_dir)/Makefile.include
 
+$(log_dir):
+	$(progress) "MKDIR" $@
+	$(MKDIR) -p $@
+
 # generate output image
 $(output_image):
 	$(progress) "GENERATE OUTPUT IMAGE"
 	$(MKDIR) -p $(@D)
-	$(MKDIR) -p $(rootfs_dir)
 	$(MKFS_DOS) -C $@ 1440
+	$(MCOPY) -oi $@ $(kernel_bin) ::KERNEL.BIN
 
-files:
-	$(CP) -f $(data_dir)/HELP.TXT $(rootfs_dir)/HELP.TXT
-	$(CP) -f $(data_dir)/KERNEL.BIN $(rootfs_dir)/KERNEL.BIN
-	$(MCOPY) -vi $(output_image) $(rootfs_dir)/KERNEL.BIN ::KERNEL.BIN
-.PHONY: files
+$(data_files):
+	$(progress) "MCOPY" $@ 
+	$(MCOPY) -oi $(output_image) $(data_dir)/$@ ::$@
 
 regenerate-image: 
 	$(RM) -rf $(output_dir)
 .PHONY: regenerate-image
 
-includes: ## copy header files to header directory
-includes: $(header_files)
-.PHONY: includes
-
 release: ## build the project in release mode
-release: regenerate-image $(output_image) bootloader files
+release: kernel regenerate-image $(output_image) bootloader $(data_files)
 .PHONY: release
 
 run-qemu: ## run qemu
-run-qemu:
-	$(QEMU) -m 128M\
+run-qemu: $(log_dir)
+	$(QEMU) $(QEMU_OPTIONS) \
 	-drive file=$(output_image),format=raw,if=floppy
 .PHONY: run-qemu
 
