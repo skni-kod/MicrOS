@@ -31,41 +31,18 @@ ifeq ($(UBSAN), 1)
 	CFLAGS += -fsanitize=undefined
 endif
 
-# This file exists in a Docker container because we copy it in `Dockerfile`.
-in_docker = $(wildcard /tmp/install-linux-deps)
-ifneq ($(in_docker),)
-	LLVM_PREFIX =
-	LLVM_SUFFIX = -13
-endif
-
 ###############################################################################
 # Flags
 ###############################################################################
 
 LD_FLAGS += -nostdlib
 
-ifeq ($(ARCH), aarch32)
-	# We need -march to avoid the following error: "lld uses blx instruction, no
-	# object with architecture supporting feature detected".
-	CFLAGS   += --target=arm-none-eabi -march=armv5te
-	LD_FLAGS += $(shell $(ARM_GCC) -print-libgcc-file-name)
-endif
+CFLAGS += --target=x86_64 -fstack-protector-strong
+CFLAGS += -mno-mmx -mno-sse -mno-sse2 -mno-avx -mno-avx2
+CFLAGS += -fno-pie
 
-ifeq ($(ARCH), aarch64)
-	CFLAGS += --target=aarch64-elf
-endif
-
-ifeq ($(ARCH), x86_64)
-	CFLAGS += --target=x86_64 -fstack-protector-strong
-	CFLAGS += -mno-mmx -mno-sse -mno-sse2 -mno-avx -mno-avx2
-	# Add `-no-pie` to disable the PIE feature that causes `gcc` to not create an
-	# executable if needed, see:
-	# https://access.redhat.com/blogs/766093/posts/1975793
-	CFLAGS += -fno-pie
-
-	LD_FLAGS += --image-base=0x40000000
-	LD_FLAGS += -no-pie
-endif
+LD_FLAGS += --image-base=0x40000000
+LD_FLAGS += -no-pie
 
 WERRORS += -Wall -Wextra -Werror
 WERRORS += -Werror=implicit-function-declaration

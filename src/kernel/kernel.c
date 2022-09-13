@@ -50,7 +50,6 @@ typedef struct _linesStruct
 } linesStruct;
 
 char buff[50];
-linesStruct ssBuffer[64];
 
 v8086* v8086_machine;
 
@@ -297,7 +296,7 @@ void startup()
     signals_manager_init();
     logger_log_ok("Signals manager");
 
-    /*pci_init();
+    pci_init();
     logger_log_ok("PCI");
     logger_log_info("Number of devices: ");
     uint8_t nd = pci_get_number_of_devices();
@@ -339,12 +338,12 @@ void startup()
         vga_printstring_color(itoa(dev->prog_if, buff, 16), &col);
         vga_printchar('\n');
     }
-    pci_dev* dev = get_device(0);
-    log_info(itoa(dev->vendor_id, buff, 16));
-    log_info(itoa(dev->header_type, buff, 16));
-    log_info(itoa(dev->class_code, buff, 16));
-    log_info(itoa(dev->subclass, buff, 16));
-    log_info(itoa(dev->prog_if, buff, 16));*/
+    pci_device* dev = pci_get_device(0);
+    logger_log_info(itoa(dev->vendor_id, buff, 16));
+    logger_log_info(itoa(dev->header_type, buff, 16));
+    logger_log_info(itoa(dev->class_code, buff, 16));
+    logger_log_info(itoa(dev->subclass, buff, 16));
+    logger_log_info(itoa(dev->prog_if, buff, 16));
     //fat_init();
     //logger_log_ok("FAT12");
     
