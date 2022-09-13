@@ -16,11 +16,19 @@ include ./Makefile.include
 
 # We (more or less) follow the PFL project structure:
 # https://api.csswg.org/bikeshed/?force=1&url=https://raw.githubusercontent.com/vector-of-bool/pitchfork/develop/data/spec.bs#intro.dirs
-build_dir        	= build
+ifndef BUILD_DIR
+	build_dir       = build
+else
+	build_dir 		= ${BUILD_DIR}
+endif
 data_dir         	= data
 external_dir     	= external
-include_dir      	= include
-log_dir          	= log
+include_dir      	= $(build_dir)/include
+ifndef LOG_DIR
+	log_dir         = log
+else
+	log_dir 		= ${LOG_DIR}
+endif
 src_dir          	= src
 tests_dir        	= tests
 tools_dir        	= tools
@@ -76,7 +84,7 @@ include $(libc_src_dir)/Makefile.include
 $(include_dir)/%.h: $(src_dir)/%.h
 	$(progress) "LN" $@
 	$(MKDIR) -p $(dir $@)
-	ln -sf $(CWD)/$< $(CWD)/$@
+	ln -sf $(CWD)/$< $@
 
 $(log_dir):
 	$(progress) "MKDIR" $@
