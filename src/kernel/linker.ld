@@ -10,7 +10,7 @@ SECTIONS
 
 	.boot :
 	{
-		build/obj/kernel/src/kernel/init/startup.o
+		[BASE_PATH]/init/startup.o
 	}
 
 	. = KERNEL_PHYSICAL_ADDRESS;
