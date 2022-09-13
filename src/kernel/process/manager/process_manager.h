@@ -2,7 +2,7 @@
 #define PROCESS_MANAGER_H
 
 #include <stdlib.h>
-#include <kvector.h>
+#include <klibrary/kvector.h>
 #include "process_info.h"
 #include "process_user_info.h"
 #include "cpu/paging/paging.h"

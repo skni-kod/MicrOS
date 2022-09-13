@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <filesystems/partitions/partitions.h>
-#include <libk/kvector/kvector.h>
+#include <klibrary/kvector.h>
 
 kvector partitions;
 

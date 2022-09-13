@@ -2,9 +2,10 @@
 #define STARTUP_MUSIC_H
 
 #include <stdint.h>
-#include "drivers/pcspeaker/pc_speaker.h"
 #include <stdlib.h>
-#include <ktime.h>
+#include <klibrary/ktime.h>
+#include "drivers/pcspeaker/pc_speaker.h"
+
 
 #define C4_NOTE 262
 #define CS4_NOTE 277

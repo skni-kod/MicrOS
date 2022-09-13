@@ -1,13 +1,13 @@
 # By default, we tell `make` to remain silent. We can enable a more verbose
 # output by passing `VERBOSE=1` to `make`.
-VERBOSE ?= 0
+VERBOSE 			?= 0
 ifeq ($(VERBOSE), 0)
 .SILENT:
 endif
 
-MAKEFLAGS += --warn-undefined-variables
+MAKEFLAGS 			+= --warn-undefined-variables
 
-.DEFAULT_GOAL := help
+.DEFAULT_GOAL 		:= help
 
 .SUFFIXES:
 
@@ -36,6 +36,7 @@ rootfs_dir		 	= $(build_dir)/rootfs
 dist_dir         	= $(build_dir)/dist
 kernel_objs_dir    	= $(build_dir)/obj/kernel
 output_dir    	    = $(build_dir)/output
+CWD 				= $(shell pwd)
 
 # tools directories
 cross_dir 			= $(tools_dir)/cross
@@ -92,7 +93,7 @@ WERRORS  += -Wno-implicit-fallthrough
 $(include_dir)/%.h: $(src_dir)/%.h
 	$(progress) "LN" $@
 	$(MKDIR) -p $(dir $@)
-	$(LN) -snf $@ $< 
+	ln -sf $(CWD)/$< $(CWD)/$@
 
 #INCLUDES += -I$(include_dir)/libc/
 

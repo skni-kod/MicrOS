@@ -2,7 +2,7 @@
 #include <assembly/io.h>
 #include <logger/logger.h>
 #include <stdlib.h>
-#include <libk/ktime/ktime.h>
+#include <klibrary/ktime.h>
 
 static pci_device devices[PCI_DEVICE_COUNT];
 

@@ -21,7 +21,7 @@
 #include "cpu/timer/timer.h"
 #include "cpu/dma/dma.h"
 #include "filesystems/fat/fat_header.h"
-#include <ktime.h>
+#include <klibrary/ktime.h>
 
 bool fdc_init();
 bool floppy_init(int sectors_per_track);
