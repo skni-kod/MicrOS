@@ -27,6 +27,7 @@ kernel_deps = $(kernel_c_objects:%.o=%.d)
 
 $(kernel_linker): $(kernel_linker_src)
 	$(progress) "SED" $@
+	$(MKDIR) -p $(@D)
 	$(CP) -f $< $@
 	$(SED) -i "s!\[BASE_PATH]!$(kernel_objs_dir)/src/kernel!g" $@
 
@@ -47,6 +48,7 @@ $(kernel_elf): $(kernel_linker) $(libk_bin) $(kernel_asm_objects) $(kernel_c_obj
 
 $(kernel_bin): $(kernel_elf)
 	$(progress) "OBJCOPY" $@
+	$(MKDIR) -p $(@D)
 	$(OBJCOPY) -O binary $< $@
 	$(MCOPY) -oi $(output_image) $@ "::KERNEL.BIN"
 
