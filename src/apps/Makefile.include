@@ -1,96 +1,71 @@
-include ../../Makefile
-
-build_dir    = $(target_build_dir)/apps/src/userland/$(bin_name)
-dist_dir     = $(target_build_dir)/dist
-bin_dir      = $(dist_dir)/apps/bin
-target       = $(bin_dir)/$(bin_name)
-
-
-###############################################################################
-# Options for the different tools
-###############################################################################
-
-###############################################################################
-# Source files
-###############################################################################
-
-objs += $(patsubst %.c, $(build_dir)/%.o, $(shell find . -name '*.c'))
-objs += $(addprefix $(build_dir)/$(external_dir)/, $(external_objs))
-
-###############################################################################
-# Custom configuration
-###############################################################################
-
-# Variables that may be affected by the custom configuration.
-CFLAGS ?=
-
--include $(root_dir)/config
-include $(root_dir)/Makefile-cfg.include
-
-ifeq ($(UBSAN), 1)
-	CFLAGS += -fsanitize=undefined
+# By default, we tell `make` to remain silent. We can enable a more verbose
+# output by passing `VERBOSE=1` to `make`.
+VERBOSE 			?= 0
+ifeq ($(VERBOSE), 0)
+.SILENT:
 endif
 
-###############################################################################
-# Flags
-###############################################################################
+MAKEFLAGS 			+= --warn-undefined-variables
 
-LD_FLAGS += -nostdlib
+.SUFFIXES:
 
-CFLAGS += --target=x86_64 -fstack-protector-strong
-CFLAGS += -mno-mmx -mno-sse -mno-sse2 -mno-avx -mno-avx2
-CFLAGS += -fno-pie
+include ../../../Makefile.include
 
-LD_FLAGS += --image-base=0x40000000
-LD_FLAGS += -no-pie
+build_dir			?= 
+cross_dir			?=
+output_image		?= 
+app_src_dir			?=
 
-WERRORS += -Wall -Wextra -Werror
-WERRORS += -Werror=implicit-function-declaration
-WERRORS += -Werror=int-conversion
-WERRORS += -Werror=incompatible-pointer-types
-WERRORS += -Werror=shift-count-overflow
-WERRORS += -Werror=switch
+include_dir			= $(build_dir)/include
+dist_dir			= $(build_dir)/dist
+app_objs_dir		= $(build_dir)/obj/app/$(shell basename $(app_src_dir))
 
-COMMON_CFLAGS += -O2 -std=c11
-COMMON_CFLAGS += $(WERRORS)
-COMMON_CFLAGS += $(addprefix -I$(external_dir)/, $(external_deps))
+app_c_files			= $(patsubst $(app_src_dir)/%, %,$(shell find * -name "*.c"))
+app_c_objects 		= $(patsubst %.c, $(app_objs_dir)/%.o, $(app_c_files))
+bin_dir 			= $(dist_dir)/apps
+target       		= $(bin_dir)/$(bin_name)
 
-CFLAGS += -ffreestanding -nostdlib -fno-builtin
-CFLAGS += $(COMMON_CFLAGS)
-CFLAGS += -I$(root_dir)/include/libc/ -I$(external_dir)/printf/
+app_deps			= $(app_c_objects:%.o=%.d)
 
-ifeq ($(ENABLE_USERLAND_DEBUG), 1)
-	CFLAGS += -DENABLE_USERLAND_DEBUG
+-include $(app_deps)
+
+
+CFLAGS				?=
+CFLAGS				+= -fno-pie
+CFLAGS				+= -ffreestanding -nostdlib -fno-builtin -I$(include_dir)/libc
+
+LD_FLAGS			+= -no-pie
+LD_FLAGS			+= -L$(dist_dir) -lc -lgcc -nostdlib
+
+CFLAGS_DEBUG		+= -std=$(C_STANDARD) -O0 -ggdb3 -DDEBUG_MODE 
+CFLAGS_RELEASE		+= -std=$(C_STANDARD) -$(GCC_OPTIMIZATION)
+
+ifeq ($(debug), 1)
+	CFLAGS += $(CFLAGS_DEBUG)
+else
+	CFLAGS += $(CFLAGS_RELEASE)
 endif
 
-LD_FLAGS += $(target_build_dir)/dist/libc-$(OS_NAME)-$(ARCH).a
-
-###############################################################################
-# Rules and targets
-###############################################################################
 
 all: $(target)
 .PHONY: all
 
-$(target): $(objs)
+$(target): $(app_c_objects)
 	$(progress) "LD" $@
-	mkdir -p $(bin_dir)
-	$(LD) -o $@ $^ $(LD_FLAGS)
+	$(MKDIR) -p $(bin_dir)
+	$(CC) -o $@ $^ $(LD_FLAGS)
 
-$(objs): $(build_dir)/%.o : %.c
+ifeq ($(image_install), 1)
+install: $(target)
+	$(progress) "INSTALL" $<
+	-$(MMD) -oi $(output_image) ::$(IMAGE_APP_DIR)
+	$(MCOPY) -oi $(output_image) $< ::$(IMAGE_APP_DIR)/$(bin_name)
+else
+install:
+	$(progress) "SKIPPING INSTALL" $<
+endif
+
+$(app_c_objects): $(app_objs_dir)/%.o: ./%.c
 	$(progress) "CC" $<
-	mkdir -p $(dir $@)
+	$(MKDIR) -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
-
-local: CFLAGS  = $(COMMON_CFLAGS)
-local: LD_FLAGS = -fuse-ld=lld
-local: $(objs)
-	$(progress) "LD" $(local_target)
-	mkdir -p $(local_build_dir)
-	$(CC) $(LD_FLAGS) -o $(local_target) $^
-.PHONY: local
-
-clean:
-	$(progress) "CLEAN"
-	rm -f $(target) $(local_target) $(objs)
-.PHONY: clean

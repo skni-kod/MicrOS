@@ -1,6 +1,10 @@
 #ifndef IO_H
 #define IO_H
 
+#ifndef __GNUC__
+#define __asm__ asm
+#endif
+
 #include <stdint.h>
 
 uint8_t io_in_byte(uint16_t port);

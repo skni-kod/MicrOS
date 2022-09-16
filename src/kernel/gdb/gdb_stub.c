@@ -139,33 +139,33 @@ return_to_prog ();
 /* Restore the program's registers (including the stack pointer, which
    means we get the right stack and don't have to worry about popping our
    return address and any stack frames and so on) and return.  */
-asm(".text");
-asm(".globl return_to_prog");
-asm("return_to_prog:");
-asm("        movw registers+44, %ss");
-asm("        movl registers+16, %esp");
-asm("        movl registers+4, %ecx");
-asm("        movl registers+8, %edx");
-asm("        movl registers+12, %ebx");
-asm("        movl registers+20, %ebp");
-asm("        movl registers+24, %esi");
-asm("        movl registers+28, %edi");
-asm("        movw registers+48, %ds");
-asm("        movw registers+52, %es");
-asm("        movw registers+56, %fs");
-asm("        movw registers+60, %gs");
-asm("        movl registers+36, %eax");
-asm("        pushl %eax");  /* saved eflags */
-asm("        movl registers+40, %eax");
-asm("        pushl %eax");  /* saved cs */
-asm("        movl registers+32, %eax");
-asm("        pushl %eax");  /* saved eip */
-asm("        movl registers, %eax");
+__asm__(".text");
+__asm__(".globl return_to_prog");
+__asm__("return_to_prog:");
+__asm__("        movw registers+44, %ss");
+__asm__("        movl registers+16, %esp");
+__asm__("        movl registers+4, %ecx");
+__asm__("        movl registers+8, %edx");
+__asm__("        movl registers+12, %ebx");
+__asm__("        movl registers+20, %ebp");
+__asm__("        movl registers+24, %esi");
+__asm__("        movl registers+28, %edi");
+__asm__("        movw registers+48, %ds");
+__asm__("        movw registers+52, %es");
+__asm__("        movw registers+56, %fs");
+__asm__("        movw registers+60, %gs");
+__asm__("        movl registers+36, %eax");
+__asm__("        pushl %eax");  /* saved eflags */
+__asm__("        movl registers+40, %eax");
+__asm__("        pushl %eax");  /* saved cs */
+__asm__("        movl registers+32, %eax");
+__asm__("        pushl %eax");  /* saved eip */
+__asm__("        movl registers, %eax");
 /* use iret to restore pc and flags together so
    that trace flag works right.  */
-asm("        iret");
+__asm__("        iret");
 
-#define BREAKPOINT() asm("   int $3");
+#define BREAKPOINT() __asm__("   int $3");
 
 /* Put the error code here just in case the user cares.  */
 int gdb_i386errcode;

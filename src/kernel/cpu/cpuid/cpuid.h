@@ -151,11 +151,11 @@ const cpuid_0x04h* cpuid_get_0x04h_fields(uint8_t index);
 */
 static inline void __cpuid_features(int code, uint32_t *eax, uint32_t *ebx, uint32_t *ecx ,uint32_t *edx)
 {
-    asm volatile("cpuid":"=a"(*eax),"=b"(*ebx),"=c"(*ecx),"=d"(*edx):"a"(code));
+    __asm__ volatile("cpuid":"=a"(*eax),"=b"(*ebx),"=c"(*ecx),"=d"(*edx):"a"(code));
 }
 
 static inline void __cpuid(unsigned int code, uint32_t where[4]) {
-     asm volatile("cpuid":"=a"(*where),"=b"(*(where+1)),
+     __asm__ volatile("cpuid":"=a"(*where),"=b"(*(where+1)),
                "=c"(*(where+2)),"=d"(*(where+3)):"a"(code));
 }
 
@@ -171,11 +171,11 @@ static inline void __cpuid(unsigned int code, uint32_t where[4]) {
 */
 static inline void __cpuid_features_count(int code, int count, uint32_t *eax, uint32_t *ebx, uint32_t *ecx ,uint32_t *edx)
 {
-    asm volatile("cpuid":"=a"(*eax),"=b"(*ebx),"=c"(*ecx),"=d"(*edx):"a"(code), "c"(count));
+    __asm__ volatile("cpuid":"=a"(*eax),"=b"(*ebx),"=c"(*ecx),"=d"(*edx):"a"(code), "c"(count));
 }
 
 static inline void __cpuid_count(unsigned int code, int count, uint32_t where[4]) {
-     asm volatile("cpuid":"=a"(*where),"=b"(*(where+1)),
+     __asm__ volatile("cpuid":"=a"(*where),"=b"(*(where+1)),
                "=c"(*(where+2)),"=d"(*(where+3)):"a"(code), "c"(count));
 }
 

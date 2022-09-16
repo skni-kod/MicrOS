@@ -1,7 +1,5 @@
 #include "crt0.h"
 
-#ifdef __LIBC
-
 void _start(char *path, char *parameters)
 {
     micros_process_set_current_process_signal_handler(signal_handler);
@@ -113,8 +111,6 @@ void signal_handler(micros_signal_params *old_state)
 
     micros_process_finish_signal_handler(&local_old_state);
 }
-
-#endif
 
 #ifdef __LIBK
 void _start(char *path, char *parameters)

@@ -1,0 +1,7 @@
+FLOPPY_SIZE		= 1440
+
+# generate output image
+$(output_image):
+	$(progress) "GENERATE OUTPUT IMAGE"
+	$(MKDIR) -p $(@D)
+	$(MKFS_DOS) -C $@ $(FLOPPY_SIZE)

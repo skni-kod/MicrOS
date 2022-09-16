@@ -1,0 +1,73 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Clean",
+			"type": "shell",
+			"command": "[ENV_VARS] make clean",
+			"args": [
+				"clean"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Build",
+			"type": "shell",
+			"command": "[ENV_VARS] make build",
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Run QEMU",
+			"type": "shell",
+			"command": "echo \"Starting QEMU\" & [ENV_VARS] make run-qemu",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"isBackground": true,
+			"problemMatcher": {
+				"pattern": {
+					"regexp": "^(Starting QEMU)",
+					"line": 1
+				},
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "^(Starting QEMU)",
+					"endsPattern": "^(Starting QEMU)"
+				}
+			}
+		},
+		{
+			"label": "Run QEMU with debugger",
+			"type": "shell",
+			"command": "echo \"Starting QEMU\" & [ENV_VARS] make run-debug",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"isBackground": true,
+			"problemMatcher": {
+				"pattern": {
+					"regexp": "^(Starting QEMU)",
+					"line": 1
+				},
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "^(Starting QEMU)",
+					"endsPattern": "^(Starting QEMU)"
+				}
+			}
+		}
+	]
+}
