@@ -11,11 +11,6 @@ MAKEFLAGS 			+= --warn-undefined-variables
 
 include ../../../Makefile.include
 
-build_dir			?= 
-cross_dir			?=
-output_image		?= 
-app_src_dir			?=
-
 include_dir			= $(build_dir)/include
 dist_dir			= $(build_dir)/dist
 app_objs_dir		= $(build_dir)/obj/app/$(shell basename $(app_src_dir))
