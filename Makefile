@@ -93,7 +93,6 @@ $(log_dir):
 # copy files from data directory to 
 $(data_files): $(output_image)
 	$(progress) "INSTALL" $@ 
-	$(info $$var is $@)
 	$(MCOPY) -oi $< $(data_dir)/$@ ::$@
 
 $(apps_dirs): $(libc_bin)
