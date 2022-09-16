@@ -117,7 +117,7 @@ run-debug: $(log_dir) build
 .PHONY: run-debug
 
 vscode: ## install vscode configuration
-vscode: bootloader kernel $(apps_dirs)
+vscode: kernel $(apps_dirs)
 	$(progress) "MKDIR" ".vscode"
 	$(MKDIR) -p .vscode
 	
@@ -125,7 +125,7 @@ vscode: bootloader kernel $(apps_dirs)
 	$(CP) -f ".vscode.launch" ".vscode/launch.json"
 	$(SED) -i "s!\[PROGRAM]!$(kernel_bin)!g; \
 			   s!\[GDB]!$(GDB)!g; \
-			   s!\[DEBUG_TARGETS]!$(shell find $(dist_dir) -iname '*.elf' -printf '\"%p\",')!g; \
+			   s!\[DEBUG_TARGETS]!$(shell find $(dist_dir) -iname '*.elf' -printf '\\"%p\\",')!g; \
 			   s!\[DEFUALT_DEBUG_TARGET]!\"$(kernel_elf)\"!g;" .vscode/launch.json
 
 	$(progress) "SED" "tasks.json"
@@ -156,13 +156,13 @@ clean-include:
 
 clean-apps: ## clean userspace apps
 clean-apps: 
-	$(progress) "CLEAN" APPS
+	$(progress) "CLEAN" $(build_dir)/obj/app
 	rm -rf $(build_dir)/obj/app
 .PHONY: clean-apps
 
 clean: ## clean project
-clean: clean-include
-	$(progress) "CLEAN"
+clean: 
+	$(progress) "CLEAN" $(build_dir)
 	rm -rf $(build_dir)
 .PHONY: clean
 
