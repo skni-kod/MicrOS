@@ -15,7 +15,7 @@ $(b_fat12_objects): $(b_fat12_objs_dir)/%.o: $(b_fat12_src_dir)/%.asm
 	$(MKDIR) -p $(@D)
 	$(ASM) $(b_fat12_ASM_FLAGS) $< -o $@
 
-bootloader: $(b_fat12_objects)
+bootloader: $(b_fat12_objects) $(output_image)
 	$(progress) "INSTALL BOOTLOADER" $<
 	$(DD) if=$(b_fat12_first_stage)  of=$(output_image) bs=512 conv=notrunc
 	$(progress) "MCOPY" MICROLDR.BIN 

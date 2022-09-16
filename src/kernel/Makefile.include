@@ -1,7 +1,7 @@
 kernel_objs_dir			= $(build_dir)/obj/kernel
 kernel_linker_src		= $(kernel_src_dir)/linker.ld
 kernel_linker 			= $(dist_dir)/linker.ld
-kernel_bin				= $(dist_dir)/kernel.bin
+kernel_bin				= $(output_dir)/KERNEL.BIN
 kernel_elf				= $(dist_dir)/kernel.elf
 
 kernel_c_files			+= $(patsubst $(kernel_src_dir)/%, %,$(shell find $(kernel_src_dir) -name "*.c"))
@@ -53,7 +53,7 @@ $(kernel_bin): $(kernel_elf)
 	$(progress) "OBJCOPY" $@
 	$(MKDIR) -p $(@D)
 	$(OBJCOPY) -O binary $< $@
-	$(MCOPY) -oi $(output_image) $@ "::KERNEL.BIN"
+#	$(MCOPY) -oi $(output_image) $@ "::KERNEL.BIN"
 
 kernel: $(header_files) $(libk_bin) $(kernel_elf) $(kernel_bin)
 .PHONY: kernel

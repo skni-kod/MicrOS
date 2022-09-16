@@ -55,11 +55,11 @@ src_header_files 	+= $(shell find $(kernel_src_dir) -name "*.h")
 src_header_files 	+= $(shell find $(libk_src_dir) -name "*.h")
 src_header_files 	+= $(shell find $(libc_src_dir) -name "*.h")
 header_files 		= $(addprefix $(include_dir)/, $(patsubst $(src_dir)/%,%,$(src_header_files)))
-src_data_files 		+= $(shell find $(data_dir)/*)
+src_data_files 		+= $(shell find $(data_dir)/ -mindepth 1 -type f)
 data_files 			= $(patsubst $(data_dir)/%,%,$(src_data_files))
-log_file 			= $(log_dir)/qemu.log
-output_image 		= $(output_dir)/floppy.img
 apps_dirs 			= $(shell find $(apps_src_dir)/ -maxdepth 1 -mindepth 1 -type d )
+log_file 			= $(log_dir)/qemu.log
+output_image 		= $(build_dir)/floppy.img
 
 CFLAGS_DEBUG		+= -std=$(C_STANDARD) -O0 -ggdb3 -DDEBUG_MODE
 # -fsanitize=undefined
@@ -91,15 +91,17 @@ $(log_dir):
 	$(MKDIR) -p $@
 
 # copy files from data directory to 
-$(data_files): $(output_image)
-	$(progress) "INSTALL" $@ 
-	$(MCOPY) -oi $< $(data_dir)/$@ ::$@
+$(data_files):
+	$(progress) "CP" $@ 
+	$(MKDIR) -p $(output_dir)/$(dir $@)
+#$(MCOPY) -oi $< $(data_dir)/$@ ::$@
+	$(CP) -f $(data_dir)/$@ $(output_dir)/$@
 
 $(apps_dirs): $(libc_bin)
 	$(MAKE) install -C $@ VERBOSE=$(VERBOSE) app_src_dir=$@ output_image=$(output_image)  build_dir=$(build_dir) cross_dir=$(cross_dir)
 
 build: ## build
-build: $(output_image) $(header_files) bootloader kernel $(data_files) $(apps_dirs)
+build: kernel $(data_files) $(apps_dirs) $(output_image) bootloader
 .PHONY: build
 
 run-qemu: ## run qemu
@@ -159,6 +161,13 @@ clean-apps:
 	$(progress) "CLEAN" $(build_dir)/obj/app
 	rm -rf $(build_dir)/obj/app
 .PHONY: clean-apps
+
+clean-image: ## clean image
+clean-image: 
+	$(progress) "CLEAN" $(output_image)
+	rm -rf $(output_image)
+.PHONY: clean-image
+
 
 clean: ## clean project
 clean: 
