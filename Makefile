@@ -131,7 +131,7 @@ vscode: bootloader kernel $(apps_dirs)
 
 	$(progress) "SED" "tasks.json"
 	$(CP) -f .vscode.tasks .vscode/tasks.json
-	$(SED) -i "s!\[ENV_VARS]!CROSS=$(CROSS) BUILD_DIR=$(BUILD_DIR) LOG_DIR=$(LOG_DIR) VERBOSE=$(VERBOSE)!g" .vscode/tasks.json
+	$(SED) -i "s!\[ENV_VARS]!CROSS=$(cross_dir) BUILD_DIR=$(build_dir) LOG_DIR=$(log_dir) VERBOSE=$(VERBOSE)!g" .vscode/tasks.json
 .PHONY: vscode
 
 version: ## show version of tools
