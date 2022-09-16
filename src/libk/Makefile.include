@@ -22,7 +22,7 @@ libk_asm_objects	= $(patsubst %.asm, $(libk_objs_dir)/%.o, $(libk_asm_files))
 libk_ASM_FLAGS		+= -f elf32 
 libk_INCLUDES		+= -I$(include_dir)/libc 
 libk_INCLUDES		+= -I$(include_dir)/libk
-libk_INCLUDES		+= -I$(include_dir)/libk
+libk_INCLUDES		+= -I$(include_dir)/kernel
 libk_CFLAGS			+= -ffreestanding -fshort-enums -fno-omit-frame-pointer
 libk_CFLAGS			+= -D__libk=1
 libk_CFLAGS			+= $(WERRORS) 
