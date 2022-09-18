@@ -5,7 +5,7 @@
 
 int main(int argc, char *argv[])
 {
-    int sock = micros_socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP, 5555);
+    uint32_t sock = micros_socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP, 5555);
     char buffer[BUF_LEN] = {0};
     while (1)
     {

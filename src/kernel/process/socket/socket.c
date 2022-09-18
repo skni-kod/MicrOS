@@ -15,7 +15,7 @@ uint32_t create_socket_descriptor(uint32_t domain,
     for (uint8_t fd = 3; fd < NB_SYSTEM_DESCRIPTORS; fd++)
     {
         descriptor = &descriptors[fd];
-        if (!descriptor)
+        if (descriptor)
         {
             descriptor->used = true;
             descriptor->domain = domain;
@@ -29,7 +29,7 @@ uint32_t create_socket_descriptor(uint32_t domain,
         }
     }
 
-    return -1;
+    return 0;
 }
 
 uint32_t descriptor_udp_lookup(uint16_t port)
@@ -44,7 +44,7 @@ uint32_t descriptor_udp_lookup(uint16_t port)
         }
     }
 
-    return -1;
+    return 0;
 }
 
 descriptor_t *get_descriptor(uint32_t id)
@@ -76,13 +76,18 @@ uint32_t k_socket(uint32_t domain, uint32_t type, uint32_t protocol, uint32_t po
 
 uint32_t k_recvfrom(uint32_t sock, void *buffer, size_t len)
 {
-    descriptor_t *desc = get_descriptor(sock);
+    descriptor_t *desc = &descriptors[sock];
     return entry_read(desc->entry, buffer, len);
+}
+
+uint32_t k_sendto(uint32_t sock, void *buffer, size_t len)
+{
+    descriptor_t *desc = &descriptors[sock];
+    return entry_write(desc->entry, buffer, len);
 }
 
 uint32_t entry_read(sock_entry_t *entry, uint8_t *buffer, size_t len)
 {
-    uint16_t end = ENTRY_SIZE / 32;
     uint16_t ptr = 0;
 
     // read ptr follows write pointer in round buffer
@@ -92,11 +97,10 @@ uint32_t entry_read(sock_entry_t *entry, uint8_t *buffer, size_t len)
         if (ptr >= len)
             return ptr;
 
-        memcpy(buffer, entry->buffer[entry->read++ * 32], 32);
+         buffer[ptr++] = entry->buffer[entry->read++];
 
-        if (entry->read == end)
-            entry->read = 0;
-        ptr += 32;
+        if (entry->write == ENTRY_SIZE)
+            entry->write = 0;
     }
 
     return ptr;
@@ -104,21 +108,19 @@ uint32_t entry_read(sock_entry_t *entry, uint8_t *buffer, size_t len)
 
 uint32_t entry_write(sock_entry_t *entry, uint8_t *buffer, size_t len)
 {
-    uint16_t end = ENTRY_SIZE / 32;
     uint16_t ptr = 0;
 
     // read ptr follows write pointer in round buffer
-    while (entry->read != entry->write)
+    while (true)
     {
         // input buffer is full, do not copy data there!
         if (ptr >= len)
             return ptr;
 
-        memcpy(entry->buffer[entry->write++ * 32], buffer, 32);
+        entry->buffer[entry->write++] = buffer[ptr++];
 
-        if (entry->write == end)
+        if (entry->write == ENTRY_SIZE)
             entry->write = 0;
-        ptr += 32;
     }
 
     return ptr;

@@ -6,8 +6,8 @@ void udp_process_datagram(nic_data_t *data)
     udp_datagram_t *datagram = (udp_datagram_t *)(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t));
 
     uint32_t sock = descriptor_udp_lookup(5555);
-
-    entry_write(sock,datagram->data,datagram->length - sizeof(udp_datagram_t));
+    if(sock)
+        k_sendto(sock,datagram->data,ntohs(datagram->length) - sizeof(udp_datagram_t));  
 
     // ethernet_frame_t *frame = ethernet_create_frame(
     //     &data->device->interface->mac,

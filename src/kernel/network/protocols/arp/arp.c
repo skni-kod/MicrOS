@@ -5,6 +5,7 @@ arp_packet_t arp_packet_base = {
     .protocol_type = ARP_PR_TYPE,
     .hardware_length = MAC_ADDRESS_LENGTH,
     .protocol_length = IPv4_ADDRESS_LENGTH,
+    .opcode = ARP_OPCODE_REPLY,
 };
 
 void arp_process_packet(nic_data_t *data)

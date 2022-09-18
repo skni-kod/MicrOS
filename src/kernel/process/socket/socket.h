@@ -42,6 +42,8 @@ uint32_t k_socket(uint32_t domain, uint32_t type, uint32_t protocol, uint32_t po
 
 uint32_t k_recvfrom(uint32_t sock, void *buffer, size_t len);
 
+uint32_t k_sendto(uint32_t sock, void *buffer, size_t len);
+
 uint32_t entry_read(sock_entry_t *entry, uint8_t *buffer, size_t len);
 
 uint32_t entry_write(sock_entry_t *entry, uint8_t *buffer, size_t len);
