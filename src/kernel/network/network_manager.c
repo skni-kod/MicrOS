@@ -27,8 +27,8 @@ bool network_manager_init()
             // TODO: Buffering, hardcoding ip??
             dev->interface->ipv4.oct_a = 192;
             dev->interface->ipv4.oct_b = 168;
-            dev->interface->ipv4.oct_c = 100;
-            dev->interface->ipv4.oct_d = 151 + net_devices->count;
+            dev->interface->ipv4.oct_c = 1;
+            dev->interface->ipv4.oct_d = 190 + net_devices->count;
             kvector_add(net_devices, dev);
             __network_manager_print_device_info(dev);
         }

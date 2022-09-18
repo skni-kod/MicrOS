@@ -1,0 +1,45 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Launch with GDB",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "[PROGRAM]",
+			"cwd": "${workspaceFolder}",
+			"args": [],
+			"targetArchitecture": "x86",
+			"MIMode": "gdb",
+			"miDebuggerPath": "[GDB]",
+			"miDebuggerArgs": "",
+			"customLaunchSetupCommands": [
+				{
+					"text": "target remote localhost:1234",
+					"description": "Connect to QEMU remote debugger"
+				}
+			],
+			"setupCommands": [
+				{
+					"description": "Enable pretty-printing for gdb",
+					"text": "-enable-pretty-printing",
+					"ignoreFailures": true
+				},
+				{
+					"text": "file ${input:debuggerTarget}",
+					"description": "Load binary."
+				}
+
+			],
+			"preLaunchTask": "Run QEMU with debugger"
+		}
+	],
+	"inputs": [
+		{
+			"id": "debuggerTarget",
+			"type": "pickString",
+			"description": "Select debug target",
+			"options":[ [DEBUG_TARGETS] ],
+			"default": [DEFUALT_DEBUG_TARGET]
+		}
+	]
+}

@@ -9,6 +9,7 @@
 #include <inet/udp.h>
 #include <network/network_utils.h>
 #include <network/network_manager.h>
+#include <process/socket/socket.h>
 
 //! udp_process_datagram
 /*

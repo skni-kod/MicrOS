@@ -13,7 +13,7 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0x0003, syscall_heap_get_object_size);
     syscalls_manager_attach_handler(0x0004, syscall_heap_verify_integrity);
     syscalls_manager_attach_handler(0x0005, syscall_heap_get_process_heap);
-    //HEAP DEBUG
+    // HEAP DEBUG
     syscalls_manager_attach_handler(0x00FF, syscall_heap_kernel_alloc);
     syscalls_manager_attach_handler(0x00FE, syscall_heap_kernel_dealloc);
 
@@ -31,7 +31,6 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0x010A, syscall_generic_vga_is_vretrace);
     syscalls_manager_attach_handler(0x010B, syscall_terminal_set_video_mode);
     syscalls_manager_attach_handler(0x010C, syscall_terminal_copy_from_buffer);
-
 
     // 0x02XX - Keyboard
     syscalls_manager_attach_handler(0x0200, syscall_keyboard_is_key_pressed);
@@ -85,20 +84,20 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0x0800, syscall_pc_speaker_enable_sound);
     syscalls_manager_attach_handler(0x0801, syscall_pc_speaker_disable_sound);
 
-    //0x09XX RESERVED
+    // 0x09XX RESERVED
 
     // 0xAX - Memory
     syscalls_manager_attach_handler(0x0A00, syscall_memory_get_physical_memory_stats);
-    
+
     // 0xBX - Partitions
     syscalls_manager_attach_handler(0x0B00, syscall_partitions_get_count);
     syscalls_manager_attach_handler(0x0B01, syscall_partitions_get_symbols);
     syscalls_manager_attach_handler(0x0B02, syscall_partitions_get_info);
-    
+
     // 0xCX - Power
     syscalls_manager_attach_handler(0x0C00, syscall_power_reboot);
     syscalls_manager_attach_handler(0x0C01, syscall_power_shutdown);
-    
+
     // 0xDX - Serial
     syscalls_manager_attach_handler(0x0D00, syscall_serial_init);
     syscalls_manager_attach_handler(0x0D01, syscall_serial_is_busy);
@@ -106,6 +105,11 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(0x0D03, syscall_serial_send);
     syscalls_manager_attach_handler(0x0D04, syscall_serial_send_string);
     syscalls_manager_attach_handler(0x0D05, syscall_serial_receive);
+
+    // 0xEX - Socket
+    syscalls_manager_attach_handler(0x0E00, syscall_socket);
+    syscalls_manager_attach_handler(0x0E01, syscall_recvfrom);
+
 }
 
 void syscalls_manager_attach_handler(uint16_t function_number, void (*handler)(interrupt_state *state))
