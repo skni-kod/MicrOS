@@ -1,0 +1,12 @@
+FLOPPY_SIZE		= 1440
+
+# generate output image
+$(output_image):
+	$(progress) "GENERATE OUTPUT IMAGE"
+	$(MKDIR) -p $(@D)
+	$(MKFS_DOS) -C $@ $(FLOPPY_SIZE)
+	$(MMD) -oi $(output_image)  $(patsubst $(output_dir)/%, ::%,$(shell find $(output_dir)/ -mindepth 1 -type d))
+	$(foreach FILE,\
+	$(patsubst $(output_dir)/%, %,$(shell find $(output_dir)/ -mindepth 1 -type f)),\
+	$(MCOPY) -oi $(output_image) $(output_dir)/$(FILE) ::$(FILE); \
+	)

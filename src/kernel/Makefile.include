@@ -1,0 +1,67 @@
+kernel_objs_dir			= $(build_dir)/obj/kernel
+kernel_linker_src		= $(kernel_src_dir)/linker.ld
+kernel_linker 			= $(dist_dir)/linker.ld
+kernel_bin				= $(output_dir)/KERNEL.BIN
+kernel_elf				= $(dist_dir)/kernel.elf
+
+kernel_c_files			+= $(patsubst $(kernel_src_dir)/%, %,$(shell find $(kernel_src_dir) -name "*.c"))
+kernel_asm_files		+= $(patsubst $(kernel_src_dir)/%, %,$(shell find $(kernel_src_dir) -name "*.asm"))
+
+kernel_c_objects    	= $(patsubst %.c, $(kernel_objs_dir)/%.o, $(kernel_c_files))
+kernel_asm_objects  	= $(patsubst %.asm, $(kernel_objs_dir)/%.o, $(kernel_asm_files))
+
+kernel_INCLUDES	 		+= -I$(include_dir)/libk -I$(include_dir)/libc -I$(include_dir)/kernel
+kernel_ASM_FLAGS 		+= -f elf32
+kernel_CFLAGS	 		+= -ffreestanding -fshort-enums 
+kernel_CFLAGS	 		+= -D__kernel=1
+kernel_CFLAGS	 		+= $(WERRORS)
+kernel_CFLAGS	 		+= $(KERNEL_CONFIG)
+kernel_LD_FLAGS			+= -T$(kernel_linker) -L$(dist_dir) -lk -lgcc -nostdlib
+
+ifeq ($(DEBUG_KERNEL), 1)
+	kernel_CFLAGS += $(CFLAGS_DEBUG)
+else
+	kernel_CFLAGS += $(CFLAGS_RELEASE)
+endif
+
+kernel_deps				= $(kernel_c_objects:%.o=%.d)
+
+-include $(kernel_deps)
+
+$(kernel_linker): $(kernel_linker_src)
+	$(progress) "SED" $@
+	$(MKDIR) -p $(@D)
+	$(CP) -f $< $@
+	$(SED) -i "s!\[BASE_PATH]!$(kernel_objs_dir)!g" $@
+
+$(kernel_asm_objects): $(kernel_objs_dir)/%.o: $(kernel_src_dir)/%.asm
+	$(progress) "ASM" $<
+	$(MKDIR) -p $(@D)
+	$(ASM) $(kernel_ASM_FLAGS) $< -o $@
+
+$(kernel_c_objects): $(kernel_objs_dir)/%.o:  $(kernel_src_dir)/%.c
+	$(progress) "CC" $<
+	$(MKDIR) -p $(@D)
+	$(CC) -MMD -MF $(@:.o=.d) $(kernel_INCLUDES) $(kernel_CFLAGS) -c $< -o $@ 
+
+$(kernel_elf): $(kernel_linker) $(libk_bin) $(kernel_asm_objects) $(kernel_c_objects) 
+	$(progress) "LD" $@
+	$(MKDIR) -p $(@D)
+	$(CC) $(kernel_c_objects) $(kernel_asm_objects) -o $@ $(kernel_LD_FLAGS)
+
+$(kernel_bin): $(kernel_elf)
+	$(progress) "OBJCOPY" $@
+	$(MKDIR) -p $(@D)
+	$(OBJCOPY) -O binary $< $@
+#	$(MCOPY) -oi $(output_image) $@ "::KERNEL.BIN"
+
+kernel: $(header_files) $(libk_bin) $(kernel_elf) $(kernel_bin)
+.PHONY: kernel
+
+clean-kernel: ## clean kernel
+clean-kernel:
+	$(progress) "CLEAN" "kernel"
+	rm -rf $(kernel_objs_dir)
+	rm -rf $(kernel_elf)
+	rm -rf $(kernel_bin)
+.PHONY: clean-kernel

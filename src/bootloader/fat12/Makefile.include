@@ -1,0 +1,23 @@
+b_fat12_src_dir			= $(bootloader_src_dir)/fat12
+b_fat12_objs_dir		= $(build_dir)/obj/bootloader/fat12
+
+b_fat12_asm_files		+= $(shell find $(b_fat12_src_dir) -name "*.asm")
+
+b_fat12_first_stage		= $(b_fat12_objs_dir)/bootloader.o
+b_fat12_second_stage	= $(b_fat12_objs_dir)/loader.o
+b_fat12_objects			+= $(b_fat12_first_stage)
+b_fat12_objects			+= $(b_fat12_second_stage)
+
+b_fat12_ASM_FLAGS		+= -f bin
+
+$(b_fat12_objects): $(b_fat12_objs_dir)/%.o: $(b_fat12_src_dir)/%.asm
+	$(progress) "ASM" $<
+	$(MKDIR) -p $(@D)
+	$(ASM) $(b_fat12_ASM_FLAGS) $< -o $@
+
+bootloader: $(b_fat12_objects) $(output_image)
+	$(progress) "INSTALL BOOTLOADER" $<
+	$(DD) if=$(b_fat12_first_stage)  of=$(output_image) bs=512 conv=notrunc
+	$(progress) "MCOPY" MICROLDR.BIN 
+	$(MCOPY) -oi $(output_image) $(b_fat12_second_stage) ::MICROLDR.BIN
+.PHONY: bootloader

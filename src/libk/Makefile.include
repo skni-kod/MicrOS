@@ -1,0 +1,64 @@
+libk_bin			= $(dist_dir)/libk.a
+libk_objs_dir		= $(build_dir)/obj/libk
+
+# libk source files:
+libk_c_files		+= $(patsubst $(src_dir)/%, %,$(shell find $(libk_src_dir) -name "*.c"))
+libk_asm_files		+= $(patsubst $(src_dir)/%, %,$(shell find $(libk_src_dir) -name "*.asm"))
+# dependencies from stdlib:
+libk_c_files		+= $(patsubst $(src_dir)/%, %,$(shell find $(libc_src_dir)/stdio -name "*.c"))
+libk_c_files		+= $(patsubst $(src_dir)/%, %,$(shell find $(libc_src_dir)/ctype -name "*.c"))
+libk_c_files		+= $(patsubst $(src_dir)/%, %,$(shell find $(libc_src_dir)/string -name "*.c"))
+libk_c_files		+= $(patsubst $(src_dir)/%, %,$(shell find $(libc_src_dir)/stdlib -name "*.c"))
+libk_c_files		+= $(patsubst $(src_dir)/%, %,$(shell find $(libc_src_dir)/micros -name "*.c"))
+libk_c_files		+= $(patsubst $(src_dir)/%, %,$(shell find $(libc_src_dir)/math -name "*.c"))
+libk_c_files		+= $(patsubst $(src_dir)/%, %,$(shell find $(libc_src_dir)/fenv -name "*.c"))
+libk_c_files		+= $(patsubst $(src_dir)/%, %,$(shell find $(libc_src_dir)/errno -name "*.c"))
+
+# libk: object files
+libk_c_objects		= $(patsubst %.c, $(libk_objs_dir)/%.o, $(libk_c_files))
+libk_asm_objects	= $(patsubst %.asm, $(libk_objs_dir)/%.o, $(libk_asm_files))
+
+# libk flags
+libk_ASM_FLAGS		+= -f elf32 
+libk_INCLUDES		+= -I$(include_dir)/libc 
+libk_INCLUDES		+= -I$(include_dir)/libk
+libk_INCLUDES		+= -I$(include_dir)/kernel
+libk_CFLAGS			+= -ffreestanding -fshort-enums -fno-omit-frame-pointer
+libk_CFLAGS			+= -D__libk=1
+libk_CFLAGS			+= $(WERRORS) 
+libk_CFLAGS			+= $(LIBK_CONFIG) 
+
+
+ifeq ($(DEBUG_LIBK), 1)
+	libk_CFLAGS += $(CFLAGS_DEBUG)
+else
+	libk_CFLAGS += $(CFLAGS_RELEASE)
+endif
+
+libk_deps			= $(libk_c_objects:%.o=%.d)
+libk_deps			+= $(libk_extra_objects:%.o=%.d)
+
+-include $(libk_deps)
+
+# libk
+$(libk_asm_objects): $(libk_objs_dir)/%.o: $(src_dir)/%.asm 
+	$(progress) "ASM" $<
+	$(MKDIR) -p $(@D)
+	$(ASM) $(libk_ASM_FLAGS) $< -o $@
+
+$(libk_c_objects): $(libk_objs_dir)/%.o: $(src_dir)/%.c
+	$(progress) "CC" $<
+	$(MKDIR) -p $(@D)
+	$(CC) -MMD -MF $(@:.o=.d) $(libk_INCLUDES) $(libk_CFLAGS) -c $< -o $@ 
+
+$(libk_bin): $(header_files) $(libk_c_objects) $(libk_asm_objects)
+	$(progress) "AR" $@
+	$(MKDIR) -p $(@D)
+	$(AR) rcs $@ $(libk_c_objects) $(libk_asm_objects)
+
+clean-libk: ## clean libk
+clean-libk:
+	$(progress) "CLEAN" "libk"
+	rm -rf $(libk_objs_dir)
+	rm -rf $(libk_bin)
+.PHONY: clean-libk

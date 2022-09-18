@@ -1,0 +1,51 @@
+libc_bin			= $(dist_dir)/libc.a
+libc_objs_dir		= $(build_dir)/obj/libc
+
+# libc source files:
+libc_c_files		+= $(patsubst $(libc_src_dir)/%, %,$(shell find $(libc_src_dir) -name "*.c"))
+libc_asm_files		+= $(patsubst $(libc_src_dir)/%, %,$(shell find $(libc_src_dir) -name "*.asm"))
+
+# libc object files
+libc_c_objects		= $(patsubst %.c, $(libc_objs_dir)/%.o, $(libc_c_files))
+libc_asm_objects	= $(patsubst %.asm, $(libc_objs_dir)/%.o, $(libc_asm_files))
+
+# libc flags
+libc_INCLUDES		+= -I$(include_dir)/libc 
+libc_ASM_FLAGS		+= -f elf32 
+libc_CFLAGS			+= -ffreestanding -fshort-enums
+libc_CFLAGS			+= $(WERRORS) 
+libc_CFLAGS			+= $(LIBC_CONFIG) 
+
+ifeq ($(DEBUG_LIBC), 1)
+	libc_CFLAGS += $(CFLAGS_DEBUG)
+else
+	libc_CFLAGS += $(CFLAGS_RELEASE)
+endif
+
+libc_deps			= $(libc_c_objects:%.o=%.d)
+libc_deps			+= $(libc_extra_objects:%.o=%.d)
+
+-include $(libc_deps)
+
+# libc
+$(libc_asm_objects): $(libc_objs_dir)/%.o: $(libc_src_dir)/%.asm
+	$(progress) "ASM" $<
+	$(MKDIR) -p $(@D)
+	$(ASM) $(libc_ASM_FLAGS) $< -o $@
+
+$(libc_c_objects): $(libc_objs_dir)/%.o: $(libc_src_dir)/%.c
+	$(progress) "CC" $<
+	$(MKDIR) -p $(@D)
+	$(CC) -MMD -MF $(@:.o=.d) $(libc_INCLUDES) $(libc_CFLAGS) -c $< -o $@ 
+
+$(libc_bin): $(header_files) $(libc_c_objects) $(libc_asm_objects)
+	$(progress) "AR" $@
+	$(MKDIR) -p $(@D)
+	$(AR) rcs $@ $(libc_c_objects) $(libc_asm_objects)
+
+clean-libc: ## clean libc
+clean-libc:
+	$(progress) "CLEAN" "libc"
+	rm -rf $(libc_objs_dir)
+	rm -rf $(libc_bin)
+.PHONY: clean-libc

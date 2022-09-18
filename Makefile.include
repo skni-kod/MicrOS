@@ -1,0 +1,66 @@
+NAME					= MicrOS
+VERSION					= 1.1
+ARCH					= i386
+QEMU_ARCH	 			= $(ARCH)
+GCC_OPTIMIZATION		= O2
+C_STANDARD				= c11
+QEMU_MEMORY				= 512M
+QEMU_NET_DEVICE			= virtio
+
+# tools remote repo
+TOOLS_REPO				= https://kod.prz.edu.pl/repository/micros_devtools_linux
+CROSS_COMPILER			= cross.tar.gz
+
+IMAGE_FORMAT			= FLOPPY
+IMAGE_APP_DIR			= ENV
+
+# ###############################################################################
+# # Flags
+# ###############################################################################		
+WERRORS					+= -Wall
+WERRORS					+= -Wextra 
+WERRORS					+= -Wno-unused-parameter 
+WERRORS					+= -Wno-packed-bitfield-compat 
+WERRORS					+= -Wno-implicit-fallthrough
+
+KERNEL_CFLAGS           ?=
+KERNEL_CONFIG           ?=
+LIBC_CONFIG             ?=
+LIBK_CONFIG             ?=
+
+DEBUG_KERNEL			?= 1
+DEBUG_LIBK				?= 0
+DEBUG_LIBC				?= 0
+
+QEMU_NET				?= 1
+QEMU_TAP				?= 0
+QEMU_NET_LOG			?= 1
+QEMU_OPTIONS 			+= -m $(QEMU_MEMORY)
+QEMU_OPTIONS 			+= -serial file:$(log_file)
+
+
+###############################################################################
+# Tools
+###############################################################################
+# This is from: https://github.com/nuta and it allows to print nice progress messages
+progress := printf "  \\033[1;96m%-8s\\033[0m  \\033[1;m%s\\033[0m\\n"
+CC						= $(cross_dir)/bin/$(ARCH)-elf-gcc
+LD						= $(cross_dir)/bin/$(ARCH)-elf-ld
+AR						= $(cross_dir)/bin/$(ARCH)-elf-ar
+NM						= $(cross_dir)/bin/$(ARCH)-elf-nm
+OBJCOPY					= $(cross_dir)/$(ARCH)-elf/bin/objcopy
+CWD						= $(shell pwd)
+DD						= dd
+MCOPY					= mcopy
+MMD						= mmd
+CP						= cp
+LN						= ln
+MKFS_DOS				= /sbin/mkfs.msdos
+ASM						= nasm
+TAR						= tar
+MKDIR					= mkdir
+CURL					= curl
+RM		 				= rm
+SED						= sed
+QEMU					= qemu-system-$(QEMU_ARCH)
+GDB						= gdb

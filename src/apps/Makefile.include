@@ -1,0 +1,68 @@
+# By default, we tell `make` to remain silent. We can enable a more verbose
+# output by passing `VERBOSE=1` to `make`.
+VERBOSE 			?= 0
+ifeq ($(VERBOSE), 0)
+.SILENT:
+endif
+
+MAKEFLAGS 			+= --warn-undefined-variables
+
+.SUFFIXES:
+
+include ../../../Makefile.include
+
+include_dir			= $(build_dir)/include
+dist_dir			= $(build_dir)/dist
+app_objs_dir		= $(build_dir)/obj/app/$(shell basename $(app_src_dir))
+output_dir			= $(build_dir)/output
+
+
+app_c_files			= $(patsubst $(app_src_dir)/%, %,$(shell find * -name "*.c"))
+app_c_objects 		= $(patsubst %.c, $(app_objs_dir)/%.o, $(app_c_files))
+bin_dir 			= $(dist_dir)/apps
+target       		= $(bin_dir)/$(bin_name)
+
+app_deps			= $(app_c_objects:%.o=%.d)
+
+-include $(app_deps)
+
+
+CFLAGS				?=
+CFLAGS				+= -fno-pie
+CFLAGS				+= -ffreestanding -nostdlib -fno-builtin -I$(include_dir)/libc
+
+LD_FLAGS			+= -no-pie
+LD_FLAGS			+= -L$(dist_dir) -lc -lgcc -nostdlib
+
+CFLAGS_DEBUG		+= -std=$(C_STANDARD) -O0 -ggdb3 -DDEBUG_MODE 
+CFLAGS_RELEASE		+= -std=$(C_STANDARD) -$(GCC_OPTIMIZATION)
+
+ifeq ($(debug), 1)
+	CFLAGS += $(CFLAGS_DEBUG)
+else
+	CFLAGS += $(CFLAGS_RELEASE)
+endif
+
+
+all: $(target)
+.PHONY: all
+
+$(target): $(app_c_objects)
+	$(progress) "LD" $@
+	$(MKDIR) -p $(bin_dir)
+	$(CC) -o $@ $^ $(LD_FLAGS)
+
+ifeq ($(image_install), 1)
+install: $(target)
+	$(progress) "INSTALL" $<
+	$(MKDIR) -p $(output_dir)/$(IMAGE_APP_DIR)
+	$(CP) -f $(target) $(output_dir)/$(IMAGE_APP_DIR)/$(bin_name)
+else
+install:
+	$(progress) "SKIPPING INSTALL" $<
+endif
+
+$(app_c_objects): $(app_objs_dir)/%.o: ./%.c
+	$(progress) "CC" $<
+	$(MKDIR) -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
