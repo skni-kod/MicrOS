@@ -1,5 +1,5 @@
-#ifndef MICROS_PARTITIONS_H
-#define MICROS_PARTITIONS_H
+#ifndef MICROS_SYS_PARTITIONS_H
+#define MICROS_SYS_PARTITIONS_H
 
 #include "micros_interrupts.h"
 

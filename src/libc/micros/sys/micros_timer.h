@@ -1,5 +1,5 @@
-#ifndef MICROS_TIMER_H
-#define MICROS_TIMER_H
+#ifndef MICROS_SYS_TIMER_H
+#define MICROS_SYS_TIMER_H
 
 #include <stdint.h>
 #include "micros_interrupts.h"

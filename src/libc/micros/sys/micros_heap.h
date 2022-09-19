@@ -1,5 +1,5 @@
-#ifndef MICROS_HEAP_H
-#define MICROS_HEAP_H
+#ifndef MICROS_SYS_HEAP_H
+#define MICROS_SYS_HEAP_H
 
 #include <stdbool.h>
 #include "micros_interrupts.h"

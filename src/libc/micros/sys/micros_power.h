@@ -1,5 +1,5 @@
-#ifndef MICROS_POWER_H
-#define MICROS_POWER_H
+#ifndef MICROS_SYS_POWER_H
+#define MICROS_SYS_POWER_H
 
 #include <stdint.h>
 #include "micros_interrupts.h"

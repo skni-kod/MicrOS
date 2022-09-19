@@ -3,6 +3,7 @@
 
 #define SYSCALLS_MANAGER_MAX_HANDLERS 65536
 
+#include <micros/syscalls.h>
 #include "cpu/idt/idt.h"
 #include "handlers/heap_calls.h"
 #include "handlers/time_calls.h"

@@ -1,8 +1,8 @@
-#ifndef MICROS_PROCESS_H
-#define MICROS_PROCESS_H
+#ifndef MICROS_SYS_PROCESS_H
+#define MICROS_SYS_PROCESS_H
 
 #include <stdbool.h>
-#include "../stdlib.h"
+#include <stdlib.h>
 #include "micros_interrupts.h"
 
 //! Process status retrieved from the kernel

@@ -1,5 +1,5 @@
-#ifndef MICROS_MEMORY_H
-#define MICROS_MEMORY_H
+#ifndef MICROS_SYS_MEMORY_H
+#define MICROS_SYS_MEMORY_H
 
 #include "micros_interrupts.h"
 

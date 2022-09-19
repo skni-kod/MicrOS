@@ -1,5 +1,5 @@
-#ifndef MICROS_PC_SPEAKER_H
-#define MICROS_PC_SPEAKER_H
+#ifndef MICROS_SYS_PC_SPEAKER_H
+#define MICROS_SYS_PC_SPEAKER_H
 
 #include "micros_interrupts.h"
 

@@ -1,8 +1,9 @@
-#ifndef MICROS_INTERRUPTS_H
-#define MICROS_INTERRUPTS_H
+#ifndef MICROS_SYS_INTERRUPTS_H
+#define MICROS_SYS_INTERRUPTS_H
 
 #include <stdint.h>
 
+#ifndef __libk 
 //! Generates interrupt without passing any parameter
 /*!
     Generates interrupt with the specified parameter and without passing any parameter. Then returns value stored in the eax register.
@@ -66,4 +67,5 @@ uint32_t micros_interrupt_4a(uint32_t function_number, uint32_t a, uint32_t b, u
 */
 uint32_t micros_interrupt_5a(uint32_t function_number, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e);
 
+#endif
 #endif

@@ -1,5 +1,5 @@
-#ifndef MICROS_CONSOLE_H
-#define MICROS_CONSOLE_H
+#ifndef MICROS_SYS_CONSOLE_H
+#define MICROS_SYS_CONSOLE_H
 
 #include <stdint.h>
 #include <stdbool.h>

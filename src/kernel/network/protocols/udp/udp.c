@@ -5,16 +5,16 @@ void udp_process_datagram(nic_data_t *data)
     ipv4_packet_t *packet = (ipv4_packet_t *)(data->frame + sizeof(ethernet_frame_t));
     udp_datagram_t *datagram = (udp_datagram_t *)(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t));
 
-    uint32_t sock = descriptor_udp_lookup(5555);
-    if(sock)
-        k_sendto(sock,datagram->data,ntohs(datagram->length) - sizeof(udp_datagram_t));  
+    socket_descriptor_t *socket = socket_descriptor_lookup(AF_INET, SOCK_DGRAM, IPPROTO_UDP, datagram->dst_port);
+    if (socket)
+        socket_entry_write(socket->entry, datagram->data, ntohs(datagram->length) - sizeof(udp_datagram_t));
 
     // ethernet_frame_t *frame = ethernet_create_frame(
     //     &data->device->interface->mac,
     //     &((ethernet_frame_t *)data->frame)->src,
     //     IPv4_PROTOCOL_TYPE,
     //     htons(packet->length));
-    
+
     // ipv4_packet_t *ip_reply = (ipv4_packet_t *)frame->data;
     // {
     //     memcpy(ip_reply, packet, sizeof(ipv4_packet_t));

@@ -1,5 +1,5 @@
-#ifndef MICROS_GENERIC_VGA_H
-#define MICROS_GENERIC_VGA_H
+#ifndef MICROS_SYS_GENERIC_VGA_H
+#define MICROS_SYS_GENERIC_VGA_H
 
 #include <stdbool.h>
 #include "micros_interrupts.h"

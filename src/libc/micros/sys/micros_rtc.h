@@ -1,5 +1,5 @@
-#ifndef MICROS_RTC_H
-#define MICROS_RTC_H
+#ifndef MICROS_SYS_RTC_H
+#define MICROS_SYS_RTC_H
 
 #include <stdint.h>
 #include "micros_interrupts.h"
