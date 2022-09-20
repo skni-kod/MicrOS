@@ -6,11 +6,10 @@
 #ifndef network_ethernet
 #define network_ethernet
 
-#include <inet/ethernet.h>
 #include <inet/inet.h>
+#include <inet/ethernet.h>
 #include <inet/arp.h>
-#include "../ipv4/ipv4.h"
-
+#include <network/protocols/ipv4/ipv4.h>
 #include <network/network_utils.h>
 #include <network/network_device.h>
 #include <network/network_manager.h>
@@ -28,12 +27,12 @@ bool network_manager_send_ethernet_frame(ethernet_frame_t *frame, uint32_t data_
 /*
     Make ethernet frame, with specified data and type
 */
-ethernet_frame_t *ethernet_create_frame(mac_addr_t *src, mac_addr_t *dst, uint16_t type, uint32_t payload_size);
+nic_data_t *ethernet_create_frame(net_device_t *device, uint16_t type, uint32_t payload_size);
 
 //! network_manager_send_frame
 /*
     Send ethernet frame
 */
-void ethernet_send_frame(net_device_t *device, uint32_t payload_size, ethernet_frame_t* frame);
+void ethernet_send_frame(nic_data_t *data, ipv4_addr_t *addr);
 
 #endif

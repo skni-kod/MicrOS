@@ -54,15 +54,9 @@ uint64_t network_manager_bytes_received(void);
 
 //! network_manager_get_nic_by_ipv4
 /*
-    Returns address of NIC that has IPv4 address passed in arg
+    Return network device according to destination IP address
 */
-net_device_t *network_manager_get_nic_by_ipv4(uint8_t *ipv4_address);
-
-//! network_manager_get_nic_by_mac
-/*
-    Returns address of NIC that has MAC address passed in arg
-*/
-net_device_t *network_manager_get_nic_by_mac(uint8_t *mac);
+net_device_t *network_manager_get_nic_by_ipv4(ipv4_addr_t *addr);
 
 //! network_manager_get_nic
 /*
@@ -70,7 +64,9 @@ net_device_t *network_manager_get_nic_by_mac(uint8_t *mac);
 */
 net_device_t *network_manager_get_nic();
 
-nic_data_t *network_manager_get_receive_buffer(net_device_t *device, uint32_t size);
+nic_data_t *network_manager_get_receive_buffer(net_device_t *device);
+
+nic_data_t *network_manager_get_transmitt_buffer(net_device_t *device);
 
 //! __network_manager_print_device_info
 /*
@@ -78,5 +74,5 @@ nic_data_t *network_manager_get_receive_buffer(net_device_t *device, uint32_t si
 */
 void __network_manager_print_device_info(net_device_t *device);
 
-bool __network_manager_set_net_device(net_device_t *device);
+int8_t __network_manager_set_net_device(net_device_t *device);
 #endif

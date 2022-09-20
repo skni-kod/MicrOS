@@ -2,7 +2,7 @@
     @JakubPrzystasz
 */
 #ifndef SOCKET_H
-#define SOKCET_H
+#define SOCKET_H
 
 #define SOCKET_BUFFER_SIZE 1024 * 1024
 #define SOCKET_DESCRIPTORS 64

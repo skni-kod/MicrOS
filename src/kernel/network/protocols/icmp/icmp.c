@@ -9,48 +9,54 @@ void icmp_process_packet(nic_data_t *data)
     {
     case ICMP_TYPE_ECHO_REQUEST:
     {
-        arp_entry_t *entry = arp_request_entry(data->device, &packet->src);
-        if (!entry)
-            return 0;
-        mac_addr_t dst_mac = entry->mac;
+        // Send response to ECHO REQUEST:
+
+        //TODO: Create ipv4_create_packet, fill with data in icmp datagram, and send with ipv4_send_packet()
+        // in send_packet handle fragmentation
+
+        // nic_data_t *request = ethernet_create_frame(
+        //     device,
+        //     ARP_PROTOCOL_TYPE,
+        //     sizeof(arp_packet_t));
+
+        // ethernet_frame_t *frame = request->frame;
+        // {
+
+        //     request->dst_hw.octet_f = 0;
+        // }
+
+        // memcpy(&frame->dst, &broadcast, sizeof(mac_addr_t));
+        // ethernet_send_frame(request, 0);
+        // arp_entry_t *entry = arp_get_entry(data->device, &packet->src);
+
+        // if (!entry)
+        //     return 0;
+
+        // mac_addr_t dst_mac = entry->mac;
 
         // echo request
-        ethernet_frame_t *frame = ethernet_create_frame(
-            &data->device->interface->mac,
-            &dst_mac,
-            IPv4_PROTOCOL_TYPE,
-            ntohs(packet->length));
-        {
-            ipv4_packet_t *reply = (ipv4_packet_t *)frame->data;
-            memcpy(reply, packet, sizeof(ipv4_packet_t));
-            memcpy(&reply->dst, &packet->src, IPv4_ADDRESS_LENGTH);
-            memcpy(&reply->src, &packet->dst, IPv4_ADDRESS_LENGTH);
-            ipv4_checksum(packet);
-        }
+        // ethernet_frame_t *frame = ethernet_create_frame(
+        //     &data->device->interface->mac,
+        //     &dst_mac,
+        //     IPv4_PROTOCOL_TYPE,
+        //     ntohs(packet->length));
+        // {
+        //     ipv4_packet_t *reply = (ipv4_packet_t *)frame->data;
+        //     memcpy(reply, packet, sizeof(ipv4_packet_t));
+        //     memcpy(&reply->dst, &packet->src, IPv4_ADDRESS_LENGTH);
+        //     memcpy(&reply->src, &packet->dst, IPv4_ADDRESS_LENGTH);
+        //     ipv4_checksum(packet);
+        // }
 
-        {
-            icmp_header_t *reply = (icmp_header_t *)(frame->data + sizeof(ipv4_packet_t));
-            reply->type = ICMP_TYPE_ECHO_REPLY;
-            reply->code = ICMP_CODE_NO_CODE;
-            memcpy(reply->data, header->data, ntohs(packet->length) - (sizeof(ipv4_packet_t) + sizeof(icmp_header_t)));
-            reply->checksum = 0;
-            reply->checksum = __ip_wrapsum(__ip_checksum((uint8_t *)reply, ntohs(packet->length) - sizeof(ipv4_packet_t), 0U));
-        }
-        ethernet_send_frame(data->device, ntohs(packet->length), frame);
-        
-        
-        
-        char str[120];
-        
-        kernel_sprintf(str, "MAC: %02x:%02x:%02x:%02x:%02x:%02x",
-                   data->device->interface->mac.octet_a,
-                   data->device->interface->mac.octet_b,
-                   data->device->interface->mac.octet_c,
-                   data->device->interface->mac.octet_d,
-                   data->device->interface->mac.octet_e,
-                   data->device->interface->mac.octet_f);
-        
-        logger_log_info(str);
+        // {
+        //     icmp_header_t *reply = (icmp_header_t *)(frame->data + sizeof(ipv4_packet_t));
+        //     reply->type = ICMP_TYPE_ECHO_REPLY;
+        //     reply->code = ICMP_CODE_NO_CODE;
+        //     memcpy(reply->data, header->data, ntohs(packet->length) - (sizeof(ipv4_packet_t) + sizeof(icmp_header_t)));
+        //     reply->checksum = 0;
+        //     reply->checksum = __ip_wrapsum(__ip_checksum((uint8_t *)reply, ntohs(packet->length) - sizeof(ipv4_packet_t), 0U));
+        // }
+        // ethernet_send_frame(data->device, ntohs(packet->length), frame);
     }
     break;
 

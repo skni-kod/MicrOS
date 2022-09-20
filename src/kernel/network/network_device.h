@@ -12,8 +12,9 @@
 #include <inet/ethernet.h>
 #include <klibrary/kvector.h>
 #include <klibrary/ktime.h>
+#include <klibrary/kbuffer.h>
 
-#define DEFAULT_BUFFER_SIZE (1024 * 1024 * 2)
+#define DEFAULT_BUFFERS_COUNT (4096)
 
 
 typedef struct net_device net_device_t;
@@ -31,22 +32,22 @@ typedef union net_mode
 
 //! nic_data
 /*
-    Data that comes from NIC
+    Structure for exchanging data between driver and kernel
 */
 typedef struct nic_data
 {
     net_device_t *device;
     uint16_t length;
-    uint8_t *frame;
     bool keep;
+    inet_protocol_t protocol;
+    uint8_t frame[];
 } nic_data_t;
 
 typedef struct net_dpi
 {
     uint32_t (*send)(nic_data_t *data);
     uint32_t (*receive)(nic_data_t *data);
-    nic_data_t *(*get_receive_buffer)(net_device_t *device, uint32_t size);
-    nic_data_t *(*get_send_buffer)(net_device_t *device, uint32_t size);
+    nic_data_t *(*get_receive_buffer)(net_device_t *device);
 } net_dpi_t;
 
 //! Device configuration structure
@@ -76,6 +77,8 @@ typedef struct net_device
     uint32_t bytes_received;
     net_interface_t *interface;
     net_dpi_t dpi;
+    kbuffer_t *rx;
+    kbuffer_t *tx;
 } net_device_t;
 
 #endif

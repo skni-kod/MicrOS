@@ -43,20 +43,39 @@ bool network_manager_init()
     for (uint32_t devices = 0; devices < net_devices->count; devices++)
     {
         net_device_t *dev = (net_device_t *)net_devices->data[devices];
+        // setup receive and transmitt buffers
+        kbuffer_init(dev->rx, sizeof(nic_data_t) + dev->interface->mtu, 4096);
+        kbuffer_init(dev->tx, sizeof(nic_data_t) + dev->interface->mtu, 4096);
+        // finally turn on communication
         dev->interface->mode.value = 0x3;
     }
 
     return true;
 }
 
-nic_data_t *network_manager_get_receive_buffer(net_device_t *device, uint32_t size)
+nic_data_t *network_manager_get_receive_buffer(net_device_t *device)
 {
-    if (0 != device && 0 < size)
+    if (device)
     {
-        nic_data_t *data = (nic_data_t *)heap_kernel_alloc(sizeof(nic_data_t), 0);
-        data->length = size;
+        
+        nic_data_t *data = (nic_data_t *)kbuffer_get(device->rx);
+        data->length = device->interface->mtu;
         data->device = device;
-        data->frame = (uint8_t *)heap_kernel_alloc(size, 0);
+        data->keep = false;
+        return data;
+    }
+    else
+        return 0;
+}
+
+nic_data_t *network_manager_get_transmitt_buffer(net_device_t *device)
+{
+    if (device)
+    {
+        
+        nic_data_t *data = (nic_data_t *)kbuffer_get(device->tx);
+        data->length = device->interface->mtu;
+        data->device = device;
         data->keep = false;
         return data;
     }
@@ -104,6 +123,12 @@ net_device_t *network_manager_get_nic()
     return net_devices->data[0];
 }
 
+net_device_t *network_manager_get_nic_by_ipv4(ipv4_addr_t *addr)
+{
+    //TODO: default route etc..
+    return network_manager_get_nic();
+}
+
 void __network_manager_print_device_info(net_device_t *device)
 {
     char logInfo[27] = "";
@@ -121,18 +146,14 @@ void __network_manager_print_device_info(net_device_t *device)
     logger_log_info(logInfo);
 }
 
-bool __network_manager_set_net_device(net_device_t *device)
+int8_t __network_manager_set_net_device(net_device_t *device)
 {
     if (!device)
         return 0;
     memset(device, 0, sizeof(net_device_t));
 
-    //TODO:BUFFERING
     device->dpi.receive = &network_manager_receive_data;
     device->dpi.get_receive_buffer = &network_manager_get_receive_buffer;
-
-    device->dpi.get_send_buffer = &network_manager_get_receive_buffer;
-
 
     device->interface = heap_kernel_alloc(sizeof(net_interface_t), 0);
     if (!device->interface)
@@ -146,7 +167,7 @@ bool __network_manager_set_net_device(net_device_t *device)
     kvector_init(device->interface->arp_entries);
 
     // TODO: get mtu from driver
-    device->interface->mtu = 1500;
+    device->interface->mtu = 1600;
 
     return 1;
 }

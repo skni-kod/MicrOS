@@ -152,7 +152,7 @@ uint32_t rtl8139_receive()
     uint16_t size = *data_ptr >> 16;
 
     // Copy received data to buffer, data is right after the header with length
-    nic_data_t *out = rtl8139_net_device->dpi.get_receive_buffer(rtl8139_net_device, size);
+    nic_data_t *out = rtl8139_net_device->dpi.get_receive_buffer(rtl8139_net_device);
     memcpy((void *)out->frame, &data_ptr[1], size);
 
     /*

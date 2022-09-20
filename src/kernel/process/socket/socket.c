@@ -28,7 +28,7 @@ ssize_t recv(int s, void *buf, size_t len, int flags)
 
 ssize_t recvfrom(int s, void *buf, size_t length, int flags, struct sockaddr *from, socklen_t *fromlen)
 {
-    socket_descriptor_t *descriptor = get_descriptor(s);
+    socket_descriptor_t *descriptor = socket_get_descriptor(s);
 
     if (descriptor == NULL)
     {
