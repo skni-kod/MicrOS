@@ -28,7 +28,7 @@ bool network_manager_init()
             dev->interface->ipv4.oct_a = 192;
             dev->interface->ipv4.oct_b = 168;
             dev->interface->ipv4.oct_c = 1;
-            dev->interface->ipv4.oct_d = 190 + net_devices->count;
+            dev->interface->ipv4.oct_d = 165 + net_devices->count;
             kvector_add(net_devices, dev);
             __network_manager_print_device_info(dev);
         }
@@ -44,8 +44,8 @@ bool network_manager_init()
     {
         net_device_t *dev = (net_device_t *)net_devices->data[devices];
         // setup receive and transmitt buffers
-        kbuffer_init(dev->rx, sizeof(nic_data_t) + dev->interface->mtu, 4096);
-        kbuffer_init(dev->tx, sizeof(nic_data_t) + dev->interface->mtu, 4096);
+        dev->rx = kbuffer_init(dev->interface->mtu, 128);
+        dev->tx = kbuffer_init(dev->interface->mtu, 128);
         // finally turn on communication
         dev->interface->mode.value = 0x3;
     }
@@ -55,10 +55,10 @@ bool network_manager_init()
 
 nic_data_t *network_manager_get_receive_buffer(net_device_t *device)
 {
-    if (device)
+    if (device && device->interface->mode.receive)
     {
         
-        nic_data_t *data = (nic_data_t *)kbuffer_get(device->rx);
+        nic_data_t *data = (nic_data_t *)kbuffer_get(device->rx, device->interface->mtu);
         data->length = device->interface->mtu;
         data->device = device;
         data->keep = false;
@@ -72,8 +72,7 @@ nic_data_t *network_manager_get_transmitt_buffer(net_device_t *device)
 {
     if (device)
     {
-        
-        nic_data_t *data = (nic_data_t *)kbuffer_get(device->tx);
+        nic_data_t *data = (nic_data_t *)kbuffer_get(device->tx, device->interface->mtu);
         data->length = device->interface->mtu;
         data->device = device;
         data->keep = false;
@@ -83,33 +82,31 @@ nic_data_t *network_manager_get_transmitt_buffer(net_device_t *device)
         return 0;
 }
 
-void network_manager_send_data(nic_data_t *data)
+uint32_t network_manager_send_data(nic_data_t *data)
 {
+    uint16_t ret = 0;
     if (data->device->interface->mode.send)
     {
         data->device->dpi.send(data);
         ++data->device->frames_sent;
         data->device->bytes_sent += data->length;
+        ret = data->length;
     }
 
-    heap_kernel_dealloc(data->frame);
-    heap_kernel_dealloc(data);
+    kbuffer_drop(data);
+    return ret;
 }
 
 void network_manager_receive_data(nic_data_t *data)
 {
-
     if (data->device->interface->mode.receive)
     {
         ethernet_process_frame(data);
         ++data->device->frames_received;
         data->device->bytes_received += data->length;
     }
-    if (!(data->keep))
-    {
-        heap_kernel_dealloc(data->frame);
-        heap_kernel_dealloc(data);
-    }
+    if (!data->keep)
+        kbuffer_drop(data);
 }
 
 net_device_t *network_manager_get_nic()

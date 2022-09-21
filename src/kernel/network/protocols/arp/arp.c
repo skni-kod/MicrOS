@@ -36,7 +36,7 @@ void arp_process_packet(nic_data_t *data)
             memcpy(&response->dst_pr, &packet->src_pr, sizeof(ipv4_addr_t));
 
             memcpy(&frame->dst, &packet->src_hw, sizeof(mac_addr_t));
-            ethernet_send_frame(reply, 0);
+            ethernet_send_frame(reply);
         }
         break;
     case htons(ARP_OPCODE_REPLY):
@@ -94,20 +94,22 @@ arp_entry_t *arp_request_entry(net_device_t *device, ipv4_addr_t *ip)
 
     arp_send_request(device, ip);
 
-    uint32_t request_time = get_time();
+    return 0;
 
-    while (true)
-    {
-        if ((get_time() - request_time) >= ARP_TIMEOUT)
-            return 0;
-        if ((get_time() - request_time) % ARP_RETRY_INTERVAL == 0)
-        {
-            entry = arp_get_entry(device, ip);
-            if (entry)
-                return entry;
-            arp_send_request(device, ip);
-        }
-    }
+    // uint32_t request_time = get_time();
+
+    // while (true)
+    // {
+    //     if ((get_time() - request_time) >= ARP_TIMEOUT)
+    //         return 0;
+    //     if ((get_time() - request_time) % ARP_RETRY_INTERVAL == 0)
+    //     {
+    //         entry = arp_get_entry(device, ip);
+    //         if (entry)
+    //             return entry;
+    //         arp_send_request(device, ip);
+    //     }
+    // }
 }
 
 void arp_send_request(net_device_t *device, ipv4_addr_t *ip)
@@ -144,5 +146,5 @@ void arp_send_request(net_device_t *device, ipv4_addr_t *ip)
     }
 
     memcpy(&frame->dst, &broadcast, sizeof(mac_addr_t));
-    ethernet_send_frame(request, 0);
+    ethernet_send_frame(request);
 }

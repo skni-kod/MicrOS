@@ -24,14 +24,12 @@
 */
 void ipv4_process_packet(nic_data_t *data);
 
-//! __ipv4_flip_values
-/*
-    Flip literal values
-*/
-void __ipv4_flip_values(ipv4_packet_t *packet);
-
 void ipv4_checksum(ipv4_packet_t *packet);
 
 void ipv4_init();
+
+nic_data_t *ipv4_create_packet(net_device_t *device, uint8_t protocol, ipv4_addr_t dst, uint32_t data_size);
+
+uint32_t ipv4_send_packet(nic_data_t *data);
 
 #endif

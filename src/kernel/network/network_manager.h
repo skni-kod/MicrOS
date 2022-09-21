@@ -8,9 +8,7 @@
 //TODO: This sould not be here:
 #include <drivers/nic/rtl8139/rtl8139.h>
 #include <drivers/nic/virtio-pci-nic/virtio-pci-nic.h>
-
 #include "protocols/ipv4/ipv4.h"
-
 #include <logger/logger.h>
 #include "network_device.h"
 #include "network_utils.h"
@@ -26,7 +24,7 @@ bool network_manager_init();
 /*
     Send data
 */
-void network_manager_send_data(nic_data_t *data);
+uint32_t network_manager_send_data(nic_data_t *data);
 
 //! network_manager_receive_data
 /*

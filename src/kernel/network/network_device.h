@@ -14,9 +14,6 @@
 #include <klibrary/ktime.h>
 #include <klibrary/kbuffer.h>
 
-#define DEFAULT_BUFFERS_COUNT (4096)
-
-
 typedef struct net_device net_device_t;
 
 typedef union net_mode
@@ -38,8 +35,7 @@ typedef struct nic_data
 {
     net_device_t *device;
     uint16_t length;
-    bool keep;
-    inet_protocol_t protocol;
+    uint8_t keep;
     uint8_t frame[];
 } nic_data_t;
 

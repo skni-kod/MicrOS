@@ -16,6 +16,13 @@ typedef struct icmp_header
     uint8_t data[];
 } __attribute__((packed)) icmp_header_t;
 
+typedef struct icmp_header_echo
+{
+    uint16_t identifier;
+    uint16_t sequence;
+    uint8_t data[];
+} __attribute__((packed)) icmp_header_echo_t;
+
 #define ICMP_TYPE_ECHO_REPLY 0             //[RFC792]
 #define ICMP_TYPE_DEST_UNREACHABLE 3       //[RFC792]
 #define ICMP_TYPE_REDIRECT 5               //[RFC792]

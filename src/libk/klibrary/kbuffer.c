@@ -1,40 +1,72 @@
 #include <klibrary/kbuffer.h>
 
-int kbuffer_init(kbuffer_t *buffer, uint16_t data_size, uint16_t entry_count)
+kbuffer_t *kbuffer_init(uint32_t block_size, uint32_t block_count)
 {
-    size_t entry_size = (sizeof(kentry_t) + data_size);
-    size_t buffer_size = sizeof(kbuffer_t) + entry_size * entry_count;
+    kbuffer_t *buffer;
+    size_t block_size_in_memory = (sizeof(kentry_t) + block_size);
+    size_t buffer_size = sizeof(kbuffer_t) + block_size_in_memory * block_count;
+
     buffer = heap_kernel_alloc(buffer_size, 0);
+
     if (!buffer)
         return -1;
+
     memset(buffer, 0, buffer_size);
-    return 0;
+
+    buffer->block_size = block_size;
+    buffer->block_count = block_count;
+    
+    // offset of buffer->data, points last used part of memory
+    buffer->ptr = 0;
+
+    return buffer;
 }
 
-void *kbuffer_get(kbuffer_t *buffer)
+void *kbuffer_get(kbuffer_t *buffer, uint32_t size)
 {
-    size_t entry_size = (sizeof(kentry_t) + buffer->data_size);
-    uint32_t base_ptr = buffer->ptr;
+    // ptr points to last used block of data, so we know is its size
+    uint32_t start_point = buffer->ptr;
+    uint32_t req_blocks = buffer->block_size / size;
+
+    if (buffer->block_size % size)
+        req_blocks++;
+
+    if (buffer->ptr + req_blocks > buffer->block_count)
+        buffer->ptr = 0;
+
     kentry_t *entry;
+
     while (1)
     {
-        entry = buffer->entries + (buffer->ptr++ * entry_size);
-
-        if (!entry->used)
-            return entry->data;
-
-        if (buffer->ptr == buffer->length)
-        {
+        // when we can not fit continous block of memory at the end backing memory
+        // go back to begin, and start searching for fitting place:
+        if (buffer->ptr + req_blocks > buffer->block_count)
             buffer->ptr = 0;
+
+        entry = buffer->entries + (buffer->ptr * buffer->block_size);
+
+        // go right after the entry and look for place:
+        if (entry->used)
+        {
+            buffer->ptr += entry->size;
             continue;
         }
+        else
+        {
+            entry->used = 1;
+            entry->size = req_blocks;
+            buffer->ptr += req_blocks;
+            return entry->data;
+        }
 
-        if (buffer->ptr == base_ptr)
-            return 0;
+        // unable to find place
+        if (start_point == buffer->ptr)
+            return NULL;
     }
 }
 
-void *kbuffer_drop(void *buffer)
+void kbuffer_drop(void *ptr)
 {
-    *((uint8_t *)buffer - 1) = 0;
+    //mark entry as free
+   *((uint8_t *)ptr - 4) = 0;
 }

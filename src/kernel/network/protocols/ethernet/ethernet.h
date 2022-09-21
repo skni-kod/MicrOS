@@ -27,12 +27,12 @@ bool network_manager_send_ethernet_frame(ethernet_frame_t *frame, uint32_t data_
 /*
     Make ethernet frame, with specified data and type
 */
-nic_data_t *ethernet_create_frame(net_device_t *device, uint16_t type, uint32_t payload_size);
+nic_data_t *ethernet_create_frame(net_device_t *device, uint16_t type, uint32_t data_size);
 
 //! network_manager_send_frame
 /*
     Send ethernet frame
 */
-void ethernet_send_frame(nic_data_t *data, ipv4_addr_t *addr);
+uint32_t ethernet_send_frame(nic_data_t *data);
 
 #endif

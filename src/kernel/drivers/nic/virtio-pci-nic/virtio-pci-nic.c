@@ -135,7 +135,8 @@ bool virtio_nic_irq_handler()
         }
 
         // Receive packet
-        if (receive_queue->device_area->index != receive_queue->last_device_index)
+        if (receive_queue->device_area->index != receive_queue->last_device_index && 
+            virtio_nic_net_device->interface->mode.receive)
             virtio_nic_receive();
     }
 

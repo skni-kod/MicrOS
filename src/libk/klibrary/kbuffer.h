@@ -7,24 +7,28 @@
 
 // circular buffer
 
-typedef struct kentry{
-    uint8_t used;
-    uint8_t data[];
+typedef struct kentry
+{
+  uint32_t size;
+  uint8_t used;
+  void *data[];
 } kentry_t;
 
 typedef struct kbuffer
 {
-  uint32_t length;
-  uint32_t data_size;
+  uint32_t block_count;
+  uint32_t block_size;
   uint32_t ptr;
-  uint8_t entries[];
+  void *entries[];
 } kbuffer_t;
 
-int kbuffer_init(kbuffer_t *buffer, uint16_t entry_size, uint16_t entry_count);
+// create memory area with fixed size, and divide it into fixed size blocks,
+// when kbuffer_get is called it allocates continous part of memory area
+kbuffer_t *kbuffer_init(uint32_t block_size, uint32_t block_count);
 
-void* kbuffer_get(kbuffer_t *buffer);
+void *kbuffer_get(kbuffer_t *buffer, uint32_t size);
 
 // as parameter pass value got by kbuffer_get
-void* kbuffer_drop(void* buffer);
+void kbuffer_drop(void *ptr);
 
 #endif

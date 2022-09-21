@@ -66,13 +66,6 @@ process:
     }
 }
 
-void __ipv4_flip_values(ipv4_packet_t *packet)
-{
-    packet->length = htons(packet->length);
-    packet->id = htons(packet->id);
-    packet->header_checksum = htons(packet->header_checksum);
-}
-
 void ipv4_init()
 {
     fragments = heap_kernel_alloc(sizeof(kvector), 0);
@@ -83,4 +76,48 @@ void ipv4_checksum(ipv4_packet_t *packet)
 {
     packet->header_checksum = 0;
     packet->header_checksum = __ip_wrapsum(__ip_checksum((unsigned char *)packet, sizeof(ipv4_packet_t), 0));
+}
+
+nic_data_t *ipv4_create_packet(net_device_t *device, uint8_t protocol, ipv4_addr_t dst, uint32_t data_size)
+{
+    nic_data_t *data = ethernet_create_frame(device, IPv4_PROTOCOL_TYPE, data_size + sizeof(ipv4_packet_t));
+
+    ipv4_packet_t *packet = data->frame + sizeof(ethernet_frame_t);
+
+    uint8_t options_length = 0;
+    static uint16_t id = 0;
+
+    packet->version = IPv4_PROTOCOL_VERSION;
+    
+    packet->ihl = ((sizeof(ipv4_packet_t) + options_length) / 4);
+    packet->flags_reserved = 0;
+    packet->tos_delay = 0;
+    packet->tos_precedence = 0;
+    packet->tos_relibility = 0;
+    packet->tos_reserved = 0;
+    packet->tos_throughput = 0;
+    packet->flags_df = 1;
+    packet->flags_mf = 0;
+    packet->flags_reserved = 0;
+    packet->offset2 = 0;
+    packet->offset = 0;
+    packet->ttl = 64;
+    packet->protocol = protocol;
+    packet->length = htons((sizeof(ipv4_packet_t) + options_length) + data_size);
+    packet->id = htons(id++);
+    packet->src = device->interface->ipv4;
+
+    packet->dst = dst;
+
+    return data;
+}
+
+uint32_t ipv4_send_packet(nic_data_t *data)
+{
+    ipv4_packet_t *packet = data->frame + sizeof(ethernet_frame_t);
+
+    //calculate header checksum
+    ipv4_checksum(packet);
+
+    return ethernet_send_frame(data);
 }

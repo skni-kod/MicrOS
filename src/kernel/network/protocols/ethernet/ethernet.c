@@ -15,28 +15,38 @@ void ethernet_process_frame(nic_data_t *data)
     };
 }
 
-nic_data_t *ethernet_create_frame(net_device_t *device, uint16_t type, uint32_t payload_size)
+nic_data_t *ethernet_create_frame(net_device_t *device, uint16_t type, uint32_t data_size)
 {
     nic_data_t *data = network_manager_get_transmitt_buffer(device);
-    data->length = payload_size + sizeof(ethernet_frame_t);
-    memcpy(&((ethernet_frame_t*)(data->frame))->src, &device->interface->mac, sizeof(mac_addr_t));
-    ((ethernet_frame_t*)(data->frame))->type = htons(type);
+    data->length = data_size + sizeof(ethernet_frame_t);
+    memcpy(&((ethernet_frame_t *)(data->frame))->src, &device->interface->mac, sizeof(mac_addr_t));
+    ((ethernet_frame_t *)(data->frame))->type = htons(type);
     return data;
 }
 
-void ethernet_send_frame(nic_data_t *data, ipv4_addr_t *dst_addr)
+uint32_t ethernet_send_frame(nic_data_t *data)
 {
-    //TODO:
-    // update frame dst mac addr
-    switch(data->protocol){
-        case arp:
-
-            break;
-        case ipv4:
-            memcpy(&((ethernet_frame_t*)(data->frame))->dst, arp_get_entry(data->device, dst_addr), sizeof(mac_addr_t));
-            break;
+    switch (((ethernet_frame_t *)(data->frame))->type)
+    {
+    case htons(IPv4_PROTOCOL_TYPE):
+    {
+        arp_entry_t *mac = arp_request_entry(data->device,
+                                             &((ipv4_packet_t *)(data->frame + sizeof(ethernet_frame_t)))->dst);
+        if (mac)
+        {
+            memcpy(&((ethernet_frame_t *)(data->frame))->dst, &mac->mac, sizeof(mac_addr_t));
+            // calculate FCS
+            *(uint32_t *)(data->frame + data->length) = __crc32(data->frame, data->length);
+            data->length++;
+            return network_manager_send_data(data);
+        }
+    }
+    case htons(ARP_PROTOCOL_TYPE):
+    {
+        *(uint32_t *)(data->frame + data->length) = __crc32(data->frame, data->length);
+        data->length++;
+        return network_manager_send_data(data);
+    }
+    break;
     };
-    // calculate FCS
-    *(uint32_t *)(data->frame + data->length) = __crc32(data->frame, data->length);
-    network_manager_send_data(data);
 }
