@@ -64,7 +64,7 @@ src_data_files 		+= $(shell find $(data_dir)/ -mindepth 1 -type f)
 data_files 			= $(patsubst $(data_dir)/%,%,$(src_data_files))
 apps_dirs 			= $(shell find $(apps_src_dir)/ -maxdepth 1 -mindepth 1 -type d )
 log_file 			= $(log_dir)/qemu.log
-output_image 		= $(build_dir)/floppy.img
+output_image		= $(build_dir)/floppy.img
 
 CFLAGS_DEBUG		+= -std=$(C_STANDARD) -O0 -ggdb3 -DDEBUG_MODE
 # -fsanitize=undefined
@@ -72,6 +72,9 @@ CFLAGS_RELEASE		+= -std=$(C_STANDARD) -$(GCC_OPTIMIZATION)
 
 # include bootloader-fat12
 include $(bootloader_src_dir)/fat12/Makefile.include
+
+# include bootloader-pxe
+include $(bootloader_src_dir)/pxe/Makefile.include
 
 # include libk
 include $(libk_src_dir)/Makefile.include
@@ -138,6 +141,11 @@ run-debug: $(log_dir) build
 	-drive file=$(output_image),format=raw,if=floppy \
 	-s -S
 .PHONY: run-debug
+
+run-pxe: ## run pxe
+run-pxe:
+	make clean && make bootloaderpxe && qemu-system-i386 -netdev user,id=net0,tftp=/mnt/ramdisk/build/,bootfile=/pxe.0 -boot n -net nic,model=virtio,netdev=net0,macaddr=00:11:22:33:44:55
+.PHONY: run-pxe
 
 vscode: ## install vscode configuration
 vscode: kernel $(apps_dirs)

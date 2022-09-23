@@ -1,5 +1,6 @@
 b_pxe_src_dir			= $(bootloader_src_dir)/pxe
 b_pxe_objs_dir			= $(build_dir)/obj/bootloader/pxe
+b_pxe_bin				= $(build_dir)/pxe.0
 
 b_pxe_c_files			+= $(patsubst $(b_pxe_src_dir)/%, %,$(shell find $(b_pxe_src_dir) -name "*.c"))
 b_pxe_asm_files			+= $(patsubst $(b_pxe_src_dir)/%, %,$(shell find $(b_pxe_src_dir) -name "*.asm"))
@@ -7,9 +8,7 @@ b_pxe_asm_files			+= $(patsubst $(b_pxe_src_dir)/%, %,$(shell find $(b_pxe_src_d
 b_pxe_c_objects    	= $(patsubst %.c, $(b_pxe_objs_dir)/%.o, $(b_pxe_c_files))
 b_pxe_asm_objects  	= $(patsubst %.asm, $(b_pxe_objs_dir)/%.o, $(b_pxe_asm_files))
 
-b_pxe_ASM_FLAGS 		+= -f bin
-
-
+b_pxe_ASM_FLAGS 		+= 
 
 b_pxe_deps				= $(b_pxe_c_objects:%.o=%.d)
 -include $(b_pxe_deps)
@@ -17,31 +16,41 @@ b_pxe_deps				= $(b_pxe_c_objects:%.o=%.d)
 $(b_pxe_asm_objects): $(b_pxe_objs_dir)/%.o: $(b_pxe_src_dir)/%.asm
 	$(progress) "ASM" $<
 	$(MKDIR) -p $(@D)
-	$(ASM) $(b_pxe_ASM_FLAGS) $< -o $@
+	$(ASM) -f elf  $< -o $@
 
 $(b_pxe_c_objects): $(b_pxe_objs_dir)/%.o:  $(b_pxe_src_dir)/%.c
 	$(progress) "CC" $<
 	$(MKDIR) -p $(@D)
-	$(CC) -MMD -MF $(@:.o=.d) $(b_pxe_INCLUDES) $(b_pxe_CFLAGS) -c $< -o $@ 
+	$(CC) -ffreestanding -c $< -o $@ 
 
-$(b_pxe_elf): $(b_pxe_linker) $(libk_bin) $(b_pxe_asm_objects) $(b_pxe_c_objects) 
+$(b_pxe_bin): $(b_pxe_asm_objects) $(b_pxe_c_objects) 
 	$(progress) "LD" $@
 	$(MKDIR) -p $(@D)
-	$(CC) $(b_pxe_c_objects) $(b_pxe_asm_objects) -o $@ $(b_pxe_LD_FLAGS)
-
-$(b_pxe_bin): $(b_pxe_elf)
-	$(progress) "OBJCOPY" $@
-	$(MKDIR) -p $(@D)
-	$(OBJCOPY) -O binary $< $@
+	$(LD)  $(b_pxe_asm_objects) $(b_pxe_c_objects) --oformat binary -o $@ 
 
 
-b_pxe: $(header_files) $(libk_bin) $(b_pxe_elf) $(b_pxe_bin)
-.PHONY: b_pxe
+# $(b_pxe_asm_objects): $(b_pxe_objs_dir)/%.o: $(b_pxe_src_dir)/%.asm
+# 	$(progress) "ASM" $<
+# 	$(MKDIR) -p $(@D)
+# 	$(ASM) -f bin  $< -o $@
 
-clean-b_pxe: ## clean b_pxe
-clean-b_pxe:
+# $(b_pxe_c_objects): $(b_pxe_objs_dir)/%.o:  $(b_pxe_src_dir)/%.c
+# 	$(progress) "CC" $<
+# 	$(MKDIR) -p $(@D)
+# 	$(CC) -ffreestanding  -c $< -o $@ 
+
+# $(b_pxe_bin): $(b_pxe_objs_dir)/boot.o
+# 	$(progress) "LD" $@
+# 	$(MKDIR) -p $(@D)
+# 	$(CP) $< $@
+
+bootloaderpxe: $(b_pxe_bin)
+.PHONY: bootloaderpxe
+
+clean-bootloaderpxe: ## clean b_pxe
+clean-bootloaderpxe:
 	$(progress) "CLEAN" "b_pxe"
 	rm -rf $(b_pxe_objs_dir)
 	rm -rf $(b_pxe_elf)
 	rm -rf $(b_pxe_bin)
-.PHONY: clean-b_pxe
+.PHONY: clean-bootloaderpxe
