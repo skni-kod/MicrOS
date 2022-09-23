@@ -11,7 +11,6 @@ void icmp_process_packet(nic_data_t *data)
     {
         icmp_header_echo_t *request = header->data;
         uint32_t data_size = ntohs(packet->length) - sizeof(ipv4_packet_t);
-
         nic_data_t *response = ipv4_create_packet(data->device, IP_PROTOCOL_ICMP, packet->src, data_size);
 
         {
@@ -22,6 +21,7 @@ void icmp_process_packet(nic_data_t *data)
             reply->checksum = 0;
             reply->checksum = __ip_wrapsum(__ip_checksum((uint8_t *)reply, ntohs(packet->length) - sizeof(ipv4_packet_t), 0U));
         }
+        bool integr = heap_kernel_verify_integrity();
 
         ipv4_send_packet(response);
 

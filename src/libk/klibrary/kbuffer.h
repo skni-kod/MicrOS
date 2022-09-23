@@ -10,9 +10,9 @@
 typedef struct kentry
 {
   uint32_t size;
-  uint8_t used;
+  uint32_t used;
   void *data[];
-} kentry_t;
+} __attribute__((packed)) kentry_t; 
 
 typedef struct kbuffer
 {

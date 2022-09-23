@@ -34,7 +34,13 @@ uint32_t ethernet_send_frame(nic_data_t *data)
                                              &((ipv4_packet_t *)(data->frame + sizeof(ethernet_frame_t)))->dst);
         if (mac)
         {
+            if(!heap_kernel_verify_integrity()){
+                int x = 1;
+            }
             memcpy(&((ethernet_frame_t *)(data->frame))->dst, &mac->mac, sizeof(mac_addr_t));
+            if(!heap_kernel_verify_integrity()){
+                int x = 1;
+            }
             // calculate FCS
             *(uint32_t *)(data->frame + data->length) = __crc32(data->frame, data->length);
             data->length++;

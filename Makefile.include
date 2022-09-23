@@ -28,8 +28,8 @@ KERNEL_CONFIG           ?=
 LIBC_CONFIG             ?=
 LIBK_CONFIG             ?=
 
-DEBUG_KERNEL			?= 0
-DEBUG_LIBK				?= 0
+DEBUG_KERNEL			?= 1
+DEBUG_LIBK				?= 1
 DEBUG_LIBC				?= 0
 
 QEMU_NET				?= 1

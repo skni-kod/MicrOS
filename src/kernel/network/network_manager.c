@@ -11,7 +11,7 @@ bool (*drivers[])(net_device_t *device) = {rtl8139_init, virtio_nic_init};
 uint8_t drivers_count = 2;
 
 bool network_manager_init()
-{   
+{
 
     net_devices = heap_kernel_alloc(sizeof(kvector), 0);
     kvector_init(net_devices);
@@ -44,8 +44,8 @@ bool network_manager_init()
     {
         net_device_t *dev = (net_device_t *)net_devices->data[devices];
         // setup receive and transmitt buffers
-        dev->rx = kbuffer_init(dev->interface->mtu, 128);
-        dev->tx = kbuffer_init(dev->interface->mtu, 128);
+        dev->rx = kbuffer_init(dev->interface->mtu, 16);
+        dev->tx = kbuffer_init(dev->interface->mtu, 16);
         // finally turn on communication
         dev->interface->mode.value = 0x3;
     }
@@ -57,8 +57,9 @@ nic_data_t *network_manager_get_receive_buffer(net_device_t *device)
 {
     if (device && device->interface->mode.receive)
     {
-        
+
         nic_data_t *data = (nic_data_t *)kbuffer_get(device->rx, device->interface->mtu);
+        //nic_data_t *data = (nic_data_t *)heap_kernel_alloc(device->interface->mtu, 0);
         data->length = device->interface->mtu;
         data->device = device;
         data->keep = false;
@@ -72,7 +73,8 @@ nic_data_t *network_manager_get_transmitt_buffer(net_device_t *device)
 {
     if (device)
     {
-        nic_data_t *data = (nic_data_t *)kbuffer_get(device->tx, device->interface->mtu);
+        //nic_data_t *data = (nic_data_t *)kbuffer_get(device->tx, device->interface->mtu);
+        nic_data_t *data = (nic_data_t *)heap_kernel_alloc(device->interface->mtu, 0);
         data->length = device->interface->mtu;
         data->device = device;
         data->keep = false;
@@ -93,7 +95,10 @@ uint32_t network_manager_send_data(nic_data_t *data)
         ret = data->length;
     }
 
-    kbuffer_drop(data);
+    if (!data->keep)
+        //kbuffer_drop(data);
+        heap_kernel_dealloc(data);
+
     return ret;
 }
 
@@ -107,6 +112,7 @@ void network_manager_receive_data(nic_data_t *data)
     }
     if (!data->keep)
         kbuffer_drop(data);
+        //heap_kernel_dealloc(data);
 }
 
 net_device_t *network_manager_get_nic()
@@ -122,7 +128,7 @@ net_device_t *network_manager_get_nic()
 
 net_device_t *network_manager_get_nic_by_ipv4(ipv4_addr_t *addr)
 {
-    //TODO: default route etc..
+    // TODO: default route etc..
     return network_manager_get_nic();
 }
 
