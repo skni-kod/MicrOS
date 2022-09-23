@@ -122,7 +122,7 @@ bool rtl8139_irq_handler()
         return false;
     }
 
-    if (status & ROK)
+    if (status & ROK && rtl8139_net_device->interface->mode.receive)
         rtl8139_receive();
 
     io_out_word(rtl8139_device.io_base + INTRSTATUS, 0x5);
@@ -168,11 +168,11 @@ uint32_t rtl8139_receive()
     // Notify network manager about incoming data
 
     (*rtl8139_net_device->dpi.receive)(out);
-
 }
 
 uint32_t rtl8139_send(nic_data_t *data)
 {
+
     uint32_t phys_addr = GET_PHYSICAL_ADDRESS(data->frame);
 
     io_out_long(rtl8139_device.io_base + TSAD[rtl8139_device.tx_cur], phys_addr);

@@ -44,8 +44,8 @@ bool network_manager_init()
     {
         net_device_t *dev = (net_device_t *)net_devices->data[devices];
         // setup receive and transmitt buffers
-        dev->rx = kbuffer_init(dev->interface->mtu, 16);
-        dev->tx = kbuffer_init(dev->interface->mtu, 16);
+        dev->rx = kbuffer_init(dev->interface->mtu, NETWORK_MANAGER_BUFFER_SIZE);
+        dev->tx = kbuffer_init(dev->interface->mtu, NETWORK_MANAGER_BUFFER_SIZE);
         // finally turn on communication
         dev->interface->mode.value = 0x3;
     }
@@ -59,7 +59,6 @@ nic_data_t *network_manager_get_receive_buffer(net_device_t *device)
     {
 
         nic_data_t *data = (nic_data_t *)kbuffer_get(device->rx, device->interface->mtu);
-        //nic_data_t *data = (nic_data_t *)heap_kernel_alloc(device->interface->mtu, 0);
         data->length = device->interface->mtu;
         data->device = device;
         data->keep = false;
@@ -73,8 +72,7 @@ nic_data_t *network_manager_get_transmitt_buffer(net_device_t *device)
 {
     if (device)
     {
-        //nic_data_t *data = (nic_data_t *)kbuffer_get(device->tx, device->interface->mtu);
-        nic_data_t *data = (nic_data_t *)heap_kernel_alloc(device->interface->mtu, 0);
+        nic_data_t *data = (nic_data_t *)kbuffer_get(device->tx, device->interface->mtu);
         data->length = device->interface->mtu;
         data->device = device;
         data->keep = false;
@@ -95,9 +93,7 @@ uint32_t network_manager_send_data(nic_data_t *data)
         ret = data->length;
     }
 
-    if (!data->keep)
-        //kbuffer_drop(data);
-        heap_kernel_dealloc(data);
+    kbuffer_drop(data);
 
     return ret;
 }
@@ -112,7 +108,6 @@ void network_manager_receive_data(nic_data_t *data)
     }
     if (!data->keep)
         kbuffer_drop(data);
-        //heap_kernel_dealloc(data);
 }
 
 net_device_t *network_manager_get_nic()

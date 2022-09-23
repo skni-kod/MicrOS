@@ -23,7 +23,7 @@ WERRORS					+= -Wno-unused-parameter
 WERRORS					+= -Wno-packed-bitfield-compat 
 WERRORS					+= -Wno-implicit-fallthrough
 
-KERNEL_CFLAGS           ?=
+KERNEL_CFLAGS           ?= 
 KERNEL_CONFIG           ?=
 LIBC_CONFIG             ?=
 LIBK_CONFIG             ?=

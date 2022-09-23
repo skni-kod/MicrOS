@@ -5,6 +5,8 @@
 #ifndef network_manager
 #define network_manager
 
+#define NETWORK_MANAGER_BUFFER_SIZE 64
+
 //TODO: This sould not be here:
 #include <drivers/nic/rtl8139/rtl8139.h>
 #include <drivers/nic/virtio-pci-nic/virtio-pci-nic.h>

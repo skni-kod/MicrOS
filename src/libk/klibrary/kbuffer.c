@@ -20,7 +20,7 @@ kbuffer_t *kbuffer_init(uint32_t block_size, uint32_t block_count)
     for (uint32_t entry_ptr = 0; entry_ptr < buffer->block_count; entry_ptr++)
     {
         entry = (kentry_t*)((uint32_t)buffer->entries + (entry_ptr * (uint32_t)block_size_in_memory));
-        entry->size = entry_ptr + 1;
+        entry->size = 0;
         entry->used = 0;
     }
 
@@ -72,5 +72,5 @@ void *kbuffer_get(kbuffer_t *buffer, uint32_t size)
 void kbuffer_drop(void *ptr)
 {
     // mark entry as free
-    *((uint8_t *)ptr - 4) = 0;
+    *((uint32_t *)ptr - 1) = 0;
 }
