@@ -32,6 +32,10 @@ void *kbuffer_get(kbuffer_t *buffer, uint32_t size)
     // ptr points to last used block of data, so we know is its size
     uint32_t start_point = buffer->ptr;
     size_t block_size_in_memory = (sizeof(kentry_t) + buffer->block_size);
+    
+    if(size == 0)
+        size = 1;
+    
     uint32_t req_blocks = buffer->block_size / size;
 
     if (buffer->block_size % size)

@@ -8,6 +8,13 @@
 
 #include <stdint.h>
 
+typedef enum udp_port
+{
+    DNS          = 53,
+    BOOTP_SERVER = 67,
+    BOOTP_CLIENT = 68,
+} udp_port_t;
+
 typedef struct udp_datagram
 {
     uint16_t src_port;

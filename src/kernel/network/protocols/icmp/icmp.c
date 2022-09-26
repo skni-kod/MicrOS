@@ -21,29 +21,7 @@ void icmp_process_packet(nic_data_t *data)
             reply->checksum = 0;
             reply->checksum = __ip_wrapsum(__ip_checksum((uint8_t *)reply, ntohs(packet->length) - sizeof(ipv4_packet_t), 0U));
         }
-        bool integr = heap_kernel_verify_integrity();
-
         ipv4_send_packet(response);
-
-        // Send response to ECHO REQUEST:
-
-        // TODO: Create ipv4_create_packet, fill with data in icmp datagram, and send with ipv4_send_packet()
-        //  in send_packet handle fragmentation
-        //  ethernet_frame_t *frame = ethernet_create_frame(
-        //      &data->device->interface->mac,
-        //      &dst_mac,
-        //      IPv4_PROTOCOL_TYPE,
-        //      ntohs(packet->length));
-        //  {
-        //      ipv4_packet_t *reply = (ipv4_packet_t *)frame->data;
-        //      memcpy(reply, packet, sizeof(ipv4_packet_t));
-        //      memcpy(&reply->dst, &packet->src, IPv4_ADDRESS_LENGTH);
-        //      memcpy(&reply->src, &packet->dst, IPv4_ADDRESS_LENGTH);
-        //      ipv4_checksum(packet);
-        //  }
-
-
-        // ethernet_send_frame(data->device, ntohs(packet->length), frame);
     }
     break;
 

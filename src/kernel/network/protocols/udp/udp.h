@@ -7,6 +7,7 @@
 #define udp_protocol
 
 #include <inet/udp.h>
+#include <inet/inet.h>
 #include <network/network_utils.h>
 #include <network/network_manager.h>
 #include <process/socket/socket.h>
@@ -22,5 +23,9 @@ void udp_process_datagram(nic_data_t *data);
     Returns datagram checksum
 */
 uint16_t udp_checksum(ipv4_packet_t *packet);
+
+nic_data_t *udp_create_datagram(net_device_t *device, ipv4_addr_t dst_addr, uint16_t dst_port, uint16_t src_port, uint32_t data_size);
+
+uint32_t udp_send_datagram(nic_data_t *data);
 
 #endif

@@ -21,6 +21,7 @@ nic_data_t *ethernet_create_frame(net_device_t *device, uint16_t type, uint32_t 
     data->length = data_size + sizeof(ethernet_frame_t);
     memcpy(&((ethernet_frame_t *)(data->frame))->src, &device->interface->mac, sizeof(mac_addr_t));
     ((ethernet_frame_t *)(data->frame))->type = htons(type);
+    data->device = device;
     return data;
 }
 

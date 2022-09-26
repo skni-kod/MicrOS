@@ -1,4 +1,5 @@
 #include "micros_socket.h"
+#include "micros_process.h"
 
 int socket(int domain, int type, int protocol)
 {
@@ -10,12 +11,12 @@ int bind(int s, struct sockaddr *my_addr, socklen_t addrlen)
     return micros_interrupt_3a(SYSCALL_BIND, s, my_addr, addrlen);
 }
 
-ssize_t recv(int s, void *buf, size_t len, int flags)
+uint32_t recv(int s, void *buf, size_t len, int flags)
 {
     return 0;
 }
 
-ssize_t recvfrom(int s, void *buf, size_t len, int flags,
+uint32_t recvfrom(int s, void *buf, size_t len, int flags,
                  struct sockaddr *from, socklen_t *fromlen)
 {
     struct recv_params params = {
@@ -26,14 +27,14 @@ ssize_t recvfrom(int s, void *buf, size_t len, int flags,
         .from = from,
         .fromlen = fromlen};
 
-    ssize_t ret;
-
-    while (!(ret = micros_interrupt_1a(SYSCALL_RECVFROM, &params)))
-        ;
-    return ret;
+    for(uint32_t i = 0,ret = 0;
+        i< 0x1000;
+        i++, micros_process_current_process_sleep(1), ret = 0)
+        if(ret = micros_interrupt_1a(SYSCALL_RECVFROM, &params))
+            return ret;
 }
 
-ssize_t sendto(int s, const void *buf, size_t len,
+uint32_t sendto(int s, const void *buf, size_t len,
                int flags, const struct sockaddr *to,
                socklen_t tolen)
 {
@@ -46,10 +47,6 @@ ssize_t sendto(int s, const void *buf, size_t len,
         .tolen = tolen
     };
 
-    ssize_t ret;
-
-    while (!(ret = micros_interrupt_1a(SYSCALL_SENDTO, &params)))
-        ;
-    return ret;
+    return micros_interrupt_1a(SYSCALL_SENDTO, &params);
 
 }

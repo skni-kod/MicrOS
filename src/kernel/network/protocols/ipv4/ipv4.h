@@ -12,7 +12,6 @@
 #include <network/network_manager.h>
 
 #include "../icmp/icmp.h"
-#include "../dhcp/dhcp.h"
 #include "../udp/udp.h"
 #include "../tcp/tcp.h"
 

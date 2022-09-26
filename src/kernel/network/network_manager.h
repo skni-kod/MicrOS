@@ -56,7 +56,7 @@ uint64_t network_manager_bytes_received(void);
 /*
     Return network device according to destination IP address
 */
-net_device_t *network_manager_get_nic_by_ipv4(ipv4_addr_t *addr);
+net_device_t *network_manager_get_nic_by_ipv4(ipv4_addr_t addr);
 
 //! network_manager_get_nic
 /*

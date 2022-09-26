@@ -24,7 +24,6 @@ bool network_manager_init()
         net_device_t *dev = heap_kernel_alloc(sizeof(net_device_t), 0);
         if (__network_manager_set_net_device(dev) && drivers[i](dev))
         {
-            // TODO: Buffering, hardcoding ip??
             dev->interface->ipv4.oct_a = 192;
             dev->interface->ipv4.oct_b = 168;
             dev->interface->ipv4.oct_c = 1;
@@ -84,16 +83,17 @@ nic_data_t *network_manager_get_transmitt_buffer(net_device_t *device)
 
 uint32_t network_manager_send_data(nic_data_t *data)
 {
-    uint16_t ret = 0;
+    uint32_t ret = 0;
     if (data->device->interface->mode.send)
     {
         data->device->dpi.send(data);
-        ++data->device->frames_sent;
-        data->device->bytes_sent += data->length;
-        ret = data->length;
+        ++data->device->interface->frames_sent;
+        data->device->interface->bytes_sent += data->length;
+        ret = (uint32_t)data->length;
     }
 
-    kbuffer_drop(data);
+    if(!data->keep)
+        kbuffer_drop(data);
 
     return ret;
 }
@@ -103,8 +103,8 @@ void network_manager_receive_data(nic_data_t *data)
     if (data->device->interface->mode.receive)
     {
         ethernet_process_frame(data);
-        ++data->device->frames_received;
-        data->device->bytes_received += data->length;
+        ++data->device->interface->frames_received;
+        data->device->interface->bytes_received += data->length;
     }
     if (!data->keep)
         kbuffer_drop(data);
@@ -121,7 +121,7 @@ net_device_t *network_manager_get_nic()
     return net_devices->data[0];
 }
 
-net_device_t *network_manager_get_nic_by_ipv4(ipv4_addr_t *addr)
+net_device_t *network_manager_get_nic_by_ipv4(ipv4_addr_t addr)
 {
     // TODO: default route etc..
     return network_manager_get_nic();

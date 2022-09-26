@@ -57,6 +57,10 @@ typedef struct net_interface_t
     ipv4_addr_t ipv4;
     ipv4_addr_t ipv4_gateway;
     uint16_t mtu;
+    uint32_t frames_sent;
+    uint32_t frames_received;
+    uint32_t bytes_sent;
+    uint32_t bytes_received;
     kvector *arp_entries;
 } net_interface_t;
 
@@ -67,14 +71,11 @@ typedef struct net_interface_t
 typedef struct net_device
 {
     char *device_name;
-    uint32_t frames_sent;
-    uint32_t frames_received;
-    uint32_t bytes_sent;
-    uint32_t bytes_received;
     net_interface_t *interface;
     net_dpi_t dpi;
     kbuffer_t *rx;
     kbuffer_t *tx;
 } net_device_t;
+
 
 #endif

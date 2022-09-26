@@ -22,11 +22,11 @@ int socket(int domain, int type, int protocol)
     }
 }
 
-ssize_t recv(int s, void *buf, size_t len, int flags)
+uint32_t recv(int s, void *buf, size_t len, int flags)
 {
 }
 
-ssize_t recvfrom(int s, void *buf, size_t length, int flags, struct sockaddr *from, socklen_t *fromlen)
+uint32_t recvfrom(int s, void *buf, size_t length, int flags, struct sockaddr *from, socklen_t *fromlen)
 {
     socket_descriptor_t *descriptor = socket_get_descriptor(s);
 
@@ -57,10 +57,10 @@ ssize_t recvfrom(int s, void *buf, size_t length, int flags, struct sockaddr *fr
         return 0;
     }
 
-    memcpy(from, &descriptor->addr, descriptor->addr_len);
-    *fromlen = descriptor->addr_len;
+    //*fromlen = (struct sockadd_i)
 
-    return socket_entry_read(descriptor->entry, buf, length);
+    uint32_t ret = (uint32_t)socket_read(descriptor, from, buf, length);
+    return ret;
 }
 
 int bind(int s, struct sockaddr *my_addr, socklen_t addrlen)
@@ -77,67 +77,24 @@ int bind(int s, struct sockaddr *my_addr, socklen_t addrlen)
         return -1;
 }
 
-ssize_t sendto(int s, const void *buf, size_t len, int flags, const struct sockaddr *to, socklen_t tolen)
+uint32_t sendto(int s, const void *buf, size_t len, int flags, const struct sockaddr *to, socklen_t tolen)
 {
     socket_descriptor_t *desc = socket_get_descriptor(s);
-
-    memcpy(&desc->addr, to, tolen);
-    desc->addr_len = tolen;
-
-    net_interface_t *interface = network_manager_get_nic();
+    net_device_t *device = network_manager_get_nic();
 
     switch (desc->type)
     {
     case SOCK_DGRAM:
         switch (desc->protocol)
         {
-            // case IPPROTO_IP:
-            //     ipv4_send_packet(interface,
-            //                      (struct sockaddr_in *)&desc->addr,
-            //                      IPV4_PROTO_ICMP,
-            //                      0,
-            //                      (uint8_t *)buf,
-            //                      len);
-            //     return len;
 
         case IPPROTO_UDP:
-            // udp_send_packet(interface,
-            //                 desc->port,
-            //                 interface->mac,
-            //                 (struct sockaddr_in *)&desc->addr,
-            //                 (uint8_t *)buf,
-            //                 len);
-            {
-                // ethernet_frame_t *frame = ethernet_create_frame(
-                //     &data->device->interface->mac,
-                //     &((ethernet_frame_t *)data->frame)->src,
-                //     IPv4_PROTOCOL_TYPE,
-                //     htons(packet->length));
-
-                // ipv4_packet_t *ip_reply = (ipv4_packet_t *)frame->data;
-                // {
-                //     memcpy(ip_reply, packet, sizeof(ipv4_packet_t));
-                //     packet->flags_mf = IPv4_FLAG_DONT_FRAGMENT;
-                //     memcpy(&ip_reply->dst, &packet->src, IPv4_ADDRESS_LENGTH);
-                //     memcpy(&ip_reply->src, &packet->dst, IPv4_ADDRESS_LENGTH);
-                // }
-
-                // {
-                //     udp_datagram_t *reply = (udp_datagram_t *)(frame->data + sizeof(ipv4_packet_t));
-                //     reply->dst_port = datagram->src_port;
-                //     reply->src_port = datagram->dst_port;
-                //     reply->length = datagram->length;
-                //     memcpy(reply->data, datagram->data, htons(packet->length) - (sizeof(ipv4_packet_t) + sizeof(udp_datagram_t)));
-                // }
-
-                // udp_checksum(ip_reply);
-                // ethernet_send_frame(data->device, htons(packet->length), frame);
-            }
-            return len;
-
+        {
+            nic_data_t *data = udp_create_datagram(device, (ipv4_addr_t)((struct sockaddr_in *)to)->sin_addr.s_addr, ((struct sockaddr_in *)to)->sin_port, desc->port, len);
+            memcpy(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t) + sizeof(udp_datagram_t), buf, len);
+            return udp_send_datagram(data);
+        }
         default:
-            // Indicate that something went wrong, even though the type and
-            // protocol are supported.
             return 0;
         }
 
@@ -145,17 +102,9 @@ ssize_t sendto(int s, const void *buf, size_t len, int flags, const struct socka
         switch (desc->protocol)
         {
         case IPPROTO_ICMP:
-            // ipv4_send_packet(interface,
-            //                  (struct sockaddr_in *)&desc->addr,
-            //                  IPV4_PROTO_ICMP,
-            //                  0,
-            //                  (uint8_t *)buf,
-            //                  len);
             return len;
 
         default:
-            // Indicate that something went wrong, even though the type and
-            // protocol are supported.
             return 0;
         }
     }
@@ -177,14 +126,22 @@ int socket_create_descriptor(int domain, int type, int protocol)
             descriptor->type = type;
             descriptor->protocol = protocol;
             descriptor->port = SOCKET_BASE_PORT + id;
-            descriptor->entry = heap_kernel_alloc(sizeof(socket_entry_t) + SOCKET_BUFFER_SIZE, 0);
-            memset(descriptor->entry, 0, sizeof(socket_entry_t) + SOCKET_BUFFER_SIZE);
-            descriptor->entry->length = SOCKET_BUFFER_SIZE;
+            descriptor->buffer = socket_init_buffer(descriptor->buffer, SOCKET_BUFFER_ENTRY_SIZE, SOCKET_BUFFER_ENTRY_COUNT);
             return id;
         }
     }
 
     return 0;
+}
+
+socket_buffer_t *socket_init_buffer(socket_buffer_t *buffer, size_t entry_size, uint32_t entry_count)
+{
+    buffer = heap_kernel_alloc(sizeof(socket_buffer_t) + (sizeof(socket_entry_t) + entry_size) * entry_count, 0);
+    buffer->length = entry_count;
+    buffer->entry_size = entry_size;
+    buffer->read = 0;
+    buffer->write = 0;
+    return buffer;
 }
 
 socket_descriptor_t *socket_get_descriptor(uint32_t id)
@@ -195,50 +152,46 @@ socket_descriptor_t *socket_get_descriptor(uint32_t id)
     return socket_descriptors + id;
 }
 
-size_t socket_entry_read(socket_entry_t *entry, void *buffer, size_t length)
+uint32_t socket_read(socket_descriptor_t *socket, struct sockaddr_in *addr, void *data, size_t length)
 {
-    size_t ptr = 0;
-
-    // read ptr follows write pointer in round buffer
-    while (entry->read != entry->write)
+    if (socket->buffer->write != socket->buffer->read)
     {
-        // input buffer is full, do not copy data there!
-        if (ptr >= length)
-            return ptr;
+        socket->buffer->read = socket->buffer->read + 1 & (socket->buffer->length - 1);
+        socket_entry_t *entry = ((uint32_t)&socket->buffer->entries + ((size_t)(socket->buffer->read) * (socket->buffer->entry_size + (size_t)sizeof(socket_entry_t))));
 
-        *(uint8_t *)(buffer + ptr++) = entry->buffer[entry->read++];
+        for (uint32_t i = 0; i < sizeof(struct sockaddr_in); i++)
+        {
+            *(uint8_t *)((uint8_t *)addr + i) = *(uint8_t *)((uint8_t *)&entry->addr + i);
+        }
 
-        if (entry->write == SOCKET_BUFFER_SIZE)
-            entry->write = 0;
+        for (uint32_t i = 0; i < entry->size; i++)
+        {
+            *(uint8_t *)(data + i) = *(uint8_t *)(entry->data + i);
+        }
+        return entry->size;
     }
-
-    return ptr;
+    return 0;
 }
 
-size_t socket_entry_write(socket_entry_t *entry, void *buffer, size_t length)
+uint32_t socket_write(socket_descriptor_t *socket, struct sockaddr_in *addr, void *data, size_t length)
 {
-    size_t ptr = 0;
-
-    // read ptr follows write pointer in round buffer
-    while (true)
+    if (socket->buffer->entry_size > length)
     {
-        // input buffer is full, do not copy data there!
-        if (ptr >= length)
-            return ptr;
-
-        entry->buffer[entry->write++] = *(uint8_t *)(buffer + ptr++);
-
-        if (entry->write == SOCKET_BUFFER_SIZE)
-            entry->write = 0;
+        socket->buffer->write = socket->buffer->write + 1 & (socket->buffer->length - 1);
+        socket_entry_t *entry = ((uint32_t) & (socket->buffer->entries) + ((size_t)(socket->buffer->write) * (socket->buffer->entry_size + (size_t)sizeof(socket_entry_t))));
+        memcpy(&entry->addr, addr, sizeof(struct sockaddr_in));
+        memcpy(&entry->data, data, length);
+        return entry->size = length;
     }
-
-    return ptr;
+    else
+        return 0;
 }
 
-socket_descriptor_t *socket_descriptor_lookup(int domain, int type, int protocol, uint16_t port)
+socket_descriptor_t *socket_descriptor_lookup(int domain, int type, int protocol, struct sockaddr_in *addr)
 {
     socket_descriptor_t *descriptor;
 
+    // First look for descriptors with specified IP, then look for INADDR_ANY
     for (uint8_t id = 0; id < SOCKET_DESCRIPTORS; id++)
     {
         descriptor = &socket_descriptors[id];
@@ -247,7 +200,9 @@ socket_descriptor_t *socket_descriptor_lookup(int domain, int type, int protocol
             descriptor->domain == domain &&
             descriptor->type == type &&
             descriptor->protocol == protocol &&
-            descriptor->port == port)
+            descriptor->port == addr->sin_port &&
+            (descriptor->addr.sin_addr.s_addr == addr->sin_addr.s_addr ||
+             descriptor->addr.sin_addr.s_addr == INADDR_ANY))
             return descriptor;
     }
 
