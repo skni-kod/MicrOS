@@ -27,11 +27,7 @@ uint32_t recvfrom(int s, void *buf, size_t len, int flags,
         .from = from,
         .fromlen = fromlen};
 
-    for(uint32_t i = 0,ret = 0;
-        i< 0x1000;
-        i++, micros_process_current_process_sleep(1), ret = 0)
-        if(ret = micros_interrupt_1a(SYSCALL_RECVFROM, &params))
-            return ret;
+    return micros_interrupt_1a(SYSCALL_RECVFROM, &params);
 }
 
 uint32_t sendto(int s, const void *buf, size_t len,

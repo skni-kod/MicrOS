@@ -57,10 +57,7 @@ uint32_t recvfrom(int s, void *buf, size_t length, int flags, struct sockaddr *f
         return 0;
     }
 
-    //*fromlen = (struct sockadd_i)
-
-    uint32_t ret = (uint32_t)socket_read(descriptor, from, buf, length);
-    return ret;
+    return (uint32_t)socket_read(descriptor, from, buf, length);
 }
 
 int bind(int s, struct sockaddr *my_addr, socklen_t addrlen)
@@ -80,6 +77,7 @@ int bind(int s, struct sockaddr *my_addr, socklen_t addrlen)
 uint32_t sendto(int s, const void *buf, size_t len, int flags, const struct sockaddr *to, socklen_t tolen)
 {
     socket_descriptor_t *desc = socket_get_descriptor(s);
+
     net_device_t *device = network_manager_get_nic();
 
     switch (desc->type)
@@ -158,16 +156,8 @@ uint32_t socket_read(socket_descriptor_t *socket, struct sockaddr_in *addr, void
     {
         socket->buffer->read = socket->buffer->read + 1 & (socket->buffer->length - 1);
         socket_entry_t *entry = ((uint32_t)&socket->buffer->entries + ((size_t)(socket->buffer->read) * (socket->buffer->entry_size + (size_t)sizeof(socket_entry_t))));
-
-        for (uint32_t i = 0; i < sizeof(struct sockaddr_in); i++)
-        {
-            *(uint8_t *)((uint8_t *)addr + i) = *(uint8_t *)((uint8_t *)&entry->addr + i);
-        }
-
-        for (uint32_t i = 0; i < entry->size; i++)
-        {
-            *(uint8_t *)(data + i) = *(uint8_t *)(entry->data + i);
-        }
+        memcpy(addr, &entry->addr, sizeof(struct sockaddr_in));
+        memcpy(data, entry->data, entry->size);
         return entry->size;
     }
     return 0;

@@ -28,22 +28,10 @@ int main(int argc, char *argv[])
                                            0,
                                            (struct sockaddr *)&server_addr,
                                            &server_addr_len);
-
-        printf("Received (%d): From: %d.%d.%d.%d:%d ",
-               bytes_received,
-               ((ipv4_addr_t *)&server_addr.sin_addr.s_addr)->oct_a,
-               ((ipv4_addr_t *)&server_addr.sin_addr.s_addr)->oct_b,
-               ((ipv4_addr_t *)&server_addr.sin_addr.s_addr)->oct_c,
-               ((ipv4_addr_t *)&server_addr.sin_addr.s_addr)->oct_d,
-               ntohs(server_addr.sin_port));
         if (bytes_received)
         {
             printf("%.*s  ", bytes_received, buffer);
             printf("Sent: %d\n", sendto(sock, buffer, bytes_received, 0, (struct sockaddr *)&server_addr, sizeof(struct sockaddr_in)));
-        }
-        else
-        {
-            printf("%s\n", "Process Alive");
         }
 
         if (micros_keyboard_is_key_pressed())

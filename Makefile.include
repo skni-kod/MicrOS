@@ -30,7 +30,7 @@ LIBK_CONFIG             ?=
 
 DEBUG_KERNEL			?= 1
 DEBUG_LIBK				?= 1
-DEBUG_LIBC				?= 0
+DEBUG_LIBC				?= 1
 
 QEMU_NET				?= 1
 QEMU_TAP				?= 1
