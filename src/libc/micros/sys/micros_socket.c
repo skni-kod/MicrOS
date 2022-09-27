@@ -17,7 +17,7 @@ uint32_t recv(int s, void *buf, size_t len, int flags)
 }
 
 uint32_t recvfrom(int s, void *buf, size_t len, int flags,
-                 struct sockaddr *from, socklen_t *fromlen)
+                  struct sockaddr *from, socklen_t *fromlen)
 {
     struct recv_params params = {
         .s = s,
@@ -30,9 +30,23 @@ uint32_t recvfrom(int s, void *buf, size_t len, int flags,
     return micros_interrupt_1a(SYSCALL_RECVFROM, &params);
 }
 
+uint32_t send(int s, const void *buf, size_t len,
+              int flags, const struct sockaddr *to,
+              socklen_t tolen)
+{
+    struct sendto_params params = {
+        .s = s,
+        .buf = buf,
+        .len = len,
+        .flags = flags,
+    };
+
+    return micros_interrupt_1a(SYSCALL_SEND, &params);
+}
+
 uint32_t sendto(int s, const void *buf, size_t len,
-               int flags, const struct sockaddr *to,
-               socklen_t tolen)
+                int flags, const struct sockaddr *to,
+                socklen_t tolen)
 {
     struct sendto_params params = {
         .s = s,
@@ -40,9 +54,12 @@ uint32_t sendto(int s, const void *buf, size_t len,
         .len = len,
         .flags = flags,
         .to = to,
-        .tolen = tolen
-    };
+        .tolen = tolen};
 
     return micros_interrupt_1a(SYSCALL_SENDTO, &params);
+}
 
+int listen(int s, int backlog)
+{
+    return micros_interrupt_2a(SYSCALL_LISTEN, s, backlog);
 }

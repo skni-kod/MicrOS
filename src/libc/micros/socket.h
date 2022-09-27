@@ -5,8 +5,9 @@
 #define AF_INET 2
 
 // Types
-#define SOCK_DGRAM 2
-#define SOCK_RAW 3
+#define SOCK_STREAM 1 /* stream (connection) socket	*/
+#define SOCK_DGRAM 2  /* datagram (conn.less) socket	*/
+#define SOCK_RAW 3    /* raw socket			*/
 
 // Protocols
 #define IPPROTO_IP 0
@@ -15,7 +16,7 @@
 #define IPPROTO_UDP 17
 #define IPPROTO_RAW 255
 
-#define INADDR_LOOPBACK 0xfe000001
+#define INADDR_LOOPBACK 0x7F000001
 #define INADDR_ANY 0x0
 #define INADDR_BROADCAST 0xffffffff
 

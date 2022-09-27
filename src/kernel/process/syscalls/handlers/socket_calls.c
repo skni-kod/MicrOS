@@ -14,17 +14,38 @@ void syscall_socket_bind(interrupt_state *state)
     return;
 }
 
+void syscall_socket_recv(interrupt_state *state)
+{
+    struct recv_params *params = state->registers.ebx;
+    state->registers.eax = recv(
+        params->s,
+        params->buf,
+        params->len,
+        params->flags);
+    return;
+}
+
 void syscall_socket_recvfrom(interrupt_state *state)
 {
     struct recv_params *params = state->registers.ebx;
     state->registers.eax = recvfrom(
-            params->s,
-            params->buf,
-            params->len,
-            params->flags,
-            params->from,
-            params->fromlen
-            );
+        params->s,
+        params->buf,
+        params->len,
+        params->flags,
+        params->from,
+        params->fromlen);
+    return;
+}
+
+void syscall_socket_send(interrupt_state *state)
+{
+    struct recv_params *params = state->registers.ebx;
+    state->registers.eax = send(
+        params->s,
+        params->buf,
+        params->len,
+        params->flags);
     return;
 }
 
@@ -37,7 +58,12 @@ void syscall_socket_sendto(interrupt_state *state)
         params->len,
         params->flags,
         params->from,
-        params->fromlen
-    );
+        params->fromlen);
+    return;
+}
+
+void syscall_socket_listen(interrupt_state *state)
+{
+    state->registers.eax = listen(state->registers.ebx, state->registers.ecx);
     return;
 }

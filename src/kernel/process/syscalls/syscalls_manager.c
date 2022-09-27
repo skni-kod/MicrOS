@@ -109,8 +109,11 @@ void syscalls_manager_init()
     // 0xEX - Socket
     syscalls_manager_attach_handler(SYSCALL_SOCKET, syscall_socket);
     syscalls_manager_attach_handler(SYSCALL_BIND, syscall_socket_bind);
+    syscalls_manager_attach_handler(SYSCALL_RECV, syscall_socket_recv);
     syscalls_manager_attach_handler(SYSCALL_RECVFROM, syscall_socket_recvfrom);
+    syscalls_manager_attach_handler(SYSCALL_SEND, syscall_socket_send);
     syscalls_manager_attach_handler(SYSCALL_SENDTO, syscall_socket_sendto);
+    syscalls_manager_attach_handler(SYSCALL_LISTEN, syscall_socket_listen);
 }
 
 void syscalls_manager_attach_handler(uint16_t function_number, void (*handler)(interrupt_state *state))
