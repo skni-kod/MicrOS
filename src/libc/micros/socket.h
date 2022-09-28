@@ -1,33 +1,39 @@
 #ifndef MICROS_SOCKET_H
 #define MICROS_SOCKET_H
 
-// Domains
-#define AF_INET 2
-
-// Types
-#define SOCK_STREAM 1 /* stream (connection) socket	*/
-#define SOCK_DGRAM 2  /* datagram (conn.less) socket	*/
-#define SOCK_RAW 3    /* raw socket			*/
-
-// Protocols
-#define IPPROTO_IP 0
-#define IPPROTO_ICMP 1
-#define IPPROTO_TCP 6
-#define IPPROTO_UDP 17
-#define IPPROTO_RAW 255
-
-#define INADDR_LOOPBACK 0x7F000001
-#define INADDR_ANY 0x0
-#define INADDR_BROADCAST 0xffffffff
-
-typedef uint16_t sa_family_t;
-
 typedef uint32_t socklen_t;
+
+typedef enum socket_domain
+{
+  AF_INET = 2,
+} socket_domain_t;
+
+typedef enum socket_state
+{
+  SS_FREE = 0,
+  SS_UNCONNECTED = 1,
+  SS_CONNECTING = 2,
+  SS_CONNECTED = 3,
+  SS_DISCONNECTING = 4,
+  SS_UNDEFINED = 0xFFFF,
+} socket_state_t;
+
+typedef enum socket_type
+{
+  SOCK_DGRAM = 1,
+  SOCK_STREAM = 2,
+  SOCK_RAW = 3,
+  SOCK_RDM = 4,
+  SOCK_SEQPACKET = 5,
+  SOCK_DCCP = 6,
+  SOCK_PACKET = 10,
+  SOCK_UNDEFINED = 0xFFFF,
+} socket_type_t;
 
 struct sockaddr
 {
-  sa_family_t sa_family;
-  int8_t sa_data[14];
+  uint16_t sa_family;
+  uint8_t sa_data[14];
 };
 
 #endif

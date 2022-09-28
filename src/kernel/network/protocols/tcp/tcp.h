@@ -7,8 +7,10 @@
 #define tcp_protocol
 
 #include <inet/tcp.h>
+#include <inet/inet.h>
 #include <network/network_utils.h>
 #include <network/network_manager.h>
+#include <process/socket/socket.h>
 
 typedef struct tcb
 {
@@ -29,5 +31,7 @@ static uint8_t *__tcp_data_ptr(tcp_segment_t *segment);
 static uint32_t __tcp_data_size(ipv4_packet_t *packet);
 
 static uint32_t __tcp_options_size(ipv4_packet_t *packet);
+
+socket_t *tcp_socket_init(socket_t *socket);
 
 #endif

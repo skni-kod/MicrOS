@@ -12,22 +12,22 @@
 
 struct recv_params
 {
-    int s;
-    void *buf;
-    size_t len;
-    int flags;
-    struct sockaddr *from;
-    socklen_t *fromlen;
+	int s;
+	void *buf;
+	size_t len;
+	int flags;
+	struct sockaddr *from;
+	socklen_t *fromlen;
 };
 
 struct sendto_params
 {
-int s;
-const void *buf;
-size_t len;
-int flags;
-const struct sockaddr *to;
-socklen_t tolen;
+	int s;
+	const void *buf;
+	size_t len;
+	int flags;
+	const struct sockaddr *to;
+	socklen_t tolen;
 };
 
 int socket(int domain, int type, int protocol);

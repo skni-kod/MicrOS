@@ -5,33 +5,30 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <micros/socket.h>
+#include "ipv4.h"
+
+#define IPPROTO_IP 0
+#define IPPROTO_ICMP 1
+#define IPPROTO_TCP 6
+#define IPPROTO_UDP 17
+#define IPPROTO_RAW 255
+
+#define INADDR_LOOPBACK 0x7F000001
+#define INADDR_ANY 0x0
+#define INADDR_BROADCAST 0xffffffff
 
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
 
-#define BYTE_TO_BINARY(byte)       \
-    (byte & 0x80 ? '1' : '0'),     \
-        (byte & 0x40 ? '1' : '0'), \
-        (byte & 0x20 ? '1' : '0'), \
-        (byte & 0x10 ? '1' : '0'), \
-        (byte & 0x08 ? '1' : '0'), \
-        (byte & 0x04 ? '1' : '0'), \
-        (byte & 0x02 ? '1' : '0'), \
-        (byte & 0x01 ? '1' : '0')
-
-typedef uint32_t in_addr_t;
-
-struct in_addr
-{
-  in_addr_t s_addr;
-};
-
-struct sockaddr_in
-{
-  int16_t sin_family;
-  uint16_t sin_port;
-  struct in_addr sin_addr;
-  unsigned char sin_zero[8];
-};
+#define BYTE_TO_BINARY(byte)     \
+  (byte & 0x80 ? '1' : '0'),     \
+      (byte & 0x40 ? '1' : '0'), \
+      (byte & 0x20 ? '1' : '0'), \
+      (byte & 0x10 ? '1' : '0'), \
+      (byte & 0x08 ? '1' : '0'), \
+      (byte & 0x04 ? '1' : '0'), \
+      (byte & 0x02 ? '1' : '0'), \
+      (byte & 0x01 ? '1' : '0')
 
 #define HTONS(n) ((((n)&0xFF) << 8) | (((n)&0xFF00) >> 8))
 #define NTOHS(n) HTONS(n)
@@ -51,6 +48,14 @@ uint32_t ntohl(uint32_t value);
 #define htonl(n) HTONL(n)
 #define ntohl(n) NTOHL(n)
 
-in_addr_t inet_addr(const char* s);
+struct sockaddr_in
+{
+  uint16_t sin_family;
+  uint16_t sin_port;
+  ipv4_addr_t sin_addr;
+  uint8_t sin_zero[8];
+};
+
+ipv4_addr_t inet_addr(const char *s);
 
 #endif

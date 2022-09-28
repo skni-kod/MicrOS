@@ -4,20 +4,20 @@
 
 void syscall_socket(interrupt_state *state)
 {
-    state->registers.eax = socket(state->registers.ebx, state->registers.ecx, state->registers.edx);
+    state->registers.eax = k_socket(state->registers.ebx, state->registers.ecx, state->registers.edx);
     return;
 }
 
 void syscall_socket_bind(interrupt_state *state)
 {
-    state->registers.eax = bind(state->registers.ebx, state->registers.ecx, state->registers.edx);
+    state->registers.eax = k_bind(state->registers.ebx, state->registers.ecx, state->registers.edx);
     return;
 }
 
 void syscall_socket_recv(interrupt_state *state)
 {
     struct recv_params *params = state->registers.ebx;
-    state->registers.eax = recv(
+    state->registers.eax = k_recv(
         params->s,
         params->buf,
         params->len,
@@ -28,7 +28,7 @@ void syscall_socket_recv(interrupt_state *state)
 void syscall_socket_recvfrom(interrupt_state *state)
 {
     struct recv_params *params = state->registers.ebx;
-    state->registers.eax = recvfrom(
+    state->registers.eax = k_recvfrom(
         params->s,
         params->buf,
         params->len,
@@ -41,7 +41,7 @@ void syscall_socket_recvfrom(interrupt_state *state)
 void syscall_socket_send(interrupt_state *state)
 {
     struct recv_params *params = state->registers.ebx;
-    state->registers.eax = send(
+    state->registers.eax = k_send(
         params->s,
         params->buf,
         params->len,
@@ -52,7 +52,7 @@ void syscall_socket_send(interrupt_state *state)
 void syscall_socket_sendto(interrupt_state *state)
 {
     struct recv_params *params = state->registers.ebx;
-    state->registers.eax = sendto(
+    state->registers.eax = k_sendto(
         params->s,
         params->buf,
         params->len,
@@ -64,12 +64,12 @@ void syscall_socket_sendto(interrupt_state *state)
 
 void syscall_socket_listen(interrupt_state *state)
 {
-    state->registers.eax = listen(state->registers.ebx, state->registers.ecx);
+    state->registers.eax = k_listen(state->registers.ebx, state->registers.ecx);
     return;
 }
 
 void syscall_socket_accept(interrupt_state *state)
 {
-    state->registers.eax = accept(state->registers.ebx, state->registers.ecx, state->registers.edx);
+    state->registers.eax = k_accept(state->registers.ebx, state->registers.ecx, state->registers.edx);
     return;
 }

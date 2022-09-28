@@ -114,7 +114,7 @@ arp_entry_t *arp_request_entry(net_device_t *device, ipv4_addr_t *ip)
 
 void arp_send_request(net_device_t *device, ipv4_addr_t *ip)
 {
-    mac_addr_t broadcast = {0xFF};
+    mac_addr_t broadcast = {{0xFF}};
 
     nic_data_t *request = ethernet_create_frame(
         device,

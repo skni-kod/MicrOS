@@ -6,63 +6,100 @@
 
 int main(int argc, char *argv[])
 {
-    // UDP
+    if (argc < 5)
+        return 0;
+
     char buffer[BUF_LEN] = {0};
-    uint32_t sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
-    struct sockaddr_in server_addr = {0};
-
-    socklen_t server_addr_len = sizeof(struct sockaddr_in);
-
-    struct sockaddr_in myaddr;
-    myaddr.sin_family = AF_INET;
-    myaddr.sin_port = htons(40025);
-    myaddr.sin_addr.s_addr = INADDR_ANY;
-
-    bind(sock, (struct sockaddr *)&myaddr, sizeof(myaddr));
-
-    while (1)
+    if (!strcmp("-udp", argv[2]))
     {
-        uint32_t bytes_received = recvfrom(sock,
-                                           buffer,
-                                           sizeof(buffer),
-                                           0,
-                                           (struct sockaddr *)&server_addr,
-                                           &server_addr_len);
-        if (bytes_received)
-        {
-            printf("%.*s  ", bytes_received, buffer);
-            printf("Sent: %d\n", sendto(sock, buffer, bytes_received, 0, (struct sockaddr *)&server_addr, sizeof(struct sockaddr_in)));
-        }
+        uint16_t port = atoi(argv[3]);
+        printf("Listening on UDP port:%d\n", port);
 
-        if (micros_keyboard_is_key_pressed())
-        {
-            micros_keyboard_scan_ascii_pair pressed_key;
-            micros_keyboard_get_pressed_key(&pressed_key);
+        uint32_t sock = socket(AF_INET, SOCK_DGRAM, 0);
 
-            switch (pressed_key.scancode)
+        struct sockaddr_in server_addr = {0};
+        socklen_t server_addr_len = sizeof(struct sockaddr_in);
+
+        struct sockaddr_in myaddr = {0};
+        myaddr.sin_family = AF_INET;
+        myaddr.sin_port = htons(port);
+        myaddr.sin_addr.address = INADDR_ANY;
+
+        int ret = bind(sock, (struct sockaddr *)&myaddr, sizeof(myaddr));
+        while (!ret)
+        {
+            uint32_t bytes_received = recvfrom(sock,
+                                               buffer,
+                                               sizeof(buffer),
+                                               0,
+                                               (struct sockaddr *)&server_addr,
+                                               &server_addr_len);
+            if (bytes_received)
             {
-            case key_esc:
-                return;
+                printf("Received[%d]: %.*s \n", bytes_received, bytes_received, buffer);
+                sendto(sock, buffer, bytes_received, 0, (struct sockaddr *)&server_addr, sizeof(struct sockaddr_in));
+            }
+
+            if (micros_keyboard_is_key_pressed())
+            {
+                micros_keyboard_scan_ascii_pair pressed_key;
+                micros_keyboard_get_pressed_key(&pressed_key);
+
+                switch (pressed_key.scancode)
+                {
+                case key_esc:
+                    return;
+                }
             }
         }
     }
 
-    // TCP
-    // int s;
-    // struct sockaddr_in myaddr;
-    // myaddr.sin_family = AF_INET;
-    // myaddr.sin_port = htons(3490);       // clients connect to this port
-    // myaddr.sin_addr.s_addr = INADDR_ANY; // autoselect IP address
+    if (!strcmp("-tcp", argv[2]))
+    {
+        uint16_t port = atoi(argv[3]);
+        printf("Listening on TCP port:%d\n", port);
 
-    // s = socket(AF_INET, SOCK_STREAM, 0);
-    // bind(s, (struct sockaddr *)&myaddr, sizeof(myaddr));
+        uint32_t sock = socket(AF_INET, SOCK_STREAM, 0);
 
-    // if(!listen(s, 2)); // set s up to be a server (listening) socket
-    //     return -1;
-    
+        struct sockaddr_in server_addr = {0};
+        socklen_t server_addr_len = sizeof(struct sockaddr_in);
 
-    // then have an accept() loop down here somewhere
+        struct sockaddr_in myaddr = {0};
+        myaddr.sin_family = AF_INET;
+        myaddr.sin_port = htons(port);
+        myaddr.sin_addr.address = INADDR_ANY;
+
+        int ret = bind(sock, (struct sockaddr *)&myaddr, sizeof(myaddr));
+
+        ret = listen(sock, 4);
+
+        while (!ret)
+        {
+            int conn = accept(sock, &server_addr, &server_addr_len);
+            uint32_t bytes_received = recv(sock,
+                                           buffer,
+                                           sizeof(buffer),
+                                           0);
+            if (bytes_received)
+            {
+                printf("Received[%d]: %.*s \n", bytes_received, bytes_received, buffer);
+                send(sock, buffer, bytes_received, 0);
+            }
+
+            if (micros_keyboard_is_key_pressed())
+            {
+                micros_keyboard_scan_ascii_pair pressed_key;
+                micros_keyboard_get_pressed_key(&pressed_key);
+
+                switch (pressed_key.scancode)
+                {
+                case key_esc:
+                    return;
+                }
+            }
+        }
+    }
 
     return 0;
 }
