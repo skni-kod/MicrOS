@@ -114,6 +114,7 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(SYSCALL_SEND, syscall_socket_send);
     syscalls_manager_attach_handler(SYSCALL_SENDTO, syscall_socket_sendto);
     syscalls_manager_attach_handler(SYSCALL_LISTEN, syscall_socket_listen);
+    syscalls_manager_attach_handler(SYSCALL_ACCEPT, syscall_socket_accept);
 }
 
 void syscalls_manager_attach_handler(uint16_t function_number, void (*handler)(interrupt_state *state))

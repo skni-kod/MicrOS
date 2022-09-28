@@ -1,14 +1,14 @@
 /*
     @JakubPrzystasz
     Created: 17.02.2021
-    Modified: 30.06.2022
+    Modified: 30.09.2022
 */
 #ifndef INET_TCP_H
 #define INET_TCP_H
 
 #include <stdint.h>
 
-typedef struct tcp_datagram
+typedef struct tcp_segment
 {
     uint16_t src_port;
     uint16_t dst_port;
@@ -27,8 +27,6 @@ typedef struct tcp_datagram
     uint16_t checksum;
     uint16_t pointer;
     uint8_t options_data[];
-} __attribute__((packed)) tcp_datagram_t;
-
-#define TCP_OPTIONS_OFFSET (sizeof(tcp_datagram_t))
+} __attribute__((packed)) tcp_segment_t;
 
 #endif

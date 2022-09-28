@@ -1,10 +1,5 @@
 #include "ipv4.h"
 
-// TODO:
-//  rewrite defintions in protorols
-//  eg: IPv4 PROTOCOL_TYPE
-//  add ICMP enums
-
 kvector *fragments;
 
 void ipv4_process_packet(nic_data_t *data)
@@ -13,6 +8,13 @@ void ipv4_process_packet(nic_data_t *data)
 
     if (packet->version != IPv4_PROTOCOL_VERSION)
         return;
+
+#ifndef TRUST_ME_BRO
+    // verify checksum
+    uint16_t checksum = packet->header_checksum;
+    if(checksum != ipv4_checksum(packet))
+        return;
+#endif
 
     // TODO: replying fragmented data
     //  Assembly packet if it is fragmented
@@ -58,7 +60,7 @@ process:
     break;
     case IP_PROTOCOL_TCP:
     {
-        tcp_process_datagram(data);
+        tcp_process_segment(data);
     }
     break;
     default:
@@ -72,10 +74,10 @@ void ipv4_init()
     kvector_init(fragments);
 }
 
-void ipv4_checksum(ipv4_packet_t *packet)
+uint16_t ipv4_checksum(ipv4_packet_t *packet)
 {
     packet->header_checksum = 0;
-    packet->header_checksum = __ip_wrapsum(__ip_checksum((unsigned char *)packet, sizeof(ipv4_packet_t), 0));
+    return packet->header_checksum = __ip_wrapsum(__ip_checksum((unsigned char *)packet, sizeof(ipv4_packet_t), 0));
 }
 
 nic_data_t *ipv4_create_packet(net_device_t *device, uint8_t protocol, ipv4_addr_t dst, uint32_t data_size)
@@ -89,7 +91,7 @@ nic_data_t *ipv4_create_packet(net_device_t *device, uint8_t protocol, ipv4_addr
     uint8_t options_length = 0;
 
     packet->version = IPv4_PROTOCOL_VERSION;
-    
+
     packet->ihl = ((sizeof(ipv4_packet_t) + options_length) / 4);
     packet->flags_reserved = 0;
     packet->tos_delay = 0;
@@ -116,8 +118,11 @@ nic_data_t *ipv4_create_packet(net_device_t *device, uint8_t protocol, ipv4_addr
 uint32_t ipv4_send_packet(nic_data_t *data)
 {
     ipv4_packet_t *packet = data->frame + sizeof(ethernet_frame_t);
-
     ipv4_checksum(packet);
-
     return ethernet_send_frame(data);
+}
+
+uint8_t *ipv4_get_data_ptr(ipv4_packet_t *packet)
+{
+    return (uint8_t*)packet + (packet->length - packet->ihl * 4);
 }

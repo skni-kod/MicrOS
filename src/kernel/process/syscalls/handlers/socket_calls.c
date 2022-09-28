@@ -67,3 +67,9 @@ void syscall_socket_listen(interrupt_state *state)
     state->registers.eax = listen(state->registers.ebx, state->registers.ecx);
     return;
 }
+
+void syscall_socket_accept(interrupt_state *state)
+{
+    state->registers.eax = accept(state->registers.ebx, state->registers.ecx, state->registers.edx);
+    return;
+}

@@ -174,8 +174,27 @@ uint32_t sendto(int s, const void *buf, size_t len, int flags, const struct sock
 
 int listen(int s, int backlog)
 {
-    //
+    socket_descriptor_t *desc = socket_get_descriptor(s);
+
+    // if (backlog > 0 && backlog <= SOCKET_BACKLOG_MAX)
+    //     desc->backlog = backlog;
+    // else
+    //     desc->backlog = SOCKET_BACKLOG_MAX;
+    // desc->tcb = 0;
+    // desc->tcb = heap_kernel_alloc(sizeof(tcb_t) * backlog, 0);
+
+    // if (!desc->tcb)
+    //     return -1;
+
     return 0;
+}
+
+int accept(int s, struct sockaddr *addr, socklen_t *addrlen)
+{
+    socket_descriptor_t *desc = socket_get_descriptor(s);
+
+    // create and return tcb's index in server socket array (desc->tcb)
+    return -1;
 }
 
 int socket_create_descriptor(int domain, int type, int protocol)
@@ -238,7 +257,8 @@ uint32_t socket_write(socket_descriptor_t *socket, struct sockaddr_in *addr, voi
     {
         socket->buffer->write = socket->buffer->write + 1 & (socket->buffer->length - 1);
         socket_entry_t *entry = ((uint32_t) & (socket->buffer->entries) + ((size_t)(socket->buffer->write) * (socket->buffer->entry_size + (size_t)sizeof(socket_entry_t))));
-        memcpy(&entry->addr, addr, sizeof(struct sockaddr_in));
+        if (addr)
+            memcpy(&entry->addr, addr, sizeof(struct sockaddr_in));
         memcpy(&entry->data, data, length);
         return entry->size = length;
     }

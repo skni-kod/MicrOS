@@ -6,8 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAC_ADDRESS_LENGTH 6
-
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
 
 #define BYTE_TO_BINARY(byte)       \

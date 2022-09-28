@@ -63,3 +63,8 @@ int listen(int s, int backlog)
 {
     return micros_interrupt_2a(SYSCALL_LISTEN, s, backlog);
 }
+
+int accept(int s, struct sockaddr *addr, socklen_t *addrlen)
+{
+    return micros_interrupt_3a(SYSCALL_LISTEN, s, addr, addrlen);
+}

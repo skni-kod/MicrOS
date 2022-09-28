@@ -9,5 +9,6 @@
 #define SYSCALL_SEND            0x0E04
 #define SYSCALL_SENDTO          0x0E05
 #define SYSCALL_LISTEN          0x0E06
+#define SYSCALL_ACCEPT          0x0E07
 
 #endif

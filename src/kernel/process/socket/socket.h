@@ -8,6 +8,7 @@
 #define SOCKET_BUFFER_ENTRY_COUNT 1024
 #define SOCKET_DESCRIPTORS 64
 #define SOCKET_BASE_PORT 2022
+#define SOCKET_BACKLOG_MAX 16
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -16,6 +17,7 @@
 #include <micros/socket.h>
 #include <memory/heap/heap.h>
 #include <network/network_manager.h>
+#include <network/protocols/tcp/tcp.h>
 
 typedef struct socket_entry
 { 
@@ -61,6 +63,8 @@ uint32_t sendto(int s, const void *buf, size_t len, int flags, const struct sock
 uint32_t send(int s, const void *buf, size_t len, int flags);
 
 int listen(int s, int backlog);
+
+int accept(int s, struct sockaddr *addr, socklen_t *addrlen);
 
 // kernel specific:
 

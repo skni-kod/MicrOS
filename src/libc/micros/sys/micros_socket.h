@@ -45,4 +45,6 @@ uint32_t sendto(int s, const void *buf, size_t len,
 
 int listen(int s, int backlog);
 
+int accept(int s, struct sockaddr *addr, socklen_t *addrlen);
+
 #endif

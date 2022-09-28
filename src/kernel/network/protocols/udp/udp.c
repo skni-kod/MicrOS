@@ -3,7 +3,14 @@
 void udp_process_datagram(nic_data_t *data)
 {
     ipv4_packet_t *packet = (ipv4_packet_t *)(data->frame + sizeof(ethernet_frame_t));
-    udp_datagram_t *datagram = (udp_datagram_t *)(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t));
+    udp_datagram_t *datagram = packet->data;
+
+#ifndef TRUST_ME_BRO
+    // verify checksum
+    uint16_t checksum = datagram->checksum;
+    if (checksum != udp_checksum(packet))
+        return;
+#endif
 
     struct sockaddr_in addr = {
         .sin_addr.s_addr = (in_addr_t)packet->dst.address,
@@ -34,14 +41,13 @@ uint16_t udp_checksum(ipv4_packet_t *packet)
 
     uint32_t len = ntohs(datagram->length) - sizeof(udp_datagram_t);
 
-    uint32_t usum = datagram->checksum;
     datagram->checksum = 0;
 
     uint32_t sum = __ip_wrapsum(
         __ip_checksum(
             (unsigned char *)datagram, sizeof(udp_datagram_t),
             __ip_checksum(datagram->data, len,
-                          __ip_checksum((unsigned char *)&(packet->src), 2 * IPv4_ADDRESS_LENGTH,
+                          __ip_checksum((unsigned char *)&(packet->src), 2 * sizeof(ipv4_addr_t),
                                         IP_PROTOCOL_UDP + ntohs((uint32_t)datagram->length)))));
     return datagram->checksum = sum;
 }

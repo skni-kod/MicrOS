@@ -3,8 +3,8 @@
 arp_packet_t arp_packet_base = {
     .hardware_type = htons(ARP_HW_TYPE_ETHERNET),
     .protocol_type = htons(ARP_PR_TYPE),
-    .hardware_length = MAC_ADDRESS_LENGTH,
-    .protocol_length = IPv4_ADDRESS_LENGTH,
+    .hardware_length = sizeof(mac_addr_t),
+    .protocol_length = sizeof(ipv4_addr_t),
     .opcode = htons(ARP_OPCODE_REPLY),
 };
 
@@ -129,8 +129,8 @@ void arp_send_request(net_device_t *device, ipv4_addr_t *ip)
         request->hardware_type = htons(ARP_HW_TYPE_ETHERNET);
         request->protocol_type = htons(ARP_PR_TYPE);
 
-        request->hardware_length = MAC_ADDRESS_LENGTH;
-        request->protocol_length = IPv4_ADDRESS_LENGTH;
+        request->hardware_length = sizeof(mac_addr_t);
+        request->protocol_length = sizeof(ipv4_addr_t);
 
         memcpy(&request->src_hw, &device->interface->mac, sizeof(mac_addr_t));
         memcpy(&request->dst_pr, ip, sizeof(ipv4_addr_t));
