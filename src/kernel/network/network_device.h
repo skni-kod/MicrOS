@@ -7,9 +7,9 @@
 #define network_definitions
 
 #include <stdint.h>
-#include <inet/inet.h>
-#include <inet/ipv4.h>
 #include <inet/ethernet.h>
+#include <inet/ipv4.h>
+#include <inet/inet.h>
 #include <klibrary/kvector.h>
 #include <klibrary/ktime.h>
 #include <klibrary/kbuffer.h>
@@ -61,6 +61,7 @@ typedef struct net_interface_t
     uint32_t frames_received;
     uint32_t bytes_sent;
     uint32_t bytes_received;
+    uint32_t frames_dropped;
     kvector *arp_entries;
 } net_interface_t;
 

@@ -15,7 +15,7 @@
 #include <network/network_manager.h>
 
 
-void ethernet_process_frame(nic_data_t *data);
+uint32_t ethernet_process_frame(nic_data_t *data);
 
 //! network_manager_send_ethernet_frame
 /*

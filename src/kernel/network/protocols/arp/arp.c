@@ -8,7 +8,7 @@ arp_packet_t arp_packet_base = {
     .opcode = htons(ARP_OPCODE_REPLY),
 };
 
-void arp_process_packet(nic_data_t *data)
+uint32_t arp_process_packet(nic_data_t *data)
 {
     arp_packet_t *packet = (arp_packet_t *)(data->frame + sizeof(ethernet_frame_t));
 
@@ -38,12 +38,13 @@ void arp_process_packet(nic_data_t *data)
             memcpy(&frame->dst, &packet->src_hw, sizeof(mac_addr_t));
             ethernet_send_frame(reply);
         }
-        break;
+        return 1;
     case htons(ARP_OPCODE_REPLY):
         // Handle ARP reply
         arp_add_entry(data->device, &packet->src_hw, &packet->src_pr, ARP_ENTRY_TYPE_DYNAMIC);
-        break;
+        return 1;
     }
+    return 0;
 }
 
 void arp_add_entry(net_device_t *device, mac_addr_t *mac, ipv4_addr_t *ip, arp_entry_type_t type)

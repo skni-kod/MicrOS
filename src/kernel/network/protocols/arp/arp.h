@@ -20,7 +20,7 @@
 /*
     Process incoming arp packet
 */
-void arp_process_packet(nic_data_t *data);
+uint32_t arp_process_packet(nic_data_t *data);
 
 //! arp_add_entry
 /*

@@ -1,6 +1,4 @@
 #include <process/syscalls/handlers/socket_calls.h>
-#include <process/socket/socket.h>
-#include <micros/sys/micros_socket.h>
 
 void syscall_socket(interrupt_state *state)
 {

@@ -1,5 +1,5 @@
-#ifndef MICROS_SYS_SYS_SOCKET_H
-#define MICROS_SYS_SYS_SOCKET_H
+#ifndef MICROS_SYS_SOCKET_H
+#define MICROS_SYS_SOCKET_H
 
 #include <stdio.h>
 #include <stdint.h>

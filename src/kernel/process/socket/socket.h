@@ -102,6 +102,7 @@ typedef struct udp_socket
 
 typedef struct tcp_socket
 {
+	uint16_t state;
 	struct sockaddr_in local;
 	struct sockaddr_in remote;
 	socket_buffer_t *tx;

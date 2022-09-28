@@ -92,7 +92,7 @@ uint32_t network_manager_send_data(nic_data_t *data)
         ret = (uint32_t)data->length;
     }
 
-    if(!data->keep)
+    if (!data->keep)
         kbuffer_drop(data);
 
     return ret;
@@ -102,7 +102,8 @@ void network_manager_receive_data(nic_data_t *data)
 {
     if (data->device->interface->mode.receive)
     {
-        ethernet_process_frame(data);
+        if (!ethernet_process_frame(data))
+            ++data->device->interface->frames_dropped;
         ++data->device->interface->frames_received;
         data->device->interface->bytes_received += data->length;
     }

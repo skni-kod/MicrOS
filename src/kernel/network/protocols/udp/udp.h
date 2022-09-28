@@ -18,7 +18,7 @@
 /*
     Process UDP datagram
 */
-void udp_process_datagram(nic_data_t *data);
+uint32_t udp_process_datagram(nic_data_t *data);
 
 //! udp_checksum
 /*

@@ -9,6 +9,7 @@ klist_t *klist_init()
         data->value = NULL;
         data->next = NULL;
         data->prev = NULL;
+        data->size = NULL;
         return data;
     }
     else
@@ -23,12 +24,14 @@ klist_t *klist_add(klist_t *head, void *value)
         head->prev = NULL;
         head->value = value;
         head->next = NULL;
+        head->size = 1;
         return head;
     }
 
     if (head->prev == NULL && head->next == NULL && head->value == NULL)
     {
         head->value = value;
+        head->size = 1;
         return head;
     }
 
@@ -37,8 +40,9 @@ klist_t *klist_add(klist_t *head, void *value)
     new->next = head;
     new->value = value;
     new->prev = NULL;
-
     head->prev = new;
+    ++head->size;
+    new->size = head->size;
 
     return new;
 }
@@ -54,6 +58,7 @@ klist_t *klist_delete(klist_t *head, klist_t *ptr)
                 ((klist_t*)(ptr->prev))->next = ptr->next;
                 ((klist_t*)(ptr->next))->prev = ptr->prev;
                 heap_kernel_dealloc(ptr);
+                --head->size;
                 return head;
             }
             if (!ptr->next && !ptr->prev)
@@ -65,12 +70,14 @@ klist_t *klist_delete(klist_t *head, klist_t *ptr)
             {
                 ((klist_t*)(ptr->next))->prev = NULL;
                 heap_kernel_dealloc(ptr);
+                --ptr->next->size;
                 return ptr->next;
             }
             if (!ptr->next && ptr->prev)
             {
                 ((klist_t*)(ptr->prev))->next = NULL;
                 heap_kernel_dealloc(ptr);
+                --head->size;
                 return head;
             }
         }
@@ -81,6 +88,7 @@ klist_t *klist_delete(klist_t *head, klist_t *ptr)
                 klist_t *tmp = (klist_t*)head->next;
                 ((klist_t*)(head->next))->prev = NULL;
                 heap_kernel_dealloc(head);
+                --tmp->size;
                 return tmp;
             }
             heap_kernel_dealloc(head);

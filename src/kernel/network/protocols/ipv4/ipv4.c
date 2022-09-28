@@ -2,18 +2,18 @@
 
 kvector *fragments;
 
-void ipv4_process_packet(nic_data_t *data)
+uint32_t ipv4_process_packet(nic_data_t *data)
 {
     ipv4_packet_t *packet = (ipv4_packet_t *)(data->frame + sizeof(ethernet_frame_t));
 
     if (packet->version != IPv4_PROTOCOL_VERSION)
-        return;
+        return 0;
 
 #ifndef TRUST_ME_BRO
     // verify checksum
     uint16_t checksum = packet->header_checksum;
     if(checksum != ipv4_checksum(packet))
-        return;
+        return 0;
 #endif
 
     // TODO: replying fragmented data
@@ -49,22 +49,16 @@ process:
     switch (packet->protocol)
     {
     case IP_PROTOCOL_ICMP:
-    {
-        icmp_process_packet(data);
-    }
+        return icmp_process_packet(data);
     break;
     case IP_PROTOCOL_UDP:
-    {
-        udp_process_datagram(data);
-    }
+        return udp_process_datagram(data);
     break;
     case IP_PROTOCOL_TCP:
-    {
-        tcp_process_segment(data);
-    }
+        return tcp_process_segment(data);
     break;
     default:
-        break;
+        return 0;
     }
 }
 

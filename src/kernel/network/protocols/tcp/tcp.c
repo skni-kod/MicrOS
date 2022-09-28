@@ -1,15 +1,15 @@
 #include "tcp.h"
 
 static struct proto_ops tcp_interface = {
-    // .bind = &tcp_socket_bind,
-    // .listen = &tcp_socket_bind,
+    .bind = &tcp_socket_bind,
+    .listen = &tcp_socket_listen,
     // .recv = &tcp_socket_recvfrom,
     // .send = &tcp_socket_sendto,
     // .write = &tcp_socket_write,
     // .read = &tcp_socket_read,
 };
 
-void tcp_process_segment(nic_data_t *data)
+uint32_t tcp_process_segment(nic_data_t *data)
 {
     ipv4_packet_t *packet = (ipv4_packet_t *)(data->frame + sizeof(ethernet_frame_t));
     tcp_segment_t *segment = packet->data;
@@ -18,10 +18,9 @@ void tcp_process_segment(nic_data_t *data)
     // verify checksum
     uint16_t checksum = segment->checksum;
     tcp_checksum(packet);
-    if(checksum != tcp_checksum(packet))
-        return;
+    if (checksum != tcp_checksum(packet))
+        return 0;
 #endif
-
 
     struct sockaddr_in addr = {
         .sin_addr.address = packet->dst.address,
@@ -34,10 +33,11 @@ void tcp_process_segment(nic_data_t *data)
     {
         addr.sin_addr.address = packet->src.address;
         addr.sin_port = segment->src_port;
+
+        return 1;
     }
     else
-    {
-    }
+        return 0;
 }
 
 uint16_t tcp_checksum(ipv4_packet_t *packet)
@@ -95,9 +95,9 @@ socket_t *tcp_socket_init(socket_t *socket)
 {
     static uint16_t port = 2022;
     socket->state = SS_CONNECTING;
-    socket->sk = heap_kernel_alloc(sizeof(udp_socket_t), 0);
-    udp_socket_t *sk = socket->sk;
-    sk->buffer = socket_init_buffer(sk->buffer, SOCKET_BUFFER_ENTRY_SIZE, SOCKET_BUFFER_ENTRY_COUNT);
+    socket->sk = heap_kernel_alloc(sizeof(tcp_socket_t), 0);
+    tcp_socket_t *sk = socket->sk;
+    //sk->buffer = socket_init_buffer(sk->buffer, SOCKET_BUFFER_ENTRY_SIZE, SOCKET_BUFFER_ENTRY_COUNT);
     sk->device = network_manager_get_nic();
     sk->local.sin_family = AF_INET;
     sk->local.sin_port = SOCKET_BASE_PORT + port++;
@@ -109,3 +109,15 @@ socket_t *tcp_socket_init(socket_t *socket)
     return socket;
 }
 
+int tcp_socket_bind(struct socket *socket, struct sockaddr *addr, int sockaddr_len)
+{
+    tcp_socket_t *sk = socket->sk;
+    struct sockaddr_in *_addr = (struct sockaddr_in *)addr;
+    sk->local.sin_port = _addr->sin_port;
+    sk->local.sin_addr.address = _addr->sin_addr.address;
+    return 0;
+}
+
+int tcp_socket_listen(struct socket *sock, int len)
+{
+}

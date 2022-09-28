@@ -1,4 +1,5 @@
 #include <micros/sys/micros_socket.h>
+#include <micros/sys/micros_netif.h>
 #include <inet/ipv4.h>
 #include <micros/sys/micros_keyboard.h>
 
@@ -6,9 +7,6 @@
 
 int main(int argc, char *argv[])
 {
-    if (argc < 5)
-        return 0;
-
     char buffer[BUF_LEN] = {0};
 
     if (!strcmp("-udp", argv[2]))
@@ -100,6 +98,9 @@ int main(int argc, char *argv[])
             }
         }
     }
+
+    if (!strcmp("-dropped", argv[2]))
+        printf("Dropped frames: %d\n", nic_dropped());
 
     return 0;
 }

@@ -11,4 +11,7 @@
 #define SYSCALL_LISTEN          0x0E06
 #define SYSCALL_ACCEPT          0x0E07
 
+// Network Interface
+#define SYSCALL_NETIF_DROPPED           0x0E30
+
 #endif

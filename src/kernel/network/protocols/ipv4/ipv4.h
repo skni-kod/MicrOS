@@ -2,6 +2,7 @@
     @JakubPrzystasz
     Created: 17.02.2021
     Modify:
+    https://www.rfc-editor.org/rfc/rfc791
 */
 #ifndef ipv4_protocol
 #define ipv4_protocol
@@ -21,7 +22,7 @@
 /*
     Process packet IPv4
 */
-void ipv4_process_packet(nic_data_t *data);
+uint32_t ipv4_process_packet(nic_data_t *data);
 
 uint16_t ipv4_checksum(ipv4_packet_t *packet);
 

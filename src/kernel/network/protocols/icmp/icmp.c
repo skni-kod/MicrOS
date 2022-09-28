@@ -1,6 +1,6 @@
 #include "icmp.h"
 
-void icmp_process_packet(nic_data_t *data)
+uint32_t icmp_process_packet(nic_data_t *data)
 {
     ipv4_packet_t *packet = (ipv4_packet_t *)(data->frame + sizeof(ethernet_frame_t));
     icmp_header_t *header = (icmp_header_t *)(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t));
@@ -22,10 +22,11 @@ void icmp_process_packet(nic_data_t *data)
             reply->checksum = __ip_wrapsum(__ip_checksum((uint8_t *)reply, ntohs(packet->length) - sizeof(ipv4_packet_t), 0U));
         }
         ipv4_send_packet(response);
+        return 1;
     }
     break;
 
     default:
-        break;
+        return 0;
     }
 }

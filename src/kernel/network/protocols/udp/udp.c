@@ -8,7 +8,7 @@ static struct proto_ops udp_interface = {
     .read = &udp_socket_read,
 };
 
-void udp_process_datagram(nic_data_t *data)
+uint32_t udp_process_datagram(nic_data_t *data)
 {
     ipv4_packet_t *packet = (ipv4_packet_t *)(data->frame + sizeof(ethernet_frame_t));
     udp_datagram_t *datagram = packet->data;
@@ -17,7 +17,7 @@ void udp_process_datagram(nic_data_t *data)
     // verify checksum
     uint16_t checksum = datagram->checksum;
     if (checksum != udp_checksum(packet))
-        return;
+        return 0;
 #endif
 
     struct sockaddr_in addr = {
@@ -32,7 +32,10 @@ void udp_process_datagram(nic_data_t *data)
         addr.sin_addr.address = packet->src.address;
         addr.sin_port = datagram->src_port;
         socket_write(socket, datagram->data, ntohs(datagram->length) - sizeof(udp_datagram_t), &addr);
+        return 1;
     }
+    else
+        return 0;
 }
 
 uint16_t udp_checksum(ipv4_packet_t *packet)
@@ -75,15 +78,6 @@ uint32_t udp_send_datagram(nic_data_t *data)
     return ipv4_send_packet(data);
 }
 
-int udp_socket_bind(socket_t *socket, struct sockaddr *addr, int addrlen)
-{
-    udp_socket_t *sk = socket->sk;
-    struct sockaddr_in *_addr = (struct sockaddr_in *)addr;
-    sk->local.sin_port = _addr->sin_port;
-    sk->local.sin_addr.address = _addr->sin_addr.address;
-    return 0;
-}
-
 socket_t *udp_socket_init(socket_t *socket)
 {
     static uint16_t port = 2022;
@@ -100,6 +94,15 @@ socket_t *udp_socket_init(socket_t *socket)
     memcpy(socket->ops, &udp_interface, sizeof(struct proto_ops));
 
     return socket;
+}
+
+int udp_socket_bind(socket_t *socket, struct sockaddr *addr, int addrlen)
+{
+    udp_socket_t *sk = socket->sk;
+    struct sockaddr_in *_addr = (struct sockaddr_in *)addr;
+    sk->local.sin_port = _addr->sin_port;
+    sk->local.sin_addr.address = _addr->sin_addr.address;
+    return 0;
 }
 
 int udp_socket_recvfrom(struct socket *socket, void *buf, size_t len, int flags,

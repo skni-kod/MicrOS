@@ -1,17 +1,15 @@
 #include "ethernet.h"
 
-void ethernet_process_frame(nic_data_t *data)
+uint32_t ethernet_process_frame(nic_data_t *data)
 {
     ethernet_frame_t frame = *(ethernet_frame_t *)data->frame;
 
     switch (frame.type)
     {
     case htons(ARP_PROTOCOL_TYPE):
-        arp_process_packet(data);
-        break;
+        return arp_process_packet(data);
     case htons(IPv4_PROTOCOL_TYPE):
-        ipv4_process_packet(data);
-        break;
+        return ipv4_process_packet(data);
     };
 }
 
