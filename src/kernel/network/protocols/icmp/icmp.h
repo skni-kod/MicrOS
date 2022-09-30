@@ -13,8 +13,4 @@
 
 uint32_t icmp_process_datagram(nic_data_t *data);
 
-//length - length of IP PACKET
-void icmp_checksum(icmp_header_t *datagram, uint32_t packet_length);
-
-
 #endif

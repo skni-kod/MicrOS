@@ -11,6 +11,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <inet/tcp.h>
+#include <klibrary/klist.h>
 #include <memory/heap/heap.h>
 #include <micros/socket.h>
 #include <micros/sys/micros_socket.h>
@@ -55,7 +57,7 @@ struct proto_ops
 						 struct poll_table_struct *wait);
 	int (*ioctl)(struct socket *sock, unsigned int cmd,
 				 unsigned long arg);
-	int (*listen)(struct socket *sock, int len);
+	int (*listen)(struct socket *sock, int backlog);
 	int (*shutdown)(struct socket *sock, int flags);
 
 	int (*sendmsg)(struct socket *sock, struct msghdr *m,
@@ -102,12 +104,14 @@ typedef struct udp_socket
 
 typedef struct tcp_socket
 {
-	uint16_t state;
+	tcp_state_t state;
 	struct sockaddr_in local;
 	struct sockaddr_in remote;
-	socket_buffer_t *tx;
-	socket_buffer_t *rx;
+	klist_t *tx;
+	klist_t *rx;
+	int backlog;
 	net_device_t *device;
+	tcp_segment_t header;
 } tcp_socket_t;
 
 int k_socket(int domain, int type, int protocol);
@@ -129,6 +133,8 @@ int k_accept(int s, struct sockaddr *addr, int *addrlen);
 // kernel specific:
 
 int socket_create_descriptor(int domain, int type, int protocol);
+
+int socket_add_descriptor(struct socket *socket);
 
 socket_buffer_t *socket_init_buffer(socket_buffer_t *buffer, size_t entry_size, uint32_t entry_count);
 

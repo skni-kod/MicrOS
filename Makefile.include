@@ -2,7 +2,7 @@ NAME					= MicrOS
 VERSION					= 1.1
 ARCH					= i386
 QEMU_ARCH	 			= $(ARCH)
-GCC_OPTIMIZATION		= O2
+GCC_OPTIMIZATION		= O1
 C_STANDARD				= c11
 QEMU_MEMORY				= 512M
 QEMU_NET_DEVICE			= virtio
@@ -24,6 +24,7 @@ WERRORS					+= -Wno-packed-bitfield-compat
 WERRORS					+= -Wno-implicit-fallthrough
 
 KERNEL_CFLAGS           ?= 
+#-DTRUST_ME_BRO - disable verifying checksums in network stack
 KERNEL_CONFIG           ?=
 LIBC_CONFIG             ?=
 LIBK_CONFIG             ?=

@@ -6,7 +6,11 @@ static struct proto_ops udp_interface = {
     .sendto = &udp_socket_sendto,
     .write = &udp_socket_write,
     .read = &udp_socket_read,
-};
+    .connect = &udp_socket_connect,
+    .send = &udp_socket_send,
+    .recv = &udp_socket_recv,
+}
+;
 
 uint32_t udp_process_datagram(nic_data_t *data)
 {
@@ -34,15 +38,15 @@ uint32_t udp_process_datagram(nic_data_t *data)
         socket_write(socket, datagram->data, ntohs(datagram->length) - sizeof(udp_datagram_t), &addr);
         return 1;
     }
-    else
-        return 0;
+    
+    return 0;
 }
 
 uint16_t udp_checksum(ipv4_packet_t *packet)
 {
     /* Check the IP header checksum - it should be zero. */
-    if (__ip_wrapsum(__ip_checksum((unsigned char *)packet, sizeof(ipv4_packet_t), 0)) != 0)
-        return -1;
+    // if (__ip_wrapsum(__ip_checksum((unsigned char *)packet, sizeof(ipv4_packet_t), 0)) != 0)
+    //     return -1;
 
     udp_datagram_t *datagram = (udp_datagram_t *)packet->data;
 
@@ -73,15 +77,16 @@ nic_data_t *udp_create_datagram(net_device_t *device, ipv4_addr_t dst_addr, uint
 uint32_t udp_send_datagram(nic_data_t *data)
 {
     ipv4_packet_t *packet = data->frame + sizeof(ethernet_frame_t);
+#ifndef TRUST_ME_BRO
     udp_checksum(packet);
-
+#endif
     return ipv4_send_packet(data);
 }
 
 socket_t *udp_socket_init(socket_t *socket)
 {
-    static uint16_t port = 2022;
-    socket->state = SS_CONNECTED;
+    static uint16_t port = SOCKET_BASE_PORT;
+    socket->state = SS_CONNECTING;
     socket->sk = heap_kernel_alloc(sizeof(udp_socket_t), 0);
     udp_socket_t *sk = socket->sk;
     sk->buffer = socket_init_buffer(sk->buffer, SOCKET_BUFFER_ENTRY_SIZE, SOCKET_BUFFER_ENTRY_COUNT);
@@ -105,6 +110,23 @@ int udp_socket_bind(socket_t *socket, struct sockaddr *addr, int addrlen)
     return 0;
 }
 
+int udp_socket_recv(struct socket *socket, void *buf, size_t len, int flags)
+{
+    udp_socket_t *sk = socket->sk;
+    if (sk->buffer->write != sk->buffer->read)
+    {
+        sk->buffer->read = sk->buffer->read + 1 & (sk->buffer->length - 1);
+        socket_entry_t *entry = ((uint32_t)&sk->buffer->entries + ((size_t)(sk->buffer->read) * (sk->buffer->entry_size + (size_t)sizeof(socket_entry_t))));
+        struct sockaddr_in *from = &sk->remote;
+        if (from)
+            memcpy(from, &entry->addr, sizeof(struct sockaddr_in));
+        memcpy(buf, entry->data, entry->size);
+        return entry->size;
+    }
+
+    return 0;
+}
+
 int udp_socket_recvfrom(struct socket *socket, void *buf, size_t len, int flags,
                         struct sockaddr *from, socklen_t *fromlen)
 {
@@ -122,6 +144,16 @@ int udp_socket_recvfrom(struct socket *socket, void *buf, size_t len, int flags,
     return 0;
 }
 
+int udp_socket_send(struct socket *socket, void *buf, size_t len, int flags)
+{
+    udp_socket_t *sk = socket->sk;
+    struct sockaddr_in *to = &sk->remote;
+    nic_data_t *data = udp_create_datagram(sk->device, ((struct sockaddr_in *)to)->sin_addr, ((struct sockaddr_in *)to)->sin_port, sk->local.sin_port, len);
+    memcpy(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t) + sizeof(udp_datagram_t), buf, len);
+    return udp_send_datagram(data);
+}
+
+
 int udp_socket_sendto(struct socket *socket, void *buf, size_t len, int flags,
                       struct sockaddr *to, socklen_t *tolen)
 {
@@ -129,6 +161,13 @@ int udp_socket_sendto(struct socket *socket, void *buf, size_t len, int flags,
     nic_data_t *data = udp_create_datagram(sk->device, ((struct sockaddr_in *)to)->sin_addr, ((struct sockaddr_in *)to)->sin_port, sk->local.sin_port, len);
     memcpy(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t) + sizeof(udp_datagram_t), buf, len);
     return udp_send_datagram(data);
+}
+
+int udp_socket_connect(struct socket *socket, const struct sockaddr *serv_addr, socklen_t addrlen)
+{
+    udp_socket_t *sk = socket->sk;
+    memcpy(&sk->remote, serv_addr, addrlen);
+    socket->state = SS_CONNECTED;
 }
 
 int udp_socket_write(struct socket *socket, void *buf, size_t length, struct sockaddr *addr)

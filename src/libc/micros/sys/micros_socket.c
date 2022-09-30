@@ -13,7 +13,15 @@ int bind(int s, struct sockaddr *my_addr, socklen_t addrlen)
 
 uint32_t recv(int s, void *buf, size_t len, int flags)
 {
-    return 0;
+    struct recv_params params = {
+        .s = s,
+        .buf = buf,
+        .len = len,
+        .flags = flags,
+        .from = NULL,
+        .fromlen = NULL};
+
+    return micros_interrupt_1a(SYSCALL_RECV, &params);
 }
 
 uint32_t recvfrom(int s, void *buf, size_t len, int flags,
@@ -66,5 +74,5 @@ int listen(int s, int backlog)
 
 int accept(int s, struct sockaddr *addr, socklen_t *addrlen)
 {
-    return micros_interrupt_3a(SYSCALL_LISTEN, s, addr, addrlen);
+    return micros_interrupt_3a(SYSCALL_ACCEPT, s, addr, addrlen);
 }

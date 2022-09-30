@@ -92,6 +92,8 @@ klist_t *klist_delete(klist_t *head, klist_t *ptr)
                 return tmp;
             }
             heap_kernel_dealloc(head);
+            head = 0;
+            ptr = 0;
             return 0;
         }
     }

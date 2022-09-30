@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
         uint16_t port = atoi(argv[3]);
         printf("Listening on TCP port:%d\n", port);
 
-        uint32_t sock = socket(AF_INET, SOCK_STREAM, 0);
+        uint32_t sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
         struct sockaddr_in server_addr = {0};
         socklen_t server_addr_len = sizeof(struct sockaddr_in);

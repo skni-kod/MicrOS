@@ -12,7 +12,7 @@ uint32_t ipv4_process_packet(nic_data_t *data)
 #ifndef TRUST_ME_BRO
     // verify checksum
     uint16_t checksum = packet->header_checksum;
-    if(checksum != ipv4_checksum(packet))
+    if (checksum != ipv4_checksum(packet))
         return 0;
 #endif
 
@@ -50,13 +50,13 @@ process:
     {
     case IP_PROTOCOL_ICMP:
         return icmp_process_packet(data);
-    break;
+        break;
     case IP_PROTOCOL_UDP:
         return udp_process_datagram(data);
-    break;
+        break;
     case IP_PROTOCOL_TCP:
         return tcp_process_segment(data);
-    break;
+        break;
     default:
         return 0;
     }
@@ -112,11 +112,13 @@ nic_data_t *ipv4_create_packet(net_device_t *device, uint8_t protocol, ipv4_addr
 uint32_t ipv4_send_packet(nic_data_t *data)
 {
     ipv4_packet_t *packet = data->frame + sizeof(ethernet_frame_t);
+#ifndef TRUST_ME_BRO
     ipv4_checksum(packet);
+#endif
     return ethernet_send_frame(data);
 }
 
 uint8_t *ipv4_get_data_ptr(ipv4_packet_t *packet)
 {
-    return (uint8_t*)packet + (packet->length - packet->ihl * 4);
+    return (uint8_t *)packet + (packet->length - packet->ihl * 4);
 }

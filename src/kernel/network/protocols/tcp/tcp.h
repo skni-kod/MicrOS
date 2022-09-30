@@ -8,6 +8,7 @@
 
 #include <inet/tcp.h>
 #include <inet/inet.h>
+#include <string.h>
 #include <network/network_utils.h>
 #include <network/network_manager.h>
 #include <process/socket/socket.h>
@@ -18,9 +19,7 @@ uint32_t tcp_process_segment(nic_data_t *data);
 
 uint16_t tcp_checksum(ipv4_packet_t *packet);
 
-nic_data_t *tcp_create_segment(net_device_t *device, ipv4_addr_t dst_addr, uint16_t dst_port, uint16_t src_port, uint32_t data_size);
-
-uint32_t tcp_send_segment(nic_data_t *data);
+uint32_t tcp_send_segment(struct socket* socket, uint8_t *data_ptr, uint32_t data_size);
 
 static uint8_t *__tcp_data_ptr(tcp_segment_t *segment);
 
@@ -30,9 +29,18 @@ static uint32_t __tcp_options_size(ipv4_packet_t *packet);
 
 socket_t *tcp_socket_init(socket_t *socket);
 
-int tcp_socket_bind(struct socket *sock, struct sockaddr *addr, int sockaddr_len);
+int tcp_socket_bind(struct socket *socket, struct sockaddr *addr, int sockaddr_len);
 
-int tcp_socket_listen(struct socket *sock, int len);
+int tcp_socket_listen(struct socket *socket, int backlog);
 
+int tcp_socket_accept(struct socket *socket, struct sockaddr *addr, int sockaddr_len);
+
+int tcp_socket_recv(struct socket *sock, const void *buf, size_t len, int flags);
+
+int tcp_socket_send(struct socket *sock, void *buf, size_t len, int flags);
+
+int tcp_socket_write(struct socket *socket, void *buf, size_t len, struct sockaddr *addr);
+
+int tcp_socket_read(struct socket *socket, void *buf, size_t length, struct sockaddr *addr);
 
 #endif

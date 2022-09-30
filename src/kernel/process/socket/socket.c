@@ -1,6 +1,6 @@
 #include "socket.h"
 
-socket_t socket_descriptors[SOCKET_DESCRIPTORS_COUNT] = {0};
+socket_t *socket_descriptors[SOCKET_DESCRIPTORS_COUNT] = {0};
 
 int k_socket(int domain, int type, int protocol)
 {
@@ -23,7 +23,7 @@ int k_socket(int domain, int type, int protocol)
             switch (protocol)
             {
             default:
-                return socket_create_descriptor(AF_INET, SOCK_DGRAM, IPPROTO_TCP);
+                return socket_create_descriptor(AF_INET, SOCK_STREAM, IPPROTO_TCP);
             }
         }
         break;
@@ -40,7 +40,7 @@ int k_socket(int domain, int type, int protocol)
 int k_bind(int s, struct sockaddr *addr, int addrlen)
 {
     socket_t *socket = socket_get_descriptor(s);
-    if (socket)
+    if (socket && SS_FREE != socket->state)
         return socket->ops->bind(socket, addr, addrlen);
 
     return -1;
@@ -68,7 +68,7 @@ int k_send(int s, const void *buf, size_t len, int flags)
 {
     socket_t *socket = socket_get_descriptor(s);
     if (socket)
-        return socket->ops->send(socket,buf,len,flags);
+        return socket->ops->send(socket, buf, len, flags);
 
     return -1;
 }
@@ -102,12 +102,17 @@ int k_accept(int s, struct sockaddr *addr, int *addrlen)
 
 int socket_create_descriptor(int domain, int type, int protocol)
 {
-    socket_t *socket;
+    for (uint32_t id = 1; id < SOCKET_DESCRIPTORS_COUNT; id++)
+    {   
+        struct socket* socket = socket_descriptors[id];
+        // descriptor is empty
+        if (!socket)
+        {
+            socket = socket_descriptors[id] = heap_kernel_alloc(sizeof(struct socket), 0);
+            socket->state = SS_FREE;
+        }
 
-    for (uint8_t id = 1; id < SOCKET_DESCRIPTORS_COUNT; id++)
-    {
-        socket = &socket_descriptors[id];
-        if (socket && socket->state == SS_FREE)
+        if (socket->state == SS_FREE)
         {
             socket->domain = domain;
             socket->type = type;
@@ -125,6 +130,25 @@ int socket_create_descriptor(int domain, int type, int protocol)
     return 0;
 }
 
+int socket_add_descriptor(struct socket *_socket)
+{
+    for (uint32_t id = 1; id < SOCKET_DESCRIPTORS_COUNT; id++)
+    {   
+        struct socket* socket = socket_descriptors[id];
+        if (!socket)
+        {
+            socket = _socket;
+            return id;
+        }
+        if(SS_FREE == socket->state){
+            heap_kernel_dealloc(socket);
+            socket = _socket;
+            return id;
+        }
+    }
+    return -1;
+}
+
 socket_buffer_t *socket_init_buffer(socket_buffer_t *buffer, size_t entry_size, uint32_t entry_count)
 {
     buffer = heap_kernel_alloc(sizeof(socket_buffer_t) + (sizeof(socket_entry_t) + entry_size) * entry_count, 0);
@@ -140,7 +164,7 @@ socket_t *socket_get_descriptor(int socket)
     if (socket >= SOCKET_DESCRIPTORS_COUNT || socket < 0)
         return NULL;
 
-    return &socket_descriptors[socket];
+    return socket_descriptors[socket];
 }
 
 int socket_read(socket_t *socket, void *data, size_t length, struct sockaddr *to)
@@ -155,29 +179,38 @@ int socket_write(socket_t *socket, void *data, size_t length, struct sockaddr *f
 
 socket_t *socket_descriptor_lookup(int domain, int type, int protocol, struct sockaddr *addr)
 {
-    socket_t *descriptor;
-
     // First look for descriptors with specified IP, then look for INADDR_ANY
-    for (uint8_t id = 1; id < SOCKET_DESCRIPTORS_COUNT; id++)
-    {
-        descriptor = &socket_descriptors[id];
-        if (descriptor &&
-            descriptor->state == SS_CONNECTED &&
-            descriptor->domain == domain &&
-            descriptor->type == type &&
-            descriptor->protocol == protocol)
+    for (uint32_t id = 1; id < SOCKET_DESCRIPTORS_COUNT; id++)
+    {   
+        struct socket* socket = socket_descriptors[id];
+
+        if (socket &&
+            socket->state == SS_CONNECTED &&
+            socket->domain == domain &&
+            socket->type == type &&
+            socket->protocol == protocol)
         {
-            switch (descriptor->protocol)
+            switch (socket->protocol)
             {
             case IP_PROTOCOL_UDP:
             {
-                udp_socket_t *sk = descriptor->sk;
+                udp_socket_t *sk = socket->sk;
                 if (sk->local.sin_port == ((struct sockaddr_in *)addr)->sin_port &&
                         sk->local.sin_addr.address == ((struct sockaddr_in *)addr)->sin_addr.address ||
-                    sk->local.sin_addr.address == INADDR_BROADCAST ||
-                    sk->local.sin_addr.address >> 24 == 0x7F ||
-                    sk->local.sin_addr.address == INADDR_ANY)
-                    return descriptor;
+                    INADDR_BROADCAST == sk->local.sin_addr.address ||
+                    0x7F == sk->local.sin_addr.address >> 24 ||
+                    INADDR_ANY == sk->local.sin_addr.address)
+                    return socket;
+            }
+            case IP_PROTOCOL_TCP:
+            {
+                tcp_socket_t *sk = socket->sk;
+                if (sk->local.sin_port == ((struct sockaddr_in *)addr)->sin_port &&
+                        sk->local.sin_addr.address == ((struct sockaddr_in *)addr)->sin_addr.address ||
+                    INADDR_BROADCAST == sk->local.sin_addr.address ||
+                    0x7F == sk->local.sin_addr.address >> 24 ||
+                    INADDR_ANY == sk->local.sin_addr.address)
+                    return socket;
             }
             break;
             default:

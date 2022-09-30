@@ -34,11 +34,17 @@ socket_t *udp_socket_init(socket_t *socket);
 
 int udp_socket_bind(socket_t *socket, struct sockaddr *addr, int addrlen);
 
+int udp_socket_recv(struct socket *socket, void *buf, size_t len, int flags);
+
 int udp_socket_recvfrom(struct socket *socket, void *buf, size_t len, int flags,
                         struct sockaddr *from, socklen_t *fromlen);
 
+int udp_socket_send(struct socket *socket, void *buf, size_t len, int flags);
+
 int udp_socket_sendto(struct socket *socket, void *buf, size_t len, int flags,
                       struct sockaddr *to, socklen_t *tolen);
+
+int udp_socket_connect(struct socket *socket, const struct sockaddr *serv_addr, socklen_t addrlen);
 
 int udp_socket_write(struct socket *socket, void *buf, size_t len, struct sockaddr *addr);
 
