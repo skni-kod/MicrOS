@@ -1,16 +1,23 @@
 #include "udp.h"
 
 static struct proto_ops udp_interface = {
+	.release = &socket_not_implemented,
     .bind = &udp_socket_bind,
-    .recvfrom = &udp_socket_recvfrom,
-    .sendto = &udp_socket_sendto,
-    .write = &udp_socket_write,
-    .read = &udp_socket_read,
     .connect = &udp_socket_connect,
+    .socketpair = &socket_not_implemented,
+    .accept = &socket_not_implemented,
+    .getname = &socket_not_implemented,
+    .poll =  &socket_not_implemented,
+    .ioctl =  &socket_not_implemented,
+    .listen = &socket_not_implemented,
+    .shutdown = &socket_not_implemented,
+    .sendmsg = &socket_not_implemented,
+    .recvmsg = &socket_not_implemented,
     .send = &udp_socket_send,
+    .sendto = &udp_socket_sendto,
     .recv = &udp_socket_recv,
-}
-;
+    .recvfrom = &udp_socket_recvfrom,
+};
 
 uint32_t udp_process_datagram(nic_data_t *data)
 {
@@ -35,7 +42,7 @@ uint32_t udp_process_datagram(nic_data_t *data)
     {
         addr.sin_addr.address = packet->src.address;
         addr.sin_port = datagram->src_port;
-        socket_write(socket, datagram->data, ntohs(datagram->length) - sizeof(udp_datagram_t), &addr);
+        udp_socket_write(socket, datagram->data, ntohs(datagram->length) - sizeof(udp_datagram_t), &addr);
         return 1;
     }
     

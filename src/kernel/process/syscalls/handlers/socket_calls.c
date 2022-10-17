@@ -71,3 +71,10 @@ void syscall_socket_accept(interrupt_state *state)
     state->registers.eax = k_accept(state->registers.ebx, state->registers.ecx, state->registers.edx);
     return;
 }
+
+void syscall_socket_connect(interrupt_state *state)
+{
+    state->registers.eax = k_connect(state->registers.ebx, state->registers.ecx, state->registers.edx);
+    return;
+}
+

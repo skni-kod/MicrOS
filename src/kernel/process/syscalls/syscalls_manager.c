@@ -115,6 +115,7 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(SYSCALL_SENDTO, syscall_socket_sendto);
     syscalls_manager_attach_handler(SYSCALL_LISTEN, syscall_socket_listen);
     syscalls_manager_attach_handler(SYSCALL_ACCEPT, syscall_socket_accept);
+    syscalls_manager_attach_handler(SYSCALL_CONNECT, syscall_socket_connect);
     syscalls_manager_attach_handler(SYSCALL_NETIF_DROPPED, syscall_netif_dropped);
 
 }

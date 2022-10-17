@@ -98,7 +98,7 @@ nic_data_t *ipv4_create_packet(net_device_t *device, uint8_t protocol, ipv4_addr
     packet->flags_reserved = 0;
     packet->offset2 = 0;
     packet->offset = 0;
-    packet->ttl = 64;
+    packet->ttl = device->interface->ttl;
     packet->protocol = protocol;
     packet->length = htons((sizeof(ipv4_packet_t) + options_length) + data_size);
     packet->id = htons(id++);

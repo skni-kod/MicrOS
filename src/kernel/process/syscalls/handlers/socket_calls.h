@@ -21,5 +21,6 @@ void syscall_socket_listen(interrupt_state *state);
 
 void syscall_socket_accept(interrupt_state *state);
 
+void syscall_socket_connect(interrupt_state *state);
 
 #endif

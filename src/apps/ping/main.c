@@ -1,6 +1,7 @@
 #include <micros/sys/micros_socket.h>
 #include <micros/sys/micros_netif.h>
 #include <inet/ipv4.h>
+#include <micros/sys/micros_process.h>
 #include <micros/sys/micros_keyboard.h>
 
 #define BUF_LEN 1500
@@ -68,35 +69,97 @@ int main(int argc, char *argv[])
         myaddr.sin_port = htons(port);
         myaddr.sin_addr.address = INADDR_ANY;
 
-        int ret = bind(sock, (struct sockaddr *)&myaddr, sizeof(myaddr));
+        bind(sock, (struct sockaddr *)&myaddr, sizeof(myaddr));
 
-        ret = listen(sock, 4);
+        listen(sock, 4);
 
-        while (!ret)
+        int conn;
+        while ((conn = accept(sock, &server_addr, &server_addr_len)) < 1)
+            micros_process_current_process_sleep(1);
+
+        char buff[BUF_LEN];
+        int n = 0;
+        uint32_t bytes_received;
+        // infinite loop for chat
+        for (;;)
         {
-            int conn = accept(sock, &server_addr, &server_addr_len);
-            uint32_t bytes_received = recv(sock,
-                                           buffer,
-                                           sizeof(buffer),
-                                           0);
+            memset(buff, 0, BUF_LEN);
+
+            // read the message from client and copy it in buffer
+            bytes_received = recv(conn, buffer, sizeof(buffer), 0);
             if (bytes_received)
             {
-                printf("Received[%d]: %.*s \n", bytes_received, bytes_received, buffer);
-                send(sock, buffer, bytes_received, 0);
-            }
+                // print buffer which contains the client contents
+                printf("From client: %s\t To client : ", buff);
 
-            if (micros_keyboard_is_key_pressed())
-            {
-                micros_keyboard_scan_ascii_pair pressed_key;
-                micros_keyboard_get_pressed_key(&pressed_key);
+                n = 0;
+                // copy server message in the buffer
+                while ((buff[n++] = getchar()) != '\n')
+                    ;
 
-                switch (pressed_key.scancode)
+                // and send that buffer to client
+                send(sock, buffer, strlen(buff), 0);
+
+                // if msg contains "Exit" then server exit and chat ended.
+                if (strncmp("exit", buff, 4) == 0)
                 {
-                case key_esc:
-                    return;
+                    printf("Server Exit...\n");
+                    break;
                 }
             }
         }
+
+        if (micros_keyboard_is_key_pressed())
+        {
+            micros_keyboard_scan_ascii_pair pressed_key;
+            micros_keyboard_get_pressed_key(&pressed_key);
+
+            switch (pressed_key.scancode)
+            {
+            case key_esc:
+                return;
+            }
+        }
+    }
+
+    if (!strcmp("-dhcp", argv[2]))
+    {
+        printf("Sending DHCP request\n");
+
+        uint32_t sock = socket(AF_INET, SOCK_DGRAM, 0);
+
+        struct sockaddr_in server_addr = {
+            .sin_family = AF_INET,
+            .sin_zero = 0,
+            .sin_port = htons(67),
+            .sin_addr = INADDR_ANY};
+
+        socklen_t server_addr_len = sizeof(struct sockaddr_in);
+
+        struct sockaddr_in myaddr = {
+            .sin_zero = 0,
+            .sin_family = AF_INET,
+            .sin_port = htons(68),
+            .sin_addr.address = INADDR_ANY};
+
+        int ret = bind(sock, (struct sockaddr *)&myaddr, sizeof(myaddr));
+
+        uint32_t bytes_received;
+        while (bytes_received = recvfrom(sock,
+                                         buffer,
+                                         sizeof(buffer),
+                                         0,
+                                         (struct sockaddr *)&server_addr,
+                                         &server_addr_len))
+        {
+            // data came from server
+            micros_process_current_process_sleep(1);
+        }
+        // if (bytes_received)
+        // {
+        //     printf("Received[%d]: %.*s \n", bytes_received, bytes_received, buffer);
+        //     sendto(sock, buffer, bytes_received, 0, (struct sockaddr *)&server_addr, sizeof(struct sockaddr_in));
+        // }
     }
 
     if (!strcmp("-dropped", argv[2]))

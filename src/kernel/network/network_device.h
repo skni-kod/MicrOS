@@ -57,6 +57,7 @@ typedef struct net_interface_t
     ipv4_addr_t ipv4;
     ipv4_addr_t ipv4_gateway;
     uint16_t mtu;
+    uint8_t ttl;
     uint32_t frames_sent;
     uint32_t frames_received;
     uint32_t bytes_sent;

@@ -10,8 +10,9 @@
 #define SYSCALL_SENDTO          0x0E05
 #define SYSCALL_LISTEN          0x0E06
 #define SYSCALL_ACCEPT          0x0E07
+#define SYSCALL_CONNECT         0x0E08
 
 // Network Interface
-#define SYSCALL_NETIF_DROPPED   0x0E30
+#define SYSCALL_NETIF_DROPPED   0x0E35
 
 #endif

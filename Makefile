@@ -118,7 +118,6 @@ $(log_dir):
 $(data_files):
 	$(progress) "CP" $@ 
 	$(MKDIR) -p $(output_dir)/$(dir $@)
-#$(MCOPY) -oi $< $(data_dir)/$@ ::$@
 	$(CP) -f $(data_dir)/$@ $(output_dir)/$@
 
 $(apps_dirs): $(libc_bin)

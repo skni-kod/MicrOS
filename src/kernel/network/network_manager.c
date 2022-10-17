@@ -145,7 +145,7 @@ void __network_manager_print_device_info(net_device_t *device)
     logger_log_info(logInfo);
 }
 
-int8_t __network_manager_set_net_device(net_device_t *device)
+static int8_t __network_manager_set_net_device(net_device_t *device)
 {
     if (!device)
         return 0;
@@ -167,6 +167,7 @@ int8_t __network_manager_set_net_device(net_device_t *device)
 
     // TODO: get mtu from driver
     device->interface->mtu = 1600;
+    device->interface->ttl = 64;
 
     return 1;
 }

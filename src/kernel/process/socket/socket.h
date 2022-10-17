@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <inet/tcp.h>
 #include <klibrary/klist.h>
+#include <logger/logger.h>
 #include <memory/heap/heap.h>
 #include <micros/socket.h>
 #include <micros/sys/micros_socket.h>
@@ -34,6 +35,7 @@ typedef struct socket_entry
 {
 	size_t size;
 	struct sockaddr addr;
+	uint32_t timestamp;
 	uint8_t data[];
 } __attribute__((packed)) socket_entry_t;
 
@@ -45,7 +47,7 @@ struct proto_ops
 				int sockaddr_len);
 	int (*connect)(struct socket *sock,
 				   struct sockaddr *vaddr,
-				   int sockaddr_len, int flags);
+				   int sockaddr_len);
 	int (*socketpair)(struct socket *sock1,
 					  struct socket *sock2);
 	int (*accept)(struct socket *sock,
@@ -67,7 +69,7 @@ struct proto_ops
 				   size_t total_len, int flags);
 
 	int (*send)(struct socket *sock, const void *buf, size_t len,
-				  int flags);
+				int flags);
 
 	int (*sendto)(struct socket *sock, const void *buf, size_t len,
 				  int flags, const struct sockaddr *to,
@@ -77,10 +79,6 @@ struct proto_ops
 
 	int (*recvfrom)(struct socket *sock, void *buf, size_t len, int flags,
 					struct sockaddr *from, socklen_t *fromlen);
-
-	int (*write)(struct socket *sock, void *buf, size_t len, struct sockaddr *addr);
-
-	int (*read)(struct socket *sock, void *buf, size_t len, struct sockaddr *addr);
 };
 
 typedef struct socket
@@ -107,12 +105,15 @@ typedef struct tcp_socket
 	tcp_state_t state;
 	struct sockaddr_in local;
 	struct sockaddr_in remote;
+	net_device_t *device;
 	klist_t *tx;
 	klist_t *rx;
-	int backlog;
-	net_device_t *device;
 	tcp_segment_t header;
+	socket_t *connections;
+	int backlog;
 } tcp_socket_t;
+
+socket_t *socket_descriptors[SOCKET_DESCRIPTORS_COUNT];
 
 int k_socket(int domain, int type, int protocol);
 
@@ -130,7 +131,11 @@ int k_listen(int s, int backlog);
 
 int k_accept(int s, struct sockaddr *addr, int *addrlen);
 
+int k_connect(int s, struct sockaddr *addr, int *addrlen);
+
 // kernel specific:
+
+void socket_not_implemented();
 
 int socket_create_descriptor(int domain, int type, int protocol);
 
@@ -139,10 +144,6 @@ int socket_add_descriptor(struct socket *socket);
 socket_buffer_t *socket_init_buffer(socket_buffer_t *buffer, size_t entry_size, uint32_t entry_count);
 
 socket_t *socket_get_descriptor(int socket);
-
-int socket_read(socket_t *socket, void *data, size_t length, struct sockaddr *to);
-
-int socket_write(socket_t *socket, void *data, size_t length, struct sockaddr *from);
 
 socket_t *socket_descriptor_lookup(int domain, int type, int protocol, struct sockaddr *addr);
 

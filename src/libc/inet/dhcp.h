@@ -16,7 +16,8 @@ typedef struct dhcp_message
     uint8_t hlen;
     uint32_t xid;
     uint16_t secs;
-    uint16_t flags;
+    uint16_t broadcast_flag: 1;
+    uint16_t flags: 15;
     uint32_t ciaddr;
     uint32_t yiaddr;
     uint32_t siaddr;

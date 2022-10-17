@@ -9,6 +9,7 @@
 #include <inet/inet.h>
 #include <inet/ethernet.h>
 #include <inet/arp.h>
+#include <network/protocols/arp/arp.h>
 #include <network/protocols/ipv4/ipv4.h>
 #include <network/network_utils.h>
 #include <network/network_device.h>

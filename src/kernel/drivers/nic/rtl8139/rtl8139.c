@@ -5,17 +5,17 @@
 */
 #include "rtl8139.h"
 
-pci_device pci_rtl8139_device;
-rtl8139_dev_t rtl8139_device;
-net_device_t *rtl8139_net_device;
+static pci_device pci_rtl8139_device;
+static rtl8139_dev_t rtl8139_device;
+static net_device_t *rtl8139_net_device;
 
-uint32_t current_packet_ptr = 0;
+static uint32_t current_packet_ptr = 0;
 
 //! Transmit start address of descriptor (device has 4 descriptors)
-uint8_t const TSAD[4] = {0x20, 0x24, 0x28, 0x2C};
+static uint8_t const TSAD[] = {0x20, 0x24, 0x28, 0x2C};
 
 //! Transmit status of descriptor
-uint8_t const TSD[4] = {0x10, 0x14, 0x18, 0x1C};
+static uint8_t const TSD[] = {0x10, 0x14, 0x18, 0x1C};
 
 bool rtl8139_init(net_device_t *net_dev)
 {
@@ -156,17 +156,15 @@ uint32_t rtl8139_receive()
     memcpy((void *)out->frame, &data_ptr[1], size);
 
     /*
-        4 - header length (PktLength include 4 bytes CRC)
-        3 - dword alignment
+        7 - dword alignment
         RX_READ_POINTER_MASK - avoid overflow
     */
-    current_packet_ptr = (current_packet_ptr + size + 3 + 4) & RX_READ_POINTER_MASK;
+    current_packet_ptr = (current_packet_ptr + size + 7) & RX_READ_POINTER_MASK;
     current_packet_ptr %= RTL8139_RX_BUFFER_BASE;
     // Tell to device where put, next incoming packet - 0x10 avoid overflow
     io_out_word(rtl8139_device.io_base + CAPR, current_packet_ptr - 0x10);
 
     // Notify network manager about incoming data
-
     (*rtl8139_net_device->dpi.receive)(out);
 }
 

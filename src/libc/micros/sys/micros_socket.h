@@ -34,17 +34,19 @@ int socket(int domain, int type, int protocol);
 
 int bind(int s, struct sockaddr *my_addr, socklen_t addrlen);
 
-uint32_t recv(int s, void *buf, size_t len, int flags);
+int recv(int s, void *buf, size_t len, int flags);
 
-uint32_t recvfrom(int s, void *buf, size_t len, int flags,
+int recvfrom(int s, void *buf, size_t len, int flags,
                  struct sockaddr *from, socklen_t *fromlen);
 
-uint32_t sendto(int s, const void *buf, size_t len,
+int sendto(int s, const void *buf, size_t len,
                int flags, const struct sockaddr *to,
                socklen_t tolen);
 
 int listen(int s, int backlog);
 
 int accept(int s, struct sockaddr *addr, socklen_t *addrlen);
+
+int connect(int s, struct sockaddr *serv_addr, int addrlen);
 
 #endif

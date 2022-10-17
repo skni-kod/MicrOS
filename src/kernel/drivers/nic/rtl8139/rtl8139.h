@@ -93,7 +93,7 @@ bool rtl8139_init(net_device_t *net_dev);
 
 //! rtl8139_send
 /*
-    Send data, with desired length
+    Send data
 */
 uint32_t rtl8139_send(nic_data_t *packet);
 

@@ -52,7 +52,7 @@ int k_recv(int s, void *buf, size_t len, int flags)
     if (socket)
         return socket->ops->recv(socket, buf, len, flags);
 
-    return -1;
+    return 0;
 }
 
 int k_recvfrom(int s, void *buf, size_t length, int flags, struct sockaddr *from, int *fromlen)
@@ -100,11 +100,25 @@ int k_accept(int s, struct sockaddr *addr, int *addrlen)
     return -1;
 }
 
+int k_connect(int s, struct sockaddr *addr, int *addrlen)
+{
+    socket_t *socket = socket_get_descriptor(s);
+    if (socket)
+        return socket->ops->connect(socket, addr, addrlen);
+
+    return -1;
+}
+
+void socket_not_implemented()
+{
+    logger_log_warning("Function not implemented");
+}
+
 int socket_create_descriptor(int domain, int type, int protocol)
 {
     for (uint32_t id = 1; id < SOCKET_DESCRIPTORS_COUNT; id++)
-    {   
-        struct socket* socket = socket_descriptors[id];
+    {
+        struct socket *socket = socket_descriptors[id];
         // descriptor is empty
         if (!socket)
         {
@@ -133,16 +147,17 @@ int socket_create_descriptor(int domain, int type, int protocol)
 int socket_add_descriptor(struct socket *_socket)
 {
     for (uint32_t id = 1; id < SOCKET_DESCRIPTORS_COUNT; id++)
-    {   
-        struct socket* socket = socket_descriptors[id];
+    {
+        struct socket *socket = socket_descriptors[id];
         if (!socket)
         {
-            socket = _socket;
+            socket_descriptors[id] = _socket;
             return id;
         }
-        if(SS_FREE == socket->state){
+        if (SS_FREE == socket->state)
+        {
             heap_kernel_dealloc(socket);
-            socket = _socket;
+            socket_descriptors[id] = _socket;
             return id;
         }
     }
@@ -167,22 +182,12 @@ socket_t *socket_get_descriptor(int socket)
     return socket_descriptors[socket];
 }
 
-int socket_read(socket_t *socket, void *data, size_t length, struct sockaddr *to)
-{
-    return socket->ops->read(socket, data, length, to);
-}
-
-int socket_write(socket_t *socket, void *data, size_t length, struct sockaddr *from)
-{
-    return socket->ops->write(socket, data, length, from);
-}
-
 socket_t *socket_descriptor_lookup(int domain, int type, int protocol, struct sockaddr *addr)
 {
     // First look for descriptors with specified IP, then look for INADDR_ANY
     for (uint32_t id = 1; id < SOCKET_DESCRIPTORS_COUNT; id++)
-    {   
-        struct socket* socket = socket_descriptors[id];
+    {
+        struct socket *socket = socket_descriptors[id];
 
         if (socket &&
             socket->state == SS_CONNECTED &&

@@ -73,5 +73,5 @@ nic_data_t *network_manager_get_transmitt_buffer(net_device_t *device);
 */
 void __network_manager_print_device_info(net_device_t *device);
 
-int8_t __network_manager_set_net_device(net_device_t *device);
+static int8_t __network_manager_set_net_device(net_device_t *device);
 #endif
