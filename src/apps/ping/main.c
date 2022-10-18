@@ -77,36 +77,30 @@ int main(int argc, char *argv[])
         while ((conn = accept(sock, &server_addr, &server_addr_len)) < 1)
             micros_process_current_process_sleep(1);
 
-        char buff[BUF_LEN];
         int n = 0;
         uint32_t bytes_received;
         // infinite loop for chat
         for (;;)
         {
-            memset(buff, 0, BUF_LEN);
+            memset(buffer, 0, BUF_LEN);
 
             // read the message from client and copy it in buffer
             bytes_received = recv(conn, buffer, sizeof(buffer), 0);
             if (bytes_received)
-            {
-                // print buffer which contains the client contents
-                printf("From client: %s\t To client : ", buff);
+                printf("From client: %s", buffer);
 
-                n = 0;
-                // copy server message in the buffer
-                while ((buff[n++] = getchar()) != '\n')
-                    ;
-
-                // and send that buffer to client
-                send(sock, buffer, strlen(buff), 0);
-
-                // if msg contains "Exit" then server exit and chat ended.
-                if (strncmp("exit", buff, 4) == 0)
-                {
-                    printf("Server Exit...\n");
-                    break;
-                }
-            }
+            // n = 0;
+            // // copy server message in the buffer
+            // while ((buffer[n++] = getchar()) != '\n')
+            //     ;
+            // // if msg contains "Exit" then server exit and chat ended.
+            // if (strncmp("exit", buffer, 4) == 0)
+            // {
+            //     printf("Server Exit...\n");
+            //     return;
+            // }
+            // // and send that buffer to client
+            // send(sock, buffer, strlen(buffer), 0);
         }
 
         if (micros_keyboard_is_key_pressed())

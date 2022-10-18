@@ -37,7 +37,9 @@ uint32_t tcp_process_segment(nic_data_t *data)
         .sin_port = segment->dst_port};
 
     // first look for open socket, so forward there incoming data:
-    socket_t *socket = socket_descriptor_lookup(AF_INET, SOCK_STREAM, IPPROTO_TCP, &addr);
+    socket_t *socket = __tcp_get_socket(&addr);
+
+    static uint16_t timestamp = 1;
 
     if (socket)
     {
@@ -54,15 +56,6 @@ uint32_t tcp_process_segment(nic_data_t *data)
             // if incoming segment has syn flag
             if (segment->syn)
             {
-                // cb->rcv.nxt = ntoh32(hdr->seq) + 1;
-                // cb->irs = ntoh32(hdr->seq);
-                // cb->iss = (uint32_t)random();
-                // seq = cb->iss;
-                // ack = cb->rcv.nxt;
-                // tcp_tx(cb, seq, ack, TCP_FLG_SYN | TCP_FLG_ACK, NULL, 0);
-                // cb->snd.nxt = cb->iss + 1;
-                // cb->snd.una = cb->iss;
-                // cb->state = TCP_CB_STATE_SYN_RCVD;
                 for (int i = 0; i < sk->backlog; i++)
                 {
                     struct socket *sock = sk->connections + i;
@@ -71,7 +64,11 @@ uint32_t tcp_process_segment(nic_data_t *data)
                         // new client attempts to connect
                         tcp_socket_t *con = (tcp_socket_t *)(sock->sk);
                         sock->state = SS_CONNECTING;
+                        sock->domain = AF_INET;
+                        sock->type = SOCK_STREAM;
+                        sock->protocol = IP_PROTOCOL_TCP;
                         con->state = TCP_SYN_RECV;
+                        memcpy(&con->local, &sk->local, sizeof(struct sockaddr_in));
                         con->remote.sin_family = AF_INET;
                         con->remote.sin_addr.address = packet->src.address;
                         con->remote.sin_port = segment->src_port;
@@ -88,13 +85,32 @@ uint32_t tcp_process_segment(nic_data_t *data)
             break;
         case TCP_SYN_RECV:
         {
-            if (segment->ack && htons(segment->ack_num) == htons(htons(sk->header.ack_num) + 1))
+            if (segment->ack && htonl(segment->ack_num) == htonl(sk->header.seq_num) + 1)
             {
-                sk->header.ack_num = htons(htons(sk->header.ack_num) + 1);
-                logger_log_info("new connection");
+                sk->state = TCP_ESTABLISHED;
+                sk->header.ack_num = htonl(htonl(sk->header.ack_num) + 1);
+                sk->header.seq_num = segment->ack_num;
+                sk->header.ack = 0;
+                sk->header.syn = 0;
             }
         }
         break;
+
+        case TCP_ESTABLISHED:
+            // sk->header.seq_num = sk->header.ack_num;
+            sk->header.ack_num = htonl(__tcp_data_size(packet) + htonl(segment->seq_num));
+            sk->header.ack = 1;
+            tcp_send_segment(socket, NULL, NULL);
+            
+            uint32_t data_size = __tcp_data_size(packet);
+            socket_entry_t *entry = heap_kernel_alloc(sizeof(socket_entry_t) + data_size, 0);
+            entry->size = data_size;
+            entry->timestamp = timestamp++;
+            entry->addr.sa_data[0] = 47;
+            memcpy((*entry).data, (void *)__tcp_data_ptr(segment), data_size);
+            sk->rx = klist_add(sk->rx, (void *)entry);
+
+            return 1;
         };
     }
 
@@ -167,15 +183,14 @@ static socket_t *__tcp_get_socket(struct sockaddr_in *addr)
         struct socket *socket = socket_descriptors[id];
 
         if (socket &&
-            socket->state == SS_CONNECTED &&
             socket->domain == AF_INET &&
-            socket->type == SOCK_DGRAM &&
+            socket->type == SOCK_STREAM &&
             socket->protocol == IP_PROTOCOL_TCP)
         {
             tcp_socket_t *sk = socket->sk;
             if (sk->local.sin_port == addr->sin_port)
             {
-                if (sk->local.sin_addr.address == addr->sin_addr.address)
+                if (sk->remote.sin_addr.address == addr->sin_addr.address)
                     // best match -- connection socket
                     return socket;
                 else if (INADDR_BROADCAST == sk->local.sin_addr.address ||
@@ -237,6 +252,8 @@ int tcp_socket_listen(struct socket *socket, int backlog)
             sk->local.sin_family = AF_INET;
             sk->local.sin_port = sk->local.sin_port;
             sk->local.sin_addr.address = sk->local.sin_addr.address;
+            sk->rx = klist_init();
+            sk->tx = klist_init();
             sock->ops = heap_kernel_alloc(sizeof(struct proto_ops), 0);
             memcpy(sock->ops, &tcp_interface, sizeof(struct proto_ops));
         }
@@ -259,28 +276,34 @@ int tcp_socket_accept(struct socket *socket, struct sockaddr *addr, int sockaddr
             if (SS_CONNECTING == sock->state)
             {
                 // try to establish new connection:
-                tcp_socket_t *con = sock->sk;
+                volatile tcp_socket_t *con = sock->sk;
                 ipv4_packet_t *pckt = con->rx->value;
                 tcp_segment_t *syn = pckt->data;
                 memcpy(&con->header, syn, sizeof(tcp_segment_t));
 
                 memcpy(&con->local, &sk->local, sizeof(struct sockaddr_in));
 
+                con->state = TCP_SYN_RECV;
                 con->header.window = htons(512);
                 con->header.ack_num = htonl(htonl(syn->seq_num) + 1);
                 con->header.seq_num = htonl(4747);
                 con->header.syn = 1;
                 con->header.ack = 1;
 
-                tcp_send_segment(sock, NULL, NULL);
-
-                sleep(100);
-
-                tcp_send_segment(sock, NULL, NULL);
-
-
                 con->rx = klist_delete(con->rx, con->rx);
-                return socket_add_descriptor(sock);
+                int desc = socket_add_descriptor(sock);
+
+                tcp_send_segment(sock, NULL, NULL);
+
+                while (1)
+                {
+                    sleep(500);
+                    if (TCP_ESTABLISHED == con->state)
+                        break;
+                    tcp_send_segment(sock, NULL, NULL);
+                }
+
+                return desc;
             }
         }
     }
@@ -293,19 +316,11 @@ int tcp_socket_recv(struct socket *sock, const void *buf, size_t len, int flags)
 
     if (((tcp_socket_t *)sock->sk)->state == TCP_ESTABLISHED && sk->rx && sk->rx->size)
     {
-        ipv4_packet_t *pckt = sk->rx->value;
-        tcp_segment_t *syn = pckt->data;
-
-        sk->header.ack_num = htonl(htonl(syn->seq_num) + __tcp_data_size(pckt));
-        sk->header.ack = 1;
-
-        tcp_send_segment(sock, NULL, NULL);
-
-        memcpy(buf, __tcp_data_ptr(syn), __tcp_data_size(pckt));
-
+        socket_entry_t *entry = sk->rx->value;
+        uint32_t size = entry->size;
+        memcpy(buf, (*entry).data, size);
         sk->rx = klist_delete(sk->rx, sk->rx);
-
-        return __tcp_data_size(pckt);
+        return size;
     }
     else
         return 0;
@@ -338,7 +353,6 @@ int tcp_socket_write(struct socket *socket, void *buf, size_t length, struct soc
 
 int tcp_socket_read(struct socket *socket, void *buf, size_t length, struct sockaddr *addr)
 {
-    logger_log_ok("Read from TCP Socket");
     // tcp_socket_t *sk = socket->sk;
     // if (sk->buffer->entry_size > length)
     // {

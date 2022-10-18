@@ -12,6 +12,7 @@
 #include <network/network_utils.h>
 #include <network/network_manager.h>
 #include <process/socket/socket.h>
+#include <debug_helpers/library/kernel_stdio.h>
 
 #define SOCKET_BASE_PORT 2022
 

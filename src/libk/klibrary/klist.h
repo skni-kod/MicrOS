@@ -10,7 +10,7 @@ typedef struct klist
 	void *value;
 	struct klist *next;
 	struct klist *prev;
-	int32_t size;
+	uint32_t size;
 } klist_t;
 
 klist_t *klist_init();

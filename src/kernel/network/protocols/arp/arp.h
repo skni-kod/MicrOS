@@ -12,7 +12,8 @@
 #include <network/network_utils.h>
 #include <network/network_manager.h>
 #include <klibrary/ktime.h>
-
+#include <drivers/serial/serial.h>
+#include <debug_helpers/library/kernel_stdio.h>
 #include "../ethernet/ethernet.h"
 
 

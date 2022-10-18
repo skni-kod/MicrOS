@@ -353,6 +353,8 @@ int kmain()
     
     logger_log_ok("Loading shells...");
 
+    serial_init(COM1_PORT, 115200, 8, 1, PARITY_NONE);
+
     uint32_t d = 0;
     for (int i = 0; i < 4; i++)
     {
@@ -366,8 +368,8 @@ int kmain()
         const terminal_struct* ts = get_terminals(&terminal_number);
         attach_process_to_terminal(ts[i].terminal_id, process_manager_get_process(p));
         if(i == 0){
-            p = process_manager_create_process("A:/ENV/PING.ELF", " -tcp 12345 ", 0, false);
-            attach_process_to_terminal(ts[i].terminal_id, process_manager_get_process(p));
+            // p = process_manager_create_process("A:/ENV/PING.ELF", " -tcp 12345 ", 0, false);
+            // attach_process_to_terminal(ts[i].terminal_id, process_manager_get_process(p));
         }
     }
     
