@@ -36,10 +36,6 @@ int tcp_socket_recv(struct socket *sock, const void *buf, size_t len, int flags)
 
 int tcp_socket_send(struct socket *sock, void *buf, size_t len, int flags);
 
-int tcp_socket_write(struct socket *socket, void *buf, size_t length, struct sockaddr *addr);
-
-int tcp_socket_read(struct socket *socket, void *buf, size_t length, struct sockaddr *addr);
-
 int tcp_socket_connect(struct socket *sock, struct sockaddr *vaddr, int sockaddr_len, int flags);
 
 #endif

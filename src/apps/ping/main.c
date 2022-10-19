@@ -1,8 +1,11 @@
 #include <micros/sys/micros_socket.h>
 #include <micros/sys/micros_netif.h>
 #include <inet/ipv4.h>
+#include <inet/inet.h>
 #include <micros/sys/micros_process.h>
 #include <micros/sys/micros_keyboard.h>
+#include <micros/sys/micros_rtc.h>
+#include <micros/sys/micros_console.h>
 
 #define BUF_LEN 1500
 
@@ -168,6 +171,98 @@ int main(int argc, char *argv[])
 
     if (!strcmp("-dropped", argv[2]))
         printf("Dropped frames: %d\n", nic_dropped());
+
+    if (!strcmp("-client", argv[2]))
+    {
+        micros_console_clear();
+        uint16_t port = atoi(argv[4]);
+
+        uint32_t sock = socket(AF_INET, SOCK_STREAM, 0);
+        struct sockaddr_in server_addr = {
+            .sin_family = AF_INET,
+            .sin_zero = 0,
+            .sin_port = htons(port),
+            .sin_addr.address = inet_addr(argv[3]).address};
+
+        socklen_t server_addr_len = sizeof(struct sockaddr_in);
+
+        if (connect(sock, &server_addr, server_addr_len))
+        {
+            printf("Unable to connect");
+            return -1;
+        }
+
+        printf("Connected to: %d.%d.%d.%d:%d\n",
+               server_addr.sin_addr.oct_a,
+               server_addr.sin_addr.oct_b,
+               server_addr.sin_addr.oct_c,
+               server_addr.sin_addr.oct_d,
+               port);
+
+        char buffer[512];
+        char snd_buffer[512];
+        uint32_t n = 0;
+        micros_rtc_time time;
+        char chr;
+        micros_console_position pos;
+        micros_console_set_cursor_visibility(true);
+
+        while (1)
+        {
+
+            if (micros_keyboard_is_key_pressed())
+            {
+                micros_keyboard_scan_ascii_pair pressed_key;
+                micros_keyboard_get_pressed_key(&pressed_key);
+
+                switch (pressed_key.scancode)
+                {
+                case key_esc:
+                    return;
+                case key_backspace:
+                    snd_buffer[n--] = 0;
+                    micros_console_get_cursor_position(&pos);
+                    pos.x--;
+                    micros_console_set_cursor_position(&pos);
+                    micros_console_print_char(' ');
+                    micros_console_set_cursor_position(&pos);
+                    break;
+                default:
+                    snd_buffer[n++] = chr = pressed_key.ascii;
+                    printf("%c",chr);
+                    if (chr == '\n')
+                    {
+                        snd_buffer[n++] = 0;
+                        send(sock, snd_buffer, strlen(snd_buffer), 0);
+                        micros_rtc_read_time(&time);
+                        printf("%02d:%02d:%02d [127.0.0.1]> %s",
+                               time.hour,
+                               time.minute,
+                               time.second,
+                               snd_buffer);
+                        memset(snd_buffer, 0, 512);
+                        n = 0;
+                    }
+                }
+            }
+
+            uint32_t bytes = recv(sock, buffer, 512, 0);
+            if (bytes)
+            {
+                micros_rtc_read_time(&time);
+                printf("%02d:%02d:%02d [%d.%d.%d.%d]> %s",
+                       time.hour,
+                       time.minute,
+                       time.second,
+                       server_addr.sin_addr.oct_a,
+                       server_addr.sin_addr.oct_b,
+                       server_addr.sin_addr.oct_c,
+                       server_addr.sin_addr.oct_d,
+                       buffer);
+                memset(buffer, 0, 512);
+            }
+        }
+    }
 
     return 0;
 }
