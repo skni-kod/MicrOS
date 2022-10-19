@@ -2,6 +2,8 @@
 
 socket_t *socket_descriptors[SOCKET_DESCRIPTORS_COUNT] = {0};
 
+static uint32_t timestamp = 0;
+
 int k_socket(int domain, int type, int protocol)
 {
     switch (domain)
@@ -107,6 +109,28 @@ int k_connect(int s, struct sockaddr *addr, int *addrlen)
         return socket->ops->connect(socket, addr, addrlen);
 
     return -1;
+}
+
+klist_t *socket_add_entry(klist_t *buffer, ipv4_packet_t *packet)
+{
+    switch (packet->protocol)
+    {
+    case IP_PROTOCOL_TCP:
+    {
+        uint32_t data_size = TCP_DATA_SIZE(packet);
+        socket_entry_t *entry = heap_kernel_alloc(sizeof(socket_entry_t) + data_size, 0);
+        entry->size = data_size;
+        entry->timestamp = timestamp++;
+        struct sockaddr_in *address = &(entry->addr);
+        address->sin_family = AF_INET;
+        address->sin_port = ((tcp_segment_t *)(packet->data))->src_port;
+        address->sin_addr.address = packet->src.address;
+        memcpy((*entry).data, (void *)TCP_DATA_PTR((*packet).data), data_size);
+        return klist_add(buffer, (void *)entry);
+    }
+    default:
+        break;
+    }
 }
 
 void socket_not_implemented()

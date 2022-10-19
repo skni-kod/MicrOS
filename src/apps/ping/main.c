@@ -71,14 +71,25 @@ int main(int argc, char *argv[])
 
         bind(sock, (struct sockaddr *)&myaddr, sizeof(myaddr));
 
-        listen(sock, 4);
+        listen(sock, 1);
 
         int conn;
         while ((conn = accept(sock, &server_addr, &server_addr_len)) < 1)
             micros_process_current_process_sleep(1);
 
+        printf("Connection from: %d.%d.%d.%d:%d",
+               server_addr.sin_addr.oct_a,
+               server_addr.sin_addr.oct_b,
+               server_addr.sin_addr.oct_c,
+               server_addr.sin_addr.oct_d,
+               server_addr.sin_port);
+
         int n = 0;
         uint32_t bytes_received;
+        char send_buffer[BUF_LEN] = {0};
+
+        printf(">");
+
         // infinite loop for chat
         for (;;)
         {
@@ -87,32 +98,31 @@ int main(int argc, char *argv[])
             // read the message from client and copy it in buffer
             bytes_received = recv(conn, buffer, sizeof(buffer), 0);
             if (bytes_received)
-                printf("From client: %s", buffer);
-
-            // n = 0;
-            // // copy server message in the buffer
-            // while ((buffer[n++] = getchar()) != '\n')
-            //     ;
-            // // if msg contains "Exit" then server exit and chat ended.
-            // if (strncmp("exit", buffer, 4) == 0)
-            // {
-            //     printf("Server Exit...\n");
-            //     return;
-            // }
-            // // and send that buffer to client
-            // send(sock, buffer, strlen(buffer), 0);
-        }
-
-        if (micros_keyboard_is_key_pressed())
-        {
-            micros_keyboard_scan_ascii_pair pressed_key;
-            micros_keyboard_get_pressed_key(&pressed_key);
-
-            switch (pressed_key.scancode)
             {
-            case key_esc:
-                return;
+                printf(":%s", buffer);
+                send(conn, buffer, bytes_received, 0);
             }
+            // if ((send_buffer[n++] = getchar()) != '\n')
+            //     ;
+            // else
+            // {
+            //     send_buffer[n++] = 0;
+            //     send(conn, send_buffer, strlen(send_buffer), 0);
+            //     printf(">%s", send_buffer);
+            //     memset(send_buffer, 0, BUF_LEN);
+            // }
+
+            // if (micros_keyboard_is_key_pressed())
+            // {
+            //     micros_keyboard_scan_ascii_pair pressed_key;
+            //     micros_keyboard_get_pressed_key(&pressed_key);
+
+            //     switch (pressed_key.scancode)
+            //     {
+            //     case key_esc:
+            //         return;
+            //     }
+            // }
         }
     }
 

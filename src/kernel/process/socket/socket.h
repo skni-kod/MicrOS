@@ -135,6 +135,8 @@ int k_connect(int s, struct sockaddr *addr, int *addrlen);
 
 // kernel specific:
 
+klist_t* socket_add_entry(klist_t *buffer, ipv4_packet_t *packet);
+
 void socket_not_implemented();
 
 int socket_create_descriptor(int domain, int type, int protocol);

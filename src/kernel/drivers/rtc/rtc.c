@@ -1,6 +1,6 @@
 #include "rtc.h"
 
-#define CURRENT_YEAR 2018 // Change this each year!
+#define CURRENT_YEAR 2022 // Change this each year!
 
 int century_register = 0x32; // Set by ACPI table parsing code if possible
 

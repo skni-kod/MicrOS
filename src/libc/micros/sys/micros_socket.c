@@ -38,9 +38,7 @@ int recvfrom(int s, void *buf, size_t len, int flags,
     return micros_interrupt_1a(SYSCALL_RECVFROM, &params);
 }
 
-int send(int s, const void *buf, size_t len,
-         int flags, const struct sockaddr *to,
-         socklen_t tolen)
+int send(int s, const void *buf, size_t len, int flags)
 {
     struct sendto_params params = {
         .s = s,

@@ -1,5 +1,7 @@
 #include "tcp.h"
 
+static uint32_t timestamp = 0;
+
 static struct proto_ops tcp_interface = {
     .release = &socket_not_implemented,
     .bind = &tcp_socket_bind,
@@ -38,8 +40,6 @@ uint32_t tcp_process_segment(nic_data_t *data)
 
     // first look for open socket, so forward there incoming data:
     socket_t *socket = __tcp_get_socket(&addr);
-
-    static uint16_t timestamp = 1;
 
     if (socket)
     {
@@ -90,27 +90,44 @@ uint32_t tcp_process_segment(nic_data_t *data)
                 sk->state = TCP_ESTABLISHED;
                 sk->header.ack_num = htonl(htonl(sk->header.ack_num) + 1);
                 sk->header.seq_num = segment->ack_num;
-                sk->header.ack = 0;
-                sk->header.syn = 0;
             }
         }
         break;
 
         case TCP_ESTABLISHED:
-            // sk->header.seq_num = sk->header.ack_num;
-            sk->header.ack_num = htonl(__tcp_data_size(packet) + htonl(segment->seq_num));
-            sk->header.ack = 1;
-            tcp_send_segment(socket, NULL, NULL);
-            
-            uint32_t data_size = __tcp_data_size(packet);
-            socket_entry_t *entry = heap_kernel_alloc(sizeof(socket_entry_t) + data_size, 0);
-            entry->size = data_size;
-            entry->timestamp = timestamp++;
-            entry->addr.sa_data[0] = 47;
-            memcpy((*entry).data, (void *)__tcp_data_ptr(segment), data_size);
-            sk->rx = klist_add(sk->rx, (void *)entry);
+            if (segment->fin && segment->ack)
+            {
+                sk->header.ack_num = htonl(TCP_DATA_SIZE(packet) + htonl(segment->seq_num) + 1);
+                sk->header.seq_num = segment->ack_num;
+                tcp_send_segment(socket, TCP_FLAG_ACK | TCP_FLAG_FIN, NULL, NULL);
+                sk->state = TCP_CLOSE;
+                return 0;
+            }
 
-            return 1;
+            if (segment->ack)
+            {
+                sk->header.ack_num = htonl(TCP_DATA_SIZE(packet) + htonl(segment->seq_num));
+                sk->header.seq_num = segment->ack_num;
+            }
+
+            if (segment->psh)
+            {
+                sk->rx = socket_add_entry(sk->rx, packet);
+                tcp_send_segment(socket, TCP_FLAG_ACK, NULL, NULL);
+            }
+            return TCP_DATA_SIZE(packet);
+        case TCP_LAST_ACK:
+            if (segment->fin && segment->ack)
+            {
+                sk->header.ack_num = htonl(TCP_DATA_SIZE(packet) + htonl(segment->seq_num));
+                sk->header.seq_num = segment->ack_num;
+                tcp_send_segment(socket, TCP_FLAG_ACK, NULL, NULL);
+                sk->state = TCP_CLOSE;
+                socket->state = SS_FREE;
+                logger_log_info("CLOSE");
+                // socket_remove(sk);
+            }
+            return 0;
         };
     }
 
@@ -134,45 +151,36 @@ uint16_t tcp_checksum(ipv4_packet_t *packet)
     return segment->checksum = sum;
 }
 
-uint32_t tcp_send_segment(struct socket *socket, uint8_t *data_ptr, uint32_t data_size)
+uint32_t tcp_send_segment(struct socket *socket, uint8_t flags, uint8_t *data_ptr, uint32_t data_size)
 {
     tcp_socket_t *sk = socket->sk;
 
     nic_data_t *data = ipv4_create_packet(sk->device,
                                           IP_PROTOCOL_TCP,
                                           sk->remote.sin_addr.address,
-                                          data_size + sizeof(tcp_segment_t) + 20);
+                                          data_size + sizeof(tcp_segment_t) /* + 20 */);
 
     ipv4_packet_t *packet = data->frame + sizeof(ethernet_frame_t);
     tcp_segment_t *segment = &packet->data;
     memcpy(segment, &sk->header, sizeof(tcp_segment_t));
+    *(uint8_t *)(&segment->flags) = flags;
     segment->dst_port = sk->remote.sin_port;
     segment->src_port = sk->local.sin_port;
     // dont send any options
-    segment->offset = 10;
+    // segment->offset = 10;
+    segment->offset = 5;
 
-    *(segment->options_data) = 0b00000010;
-    *(segment->options_data + 1) = 0b00000100;
-    *((uint16_t *)(segment->options_data + 2)) = htons(512);
+    // *(segment->options_data) = 0b00000010;
+    // *(segment->options_data + 1) = 0b00000100;
+    // *((uint16_t *)(segment->options_data + 2)) = htons(512);
 
     if (data_ptr && data_size)
-        memcpy(segment->options_data + 20, data_ptr, data_size);
+        memcpy(segment->options_data /*+ 20*/, data_ptr, data_size);
 
 #ifndef TRUST_ME_BRO
     tcp_checksum(packet);
 #endif
     return ipv4_send_packet(data);
-}
-
-static uint8_t *__tcp_data_ptr(tcp_segment_t *segment)
-{
-    return (uint8_t *)segment + (segment->offset << 2);
-}
-
-static uint32_t __tcp_data_size(ipv4_packet_t *packet)
-{
-    tcp_segment_t *segment = (tcp_segment_t *)(packet->data);
-    return ntohs(packet->length) - (segment->offset << 2) - sizeof(tcp_segment_t);
 }
 
 static socket_t *__tcp_get_socket(struct sockaddr_in *addr)
@@ -281,27 +289,31 @@ int tcp_socket_accept(struct socket *socket, struct sockaddr *addr, int sockaddr
                 tcp_segment_t *syn = pckt->data;
                 memcpy(&con->header, syn, sizeof(tcp_segment_t));
 
+                sk->remote.sin_addr.address = pckt->src.address;
+                sk->remote.sin_port = syn->src_port;
+                sk->remote.sin_family = AF_INET;
+
                 memcpy(&con->local, &sk->local, sizeof(struct sockaddr_in));
 
                 con->state = TCP_SYN_RECV;
                 con->header.window = htons(512);
                 con->header.ack_num = htonl(htonl(syn->seq_num) + 1);
                 con->header.seq_num = htonl(4747);
-                con->header.syn = 1;
-                con->header.ack = 1;
 
                 con->rx = klist_delete(con->rx, con->rx);
                 int desc = socket_add_descriptor(sock);
 
-                tcp_send_segment(sock, NULL, NULL);
+                tcp_send_segment(sock, TCP_FLAG_ACK | TCP_FLAG_SYN, NULL, NULL);
 
                 while (1)
                 {
                     sleep(500);
                     if (TCP_ESTABLISHED == con->state)
                         break;
-                    tcp_send_segment(sock, NULL, NULL);
+                    tcp_send_segment(sock, TCP_FLAG_ACK | TCP_FLAG_SYN, NULL, NULL);
                 }
+
+                memcpy(addr, &sk->remote, sizeof(struct sockaddr_in));
 
                 return desc;
             }
@@ -328,7 +340,15 @@ int tcp_socket_recv(struct socket *sock, const void *buf, size_t len, int flags)
 
 int tcp_socket_send(struct socket *sock, void *buf, size_t len, int flags)
 {
-    return 0;
+    tcp_socket_t *sk = (tcp_socket_t *)(sock->sk);
+
+    if (((tcp_socket_t *)sock->sk)->state == TCP_ESTABLISHED)
+    {
+        tcp_send_segment(sock, TCP_FLAG_ACK | TCP_FLAG_PSH, buf, len);
+        return len;
+    }
+    else
+        return 0;
 }
 
 int tcp_socket_write(struct socket *socket, void *buf, size_t length, struct sockaddr *addr)

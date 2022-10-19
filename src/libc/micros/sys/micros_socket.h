@@ -37,11 +37,13 @@ int bind(int s, struct sockaddr *my_addr, socklen_t addrlen);
 int recv(int s, void *buf, size_t len, int flags);
 
 int recvfrom(int s, void *buf, size_t len, int flags,
-                 struct sockaddr *from, socklen_t *fromlen);
+			 struct sockaddr *from, socklen_t *fromlen);
 
 int sendto(int s, const void *buf, size_t len,
-               int flags, const struct sockaddr *to,
-               socklen_t tolen);
+		   int flags, const struct sockaddr *to,
+		   socklen_t tolen);
+
+int send(int s, const void *buf, size_t len, int flags);
 
 int listen(int s, int backlog);
 
