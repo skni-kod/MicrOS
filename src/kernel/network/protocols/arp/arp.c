@@ -8,6 +8,19 @@ arp_packet_t arp_packet_base = {
     .opcode = htons(ARP_OPCODE_REPLY),
 };
 
+static arp_entry_t broadcast_entry = {
+    .add_time = 0,
+    .ip.address = 0xFFFFFFFF,
+    .type = ARP_ENTRY_TYPE_STATIC,
+    .mac = {
+        .octet_a = 0xFF,
+        .octet_b = 0xFF,
+        .octet_c = 0xFF,
+        .octet_d = 0xFF,
+        .octet_e = 0xFF,
+        .octet_f = 0xFF,
+    }};
+
 uint32_t arp_process_packet(nic_data_t *data)
 {
     arp_packet_t *packet = (arp_packet_t *)(data->frame + sizeof(ethernet_frame_t));
@@ -16,7 +29,7 @@ uint32_t arp_process_packet(nic_data_t *data)
     {
     case htons(ARP_OPCODE_REQUEST):
         // Handle ARP request
-        if (packet->dst_pr.address == data->device->interface->ipv4.address)
+        if (packet->dst_pr.address == data->device->interface->ipv4_address.address)
         {
             arp_add_entry(data->device, &packet->src_hw, &packet->src_pr, ARP_ENTRY_TYPE_DYNAMIC);
 
@@ -65,6 +78,20 @@ void arp_add_entry(net_device_t *device, mac_addr_t *mac, ipv4_addr_t *ip, arp_e
     memcpy(&entry->ip, ip, sizeof(ipv4_addr_t));
 
     kvector_add(device->interface->arp_entries, entry);
+
+    char str[120];
+    kernel_sprintf(str, "ARP ENTRY: %d.%d.%d.%d     %d:%d:%d:%d:%d:%d",
+                   entry->ip.oct_a,
+                   entry->ip.oct_b,
+                   entry->ip.oct_c,
+                   entry->ip.oct_d,
+                   entry->mac.octet_a,
+                   entry->mac.octet_b,
+                   entry->mac.octet_c,
+                   entry->mac.octet_d,
+                   entry->mac.octet_e,
+                   entry->mac.octet_f);
+    serial_send_string(COM1_PORT, str);
 }
 
 arp_entry_t *arp_get_entry(net_device_t *device, ipv4_addr_t *ip)
@@ -88,6 +115,10 @@ arp_entry_t *arp_request_entry(net_device_t *device, ipv4_addr_t *ip)
 {
     if (!ip)
         return 0;
+
+    // broadcast request
+    if (ip->address == 0xFFFFFFFF)
+        return &broadcast_entry;
 
     arp_entry_t *entry = arp_get_entry(device, ip);
     if (entry)
@@ -136,7 +167,7 @@ void arp_send_request(net_device_t *device, ipv4_addr_t *ip)
         memcpy(&request->src_hw, &device->interface->mac, sizeof(mac_addr_t));
         memcpy(&request->dst_pr, ip, sizeof(ipv4_addr_t));
 
-        memcpy(&request->src_pr, &device->interface->ipv4, sizeof(ipv4_addr_t));
+        memcpy(&request->src_pr, &device->interface->ipv4_address, sizeof(ipv4_addr_t));
 
         request->dst_hw.octet_a = 0,
         request->dst_hw.octet_b = 0,

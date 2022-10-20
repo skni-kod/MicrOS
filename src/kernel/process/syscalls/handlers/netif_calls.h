@@ -6,4 +6,12 @@
 
 void syscall_netif_dropped(interrupt_state *state);
 
+void syscall_netif_get_ipv4_address(interrupt_state *state);
+
+void syscall_netif_get_ipv4_netmask(interrupt_state *state);
+
+void syscall_netif_get_ipv4_gw(interrupt_state *state);
+
+void syscall_netif_get_ipv4_dns(interrupt_state *state);
+
 #endif

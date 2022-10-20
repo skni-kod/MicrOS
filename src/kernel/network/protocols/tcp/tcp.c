@@ -384,7 +384,7 @@ int tcp_socket_connect(struct socket *socket, struct sockaddr *addr, int sockadd
     sk->header.pointer = 0;
     sk->header.window = htons(512);
 
-    for (uint8_t attempts = 0; attempts < 5; attempts++)
+    for (uint8_t attempts = 0; attempts < 10; attempts++)
     {
         tcp_send_segment(socket, TCP_FLAG_SYN, NULL, NULL);
         uint32_t time = get_time();

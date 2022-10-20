@@ -6,6 +6,8 @@
 
 #include "network_manager.h"
 
+#include "protocols/dhcp/dhcp.h"
+
 kvector *net_devices;
 bool (*drivers[])(net_device_t *device) = {rtl8139_init, virtio_nic_init};
 uint8_t drivers_count = 2;
@@ -24,10 +26,10 @@ bool network_manager_init()
         net_device_t *dev = heap_kernel_alloc(sizeof(net_device_t), 0);
         if (__network_manager_set_net_device(dev) && drivers[i](dev))
         {
-            dev->interface->ipv4.oct_a = 192;
-            dev->interface->ipv4.oct_b = 168;
-            dev->interface->ipv4.oct_c = 1;
-            dev->interface->ipv4.oct_d = 165 + net_devices->count;
+            // dev->interface->ipv4_address.oct_a = 192;
+            // dev->interface->ipv4_address.oct_b = 168;
+            // dev->interface->ipv4_address.oct_c = 1;
+            // dev->interface->ipv4_address.oct_d = 165 + net_devices->count;
             kvector_add(net_devices, dev);
             __network_manager_print_device_info(dev);
         }
@@ -47,6 +49,7 @@ bool network_manager_init()
         dev->tx = kbuffer_init(dev->interface->mtu, NETWORK_MANAGER_BUFFER_SIZE);
         // finally turn on communication
         dev->interface->mode.value = 0x3;
+        dhcp_negotiate(dev->interface);
     }
 
     return true;

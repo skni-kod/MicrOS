@@ -1,14 +1,14 @@
 #include "udp.h"
 
 static struct proto_ops udp_interface = {
-	.release = &socket_not_implemented,
+    .release = &socket_not_implemented,
     .bind = &udp_socket_bind,
     .connect = &udp_socket_connect,
     .socketpair = &socket_not_implemented,
     .accept = &socket_not_implemented,
     .getname = &socket_not_implemented,
-    .poll =  &socket_not_implemented,
-    .ioctl =  &socket_not_implemented,
+    .poll = &socket_not_implemented,
+    .ioctl = &socket_not_implemented,
     .listen = &socket_not_implemented,
     .shutdown = &socket_not_implemented,
     .sendmsg = &socket_not_implemented,
@@ -36,7 +36,7 @@ uint32_t udp_process_datagram(nic_data_t *data)
         .sin_port = datagram->dst_port};
 
     // first look for open socket, then forward there incoming data:
-    socket_t *socket = socket_descriptor_lookup(AF_INET, SOCK_DGRAM, IPPROTO_UDP, &addr);
+    socket_t *socket = __udp_get_socket(&addr);
 
     if (socket)
     {
@@ -45,7 +45,7 @@ uint32_t udp_process_datagram(nic_data_t *data)
         udp_socket_write(socket, datagram->data, ntohs(datagram->length) - sizeof(udp_datagram_t), &addr);
         return 1;
     }
-    
+
     return 0;
 }
 
@@ -81,6 +81,36 @@ nic_data_t *udp_create_datagram(net_device_t *device, ipv4_addr_t dst_addr, uint
     return data;
 }
 
+static socket_t *__udp_get_socket(struct sockaddr_in *addr)
+{
+    socket_t *ret = 0;
+    for (uint32_t id = 1; id < SOCKET_DESCRIPTORS_COUNT; id++)
+    {
+        struct socket *socket = socket_descriptors[id];
+
+        if (socket &&
+            socket->domain == AF_INET &&
+            socket->type == SOCK_DGRAM &&
+            socket->protocol == IP_PROTOCOL_UDP)
+        {
+            udp_socket_t *sk = socket->sk;
+            if (sk->local.sin_port == addr->sin_port)
+            {
+                if (sk->remote.sin_addr.address == addr->sin_addr.address)
+                    // best match -- connection socket
+                    return socket;
+                else if (INADDR_BROADCAST == sk->local.sin_addr.address ||
+                         0x7F == sk->local.sin_addr.address >> 24 ||
+                         INADDR_ANY == sk->local.sin_addr.address)
+                    // listen socket found
+                    ret = socket;
+            }
+        }
+    }
+
+    return ret;
+}
+
 uint32_t udp_send_datagram(nic_data_t *data)
 {
     ipv4_packet_t *packet = data->frame + sizeof(ethernet_frame_t);
@@ -100,7 +130,7 @@ socket_t *udp_socket_init(socket_t *socket)
     sk->device = network_manager_get_nic();
     sk->local.sin_family = AF_INET;
     sk->local.sin_port = SOCKET_BASE_PORT + port++;
-    sk->local.sin_addr.address = sk->device->interface->ipv4.address;
+    sk->local.sin_addr.address = sk->device->interface->ipv4_address.address;
 
     socket->ops = heap_kernel_alloc(sizeof(struct proto_ops), 0);
     memcpy(socket->ops, &udp_interface, sizeof(struct proto_ops));
@@ -159,7 +189,6 @@ int udp_socket_send(struct socket *socket, void *buf, size_t len, int flags)
     memcpy(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t) + sizeof(udp_datagram_t), buf, len);
     return udp_send_datagram(data);
 }
-
 
 int udp_socket_sendto(struct socket *socket, void *buf, size_t len, int flags,
                       struct sockaddr *to, socklen_t *tolen)

@@ -231,16 +231,6 @@ socket_t *socket_descriptor_lookup(int domain, int type, int protocol, struct so
                     INADDR_ANY == sk->local.sin_addr.address)
                     return socket;
             }
-            case IP_PROTOCOL_TCP:
-            {
-                tcp_socket_t *sk = socket->sk;
-                if (sk->local.sin_port == ((struct sockaddr_in *)addr)->sin_port &&
-                        sk->local.sin_addr.address == ((struct sockaddr_in *)addr)->sin_addr.address ||
-                    INADDR_BROADCAST == sk->local.sin_addr.address ||
-                    0x7F == sk->local.sin_addr.address >> 24 ||
-                    INADDR_ANY == sk->local.sin_addr.address)
-                    return socket;
-            }
             break;
             default:
                 break;

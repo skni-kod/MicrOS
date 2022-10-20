@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <micros/socket.h>
+#include "ethernet.h"
 #include "ipv4.h"
 
 #define IPPROTO_IP 0
@@ -20,15 +21,15 @@
 
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
 
-#define BYTE_TO_BINARY(byte)     \
-  (byte & 0x80 ? '1' : '0'),     \
-      (byte & 0x40 ? '1' : '0'), \
-      (byte & 0x20 ? '1' : '0'), \
-      (byte & 0x10 ? '1' : '0'), \
-      (byte & 0x08 ? '1' : '0'), \
-      (byte & 0x04 ? '1' : '0'), \
-      (byte & 0x02 ? '1' : '0'), \
-      (byte & 0x01 ? '1' : '0')
+#define BYTE_TO_BINARY(byte)       \
+    (byte & 0x80 ? '1' : '0'),     \
+        (byte & 0x40 ? '1' : '0'), \
+        (byte & 0x20 ? '1' : '0'), \
+        (byte & 0x10 ? '1' : '0'), \
+        (byte & 0x08 ? '1' : '0'), \
+        (byte & 0x04 ? '1' : '0'), \
+        (byte & 0x02 ? '1' : '0'), \
+        (byte & 0x01 ? '1' : '0')
 
 #define HTONS(n) ((((n)&0xFF) << 8) | (((n)&0xFF00) >> 8))
 #define NTOHS(n) HTONS(n)
@@ -50,10 +51,10 @@ uint32_t ntohl(uint32_t value);
 
 struct sockaddr_in
 {
-  uint16_t sin_family;
-  uint16_t sin_port;
-  ipv4_addr_t sin_addr;
-  uint8_t sin_zero[8];
+    uint16_t sin_family;
+    uint16_t sin_port;
+    ipv4_addr_t sin_addr;
+    uint8_t sin_zero[8];
 };
 
 ipv4_addr_t inet_addr(const char *s);

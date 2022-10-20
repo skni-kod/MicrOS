@@ -34,7 +34,7 @@ DEBUG_LIBK				?= 1
 DEBUG_LIBC				?= 1
 
 QEMU_NET				?= 1
-QEMU_TAP				?= 1
+QEMU_TAP				?= 0
 QEMU_NET_LOG			?= 1
 QEMU_OPTIONS 			+= -m $(QEMU_MEMORY)
 QEMU_OPTIONS 			+= -serial file:$(log_file)

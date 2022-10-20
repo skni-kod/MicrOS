@@ -169,9 +169,6 @@ int main(int argc, char *argv[])
         // }
     }
 
-    if (!strcmp("-dropped", argv[2]))
-        printf("Dropped frames: %d\n", nic_dropped());
-
     if (!strcmp("-client", argv[2]))
     {
         micros_console_clear();
@@ -229,7 +226,7 @@ int main(int argc, char *argv[])
                     break;
                 default:
                     snd_buffer[n++] = chr = pressed_key.ascii;
-                    printf("%c",chr);
+                    printf("%c", chr);
                     if (chr == '\n')
                     {
                         snd_buffer[n++] = 0;
@@ -262,6 +259,37 @@ int main(int argc, char *argv[])
                 memset(buffer, 0, 512);
             }
         }
+    }
+
+    if (!strcmp("-dropped", argv[2]))
+        printf("Dropped frames: %d\n", nic_dropped());
+
+    if (!strcmp("-ip", argv[2]))
+    {
+        ipv4_addr_t addr = nic_ip();
+        printf("IPv4: %d.%d.%d.%d\n",
+               addr.oct_a,
+               addr.oct_b,
+               addr.oct_c,
+               addr.oct_d);
+        addr = nic_netmask();
+        printf("Netmask: %d.%d.%d.%d\n",
+               addr.oct_a,
+               addr.oct_b,
+               addr.oct_c,
+               addr.oct_d);
+        addr = nic_gw();
+        printf("GW: %d.%d.%d.%d\n",
+               addr.oct_a,
+               addr.oct_b,
+               addr.oct_c,
+               addr.oct_d);
+        addr = nic_dns();
+        printf("DNS: %d.%d.%d.%d\n",
+               addr.oct_a,
+               addr.oct_b,
+               addr.oct_c,
+               addr.oct_d);
     }
 
     return 0;

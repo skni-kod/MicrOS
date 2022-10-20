@@ -102,9 +102,19 @@ nic_data_t *ipv4_create_packet(net_device_t *device, uint8_t protocol, ipv4_addr
     packet->protocol = protocol;
     packet->length = htons((sizeof(ipv4_packet_t) + options_length) + data_size);
     packet->id = htons(id++);
-    packet->src = device->interface->ipv4;
+    packet->src = device->interface->ipv4_address;
 
-    packet->dst = dst;
+    // SEE if destination is in our network
+    if (dst.address == INADDR_ANY || dst.address == INADDR_BROADCAST)
+    {
+        packet->dst = dst;
+        return data;
+    }
+
+    if (dst.address & device->interface->ipv4_netmask.address == device->interface->ipv4_address.address & device->interface->ipv4_netmask.address)
+        packet->dst = dst;
+    else
+        packet->dst.address = device->interface->ipv4_gateway.address;
 
     return data;
 }

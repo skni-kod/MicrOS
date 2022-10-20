@@ -54,8 +54,10 @@ typedef struct net_interface_t
 {
     net_mode_t mode;
     mac_addr_t mac;
-    ipv4_addr_t ipv4;
+    ipv4_addr_t ipv4_address;
+    ipv4_addr_t ipv4_netmask;
     ipv4_addr_t ipv4_gateway;
+    ipv4_addr_t ipv4_dns;
     uint16_t mtu;
     uint8_t ttl;
     uint32_t frames_sent;

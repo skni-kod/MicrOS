@@ -117,7 +117,10 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(SYSCALL_ACCEPT, syscall_socket_accept);
     syscalls_manager_attach_handler(SYSCALL_CONNECT, syscall_socket_connect);
     syscalls_manager_attach_handler(SYSCALL_NETIF_DROPPED, syscall_netif_dropped);
-
+    syscalls_manager_attach_handler(SYSCALL_NETIF_GET_IPv4_ADDRESS, syscall_netif_get_ipv4_address);
+    syscalls_manager_attach_handler(SYSCALL_NETIF_GET_IPv4_NETMASK, syscall_netif_get_ipv4_netmask);
+    syscalls_manager_attach_handler(SYSCALL_NETIF_GET_IPv4_GW, syscall_netif_get_ipv4_gw);
+    syscalls_manager_attach_handler(SYSCALL_NETIF_GET_IPv4_DNS, syscall_netif_get_ipv4_dns);
 }
 
 void syscalls_manager_attach_handler(uint16_t function_number, void (*handler)(interrupt_state *state))
