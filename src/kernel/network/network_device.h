@@ -58,6 +58,7 @@ typedef struct net_interface_t
     ipv4_addr_t ipv4_netmask;
     ipv4_addr_t ipv4_gateway;
     ipv4_addr_t ipv4_dns;
+    uint32_t ipv4_lease_time;
     uint16_t mtu;
     uint8_t ttl;
     uint32_t frames_sent;

@@ -33,15 +33,15 @@ typedef struct dhcp_message
     uint8_t flags1: 7;
     uint8_t broadcast_flag: 1;
     uint8_t flags2;
-    uint32_t ciaddr;
-    uint32_t yiaddr;
-    uint32_t siaddr;
-    uint32_t giaddr;
+    ipv4_addr_t ciaddr;
+    ipv4_addr_t yiaddr;
+    ipv4_addr_t siaddr;
+    ipv4_addr_t giaddr;
     uint32_t chaddr[4];
     uint32_t sname[16];
     uint32_t file[32];
     uint32_t magic_cookie;
-    uint8_t options[];
+    uint8_t options[68];
 } __attribute__((packed)) dhcp_message_t;
 
 #endif

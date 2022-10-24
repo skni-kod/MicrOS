@@ -320,7 +320,7 @@ int tcp_socket_accept(struct socket *socket, struct sockaddr *addr, int sockaddr
 
                 tcp_send_segment(sock, TCP_FLAG_ACK | TCP_FLAG_SYN, NULL, NULL);
 
-                while (1)
+                for (int i = 0; i < 10; i++)
                 {
                     sleep(500);
                     if (TCP_ESTABLISHED == con->state)
