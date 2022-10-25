@@ -145,7 +145,6 @@ int main(int argc, char *argv[])
 
     if (!strcmp("-client", argv[2]))
     {
-        micros_console_clear();
         uint16_t port = atoi(argv[4]);
 
         ipv4_addr_t srv = dns_lookup(argv[3]);

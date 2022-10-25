@@ -141,6 +141,13 @@ run-debug: $(log_dir) build
 	-s -S
 .PHONY: run-debug
 
+run-debug-grub: ## run qemu with debugger, debug grub
+run-debug-grub: $(log_dir) build
+	$(QEMU) $(QEMU_OPTIONS) -kernel $(kernel_elf) -s -S -d int --no-reboot
+#	-drive file=$(output_image),format=raw,if=floppy 
+#	-s -S
+.PHONY: run-debug-grub
+
 run-pxe: ## run pxe
 run-pxe:
 	make clean && make bootloaderpxe && qemu-system-i386 -netdev user,id=net0,tftp=/mnt/ramdisk/build/,bootfile=/pxe.0 -boot n -net nic,model=virtio,netdev=net0,macaddr=00:11:22:33:44:55
