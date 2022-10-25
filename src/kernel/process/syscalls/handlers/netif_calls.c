@@ -20,9 +20,12 @@ void syscall_netif_get_ipv4_gw(interrupt_state *state)
     state->registers.eax = network_manager_get_nic()->interface->ipv4_gateway.address;
 }
 
-
 void syscall_netif_get_ipv4_dns(interrupt_state *state)
 {
     state->registers.eax = network_manager_get_nic()->interface->ipv4_dns.address;
 }
 
+void syscall_dns_lookup(interrupt_state *state)
+{
+    state->registers.eax = dns_lookup(state->registers.ebx).address;
+}

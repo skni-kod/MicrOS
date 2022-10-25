@@ -121,6 +121,7 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(SYSCALL_NETIF_GET_IPv4_NETMASK, syscall_netif_get_ipv4_netmask);
     syscalls_manager_attach_handler(SYSCALL_NETIF_GET_IPv4_GW, syscall_netif_get_ipv4_gw);
     syscalls_manager_attach_handler(SYSCALL_NETIF_GET_IPv4_DNS, syscall_netif_get_ipv4_dns);
+    syscalls_manager_attach_handler(SYSCALL_DNS_LOOKUP, syscall_dns_lookup);
 }
 
 void syscalls_manager_attach_handler(uint16_t function_number, void (*handler)(interrupt_state *state))

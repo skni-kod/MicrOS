@@ -209,7 +209,6 @@ int dhcp_handle_offer(net_interface_t *interface)
         dhcp_request->options[0] = 0xFF;
         __dhcp_add_option(dhcp_request, DHCP_MESSAGE_TYPE, DHCP_REQUEST);
         __dhcp_add_option_ptr(dhcp_request, DHCP_REQUESTED_IP, &dhcp_offer->yiaddr, sizeof(ipv4_addr_t));
-        //__dhcp_add_option_ptr(dhcp_request, DHCP_DHCP_SERVER, &dhcp_offer->siaddr, sizeof(ipv4_addr_t));
         __dhcp_add_option_ptr(dhcp_request, 0xC, "MicrOS", strlen("MicrOS"));
         __dhcp_add_option_ptr(dhcp_request, 0x37, param_request_list, sizeof(param_request_list));
 

@@ -7,6 +7,7 @@
 #define INET_DHCP_H
 
 #include <stdint.h>
+#include "ipv4.h"
 
 #define DHCP_MAGIC_COOKIE   0x63825363
 

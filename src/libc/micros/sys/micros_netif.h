@@ -18,4 +18,6 @@ ipv4_addr_t nic_gw();
 
 ipv4_addr_t nic_dns();
 
+ipv4_addr_t dns_lookup(const char *hostname);
+
 #endif

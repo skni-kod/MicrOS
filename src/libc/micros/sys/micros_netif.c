@@ -8,28 +8,35 @@ uint32_t nic_dropped()
 
 ipv4_addr_t nic_ip()
 {
-    ipv4_addr_t addr;
-    addr.address = micros_interrupt_0a(SYSCALL_NETIF_GET_IPv4_ADDRESS);
-    return addr;
+    return (ipv4_addr_t){
+        .address = micros_interrupt_0a(SYSCALL_NETIF_GET_IPv4_ADDRESS),
+    };
 }
 
 ipv4_addr_t nic_netmask()
 {
-    ipv4_addr_t addr;
-    addr.address = micros_interrupt_0a(SYSCALL_NETIF_GET_IPv4_NETMASK);
-    return addr;
+    return (ipv4_addr_t){
+        .address = micros_interrupt_0a(SYSCALL_NETIF_GET_IPv4_NETMASK),
+    };
 }
 
 ipv4_addr_t nic_gw()
 {
-    ipv4_addr_t addr;
-    addr.address = micros_interrupt_0a(SYSCALL_NETIF_GET_IPv4_GW);
-    return addr;
+    return (ipv4_addr_t){
+        .address = micros_interrupt_0a(SYSCALL_NETIF_GET_IPv4_GW),
+    };
 }
 
 ipv4_addr_t nic_dns()
 {
-    ipv4_addr_t addr;
-    addr.address = micros_interrupt_0a(SYSCALL_NETIF_GET_IPv4_DNS);
-    return addr;
+    return (ipv4_addr_t){
+        .address = micros_interrupt_0a(SYSCALL_NETIF_GET_IPv4_DNS),
+    };
+}
+
+ipv4_addr_t dns_lookup(const char *hostname)
+{
+    return (ipv4_addr_t){
+        .address = micros_interrupt_1a(SYSCALL_DNS_LOOKUP, hostname),
+    };
 }

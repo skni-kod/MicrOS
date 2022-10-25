@@ -20,4 +20,7 @@
 #define SYSCALL_NETIF_GET_IPv4_DNS              0x0E53
 
 
+// Other, eg. DNS, or DHCP 
+#define SYSCALL_DNS_LOOKUP                      0x0E80
+
 #endif

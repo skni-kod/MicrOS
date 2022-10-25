@@ -96,7 +96,7 @@ static socket_t *__udp_get_socket(struct sockaddr_in *addr)
             udp_socket_t *sk = socket->sk;
             if (sk->local.sin_port == addr->sin_port)
             {
-                if (sk->remote.sin_addr.address == addr->sin_addr.address)
+                if (sk->local.sin_addr.address == addr->sin_addr.address)
                     // best match -- connection socket
                     return socket;
                 else if (INADDR_BROADCAST == sk->local.sin_addr.address ||

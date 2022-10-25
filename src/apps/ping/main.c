@@ -129,44 +129,18 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (!strcmp("-dhcp", argv[2]))
+    if (!strcmp("-dns", argv[2]))
     {
-        printf("Sending DHCP request\n");
+        printf("Looking up for IP of: %s\n", argv[3]);
 
-        uint32_t sock = socket(AF_INET, SOCK_DGRAM, 0);
+        ipv4_addr_t addr = dns_lookup(argv[3]);
 
-        struct sockaddr_in server_addr = {
-            .sin_family = AF_INET,
-            .sin_zero = 0,
-            .sin_port = htons(67),
-            .sin_addr = INADDR_ANY};
-
-        socklen_t server_addr_len = sizeof(struct sockaddr_in);
-
-        struct sockaddr_in myaddr = {
-            .sin_zero = 0,
-            .sin_family = AF_INET,
-            .sin_port = htons(68),
-            .sin_addr.address = INADDR_ANY};
-
-        int ret = bind(sock, (struct sockaddr *)&myaddr, sizeof(myaddr));
-
-        uint32_t bytes_received;
-        while (bytes_received = recvfrom(sock,
-                                         buffer,
-                                         sizeof(buffer),
-                                         0,
-                                         (struct sockaddr *)&server_addr,
-                                         &server_addr_len))
-        {
-            // data came from server
-            micros_process_current_process_sleep(1);
-        }
-        // if (bytes_received)
-        // {
-        //     printf("Received[%d]: %.*s \n", bytes_received, bytes_received, buffer);
-        //     sendto(sock, buffer, bytes_received, 0, (struct sockaddr *)&server_addr, sizeof(struct sockaddr_in));
-        // }
+        printf("%s has:  %d.%d.%d.%d\n",
+               argv[3],
+               addr.oct_a,
+               addr.oct_b,
+               addr.oct_c,
+               addr.oct_d);
     }
 
     if (!strcmp("-client", argv[2]))
@@ -174,12 +148,14 @@ int main(int argc, char *argv[])
         micros_console_clear();
         uint16_t port = atoi(argv[4]);
 
+        ipv4_addr_t srv = dns_lookup(argv[3]);
+
         uint32_t sock = socket(AF_INET, SOCK_STREAM, 0);
         struct sockaddr_in server_addr = {
             .sin_family = AF_INET,
             .sin_zero = 0,
             .sin_port = htons(port),
-            .sin_addr.address = inet_addr(argv[3]).address};
+            .sin_addr.address = srv.address};
 
         socklen_t server_addr_len = sizeof(struct sockaddr_in);
 
@@ -224,22 +200,26 @@ int main(int argc, char *argv[])
                     micros_console_print_char(' ');
                     micros_console_set_cursor_position(&pos);
                     break;
+                case key_backslash:
+                    snd_buffer[n++] = '\0';
+                    send(sock, snd_buffer, strlen(snd_buffer), 0);
+                    micros_rtc_read_time(&time);
+                    printf("%02d:%02d:%02d [127.0.0.1]> %s",
+                           time.hour,
+                           time.minute,
+                           time.second,
+                           snd_buffer);
+                    memset(snd_buffer, 0, 512);
+                    n = 0;
+                    break;
                 default:
                     snd_buffer[n++] = chr = pressed_key.ascii;
-                    printf("%c", chr);
                     if (chr == '\n')
                     {
-                        snd_buffer[n++] = 0;
-                        send(sock, snd_buffer, strlen(snd_buffer), 0);
-                        micros_rtc_read_time(&time);
-                        printf("%02d:%02d:%02d [127.0.0.1]> %s",
-                               time.hour,
-                               time.minute,
-                               time.second,
-                               snd_buffer);
-                        memset(snd_buffer, 0, 512);
-                        n = 0;
+                        snd_buffer[n++] = '\r';
+                        snd_buffer[n++] = '\n';
                     }
+                    printf("%c", chr);
                 }
             }
 
