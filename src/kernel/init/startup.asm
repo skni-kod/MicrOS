@@ -10,50 +10,18 @@
 
 [BITS 32]
 
-; /* Declare constants for the multiboot header. */
-; .set ALIGN,    1<<0             /* align loaded modules on page boundaries */
-; .set MEMINFO,  1<<1             /* provide memory map */
-; .set FLAGS,    ALIGN | MEMINFO  /* this is the Multiboot 'flag' field */
-; .set MAGIC,    0x1BADB002       /* 'magic number' lets bootloader find the header */
-; .set CHECKSUM, -(MAGIC + FLAGS) /* checksum of above, to prove we are multiboot */
- 
-
-; Declare a multiboot header that marks the program as a kernel. These are magic
-; values that are documented in the multiboot standard. The bootloader will
-; search for this signature in the first 8 KiB of the kernel file, aligned at a
-; 32-bit boundary. The signature is in its own section so the header can be
-; forced to be within the first 8 KiB of the kernel file.
-
-; Declare constants for the multiboot header.
-MBALIGN  equ  1 << 0            ; align loaded modules on page boundaries
-MEMINFO  equ  1 << 1            ; provide memory map
-FLAGS    equ  MBALIGN | MEMINFO ; this is the Multiboot 'flag' field
-MAGIC    equ  0x1BADB002        ; 'magic number' lets bootloader find the header
-CHECKSUM equ -(MAGIC + FLAGS)   ; checksum of above, to prove we are multiboot
-
-
 %define PAGE_DIRECTORY_BASE 0x00006000
 %define PAGE_TABLES_BASE    0x01100000
 %define PAGES_COUNT         6
 
-jmp _start
+; %define PAGE_DIRECTORY_BASE 0x09000000
+; %define PAGE_TABLES_BASE    0x0A000000
+; %define PAGES_COUNT         6
 
-section .multiboot
-align 4
-	dd MAGIC
-	dd FLAGS
-	dd CHECKSUM
- 
-; The linker script specifies _start as the entry point to the kernel and the
-; bootloader will jump to this position once the kernel has been loaded. It
-; doesn't make sense to return from this function as the bootloader is gone.
-; Declare _start as a function symbol with the given symbol size.
-section .text
-global _start:function (_start.end - _start)
-_start:
+jmp main_protected_area
 
+main_protected_area:
     cli
-
     ; Set data and stack segments to the third GDI descriptor
     mov ax, 0x10
     mov ds, ax
@@ -63,10 +31,16 @@ _start:
     mov ss, ax
 
     call clear_page_directory
-    hlt
-   
-
+    ;call protstr
+    ;cli
+    ;hlt
+    
     call clear_page_tables
+
+    ;call protstr
+    ;cli
+    ;hlt
+
     call create_page_directory
     call create_identity_page_table
     call create_kernel_page_table
@@ -76,8 +50,14 @@ _start:
     mov eax, 0xC1100000
     mov esp, eax
 
+
+
     ; Init FPU
     finit
+    
+    ; call protstr
+    ; cli
+    ; hlt
 
     ; Jump to kmain and start kernel work
     extern kmain
@@ -85,10 +65,7 @@ _start:
 
     ; Something went wrong, but no problem!
     JMP $
-.hang:	hlt
-	jmp .hang
-.end:
-
+    
 ; Output: nothing
 clear_page_directory:
     ; Index
@@ -104,6 +81,7 @@ clear_page_directory:
     ; Leave loop if we cleared all entries
     cmp eax, 0x1000
     jl clear_page_directory_loop
+
     ret
 
 ; Input: nothing
