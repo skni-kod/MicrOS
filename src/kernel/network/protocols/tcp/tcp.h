@@ -20,7 +20,7 @@ uint32_t tcp_process_segment(nic_data_t *data);
 
 uint16_t tcp_checksum(ipv4_packet_t *packet);
 
-uint32_t tcp_send_segment(struct socket *socket, uint8_t flags, uint8_t *data_ptr, uint32_t data_size);
+uint32_t tcp_send_segment(struct socket *socket, tcp_flags_t flags, uint8_t *data_ptr, uint32_t data_size);
 
 static socket_t *__tcp_get_socket(struct sockaddr_in *addr);
 

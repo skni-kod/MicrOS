@@ -55,7 +55,7 @@ uint32_t tcp_process_segment(nic_data_t *data)
         {
         case TCP_LISTEN:
             // if incoming segment has syn flag
-            if (segment->syn)
+            if (segment->flags.syn)
             {
                 for (int i = 0; i < sk->backlog; i++)
                 {
@@ -86,7 +86,7 @@ uint32_t tcp_process_segment(nic_data_t *data)
             break;
         case TCP_SYN_RECV:
         {
-            if (segment->ack && htonl(segment->ack_num) == htonl(sk->header.seq_num) + 1)
+            if (segment->flags.ack && htonl(segment->ack_num) == htonl(sk->header.seq_num) + 1)
             {
                 sk->state = TCP_ESTABLISHED;
                 sk->header.ack_num = htonl(htonl(sk->header.ack_num) + 1);
@@ -96,33 +96,35 @@ uint32_t tcp_process_segment(nic_data_t *data)
         break;
 
         case TCP_ESTABLISHED:
-            if (segment->fin && segment->ack)
+            if (segment->flags.fin && segment->flags.ack)
             {
                 sk->header.ack_num = htonl(TCP_DATA_SIZE(packet) + htonl(segment->seq_num) + 1);
                 sk->header.seq_num = segment->ack_num;
-                tcp_send_segment(socket, TCP_FLAG_ACK | TCP_FLAG_FIN, NULL, NULL);
+                tcp_send_segment(socket, (tcp_flags_t){.ack = 1, .fin = 1}, NULL, NULL);
                 sk->state = TCP_CLOSE;
                 return 0;
             }
 
-            if (segment->ack)
+            if (segment->flags.ack)
             {
                 sk->header.seq_num = segment->ack_num;
                 sk->header.ack_num = htonl(TCP_DATA_SIZE(packet) + htonl(sk->header.ack_num));
             }
 
-            if (segment->psh & segment->ack)
+            if (segment->flags.psh & segment->flags.ack)
             {
                 sk->rx = socket_add_entry(sk->rx, packet);
-                tcp_send_segment(socket, TCP_FLAG_ACK, NULL, NULL);
+                tcp_send_segment(socket, (tcp_flags_t){.ack = 1}, NULL, NULL);
+                tcp_flags_t *flags = &segment->flags;
+                int dupa = 1;
             }
             return TCP_DATA_SIZE(packet);
         case TCP_LAST_ACK:
-            if (segment->fin && segment->ack)
+            if (segment->flags.fin && segment->flags.ack)
             {
                 sk->header.ack_num = htonl(TCP_DATA_SIZE(packet) + htonl(segment->seq_num));
                 sk->header.seq_num = segment->ack_num;
-                tcp_send_segment(socket, TCP_FLAG_ACK, NULL, NULL);
+                tcp_send_segment(socket, (tcp_flags_t){.ack = 1}, NULL, NULL);
                 sk->state = TCP_CLOSE;
                 socket->state = SS_FREE;
                 logger_log_info("CLOSE");
@@ -131,13 +133,13 @@ uint32_t tcp_process_segment(nic_data_t *data)
             return 0;
 
         case TCP_SYN_SENT:
-            if (segment->ack && segment->syn)
+            if (segment->flags.ack && segment->flags.syn)
             {
                 sk->state = TCP_ESTABLISHED;
                 socket->state = SS_CONNECTED;
                 sk->header.ack_num = htonl(TCP_DATA_SIZE(packet) + htonl(segment->seq_num) + 1);
                 sk->header.seq_num = segment->ack_num;
-                tcp_send_segment(socket, TCP_FLAG_ACK, NULL, NULL);
+                tcp_send_segment(socket, (tcp_flags_t){.ack = 1}, NULL, NULL);
             }
             break;
         };
@@ -163,7 +165,7 @@ uint16_t tcp_checksum(ipv4_packet_t *packet)
     return segment->checksum = sum;
 }
 
-uint32_t tcp_send_segment(struct socket *socket, uint8_t flags, uint8_t *data_ptr, uint32_t data_size)
+uint32_t tcp_send_segment(struct socket *socket, tcp_flags_t flags, uint8_t *data_ptr, uint32_t data_size)
 {
     tcp_socket_t *sk = socket->sk;
 
@@ -175,7 +177,7 @@ uint32_t tcp_send_segment(struct socket *socket, uint8_t flags, uint8_t *data_pt
     ipv4_packet_t *packet = data->frame + sizeof(ethernet_frame_t);
     tcp_segment_t *segment = &packet->data;
     memcpy(segment, &sk->header, sizeof(tcp_segment_t));
-    *(uint8_t *)(&segment->flags) = flags;
+    segment->flags = flags;
     segment->dst_port = sk->remote.sin_port;
     segment->src_port = sk->local.sin_port;
     // dont send any options
@@ -318,14 +320,14 @@ int tcp_socket_accept(struct socket *socket, struct sockaddr *addr, int sockaddr
                 con->rx = klist_delete(con->rx, con->rx);
                 int desc = socket_add_descriptor(sock);
 
-                tcp_send_segment(sock, TCP_FLAG_ACK | TCP_FLAG_SYN, NULL, NULL);
+                tcp_send_segment(sock, (tcp_flags_t){.ack = 1, .syn = 1}, NULL, NULL);
 
                 for (int i = 0; i < 10; i++)
                 {
                     sleep(500);
                     if (TCP_ESTABLISHED == con->state)
                         break;
-                    tcp_send_segment(sock, TCP_FLAG_ACK | TCP_FLAG_SYN, NULL, NULL);
+                    tcp_send_segment(sock, (tcp_flags_t){.ack = 1, .syn = 1}, NULL, NULL);
                 }
 
                 memcpy(addr, &sk->remote, sizeof(struct sockaddr_in));
@@ -359,7 +361,7 @@ int tcp_socket_send(struct socket *sock, void *buf, size_t len, int flags)
 
     if (((tcp_socket_t *)sock->sk)->state == TCP_ESTABLISHED)
     {
-        tcp_send_segment(sock, TCP_FLAG_ACK | TCP_FLAG_PSH, buf, len);
+        tcp_send_segment(sock, (tcp_flags_t){.ack = 1, .psh = 1}, buf, len);
         return len;
     }
     else
@@ -377,8 +379,7 @@ int tcp_socket_connect(struct socket *socket, struct sockaddr *addr, int sockadd
 
     socket->state = SS_CONNECTING;
     sk->state = TCP_SYN_SENT;
-    sk->header.reserved1 = 0;
-    sk->header.reserved2 = 0;
+    sk->header.reserved = 0;
     sk->header.seq_num = htonl(234893);
     sk->header.ack_num = htonl(0);
     sk->header.pointer = 0;
@@ -386,7 +387,7 @@ int tcp_socket_connect(struct socket *socket, struct sockaddr *addr, int sockadd
 
     for (uint8_t attempts = 0; attempts < 10; attempts++)
     {
-        tcp_send_segment(socket, TCP_FLAG_SYN, NULL, NULL);
+        tcp_send_segment(socket, (tcp_flags_t){.syn = 1}, NULL, NULL);
         uint32_t time = get_time();
         while (1)
         {

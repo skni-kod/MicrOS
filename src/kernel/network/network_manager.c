@@ -26,10 +26,6 @@ bool network_manager_init()
         net_device_t *dev = heap_kernel_alloc(sizeof(net_device_t), 0);
         if (__network_manager_set_net_device(dev) && drivers[i](dev))
         {
-            // dev->interface->ipv4_address.oct_a = 192;
-            // dev->interface->ipv4_address.oct_b = 168;
-            // dev->interface->ipv4_address.oct_c = 1;
-            // dev->interface->ipv4_address.oct_d = 165 + net_devices->count;
             kvector_add(net_devices, dev);
             __network_manager_print_device_info(dev);
         }
@@ -50,6 +46,30 @@ bool network_manager_init()
         // finally turn on communication
         dev->interface->mode.value = 0x3;
         dhcp_negotiate(dev->interface);
+
+        // dev->interface->ipv4_address = (ipv4_addr_t){
+        //     .oct_a = 192,
+        //     .oct_b = 168,
+        //     .oct_c = 1,
+        //     .oct_d = 199};
+
+        // dev->interface->ipv4_dns = (ipv4_addr_t){
+        //     .oct_a = 1,
+        //     .oct_b = 1,
+        //     .oct_c = 1,
+        //     .oct_d = 1};
+
+        // dev->interface->ipv4_netmask = (ipv4_addr_t){
+        //     .oct_a = 255,
+        //     .oct_b = 255,
+        //     .oct_c = 255,
+        //     .oct_d = 0};
+
+        // dev->interface->ipv4_gateway = (ipv4_addr_t){
+        //     .oct_a = 192,
+        //     .oct_b = 168,
+        //     .oct_c = 1,
+        //     .oct_d = 1};
     }
 
     return true;

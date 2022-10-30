@@ -131,7 +131,6 @@ bool dhcp_negotiate(net_interface_t *interface)
     }
 
     dhcp_handle_offer(interface);
-
     return true;
 }
 
@@ -226,7 +225,7 @@ int dhcp_handle_offer(net_interface_t *interface)
 
         dhcp_read_option(dhcp_offer, DHCP_NETMASK, &interface->ipv4_netmask.address, 4);
 
-        dhcp_read_option(dhcp_offer, 51 , &interface->ipv4_lease_time, 4);
+        dhcp_read_option(dhcp_offer, 51, &interface->ipv4_lease_time, 4);
 
         interface->ipv4_lease_time = ntohl(interface->ipv4_lease_time);
         return 1;

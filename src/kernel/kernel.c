@@ -52,7 +52,7 @@ typedef struct _linesStruct
 char buff[50];
 linesStruct ssBuffer[64];
 
-v8086* v8086_machine;
+v8086 *v8086_machine;
 
 //! Prints processor details.
 /*! Used during boot to print informations about print processor.
@@ -229,10 +229,10 @@ void print_harddisks_status()
 void startup()
 {
     // Must be done before any VGA operation
-    volatile uint8_t* scr_ptr = (uint8_t *)(VGA_MODE_03H_BASE_ADDR);
+    volatile uint8_t *scr_ptr = (uint8_t *)(VGA_MODE_03H_BASE_ADDR);
     gdt_init();
     paging_init();
-    //Don't use VGA before calling VGA init
+    // Don't use VGA before calling VGA init
     vga_init(VGA_MODE_03H);
     logger_log_info("MicrOS is starting...");
     logger_log_ok("BASIC TEXT VGA Driver");
@@ -241,7 +241,7 @@ void startup()
     logger_log_ok("Procesor");
     print_processor_status();
 
-    //Loading Generic VGA Driver
+    // Loading Generic VGA Driver
     generic_vga_driver_init();
     logger_log_ok("Loaded DAL, and Generic VGA Driver");
 
@@ -257,29 +257,28 @@ void startup()
 
     idt_init();
     logger_log_ok("Interrupt Descriptor Table");
-    
+
     logger_log_info("Initializing Timer");
     timer_init();
     logger_replace_ok("Timer");
 
-
     dma_init(0xc0000500);
     logger_log_ok("DMA");
 
-    //TODO:
-    // NOTE: it doesn't work well, so assume for now that floppy controller is always present
-    //if (fdc_is_present())
+    // TODO:
+    //  NOTE: it doesn't work well, so assume for now that floppy controller is always present
+    // if (fdc_is_present())
     {
         fdc_init();
         logger_log_ok("Floppy Disc Controller");
     }
-    
+
     harddisk_configuration harddisk_conf;
     harddisk_conf.delay_by_reading_port = false;
-    //harddisk_init();
-    //logger_log_ok("Hard Disks");
-    //print_harddisks_status();
-    
+    // harddisk_init();
+    // logger_log_ok("Hard Disks");
+    // print_harddisks_status();
+
     keyboard_init();
     logger_log_ok("Keyboard");
 
@@ -296,8 +295,8 @@ void startup()
     logger_log_ok("Signals manager");
 
     pci_init();
-    //pci_print_devices(1);
-    
+    // pci_print_devices(1);
+
     logger_log_info("Initializing network interfaces");
     if (network_manager_init())
         logger_log_ok("Network manager");
@@ -345,40 +344,41 @@ int kmain()
     clear_bss();
 
     startup();
-  
+
     logger_log_info("Hello, World!");
 
-    //startup_music_play();
+    // startup_music_play();
     logger_log_ok("READY.");
-    
+
     logger_log_ok("Loading shells...");
 
-    serial_init(COM1_PORT, 115200, 8, 1, PARITY_NONE);
+    // serial_init(COM1_PORT, 115200, 8, 1, PARITY_NONE);
 
     uint32_t d = 0;
     for (int i = 0; i < 4; i++)
     {
         char args[16];
         itoa(i, args, 10);
-        
         uint32_t p = process_manager_create_process("A:/ENV/SHELL.ELF", args, 0, false);
         create_terminal(&d);
-    
+
         uint32_t terminal_number = i;
-        const terminal_struct* ts = get_terminals(&terminal_number);
+        const terminal_struct *ts = get_terminals(&terminal_number);
         attach_process_to_terminal(ts[i].terminal_id, process_manager_get_process(p));
-        if(i == 0){
+        if (i == 0)
+        {
             // p = process_manager_create_process("A:/ENV/PING.ELF", " -tcp 12345 ", 0, false);
             // attach_process_to_terminal(ts[i].terminal_id, process_manager_get_process(p));
         }
     }
-    
-    //vga_clear_screen();
-    
-    switch_active_terminal(0);
-    
-    process_manager_run();  
 
-    while (1);
+    // vga_clear_screen();
+
+    switch_active_terminal(0);
+
+    process_manager_run();
+
+    while (1)
+        ;
     return 0;
 }

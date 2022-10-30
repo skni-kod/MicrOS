@@ -145,10 +145,11 @@ int main(int argc, char *argv[])
 
     if (!strcmp("-client", argv[2]))
     {
-        micros_console_clear();
         uint16_t port = atoi(argv[4]);
 
-        ipv4_addr_t srv = dns_lookup(argv[3]);
+        ipv4_addr_t srv;
+        // srv = dns_lookup(argv[3]);
+        srv = inet_addr(argv[3]);
 
         uint32_t sock = socket(AF_INET, SOCK_STREAM, 0);
         struct sockaddr_in server_addr = {

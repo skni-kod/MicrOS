@@ -76,22 +76,6 @@ void arp_add_entry(net_device_t *device, mac_addr_t *mac, ipv4_addr_t *ip, arp_e
 
     memcpy(&entry->mac, mac, sizeof(mac_addr_t));
     memcpy(&entry->ip, ip, sizeof(ipv4_addr_t));
-
-    kvector_add(device->interface->arp_entries, entry);
-
-    char str[120];
-    kernel_sprintf(str, "ARP ENTRY: %d.%d.%d.%d     %d:%d:%d:%d:%d:%d",
-                   entry->ip.oct_a,
-                   entry->ip.oct_b,
-                   entry->ip.oct_c,
-                   entry->ip.oct_d,
-                   entry->mac.octet_a,
-                   entry->mac.octet_b,
-                   entry->mac.octet_c,
-                   entry->mac.octet_d,
-                   entry->mac.octet_e,
-                   entry->mac.octet_f);
-    serial_send_string(COM1_PORT, str);
 }
 
 arp_entry_t *arp_get_entry(net_device_t *device, ipv4_addr_t *ip)
@@ -146,7 +130,12 @@ arp_entry_t *arp_request_entry(net_device_t *device, ipv4_addr_t *ip)
 
 void arp_send_request(net_device_t *device, ipv4_addr_t *ip)
 {
-    mac_addr_t broadcast = {{0xFF}};
+    mac_addr_t broadcast = {.octet_a = 0xFF,
+                            .octet_b = 0xFF,
+                            .octet_c = 0xFF,
+                            .octet_d = 0xFF,
+                            .octet_e = 0xFF,
+                            .octet_f = 0xFF};
 
     nic_data_t *request = ethernet_create_frame(
         device,
@@ -169,12 +158,12 @@ void arp_send_request(net_device_t *device, ipv4_addr_t *ip)
 
         memcpy(&request->src_pr, &device->interface->ipv4_address, sizeof(ipv4_addr_t));
 
-        request->dst_hw.octet_a = 0,
-        request->dst_hw.octet_b = 0,
-        request->dst_hw.octet_c = 0,
-        request->dst_hw.octet_d = 0,
-        request->dst_hw.octet_e = 0,
-        request->dst_hw.octet_f = 0;
+        request->dst_hw = (mac_addr_t){.octet_a = 0,
+                                       .octet_b = 0,
+                                       .octet_c = 0,
+                                       .octet_d = 0,
+                                       .octet_e = 0,
+                                       .octet_f = 0};
     }
 
     memcpy(&frame->dst, &broadcast, sizeof(mac_addr_t));
