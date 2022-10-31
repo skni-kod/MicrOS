@@ -31,7 +31,10 @@ static int sock;
 struct sockaddr_in srv = {
     .sin_family = AF_INET,
     .sin_port = htons(BOOTP_SERVER),
-    .sin_addr = {.address = 0xFFFFFFFF},
+    .sin_addr = {.oct_a = 0xFF,
+                 .oct_b = 0xFF,
+                 .oct_c = 0xFF,
+                 .oct_d = 0xFF},
 };
 
 struct sockaddr_in addr = {
@@ -95,7 +98,6 @@ static void __dhcp_print_message(dhcp_message_t *msg)
             return;
 
         sprintf(string, "OPTION: %x, LEN: %x\n%.*s", type, len, len, value);
-        // logger_log_info(string);
 
         i += *((*msg).options + 1);
     }
@@ -131,6 +133,7 @@ bool dhcp_negotiate(net_interface_t *interface)
     }
 
     dhcp_handle_offer(interface);
+
     return true;
 }
 
@@ -145,9 +148,7 @@ void dhcp_discover(net_interface_t *interface)
     msg->htype = 0x1;
     msg->hlen = 0x6;
     msg->hops = 0;
-    msg->broadcast_flag = 0;
-    msg->flags1 = 0;
-    msg->flags2 = 0;
+    msg->broadcast = 1;
     msg->xid = htonl(xid);
     msg->magic_cookie = htonl(DHCP_MAGIC_COOKIE);
 
@@ -225,7 +226,7 @@ int dhcp_handle_offer(net_interface_t *interface)
 
         dhcp_read_option(dhcp_offer, DHCP_NETMASK, &interface->ipv4_netmask.address, 4);
 
-        dhcp_read_option(dhcp_offer, 51, &interface->ipv4_lease_time, 4);
+        dhcp_read_option(dhcp_offer, DHCP_LEASE_TIME, &interface->ipv4_lease_time, 4);
 
         interface->ipv4_lease_time = ntohl(interface->ipv4_lease_time);
         return 1;

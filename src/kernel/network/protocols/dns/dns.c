@@ -78,13 +78,10 @@ ipv4_addr_t dns_lookup(const char *domain)
     struct sockaddr_in server_addr = {
         .sin_family = AF_INET,
         .sin_port = htons(DNS),
-        .sin_addr = {.oct_a = 8,
-                     .oct_b = 8,
-                     .oct_c = 8,
-                     .oct_d = 8}};
-    // network_manager_get_nic()->interface->ipv4_dns.address;
+        .sin_addr = network_manager_get_nic()->interface->ipv4_dns};
+    // ;
     socklen_t server_addr_len = sizeof(struct sockaddr_in);
-    
+
     k_sendto(sockfd,
              packet,
              packet_len,
@@ -115,13 +112,6 @@ ipv4_addr_t dns_lookup(const char *domain)
     dns_header.ancount = ntohs(dns_header.ancount);
     dns_header.nscount = ntohs(dns_header.nscount);
     dns_header.arcount = ntohs(dns_header.arcount);
-
-    //   NET_DEBUG("dns packet received: id=0x%04x qdcount=%d ancount=%d "
-    //             "bytes_received=%" PRId64,
-    //             dns_header.id,
-    //             dns_header.qdcount,
-    //             dns_header.ancount,
-    //             bytes_received);
 
     uint8_t *dns_data = buf + sizeof(dns_header_t);
 
@@ -157,13 +147,13 @@ ipv4_addr_t dns_lookup(const char *domain)
         }
         else
         {
-            // DEBUG("%s", "wrong DNS class");
+            logger_log_info("wrong DNS class");
             return (ipv4_addr_t){.address = 0};
         }
     }
     else
     {
-        // DEBUG("%s", "no answer");
+        logger_log_warning("no answer");
         return (ipv4_addr_t){.address = 0};
     }
 

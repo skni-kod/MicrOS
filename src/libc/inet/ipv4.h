@@ -46,20 +46,40 @@ typedef enum ipv4_protocol
 
 typedef struct ipv4_packet
 {
-    uint8_t ihl : 4;
-    uint8_t version : 4;
-    uint8_t tos_reserved : 2;
-    uint8_t tos_relibility : 1;
-    uint8_t tos_throughput : 1;
-    uint8_t tos_delay : 1;
-    uint8_t tos_precedence : 3;
+    uint8_t ihl : 4,
+            version : 4;
+    union{
+        uint8_t tos;
+        struct{
+                uint8_t  : 2,
+                relibility : 1,
+                throughput : 1,
+                delay : 1,
+                precedence : 3;
+        };
+    };
     uint16_t length;
     uint16_t id;
-    uint8_t offset : 5;
-    uint8_t flags_mf : 1;
-    uint8_t flags_df : 1;
-    uint8_t flags_reserved : 1;
-    uint8_t offset2;
+    union {
+        uint16_t flags_offset;
+        struct {
+            uint8_t offset1 : 5,
+                            : 3;
+            uint8_t offset2;
+        };
+        struct {
+            uint8_t : 5,
+                 mf : 1,
+                 df : 1,
+                    : 1;
+            uint8_t;
+        };
+        struct {
+            uint8_t : 5,
+              flags : 3;
+            uint8_t;
+        };
+    };
     uint8_t ttl;
     uint8_t protocol;
     uint16_t header_checksum;

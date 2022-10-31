@@ -10,7 +10,11 @@ arp_packet_t arp_packet_base = {
 
 static arp_entry_t broadcast_entry = {
     .add_time = 0,
-    .ip.address = 0xFFFFFFFF,
+    .ip = {
+        .oct_a = 0xFF,
+        .oct_b = 0xFF,
+        .oct_c = 0xFF,
+        .oct_d = 0xFF},
     .type = ARP_ENTRY_TYPE_STATIC,
     .mac = {
         .octet_a = 0xFF,
@@ -76,6 +80,8 @@ void arp_add_entry(net_device_t *device, mac_addr_t *mac, ipv4_addr_t *ip, arp_e
 
     memcpy(&entry->mac, mac, sizeof(mac_addr_t));
     memcpy(&entry->ip, ip, sizeof(ipv4_addr_t));
+
+    kvector_add(device->interface->arp_entries, entry);
 }
 
 arp_entry_t *arp_get_entry(net_device_t *device, ipv4_addr_t *ip)
@@ -101,7 +107,7 @@ arp_entry_t *arp_request_entry(net_device_t *device, ipv4_addr_t *ip)
         return 0;
 
     // broadcast request
-    if (ip->address == 0xFFFFFFFF)
+    if ((ipv4_addr_t){.oct_a = 0xFF, .oct_b = 0xFF, .oct_c = 0xFF, .oct_d = 0xFF}.address == ip->address)
         return &broadcast_entry;
 
     arp_entry_t *entry = arp_get_entry(device, ip);
