@@ -28,7 +28,7 @@ typedef enum tcp_state
 
 typedef union tcp_flags
 {
-    uint8_t value : 6, reserved : 2;
+    uint8_t value : 6, : 2;
     struct
     {
         uint8_t fin : 1;
@@ -46,7 +46,7 @@ typedef struct tcp_segment
     uint16_t dst_port;
     uint32_t seq_num;
     uint32_t ack_num;
-    uint8_t reserved : 4, offset : 4;
+    uint8_t : 4, offset : 4;
     tcp_flags_t flags;
     uint16_t window;
     uint16_t checksum;
