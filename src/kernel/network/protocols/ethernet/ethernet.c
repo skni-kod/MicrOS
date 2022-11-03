@@ -44,8 +44,11 @@ uint32_t ethernet_send_frame(nic_data_t *data)
     }
     case htons(ARP_PROTOCOL_TYPE):
     {
+// calculate FCS
+#ifndef TRUST_ME_BRO
         *(uint32_t *)(data->frame + data->length) = __crc32(data->frame, data->length);
         data->length++;
+#endif
         return network_manager_send_data(data);
     }
     break;

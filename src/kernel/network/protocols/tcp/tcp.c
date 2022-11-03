@@ -379,7 +379,6 @@ int tcp_socket_connect(struct socket *socket, struct sockaddr *addr, int sockadd
 
     socket->state = SS_CONNECTING;
     sk->state = TCP_SYN_SENT;
-    sk->header.reserved = 0;
     sk->header.seq_num = htonl(234893);
     sk->header.ack_num = htonl(0);
     sk->header.pointer = 0;

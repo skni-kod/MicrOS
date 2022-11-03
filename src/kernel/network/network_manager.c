@@ -18,6 +18,7 @@ bool network_manager_init()
     net_devices = heap_kernel_alloc(sizeof(kvector), 0);
     kvector_init(net_devices);
 
+    __crc32_build();
     ipv4_init();
 
     // Initialize all NIC drivers
