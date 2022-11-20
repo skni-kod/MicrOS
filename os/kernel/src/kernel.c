@@ -272,6 +272,9 @@ void startup()
     partitions_init();
     logger_log_ok("Partitions");
 
+    logger_log_info("Squeak! Squeak! (PS2 Mouse)");
+    ps2mouse_init();
+
     keyboard_init();
     logger_log_ok("Keyboard");
 
@@ -343,9 +346,6 @@ void startup()
 
     process_manager_init();
     logger_log_ok("Process manager");
-
-    logger_log_info("Initializing PS/2 Mouse");
-    ps2mouse_init();
 
     logger_log_info("MicrOS ready");
     logger_log_info("Created by Application Section of SKNI KOD");
