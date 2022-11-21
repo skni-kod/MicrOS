@@ -53,6 +53,9 @@ uint32_t process_manager_get_process_memory_usage(process_info *process);
 
 void process_manager_interrupt_handler(interrupt_state *state);
 bool process_manager_keyboard_interrupt_handler(interrupt_state *state);
+
+void process_manager_refresh_kernel_pages(uint32_t page_number);
+
 void process_manager_run();
 
 #endif

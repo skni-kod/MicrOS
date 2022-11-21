@@ -1,5 +1,8 @@
 #include "heap.h"
 
+#include "../../debug_helpers/library/kernel_stdio.h"
+#include "../../logger/logger.h"
+
 heap_entry *kernel_heap;
 heap_entry *user_heap;
 
@@ -164,6 +167,8 @@ uint32_t heap_get_object_size(void *ptr)
 
 void *heap_realloc(void *ptr, uint32_t size, uint32_t align, bool supervisor)
 {
+    if(ptr == NULL) return heap_alloc(size, align, supervisor);
+    
     uint32_t old_entry_size = ((heap_entry *)((uint32_t)ptr - ENTRY_HEADER_SIZE))->size;
     void *new_ptr = heap_alloc(size, align, supervisor);
 
@@ -308,4 +313,35 @@ bool heap_verify_integrity(bool supervisor)
     {
         return true;
     }
+}
+
+//DEBUG STUFF
+
+//If this function is usefull I'll rework it to check both user and kernel heaps
+void heap_check_entries()
+{
+    char buffer[256];
+    heap_entry *current_entry = kernel_heap;
+    while(1)
+    {
+        if(current_entry->next != 0)
+        {
+            if(current_entry->size == 0)
+            {
+                kernel_sprintf(buffer, "%08X SIZE ERROR!", current_entry);
+                
+            }
+        }
+        else
+        {
+            if(current_entry->size == 0)
+            {
+                kernel_sprintf(buffer, "%08X  SIZE ERROR!", current_entry);
+                logger_log_warning(buffer);
+            }
+            break;
+        }
+        current_entry = current_entry->next;
+    }
+    logger_log_ok("KERNEL HEAP OK!");
 }

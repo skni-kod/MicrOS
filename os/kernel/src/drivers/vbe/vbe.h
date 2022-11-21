@@ -35,6 +35,20 @@ typedef struct _svga_mode_information{
     uint8_t bank_size;
     uint8_t page_count;
     uint8_t reserved;
+    
+    uint8_t mask_size_red;
+    uint8_t field_position_red;
+    uint8_t mask_size_green;
+    uint8_t field_position_green;
+    uint8_t mask_size_blue;
+    uint8_t field_position_blue;
+    uint8_t mask_size_direct_color;
+    uint8_t field_position_direct_color;
+    uint8_t direct_color_mode_info;
+
+    uint32_t frame_buffor_phys_address;
+    uint32_t reserved1;
+    uint16_t reserved2;
 } svga_mode_information;
 
 typedef enum _VBEStatus{
@@ -51,6 +65,8 @@ VBEStatus VBE_get_vesa_mode_information(svga_mode_information* infromation_struc
 VBEStatus VBE_destroy_svga_information(svga_information* svga_information_ptr);
 VBEStatus VBE_set_video_mode(uint16_t mode_number, bool clear_screen);
 VBEStatus VBE_get_current_video_mode(uint16_t* mode_number);
+uint16_t VBE_get_word(uint32_t seg, uint32_t offset);
+uint32_t VBE_get_dword(uint32_t seg, uint32_t offset);
 VBEStatus VBE_return_save_restore_state_buffer_size(uint16_t requested_states, uint16_t* buffer_block_number);
 VBEStatus VBE_save_state(uint16_t requested_states, uint16_t buffer_pointer);
 VBEStatus VBE_restore_state(uint16_t requested_states, uint16_t buffer_pointer);
@@ -79,4 +95,5 @@ VBEStatus VBE_set_during_vertical_retrace_palette_data_32bit(uint16_t index, uin
 VBEStatus VBE_get_protected_mode_interface(uint16_t* real_mode_table_segment, uint16_t* table_offset, uint16_t* table_length);
 VBEStatus VBE_get_set_pixel_clock(uint16_t pixel_clock, uint16_t mode_number, uint16_t* closest_pixel_clock);
 
+void VBE_draw_pixel_8_8_8(uint32_t mode_width, uint32_t mode_height, uint32_t winsize, uint32_t granularity, uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b);
 #endif

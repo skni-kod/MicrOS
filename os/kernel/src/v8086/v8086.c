@@ -20,7 +20,10 @@
     //#define DEBUG_V8086_INTERACTIVE
 #endif
 
+bool skipDebugging = false;
+
 int16_t parse_and_execute_instruction(v8086* machine);
+uint8_t loop_flag = 0;
 
 #ifdef DEBUG_V8086
 void send_reg_32(uint32_t reg)
@@ -113,6 +116,11 @@ uint32_t read_reg_32()
     return value;
 }
 
+void setSkipDebugging(bool value)
+{
+    skipDebugging = value;
+}
+
 #endif
 
 void v8086_set_8086_instruction_set(v8086* machine)
@@ -195,6 +203,8 @@ void v8086_set_8086_instruction_set(v8086* machine)
     //NOT DEFINED IN 8086 processor
     ASSIGN_NULL(0xc8u);
     ASSIGN_NULL(0xc9u);
+    ASSIGN_OPCODE(0xcau, retf_imm);
+    ASSIGN_OPCODE(0xcbu, retf);
     GROUP_OF_OPCODES(0xccu, 0xceu, interrupt);
     ASSIGN_OPCODE(0xcfu, iret);
     GROUP_OF_OPCODES(0xd0u, 0xd3u, group_2);
@@ -239,6 +249,20 @@ void v8086_set_8086_instruction_set(v8086* machine)
     {
         machine->operations_0fh[i] = NULL;
     }
+
+    ASSIGN_OPCODE(0x26u, prefix_es);
+    ASSIGN_OPCODE(0x36u, prefix_ss);
+    ASSIGN_OPCODE(0x64u, prefix_fs);
+    ASSIGN_OPCODE(0x65u, prefix_gs);
+    ASSIGN_OPCODE(0x2eu, prefix_cs);
+    ASSIGN_OPCODE(0x3eu, prefix_ds);
+
+    ASSIGN_OPCODE(0x66u, prefix_operand_32);
+    ASSIGN_OPCODE(0x67u, prefix_address_32);
+
+    ASSIGN_OPCODE(0xf0u, prefix_lock);
+    ASSIGN_OPCODE(0xf2u, prefix_repne);
+    ASSIGN_OPCODE(0xf3u, prefix_rep_repe);
 
     machine->is_compatibility = V8086_IS8086;
 }
@@ -341,17 +365,25 @@ void v8086_set_386_instruction_set(v8086* machine)
 
 v8086* v8086_create_machine()
 {
+    vga_printstring("HERE\n");
     v8086* machine = (v8086*) heap_kernel_alloc(sizeof(v8086), 0);
+    if(machine == NULL) vga_printstring("NULL \n");
+    vga_printstring("NOT HERE\n");
     if(machine == NULL) return NULL;
+    vga_printstring("HERE\n");
     memset(machine, 0, sizeof(v8086));
+    vga_printstring("NOT HERE\n");
     machine->regs.x.flags = 0x2;
     machine->sregs.cs = 0xf000;
     machine->IP.w.ip = 0xfff0;
     machine->sregs.ss = 0x0;
     machine->regs.d.ebp = 0x7bff;
     machine->regs.d.esp = 0x7bff;
+    vga_printstring("HERE\n");
 	memcpy(machine->Memory, (void*)0xc0000000, 0x100000);
+    vga_printstring("NOT HERE\n");
     v8086_set_8086_instruction_set(machine);
+    vga_printstring("HERE?\n");
     return machine;
 }
 
@@ -392,11 +424,14 @@ uint32_t v8086_get_address_of_int(v8086* machine, int16_t num)
 
 int16_t parse_and_execute_instruction(v8086* machine)
 {
-    machine->internal_state.IPOffset = 0;
-    machine->internal_state.operand_32_bit = 0;
-    machine->internal_state.address_32_bit = 0;
-    machine->internal_state.segment_reg_select = V8086_DEFAULT;
-    machine->internal_state.rep_prefix = V8086_NONE_REPEAT;
+    //if(!machine->internal_state.previous_byte_was_prefix) {
+        machine->IP.w.ip += machine->internal_state.IPOffset;
+        machine->internal_state.IPOffset = 0;
+        machine->internal_state.operand_32_bit = 0;
+        machine->internal_state.address_32_bit = 0;
+        machine->internal_state.segment_reg_select = V8086_DEFAULT;
+        machine->internal_state.rep_prefix = V8086_NONE_REPEAT;
+    //}
 
     int16_t status = V8086_OK;
 
@@ -474,6 +509,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
         #endif
 
         #ifdef DEBUG_V8086_INTERACTIVE
+        if(!skipDebugging)
         while(true)
         {
             char d[100];
@@ -553,8 +589,6 @@ int16_t parse_and_execute_instruction(v8086* machine)
     //Maybe opcode, an be also prefix
     uint8_t opcode;
     decode: opcode = read_byte_from_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
-    uint32_t temp = get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset);
-    uint8_t* ptr_to_opcode = get_byte_pointer(machine->Memory, get_absolute_address(machine->sregs.cs, machine->IP.w.ip + machine->internal_state.IPOffset));
     machine->internal_state.IPOffset += 1;
     
     
@@ -569,7 +603,7 @@ int16_t parse_and_execute_instruction(v8086* machine)
     
     //PREFIXES
     //Segment Prefix V8086_CS DS V8086_ES SS
-    if((opcode & 0x7u) == 0x6 && ((opcode >> 5u) & 0x7u) == 0x1u) //001XX110 pattern where XX is number of segment
+    /*if((opcode & 0x7u) == 0x6 && ((opcode >> 5u) & 0x7u) == 0x1u) //001XX110 pattern where XX is number of segment
     {
         machine->internal_state.segment_reg_select = (opcode >> 3u) & 0x3u;
         goto decode; //continue parsing opcode;
@@ -614,18 +648,47 @@ int16_t parse_and_execute_instruction(v8086* machine)
     else if(opcode == 0xF0)
     {
         goto decode; //ommit prefix, contniue parsinf opcode; 
-    }
+    }*/
 
     if(machine->operations[opcode] != NULL)
         status = machine->operations[opcode](machine, opcode);
     else
         return V8086_UNDEFINED_OPCODE;
 
-    machine->IP.w.ip += machine->internal_state.IPOffset;
+    if(machine->internal_state.previous_byte_was_prefix)
+    {
+        machine->internal_state.previous_byte_was_prefix = 0;
+        goto decode;
+    }
+
     #ifdef DEBUG_V8086
         #ifdef DEBUG_V8086_TEXT
         serial_send_string(COM1_PORT, "------------------------------------------\n");
         #endif
     #endif
     return status;
+}
+
+int16_t v8086_call_com_program(v8086* machine, char* programPath)
+{
+    filesystem_file_info info;
+	filesystem_get_file_info(programPath, &info);
+
+	uint8_t *buffer = machine->Memory + 0x7C00 + 0x100; //SEG 0x7C0, OFF: 0x100
+    filesystem_read_file(programPath, buffer, 0, info.size);
+
+    machine->sregs.cs = 0x7c0;
+    machine->sregs.ds = 0x7c0;
+    machine->sregs.es = 0x7c0;
+    machine->sregs.fs = 0x7c0;
+    machine->sregs.gs = 0x7c0;
+    machine->sregs.ss = 0x7c0;
+    machine->IP.w.ip = 0x100;
+    machine->regs.w.sp = 0xFFFE;
+
+    push_word(machine, machine->regs.w.flags);
+    push_word(machine, 0xFFFF);
+    push_word(machine, 0xFFFF);
+    int16_t x = v8086_call_function(machine);
+    return x;
 }

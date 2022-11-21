@@ -7,6 +7,8 @@
 
 v8086* machine = NULL;
 bool initialized = false;
+int currentBank = -1;
+uint8_t* mem_buff = (uint8_t*)0xc0000000 + 0xA0000;
 
 void VBE_initialize()
 {
@@ -103,8 +105,30 @@ VBEStatus VBE_get_vesa_mode_information(svga_mode_information* infromation_struc
     infromation_struct->bank_size = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E1C));
     infromation_struct->page_count = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E1D));
     infromation_struct->reserved = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E1E));
+    infromation_struct->mask_size_red = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E1F));
+    infromation_struct->field_position_red = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E20));
+    infromation_struct->mask_size_green = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E21));
+    infromation_struct->field_position_green = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E22));
+    infromation_struct->mask_size_blue = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E23));
+    infromation_struct->field_position_blue = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E24));
+    infromation_struct->mask_size_direct_color = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E25));
+    infromation_struct->field_position_direct_color = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E26));
+    infromation_struct->direct_color_mode_info = read_byte_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E27));
 
+    infromation_struct->frame_buffor_phys_address = read_dword_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E28));
+    infromation_struct->reserved1 = read_dword_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E2C));
+    infromation_struct->reserved2 = read_word_from_pointer(machine->Memory, get_absolute_address(0x0000, 0x7E30));
     return VBE_OK;
+}
+
+uint16_t VBE_get_word(uint32_t seg, uint32_t offset)
+{
+    return read_word_from_pointer(machine->Memory, get_absolute_address(seg, offset));
+}
+
+uint32_t VBE_get_dword(uint32_t seg, uint32_t offset)
+{
+    return read_dword_from_pointer(machine->Memory, get_absolute_address(seg, offset));
 }
 
 VBEStatus VBE_destroy_svga_information(svga_information* svga_information_ptr)
@@ -125,6 +149,7 @@ VBEStatus VBE_set_video_mode(uint16_t mode_number, bool clear_screen)
     if(status != 0x10) return VBE_INTERNAL_ERROR;
     if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
     if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+    currentBank = -1;
     return VBE_OK;
 }
 
@@ -139,6 +164,32 @@ VBEStatus VBE_get_current_video_mode(uint16_t* mode_number)
     *mode_number = machine->regs.x.bx;
     return VBE_OK;
 }
+
+VBEStatus VBE_set_current_bank(uint32_t bank_number)
+{
+    if(bank_number != currentBank)
+    {
+        machine->regs.x.ax = 0x4f05;
+        machine->regs.x.bx = 0;
+        machine->regs.x.dx = bank_number;
+        int16_t status = v8086_call_int(machine, 0x10);
+        if(status != 0x10) return VBE_INTERNAL_ERROR;
+        if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+        if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
+        /*machine->regs.x.ax = 0x4f05;
+        machine->regs.x.bx = 0;
+        machine->regs.x.dx = bank_number;
+        status = v8086_call_int(machine, 0x10);
+        if(status != 0x10) return VBE_INTERNAL_ERROR;
+        if(machine->regs.h.al != 0x4f) return VBE_NOT_EXIST;
+        if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;*/
+        currentBank = bank_number;
+        return VBE_OK;
+    }
+    return VBE_OK;
+}
+
+
 
 VBEStatus VBE_return_save_restore_state_buffer_size(uint16_t requested_states, uint16_t* buffer_block_number)
 {
@@ -558,4 +609,19 @@ VBEStatus VBE_get_set_pixel_clock(uint16_t pixel_clock, uint16_t mode_number, ui
     if(machine->regs.h.ah != 0x00) return VBE_FUNCTION_FAILURE;
     *closest_pixel_clock = machine->regs.d.ecx;
     return VBE_OK;
+}
+
+void VBE_draw_pixel_8_8_8(uint32_t mode_width, uint32_t mode_height, uint32_t winsize, uint32_t granularity, uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b)
+{
+    uint32_t offset = (y * 3) * mode_width + (x * 3);
+    uint32_t position = offset / (granularity * 1024);
+    offset = offset - (granularity * 1024) * position;
+    if(position != currentBank)
+    {
+        VBEStatus status = VBE_display_window_control_set_16bit(0, position);
+        currentBank = position;
+    }
+    mem_buff[offset] = b;
+    mem_buff[offset + 1] = g;
+    mem_buff[offset + 2] = r;
 }

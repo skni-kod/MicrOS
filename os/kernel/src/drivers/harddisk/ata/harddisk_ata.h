@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include "math.h"
 #include "assembly/io.h"
 #include "drivers/harddisk/harddisk_header.h"
 #include "harddisk_ata_command_matrix.h"
@@ -35,14 +36,14 @@ int8_t __harddisk_ata_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_
     \param data Pointer to identify data of device.
     \return Number of user addressable sectors.
 */
-uint32_t __harddisk_ata_get_user_addressable_sectors(const harddisk_identify_device_data *data);
+uint64_t __harddisk_ata_get_user_addressable_sectors(const harddisk_identify_device_data *data);
 
 //! Get space of hard disk.
 /*!
     \param data Pointer to identify data of device.
     \return Space in bytes.
 */
-uint32_t __harddisk_ata_get_disk_space(const harddisk_identify_device_data *data);
+uint64_t __harddisk_ata_get_disk_space(const harddisk_identify_device_data *data);
 
 //! Doing pooling.
 /*!
@@ -50,6 +51,6 @@ uint32_t __harddisk_ata_get_disk_space(const harddisk_identify_device_data *data
     \param port Port for do delay.
     \return 1 if ready, -1 if error
 */
-int8_t __harddisk_ata_poll(uint16_t control_port);
+int8_t __harddisk_ata_poll(uint16_t port);
 
 #endif

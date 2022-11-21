@@ -47,9 +47,12 @@ int16_t adjust_after_add_sub_packed(v8086* machine, bool sub)
     }
     else if(!sub) bit_clear(machine->regs.w.flags, 1u <<CARRY_FLAG_BIT);
 
-    uint8_t parrity = machine->regs.h.al & 1u;
+    uint8_t parrity = 0;
+    for(uint8_t i = 0; i < 8; i++) parrity += (uint8_t)(machine->regs.h.al >> i) & 1u;
+    bit_write(machine->regs.d.eflags, 1u << PARITY_FLAG_BIT, ((parrity % 2 == 0) ? 1: 0)); //PARRITY FLAG
+    /*uint8_t parrity = machine->regs.h.al & 1u;
     for(uint8_t i = 1; i < 8; i++) parrity ^= (uint8_t)(machine->regs.h.al >> i) & 1u;
-    bit_write(machine->regs.d.eflags, 1u <<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
+    bit_write(machine->regs.d.eflags, 1u <<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG*/
     bit_write(machine-> regs.d.eflags, 1u <<ZERO_FLAG_BIT, machine->regs.h.al == 0); //ZERO FLAG
     bit_write(machine->regs.d.eflags, 1u <<SIGN_FLAG_BIT, machine->regs.h.al >> (7u)); //SIGN FLAG
     return V8086_OK;
@@ -72,9 +75,14 @@ int16_t adjust_after_mul_div(v8086* machine, bool div)
         machine->regs.h.ah = 0;
     }
 
+    uint8_t parrity = 0;
+    for(uint8_t i = 0; i < 8; i++) parrity += (uint8_t)(machine->regs.h.al >> i) & 1u;
+    bit_write(machine->regs.d.eflags, 1u << PARITY_FLAG_BIT, ((parrity % 2 == 0) ? 1: 0)); //PARRITY FLAG
+    /*
     uint8_t parrity = machine->regs.h.al & 1u;
     for(uint8_t i = 1; i < 8; i++) parrity ^= (uint8_t)(machine->regs.h.al >> i) & 1u;
-    bit_write(machine->regs.d.eflags, 1u <<PARITY_FLAG_BIT, (parrity) ? 1: 0); //PARRITY FLAG
+     bit_write(machine->regs.d.eflags, 1u <<PARITY_FLAG_BIT, (parrity) ? 1: 0);
+     */
     bit_write(machine-> regs.d.eflags, 1u <<ZERO_FLAG_BIT, machine->regs.h.al == 0); //ZERO FLAG
     bit_write(machine->regs.d.eflags, 1u <<SIGN_FLAG_BIT, machine->regs.h.al >> (7u)); //SIGN FLAG
 

@@ -2,12 +2,14 @@
 #define V8086_H
 
 #include <stdint.h>
+#include <stdbool.h>
+#include "../cpu/timer/timer.h"
 
 #define bit_get(p,m) ((p) & (m))
 #define bit_set(p,m) ((p) |= (m))
 #define bit_clear(p,m) ((p) &= ~(m))
 #define bit_flip(p,m) ((p) ^= (m))
-#define bit_write(p,m,v) (v ? bit_set(p,m) : bit_clear(p,m))
+#define bit_write(p,m,v) ((v) ? bit_set(p,m) : bit_clear(p,m))
 
 #define CARRY_FLAG_BIT 0u
 #define PARITY_FLAG_BIT 2u
@@ -18,11 +20,11 @@
 #define DIRECTION_FLAG_BIT 10u
 #define OVERFLOW_FLAG_BIT 11u
 
-#define DEBUG_V8086
-#define TEST_V8086
+//#define DEBUG_V8086
+//#define TEST_V8086
 
 typedef enum _segment_register_select {
-  V8086_ES, V8086_CS, V8086_SS, V8086_DS, V8086_FS, V8086_GS, V8086_DEFAULT
+  V8086_ES=0, V8086_CS, V8086_SS, V8086_DS, V8086_FS, V8086_GS, V8086_DEFAULT
 } segment_register_select;
 
 typedef enum _repeat_prefix {
@@ -61,50 +63,53 @@ typedef enum _machine_status {
 } machine_status;
 
 struct DWORDREGS {
-  uint32_t edi;
-  uint32_t esi;
-  uint32_t ebp;
-  uint32_t cflag;
-  uint32_t ebx;
-  uint32_t edx;
-  uint32_t ecx;
-  uint32_t eax;
-  uint16_t eflags;
-  uint32_t esp;
+    uint32_t eax;
+    uint32_t ecx;
+    uint32_t edx;
+    uint32_t ebx;
+    uint32_t esp;
+    uint32_t ebp;
+    uint32_t esi;
+    uint32_t edi;
+    uint32_t cflag;
+    uint16_t eflags;
+
 } __attribute__((packed));
 
 struct WORDREGS {
-  uint16_t di, _upper_di;
-  uint16_t si, _upper_si;
-  uint16_t bp, _upper_bp;
-  uint16_t cflag, _upper_cflag;
-  uint16_t bx, _upper_bx;
-  uint16_t dx, _upper_dx;
-  uint16_t cx, _upper_cx;
-  uint16_t ax, _upper_ax;
-  uint16_t flags;
-  uint16_t sp, _upper_sp;
+    uint16_t ax, _upper_ax;
+    uint16_t cx, _upper_cx;
+    uint16_t dx, _upper_dx;
+    uint16_t bx, _upper_bx;
+    uint16_t sp, _upper_sp;
+    uint16_t bp, _upper_bp;
+    uint16_t si, _upper_si;
+    uint16_t di, _upper_di;
+    uint16_t cflag, _upper_cflag;
+    uint16_t flags;
+
 } __attribute__((packed));
 
 struct BYTEREGS {
-  uint16_t di, _upper_di;
-  uint16_t si, _upper_si;
-  uint16_t bp, _upper_bp;
-  uint32_t cflag;
-  uint8_t bl;
-  uint8_t bh;
-  uint16_t _upper_bx;
-  uint8_t dl;
-  uint8_t dh;
-  uint16_t _upper_dx;
-  uint8_t cl;
-  uint8_t ch;
-  uint16_t _upper_cx;
-  uint8_t al;
-  uint8_t ah;
-  uint16_t _upper_ax;
-  uint16_t flags;
-  uint16_t sp, _upper_sp;
+    uint8_t al;
+    uint8_t ah;
+    uint16_t _upper_ax;
+    uint8_t cl;
+    uint8_t ch;
+    uint16_t _upper_cx;
+    uint8_t dl;
+    uint8_t dh;
+    uint16_t _upper_dx;
+    uint8_t bl;
+    uint8_t bh;
+    uint16_t _upper_bx;
+    uint16_t sp, _upper_sp;
+    uint16_t bp, _upper_bp;
+    uint16_t si, _upper_si;
+    uint16_t di, _upper_di;
+    uint32_t cflag;
+    uint16_t flags;
+
 } __attribute__((packed));
 
 union REGS {		/* Compatible with DPMI structure, except cflag */
@@ -116,11 +121,11 @@ union REGS {		/* Compatible with DPMI structure, except cflag */
 
 struct SREGS {
   uint16_t es;
+  uint16_t cs;
+  uint16_t ss;
   uint16_t ds;
   uint16_t fs;
   uint16_t gs;
-  uint16_t cs;
-  uint16_t ss;
 } __attribute__((packed));
 
 struct DWORDIP{
@@ -144,6 +149,7 @@ typedef struct _is{
   segment_register_select segment_reg_select;
   repeat_prefix rep_prefix;
   uint16_t IPOffset;
+  uint8_t previous_byte_was_prefix;
 }__attribute__((packed)) _internal_state;
 
 typedef struct _v8086
@@ -166,6 +172,7 @@ int16_t v8086_call_int(v8086* machine, int16_t num);
 void v8086_set_8086_instruction_set(v8086* machine);
 void v8086_set_386_instruction_set(v8086* machine);
 uint32_t v8086_get_address_of_int(v8086* machine, int16_t num);
+int16_t v8086_call_com_program(v8086* machine, char* programPath);
 
 #ifdef DEBUG_V8086
   void send_reg_32(uint32_t reg);
@@ -178,5 +185,6 @@ uint32_t v8086_get_address_of_int(v8086* machine, int16_t num);
   uint32_t read_reg_32();
   void read_regs(v8086* machine);
   void read_sregs(v8086* machine);
+  void setSkipDebugging(bool value);
 #endif
 #endif

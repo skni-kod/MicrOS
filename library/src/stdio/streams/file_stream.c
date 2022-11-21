@@ -29,7 +29,7 @@ FILE *streams_set_stream_as_file(const char *filename, const char *mode, FILE *s
     stream->fetch = streams_file_fetch;
     stream->flush = streams_file_flush;
 
-    memcpy(stream->filename, filename, strlen(filename));
+    memcpy(stream->filename, filename, strlen(filename)+1);
     return stream;
 }
 

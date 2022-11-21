@@ -18,10 +18,8 @@ int16_t perform_group_4(v8086* machine)
     {
         case 0: //INC rm8
             return perform_inc(machine, dest, width);
-            break;
         case 1: //DEC rm8
             return  perform_dec(machine, dest, width);
-            break;
         default:
             return V8086_UNDEFINED_OPCODE;
     }
@@ -46,7 +44,7 @@ int16_t perform_group_5(v8086* machine)
             machine->IP.w.ip += machine->internal_state.IPOffset;
             push_word(machine, machine->IP.w.ip);
             if(width == 16)
-                machine->IP.w.ip += *((uint16_t*) dest);
+                machine->IP.w.ip = *((uint16_t*) dest);
             else return V8086_BAD_WIDTH;
             machine->internal_state.IPOffset = 0;
             return V8086_OK;
@@ -60,7 +58,7 @@ int16_t perform_group_5(v8086* machine)
             return V8086_OK;
         case 4: //Near absolute indirect jmp
             if(width == 16)
-                machine->IP.w.ip += *((uint16_t*) dest);
+                machine->IP.w.ip = *((uint16_t*) dest);
             else return V8086_BAD_WIDTH;
             machine->internal_state.IPOffset = 0;
             return V8086_OK;
@@ -76,7 +74,6 @@ int16_t perform_group_5(v8086* machine)
         default:
             return V8086_UNDEFINED_OPCODE;
     }
-    return V8086_UNKNOWN_ERROR;
 }
 
 int16_t setting_and_clearing_flags(v8086* machine, uint8_t opcode)

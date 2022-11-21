@@ -35,17 +35,33 @@ int8_t __harddisk_check_presence(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BU
     else if(type == HARDDISK_ATA_MASTER && bus == HARDDISK_ATA_SECONDARY_BUS) data = &states->secondary_master_data;
     else if(type == HARDDISK_ATA_SLAVE && bus == HARDDISK_ATA_SECONDARY_BUS) data = &states->secondary_slave_data;
 
+
     // Do soft reset
-    __harddisk_soft_reset_port(control_port);
+    int8_t result = __harddisk_soft_reset_port(control_port + HARDDISK_CONTROL_DEVICE_CONTROL_REGISTER_OFFSET);
+    if(result == -1)
+    {
+        // Harddisk error
+        return HARDDISK_ERROR;
+    }
 
     // Send message to drive
     io_out_byte(io_port + HARDDISK_IO_DRIVE_HEAD_REGISTER_OFFSET, message_to_drive.value);
 
+
     // Make 400ns delay
     __harddisk_400ns_delay(control_port);
 
+    // Poll the Status port until bit 7 (BSY, value = 0x80) clears.
+    result = __harddisk_bsy_poll(control_port + HARDDISK_CONTROL_ALTERNATE_STATUS_REGISTER_OFFSET);
+    if(result == -1)
+    {
+        // Harddisk error
+        return HARDDISK_ERROR;
+    }
+
     uint8_t cylinder_low = io_in_byte(io_port +  HARDDISK_IO_CYLINDER_LOW_REGISTER_OFFSET);
     uint8_t cylinder_high = io_in_byte(io_port +  HARDDISK_IO_CYLINDER_HIGH_REGISTER_OFFSET);
+
 
     /* differentiate ATA, ATAPI, SATA and SATAPI */
     if (cylinder_low==0x3c && cylinder_high==0xc3)
@@ -110,6 +126,7 @@ int8_t __harddisk_get_identify_data(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA
         return -2;
     }
 
+
     // Send message to drive
     io_out_byte(io_port + HARDDISK_IO_DRIVE_HEAD_REGISTER_OFFSET, message_to_drive.value);
 
@@ -124,6 +141,7 @@ int8_t __harddisk_get_identify_data(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA
 
     // Send the specific IDENTIFY command to the Command IO port.
     io_out_byte(io_port + HARDDISK_IO_COMMAND_REGISTER_OFFSET, identify_command);
+
 
     // Read the Status port again.
     harddisk_io_control_status_register result;
@@ -140,11 +158,21 @@ int8_t __harddisk_get_identify_data(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA
         {
             if(result.fields.busy == 0)
             {
+                //Check LBA mid and high to check if device follows ATA specification
+                uint8_t LBA_mid, LBA_hi;
+                LBA_mid = io_in_byte(io_port + HARDDISK_IO_CYLINDER_LOW_REGISTER_OFFSET);
+                LBA_hi = io_in_byte(io_port + HARDDISK_IO_CYLINDER_HIGH_REGISTER_OFFSET);
+                if(LBA_hi != 0 && LBA_mid != 0) return 1;
+                //TODO
+                //There should be a way to load the data from devices that do not follow the standard. Find this way
+
                 // Otherwise, continue polling one of the Status ports until bit 3 (DRQ, value = 8) sets, or until bit 0 (ERR, value = 1) sets.
                 for(;;)
                 {
                     result.value = io_in_byte(io_port + HARDDISK_IO_STATUS_REGISTER_OFFSET);
-                    if(result.fields.has_pio_data_to_transfer_or_ready_to_accept_pio_data == 1)
+
+
+                    if(result.fields.drive_ready == 1 || result.fields.overlapped_mode_service_request == 1)
                     {
                         for(int i = 0; i < 256; i++)
                         {
@@ -153,11 +181,12 @@ int8_t __harddisk_get_identify_data(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA
                         }
                         return 1;
                     }
-                    else if(result.fields.error_occurred == 1)
+                    else if(result.fields.error_occurred == 1 || result.fields.drive_fault_error == 1)
                     {
                         return -1;
                     }
                 }
+                
             }   
             result.value = io_in_byte(io_port + HARDDISK_IO_STATUS_REGISTER_OFFSET);
         }

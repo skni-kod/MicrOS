@@ -6,17 +6,20 @@
 
 static inline void push_byte(v8086* machine, uint8_t value)
 {
-    write_byte_to_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.w.sp -= 1), value);
+    machine->regs.w.sp -= 1;
+    write_byte_to_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.w.sp), value);
 }
 
 static inline void push_word(v8086* machine, uint16_t value)
 {
-    write_word_to_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.w.sp -= 2), value);
+    machine->regs.w.sp -= 2;
+    write_word_to_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.w.sp), value);
 }
 
 static inline void push_dword(v8086* machine, uint32_t value)
 {
-    write_dword_to_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.w.sp -= 4), value);
+    machine->regs.w.sp -= 4;
+    write_dword_to_pointer(machine->Memory, get_absolute_address(machine->sregs.ss, machine->regs.w.sp), value);
 }
 
 static inline uint8_t pop_byte(v8086* machine)

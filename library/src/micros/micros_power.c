@@ -2,10 +2,10 @@
 
 void micros_power_reboot()
 {
-    micros_interrupt_0a(0xC0);
+    micros_interrupt_0a(0x0C00);
 }
 
 void micros_power_shutdown()
 {
-    micros_interrupt_0a(0xC1);
+    micros_interrupt_0a(0x0C01);
 }

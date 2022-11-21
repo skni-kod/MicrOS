@@ -13,7 +13,7 @@
 #define DMA_ADDRESS_OFFSET 0xC0000000
 
 void dma_init(uint32_t buffer_address);
-void dma_init_transfer(uint8_t channel, bool read);
+void dma_init_transfer(uint8_t channel, bool read, uint16_t dataLen);
 uint8_t *dma_get_buffer();
 
 #endif

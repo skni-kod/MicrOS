@@ -18,6 +18,8 @@
 #include "modes/mode_y/mode_y.h"
 #include "memory/heap/heap.h"
 
+#include "../../assembly/io.h"
+
 video_mode current_video_mode;
 uint8_t text_mode;
 
@@ -52,25 +54,25 @@ void generic_vga_driver_init()
     s.turn_cursor_on = mode03h_turn_cursor_on;
     s.turn_cursor_off = mode03h_turn_cursor_off;
 
-    s.print_char_external_buffer = mode03h_print_char_external_buffer;
-    s.print_char_color_external_buffer = mode03h_print_char_color_external_buffer;
-    s.print_string_external_buffer = mode03h_print_string_external_buffer;
-    s.print_string_color_external_buffer = mode03h_print_string_color_external_buffer;
-    s.set_char_external_buffer = mode03h_set_char_external_buffer;
-    s.get_char_external_buffer = mode03h_get_char_external_buffer;
-    s.set_color_external_buffer = mode03h_set_color_external_buffer;
-    s.get_color_external_buffer = mode03h_get_color_external_buffer;
-    s.set_char_and_color_external_buffer = mode03h_set_char_and_color_external_buffer;
-    s.get_char_and_color_external_buffer = mode03h_get_char_and_color_external_buffer;
+    s.print_char_external_buffer = generic_vga_print_char_external_buffer;
+    s.print_char_color_external_buffer = generic_vga_print_char_color_external_buffer;
+    s.print_string_external_buffer = generic_vga_print_string_external_buffer;
+    s.print_string_color_external_buffer = generic_vga_print_string_color_external_buffer;
+    s.set_char_external_buffer = generic_vga_set_char_external_buffer;
+    s.get_char_external_buffer = generic_vga_get_char_external_buffer;
+    s.set_color_external_buffer = generic_vga_set_color_external_buffer;
+    s.get_color_external_buffer = generic_vga_get_color_external_buffer;
+    s.set_char_and_color_external_buffer = generic_vga_set_char_and_color_external_buffer;
+    s.get_char_and_color_external_buffer = generic_vga_get_char_and_color_external_buffer;
 
-    s.draw_pixel_external_buffer = mode03h_draw_pixel_external_buffer;
-    s.draw_line_external_buffer = mode03h_draw_line_external_buffer;
-    s.draw_circle_external_buffer = mode03h_draw_circle_external_buffer;
-    s.draw_rectangle_external_buffer = mode03h_draw_rectangle_external_buffer;
-    s.clear_screen_external_buffer = mode03h_clear_screen_external_buffer;
+    s.draw_pixel_external_buffer = generic_vga_draw_pixel_external_buffer;
+    s.draw_line_external_buffer = generic_vga_draw_line_external_buffer;
+    s.draw_circle_external_buffer = generic_vga_draw_circle_external_buffer;
+    s.draw_rectangle_external_buffer = generic_vga_draw_rectangle_external_buffer;
+    s.clear_screen_external_buffer = generic_vga_clear_screen_external_buffer;
 
-    s.swap_external_buffer = mode03h_swap_external_buffer;
-    s.create_external_buffer = mode03h_create_external_buffer;
+    s.swap_external_buffer = generic_vga_swap_external_buffer;
+    s.create_external_buffer = generic_vga_create_external_buffer;
     s.destroy_external_buffer = generic_vga_destroy_external_buffer;
     
     video_card_init_with_driver(&s);
@@ -508,7 +510,8 @@ int8_t generic_vga_swap_external_buffer(uint8_t* buffer, uint16_t mode){
         default: return -1;
     }
 }
-uint8_t* generic_vga_create_external_buffer(uint16_t mode){
+uint8_t* generic_vga_create_external_buffer(uint16_t mode)
+{
     switch(mode)
     {
          case 0x00:
@@ -546,6 +549,194 @@ uint8_t* generic_vga_create_external_buffer(uint16_t mode){
         default: return NULL;
     }
 }
-void generic_vga_destroy_external_buffer(uint8_t* buffer){
+
+int8_t generic_vga_print_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character)
+{
+    switch(mode)
+    {
+        case 0x00:
+            return mode00h_print_char_external_buffer(buffer, mode, x, y, character);
+        case 0x01:
+            return mode01h_print_char_external_buffer(buffer, mode, x, y, character);
+        case 0x02:
+            return mode02h_print_char_external_buffer(buffer, mode, x, y, character);
+        case 0x03:
+            return mode03h_print_char_external_buffer(buffer, mode, x, y, character);
+        case 0x07:
+            return mode07h_print_char_external_buffer(buffer, mode, x, y, character);
+        default: 
+            return -1;
+    }
+}
+int8_t generic_vga_print_char_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, char character, uint8_t color)
+{
+    switch(mode)
+    {
+        case 0x00:
+            return mode00h_print_char_color_external_buffer(buffer, mode, x, y, character, color);
+        case 0x01:
+            return mode01h_print_char_color_external_buffer(buffer, mode, x, y, character, color);
+        case 0x02:
+            return mode02h_print_char_color_external_buffer(buffer, mode, x, y, character, color);
+        case 0x03:
+            return mode03h_print_char_color_external_buffer(buffer, mode, x, y, character, color);
+        case 0x07:
+            return mode07h_print_char_color_external_buffer(buffer, mode, x, y, character, color);
+        default: 
+            return -1;
+    }
+}
+int8_t generic_vga_print_string_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* string)
+{
+    switch(mode)
+    {
+        case 0x00:
+            return mode00h_print_string_external_buffer(buffer, mode, x, y, string);
+        case 0x01:
+            return mode01h_print_string_external_buffer(buffer, mode, x, y, string);
+        case 0x02:
+            return mode02h_print_string_external_buffer(buffer, mode, x, y, string);
+        case 0x03:
+            return mode03h_print_string_external_buffer(buffer, mode, x, y, string);
+        case 0x07:
+            return mode07h_print_string_external_buffer(buffer, mode, x, y, string);
+        default: 
+            return -1;
+    }
+}
+int8_t generic_vga_print_string_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t* x, uint16_t* y, const char* string, uint8_t color)
+{
+    switch(mode)
+    {
+        case 0x00:
+            return mode00h_print_string_color_external_buffer(buffer, mode, x,  y, string, color);
+        case 0x01:
+            return mode01h_print_string_color_external_buffer(buffer, mode, x,  y, string, color);
+        case 0x02:
+            return mode02h_print_string_color_external_buffer(buffer, mode, x,  y, string, color);
+        case 0x03:
+            return mode03h_print_string_color_external_buffer(buffer, mode, x,  y, string, color);
+        case 0x07:
+            return mode07h_print_string_color_external_buffer(buffer, mode, x,  y, string, color);
+        default: 
+            return -1;
+    }
+}
+int8_t generic_vga_set_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character)
+{
+    switch(mode)
+    {
+        case 0x00:
+            return mode00h_set_char_external_buffer(buffer, mode, x, y, character);
+        case 0x01:
+            return mode01h_set_char_external_buffer(buffer, mode, x, y, character);
+        case 0x02:
+            return mode02h_set_char_external_buffer(buffer, mode, x, y, character);
+        case 0x03:
+            return mode03h_set_char_external_buffer(buffer, mode, x, y, character);
+        case 0x07:
+            return mode07h_set_char_external_buffer(buffer, mode, x, y, character);
+        default: 
+            return -1;
+    }
+}
+int8_t generic_vga_get_char_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character)
+{
+    switch(mode)
+    {
+        case 0x00:
+            return mode00h_get_char_external_buffer(buffer,  mode, x, y, character);
+        case 0x01:
+            return mode01h_get_char_external_buffer(buffer,  mode, x, y, character);
+        case 0x02:
+            return mode02h_get_char_external_buffer(buffer,  mode, x, y, character);
+        case 0x03:
+            return mode03h_get_char_external_buffer(buffer,  mode, x, y, character);
+        case 0x07:
+            return mode07h_get_char_external_buffer(buffer,  mode, x, y, character);
+        default: 
+            return -1;
+    }
+}
+int8_t generic_vga_set_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t color)
+{
+    switch(mode)
+    {
+        case 0x00:
+            return mode00h_set_color_external_buffer(buffer, mode, x, y, color);
+        case 0x01:
+            return mode01h_set_color_external_buffer(buffer, mode, x, y, color);
+        case 0x02:
+            return mode02h_set_color_external_buffer(buffer, mode, x, y, color);
+        case 0x03:
+            return mode03h_set_color_external_buffer(buffer, mode, x, y, color);
+        case 0x07:
+            return mode07h_set_color_external_buffer(buffer, mode, x, y, color);
+        default: 
+            return -1;
+    }
+}
+int8_t generic_vga_get_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, uint8_t* color)
+{
+    switch(mode)
+    {
+        case 0x00:
+            return mode00h_get_color_external_buffer(buffer, mode,  x, y, color);
+        case 0x01:
+            return mode01h_get_color_external_buffer(buffer, mode,  x, y, color);
+        case 0x02:
+            return mode02h_get_color_external_buffer(buffer, mode,  x, y, color);
+        case 0x03:
+            return mode03h_get_color_external_buffer(buffer, mode,  x, y, color);
+        case 0x07:
+            return mode07h_get_color_external_buffer(buffer, mode,  x, y, color);
+        default: 
+            return -1;
+    }
+}
+int8_t generic_vga_set_char_and_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char character, uint8_t color)
+{
+    switch(mode)
+    {
+        case 0x00:
+            return mode00h_set_char_and_color_external_buffer(buffer, mode, x, y, character,  color);
+        case 0x01:
+            return mode01h_set_char_and_color_external_buffer(buffer, mode, x, y, character,  color);
+        case 0x02:
+            return mode02h_set_char_and_color_external_buffer(buffer, mode, x, y, character,  color);
+        case 0x03:
+            return mode03h_set_char_and_color_external_buffer(buffer, mode, x, y, character,  color);
+        case 0x07:
+            return mode07h_set_char_and_color_external_buffer(buffer, mode, x, y, character,  color);
+        default: 
+            return -1;
+    }
+}
+int8_t generic_vga_get_char_and_color_external_buffer(uint8_t* buffer, uint16_t mode, uint16_t x, uint16_t y, char* character, uint8_t* color)
+{
+    switch(mode)
+    {
+        case 0x00:
+            return mode00h_get_char_and_color_external_buffer(buffer, mode, x, y, character, color);
+        case 0x01:
+            return mode01h_get_char_and_color_external_buffer(buffer, mode, x, y, character, color);
+        case 0x02:
+            return mode02h_get_char_and_color_external_buffer(buffer, mode, x, y, character, color);
+        case 0x03:
+            return mode03h_get_char_and_color_external_buffer(buffer, mode, x, y, character, color);
+        case 0x07:
+            return mode07h_get_char_and_color_external_buffer(buffer, mode, x, y, character, color);
+        default: 
+            return -1;
+    }
+}
+
+void generic_vga_destroy_external_buffer(uint8_t* buffer)
+{
     heap_kernel_dealloc(buffer);
+}
+
+uint8_t generic_vga_is_vretrace()
+{
+    return io_in_byte(INPUT_STATUS_1) & VRETRACE;
 }

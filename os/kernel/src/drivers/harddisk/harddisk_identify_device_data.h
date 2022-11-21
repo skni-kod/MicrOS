@@ -990,7 +990,7 @@ typedef struct harddisk_identify_device_data_fields
     //! Signature
     uint8_t signature                                        : 8;
     //! Checksum
-    uint8_t chacksum                                         : 8;
+    uint8_t checksum                                         : 8;
 
 } __attribute__((packed)) harddisk_identify_device_data_fields;
 
