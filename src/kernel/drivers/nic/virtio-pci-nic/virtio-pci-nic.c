@@ -59,30 +59,29 @@ bool virtio_nic_init(net_device_t *net_dev)
     uint32_t features = virtio_nic_reg_read(REG_DEVICE_FEATURES);
 
     // Make sure the features we need are supported
-    if ((features & REQUIRED_FEATURES) != REQUIRED_FEATURES)
+    if ((features & VIRTIO_NET_REQUIRED_FEATURES) != VIRTIO_NET_REQUIRED_FEATURES)
     {
         virtio_nic_reg_write(REG_DEVICE_STATUS, STATUS_DRIVER_FAILED);
         return false;
     }
 
     // Tell the device what features we'll be using
-    virtio_nic_reg_write(REG_DRIVER_FEATURES, REQUIRED_FEATURES);
+    virtio_nic_reg_write(REG_DRIVER_FEATURES, VIRTIO_NET_REQUIRED_FEATURES);
 
-    // PCI bus mastering
-    // uint32_t pci_bus_config = pci_io_in(&pci_virtio_nic_device, 1);
-    // pci_bus_config |= 0x4;
-    // pci_io_out(&pci_virtio_nic_device, 1, pci_bus_config);
     pci_busmaster_set(&pci_virtio_nic_device, true);
 
     /*
         // Init virtqueues (see 4.1.5.1.3 of virtio-v1.0-cs04.pdf)
         // No VIRTIO_NET_F_MQ, using 3 virtqueues: receive, transmit, and control
     */
-    receive_queue = heap_kernel_alloc(sizeof(virtq), 0);
-    transmit_queue = heap_kernel_alloc(sizeof(virtq), 0);
+    receive_queue = virtio_nic_init_queue(0);
+    if (!receive_queue)
+        return false;
 
-    virtio_nic_init_queue(receive_queue, 0);
-    virtio_nic_init_queue(transmit_queue, 1);
+    transmit_queue = virtio_nic_init_queue(1);
+    if (!transmit_queue)
+        return false;
+
     virtio_nic_setup_buffers(32);
     receive_queue->device_area->flags = 0;
 
@@ -135,7 +134,7 @@ bool virtio_nic_irq_handler()
         }
 
         // Receive packet
-        if (receive_queue->device_area->index != receive_queue->last_device_index && 
+        if (receive_queue->device_area->index != receive_queue->last_device_index &&
             virtio_nic_net_device->interface->mode.receive)
             virtio_nic_receive();
     }
@@ -143,25 +142,28 @@ bool virtio_nic_irq_handler()
     return true;
 }
 
-void virtio_nic_init_queue(virtq *virtqueue, uint16_t queueIndex)
+virtq *virtio_nic_init_queue(uint16_t queueIndex)
 {
-    int16_t queueSize = -1;
-
-    // access the current queue
+    int16_t queueSize = 0;
+    // get size of queue
     virtio_nic_reg_write(REG_QUEUE_SELECT, queueIndex);
-
-    // get the size of the current queue
     queueSize = (uint16_t)virtio_nic_reg_read(REG_QUEUE_SIZE);
 
     if (!queueSize)
         return;
 
-    // Allocate and initialize the queue
+    // allocate queue
+    virtq *virtqueue = 0;
+    virtqueue = heap_kernel_alloc(sizeof(virtq), 0);
+    if (!virtqueue)
+        return;
+
     virtio_setup_queue(virtqueue, queueSize);
 
     uint32_t addr = (uint32_t)((uint32_t)virtqueue->descriptor_area - DMA_ADDRESS_OFFSET) / 4096;
-
     virtio_nic_reg_write(REG_QUEUE_ADDRESS, addr);
+
+    return virtqueue;
 }
 
 void virtio_nic_setup_buffers(uint16_t buffers_count)
@@ -242,16 +244,11 @@ void virtio_nic_receive()
 
             // get length of entire buffer
             for (int i = 0; i < buffers; ++i)
-            {
                 buffer_size += receive_queue->descriptor_area[(descriptor_index + i) % receive_queue->size].length;
-            }
 
             buffer_address = heap_kernel_alloc(buffer_size, 0);
             if (!buffer_address)
-            {
-                logger_log_warning("Not enough memory\n");
                 return;
-            }
 
             // copy buffer pieces to one block
             uint32_t offset = 0;
@@ -271,8 +268,8 @@ void virtio_nic_receive()
         uint32_t size = receive_queue->descriptor_area[descriptor_index % receive_queue->size].length;
 
         // Copy received data to buffer, data is right after the header with length
-        nic_data_t *out =  virtio_nic_net_device->dpi.get_receive_buffer(virtio_nic_net_device);
-        
+        nic_data_t *out = virtio_nic_net_device->dpi.get_receive_buffer(virtio_nic_net_device);
+
         memcpy((void *)out->frame, data_ptr, size);
 
         // Place the used descriptor indices back in driver area

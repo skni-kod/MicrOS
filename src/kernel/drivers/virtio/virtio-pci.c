@@ -12,7 +12,6 @@ uint8_t virtio_setup_queue(virtq *virtqueue, uint16_t queueSize)
     // Descriptor table
     // Available Ring
     // Used Ring
-    //  - the above structures have alignment requirements we need to ensure we're fulfilling.
 
     // descriptor table must be aligned on a 16-byte boundary. Since the virtqueue itself must be aligned on a 4096-byte boundary,
     // this alignment will be guaranteed.
@@ -32,10 +31,10 @@ uint8_t virtio_setup_queue(virtq *virtqueue, uint16_t queueSize)
     uint32_t virtqueueByteSize = descriptorTableSize + driverAreaSize + driverAreaPadding + deviceAreaSize;
 
     // Allocate memory for virtqueue + extra bytes for 4096-byte alignment
-    uint32_t *virtqueue_mem = (uint32_t *)heap_kernel_alloc(virtqueueByteSize + 4095, 0);
+    uint32_t *virtqueue_mem = (uint32_t *)heap_kernel_alloc(virtqueueByteSize, 4096);
 
     // Zero virtqueue memory
-    memset(virtqueue_mem, 0, virtqueueByteSize + 4095);
+    memset(virtqueue_mem, 0, virtqueueByteSize);
 
     // Get a 4096-byte aligned block of memory
     // virtq *virtqueue = virtqueue_mem;
@@ -46,7 +45,7 @@ uint8_t virtio_setup_queue(virtq *virtqueue, uint16_t queueSize)
     virtqueue->size = queueSize;
     // descriptors will point to the first byte of virtqueue_mem
     virtqueue->descriptor_area = (virtq_descriptor *)virtqueue_mem;
-    // driverArea (AKA Available Ring) will follow descriptors
+    // driverArea  will follow descriptors
     virtqueue->driver_area = (virtq_driver_area *)((uint32_t)virtqueue_mem + descriptorTableSize);
     // deviceArea will follow driver area + padding bytes
     virtqueue->device_area = (virtq_device_area *)((uint32_t)virtqueue->driver_area + driverAreaSize + driverAreaPadding);

@@ -2,6 +2,7 @@
     @JakubPrzystasz
     Created: 28.07.2021
     Modified: 28.07.2021
+    https://github.com/coderTrevor/MyOS/blob/master/MyOS_1/Drivers/Virtio_Net.h
 */
 #ifndef VIRTIO_NET_PCI_H
 #define VIRTIO_NET_PCI_H
@@ -83,7 +84,7 @@ if virtio-net device reports this feature.*/
 /*VIRTIO_NET_F_GUEST_RSC6 (42) Device coalesces TCPIP v6 packets. Similar to VIRTIO_NET_F_-GUEST_RSC4.*/
 #define VIRTIO_NET_F_GUEST_RSC6 (1 << 42)
 
-// NIC specific registers 
+// VirtIO-NET specific registers
 #define VIRTIO_NET_REGISTER_MAC_1 0x14
 #define VIRTIO_NET_REGISTER_MAC_2 0x15
 #define VIRTIO_NET_REGISTER_MAC_3 0x16
@@ -97,10 +98,7 @@ if virtio-net device reports this feature.*/
 #define VIRTIO_NET_TRANSMIT_QUEUE_INDEX 1
 #define VIRTIO_NET_CONTROL_QUEUE_INDEX 2
 
-
-
-#undef REQUIRED_FEATURES
-#define REQUIRED_FEATURES (/*VIRTIO_NET_F_CSUM |*/ VIRTIO_NET_F_MAC | VIRTIO_NET_F_MRG_RXBUF)
+#define VIRTIO_NET_REQUIRED_FEATURES (VIRTIO_NET_F_MAC | VIRTIO_NET_F_MRG_RXBUF)
 
 // Flags for virtio_net_hdr
 #define VIRTIO_NET_HDR_F_NEEDS_CSUM 1
@@ -114,9 +112,9 @@ if virtio-net device reports this feature.*/
 #define VIRTIO_NET_HDR_GSO_TCPV6 4
 #define VIRTIO_NET_HDR_GSO_ECN 0x80
 
-//
 #define VIRTIO_NET_HEADER_SIZE sizeof(virtio_nic_net_header)
 
+/* 5.1.6 Device Operation */
 typedef struct
 {
     uint8_t flags;
@@ -125,14 +123,13 @@ typedef struct
     uint16_t segment_size;
     uint16_t checksum_start;
     uint16_t checksum_offset;
-    uint16_t buffers_count; 
+    uint16_t buffers_count;
 } virtio_nic_net_header;
 
 typedef struct
 {
     uint8_t bar_type;
     uint16_t io_base;
-    uint32_t mem_base;
     uint8_t mac_addr[6];
     uint8_t status;
 } virtio_nic_dev;
@@ -143,13 +140,13 @@ bool virtio_nic_irq_handler();
 
 void virtio_nic_send(nic_data_t *data);
 
-void virtio_nic_init_queue(virtq *virtqueue, uint16_t queueIndex);
+virtq *virtio_nic_init_queue(uint16_t queueIndex);
 
 void virtio_nic_receive();
 
 void virtio_nic_setup_buffers(uint16_t buffers_count);
 
-void virtio_nic_get_mac(uint8_t* buffer);
+void virtio_nic_get_mac(uint8_t *buffer);
 
 uint32_t virtio_nic_reg_read(uint16_t reg);
 
