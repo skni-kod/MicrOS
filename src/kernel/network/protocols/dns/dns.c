@@ -71,7 +71,6 @@ ipv4_addr_t dns_lookup(const char *domain)
 
     if (sockfd < 0)
     {
-        // NET_DEBUG("failed to create a socket (sockfd=%d)", sockfd);
         return (ipv4_addr_t){.address = 0};
     }
 
@@ -147,13 +146,11 @@ ipv4_addr_t dns_lookup(const char *domain)
         }
         else
         {
-            logger_log_info("wrong DNS class");
             return (ipv4_addr_t){.address = 0};
         }
     }
     else
     {
-        logger_log_warning("no answer");
         return (ipv4_addr_t){.address = 0};
     }
 

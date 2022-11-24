@@ -21,7 +21,6 @@ kbuffer_t *kbuffer_init(uint32_t block_size, uint32_t block_count)
     {
         entry = (kentry_t *)((uint32_t)buffer->entries + (entry_ptr * (uint32_t)block_size_in_memory));
         entry->block_count = 0;
-        entry->used = 0;
     }
 
     return buffer;
@@ -52,7 +51,7 @@ void *kbuffer_get(kbuffer_t *buffer, uint32_t size)
 
         entry = (uint32_t)buffer->entries + (buffer->ptr * block_size_in_memory);
         // go right after the entry and look for place:
-        if (entry->used)
+        if (entry->block_count)
         {
             buffer->ptr += entry->block_count;
             if (buffer->ptr >= buffer->block_count)
@@ -61,7 +60,6 @@ void *kbuffer_get(kbuffer_t *buffer, uint32_t size)
         }
         else
         {
-            entry->used = 1;
             entry->block_count = req_blocks;
             entry->header = buffer;
             buffer->ptr += req_blocks;
@@ -79,10 +77,10 @@ void kbuffer_drop(void *ptr)
     // mark entry as free
     kentry_t *entry = (ptr - sizeof(kentry_t));
     size_t block_size_in_memory = (sizeof(kentry_t) + entry->header->block_size);
-
-    for (uint32_t i = 0; i < entry->block_count; i++)
+    uint32_t blocks = entry->block_count;
+    for (uint32_t i = 0; i < blocks; i++)
     {
         kentry_t *tmp = (uint32_t)entry->header->entries + (i * block_size_in_memory);
-        tmp->used = 0;
+        tmp->block_count = 0;
     }
 }

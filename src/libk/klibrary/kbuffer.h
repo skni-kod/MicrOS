@@ -17,7 +17,6 @@ typedef struct kentry
 {
   kbuffer_t *header;
   uint32_t block_count;
-  uint32_t used;
   void *data[];
 } __attribute__((packed)) kentry_t;
 
