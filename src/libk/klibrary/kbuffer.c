@@ -19,8 +19,8 @@ kbuffer_t *kbuffer_init(uint32_t block_size, uint32_t block_count)
     kentry_t *entry;
     for (uint32_t entry_ptr = 0; entry_ptr < buffer->block_count; entry_ptr++)
     {
-        entry = (kentry_t*)((uint32_t)buffer->entries + (entry_ptr * (uint32_t)block_size_in_memory));
-        entry->size = 0;
+        entry = (kentry_t *)((uint32_t)buffer->entries + (entry_ptr * (uint32_t)block_size_in_memory));
+        entry->block_count = 0;
         entry->used = 0;
     }
 
@@ -32,10 +32,10 @@ void *kbuffer_get(kbuffer_t *buffer, uint32_t size)
     // ptr points to last used block of data, so we know is its size
     uint32_t start_point = buffer->ptr;
     size_t block_size_in_memory = (sizeof(kentry_t) + buffer->block_size);
-    
-    if(size == 0)
+
+    if (size == 0)
         size = 1;
-    
+
     uint32_t req_blocks = buffer->block_size / size;
 
     if (buffer->block_size % size)
@@ -54,7 +54,7 @@ void *kbuffer_get(kbuffer_t *buffer, uint32_t size)
         // go right after the entry and look for place:
         if (entry->used)
         {
-            buffer->ptr += entry->size;
+            buffer->ptr += entry->block_count;
             if (buffer->ptr >= buffer->block_count)
                 buffer->ptr = 0;
             continue;
@@ -62,7 +62,8 @@ void *kbuffer_get(kbuffer_t *buffer, uint32_t size)
         else
         {
             entry->used = 1;
-            entry->size = req_blocks;
+            entry->block_count = req_blocks;
+            entry->header = buffer;
             buffer->ptr += req_blocks;
             return entry->data;
         }
@@ -76,5 +77,12 @@ void *kbuffer_get(kbuffer_t *buffer, uint32_t size)
 void kbuffer_drop(void *ptr)
 {
     // mark entry as free
-    *((uint32_t *)ptr - 1) = 0;
+    kentry_t *entry = (ptr - sizeof(kentry_t));
+    size_t block_size_in_memory = (sizeof(kentry_t) + entry->header->block_size);
+
+    for (uint32_t i = 0; i < entry->block_count; i++)
+    {
+        kentry_t *tmp = (uint32_t)entry->header->entries + (i * block_size_in_memory);
+        tmp->used = 0;
+    }
 }

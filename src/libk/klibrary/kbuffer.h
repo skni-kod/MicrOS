@@ -5,15 +5,6 @@
 #include <stdbool.h>
 #include <memory/heap/heap.h>
 
-// circular buffer
-
-typedef struct kentry
-{
-  uint32_t size;
-  uint32_t used;
-  void *data[];
-} __attribute__((packed)) kentry_t; 
-
 typedef struct kbuffer
 {
   uint32_t block_count;
@@ -21,6 +12,14 @@ typedef struct kbuffer
   uint32_t ptr;
   void *entries[];
 } kbuffer_t;
+
+typedef struct kentry
+{
+  kbuffer_t *header;
+  uint32_t block_count;
+  uint32_t used;
+  void *data[];
+} __attribute__((packed)) kentry_t;
 
 // create memory area with fixed size, and divide it into fixed size blocks,
 // when kbuffer_get is called it allocates continous part of memory area
