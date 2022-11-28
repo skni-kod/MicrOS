@@ -103,7 +103,7 @@ static void __dhcp_print_message(dhcp_message_t *msg)
     }
 }
 
-bool dhcp_negotiate(net_interface_t *interface)
+uint32_t dhcp_negotiate(net_interface_t *interface)
 {
     sock = k_socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     k_bind(sock, &addr, sizeof(struct sockaddr_in));
@@ -134,7 +134,7 @@ bool dhcp_negotiate(net_interface_t *interface)
 
     dhcp_handle_offer(interface);
 
-    return true;
+    return 0;
 }
 
 void dhcp_discover(net_interface_t *interface)
@@ -229,11 +229,10 @@ int dhcp_handle_offer(net_interface_t *interface)
         dhcp_read_option(dhcp_offer, DHCP_LEASE_TIME, &interface->ipv4_lease_time, 4);
 
         interface->ipv4_lease_time = ntohl(interface->ipv4_lease_time);
-        return 1;
+        return 0;
     }
-    else
-    {
-    }
+
+    return -1;
 }
 
 void dhcp_read_option(dhcp_message_t *msg,

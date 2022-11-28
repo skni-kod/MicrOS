@@ -22,9 +22,9 @@
  * acknowledgement is received.
  *
  * @param interface the network interface to use
- * @return `true` when the DHCP negotiation has succeeded, `false` otherwise
+ * @return zero on success, non zero on fail
  */
-bool dhcp_negotiate(net_interface_t* interface);
+uint32_t dhcp_negotiate(net_interface_t *interface);
 
 /**
  * Receives a DHCP packet.
@@ -33,9 +33,8 @@ bool dhcp_negotiate(net_interface_t* interface);
  * @param packet the DHCP packet
  * @param header the UDP header
  */
-void dhcp_receive_packet(net_interface_t* interface,
-                         uint8_t* packet,
-                         udp_datagram_t* header);
-
+void dhcp_receive_packet(net_interface_t *interface,
+                         uint8_t *packet,
+                         udp_datagram_t *header);
 
 #endif

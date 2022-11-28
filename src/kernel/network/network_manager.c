@@ -3,9 +3,7 @@
     Created: 06.02.2021
     Modified: 27.06.2022
 */
-
 #include "network_manager.h"
-
 #include "protocols/dhcp/dhcp.h"
 
 kvector *net_devices;
@@ -45,32 +43,34 @@ bool network_manager_init()
         dev->rx = kbuffer_init(dev->interface->mtu, NETWORK_MANAGER_BUFFER_SIZE);
         dev->tx = kbuffer_init(dev->interface->mtu, NETWORK_MANAGER_BUFFER_SIZE);
         // finally turn on communication
-        dev->interface->mode.value = 0x3;
-        dhcp_negotiate(dev->interface);
+        dev->interface->mode = (net_mode_t){.receive = 1, .send = 1};
+        if (!dhcp_negotiate(dev->interface))
+        {
+            // set static IP
+            dev->interface->ipv4_address = (ipv4_addr_t){
+                .oct_a = 192,
+                .oct_b = 168,
+                .oct_c = 1,
+                .oct_d = 199};
 
-        // dev->interface->ipv4_address = (ipv4_addr_t){
-        //     .oct_a = 192,
-        //     .oct_b = 168,
-        //     .oct_c = 1,
-        //     .oct_d = 199};
+            dev->interface->ipv4_dns = (ipv4_addr_t){
+                .oct_a = 1,
+                .oct_b = 1,
+                .oct_c = 1,
+                .oct_d = 1};
 
-        // dev->interface->ipv4_dns = (ipv4_addr_t){
-        //     .oct_a = 1,
-        //     .oct_b = 1,
-        //     .oct_c = 1,
-        //     .oct_d = 1};
+            dev->interface->ipv4_netmask = (ipv4_addr_t){
+                .oct_a = 255,
+                .oct_b = 255,
+                .oct_c = 255,
+                .oct_d = 0};
 
-        // dev->interface->ipv4_netmask = (ipv4_addr_t){
-        //     .oct_a = 255,
-        //     .oct_b = 255,
-        //     .oct_c = 255,
-        //     .oct_d = 0};
-
-        // dev->interface->ipv4_gateway = (ipv4_addr_t){
-        //     .oct_a = 192,
-        //     .oct_b = 168,
-        //     .oct_c = 1,
-        //     .oct_d = 1};
+            dev->interface->ipv4_gateway = (ipv4_addr_t){
+                .oct_a = 192,
+                .oct_b = 168,
+                .oct_c = 1,
+                .oct_d = 1};
+        }
     }
 
     return true;

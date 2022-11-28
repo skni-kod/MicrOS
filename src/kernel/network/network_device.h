@@ -21,8 +21,7 @@ typedef union net_mode
     uint8_t value;
     struct
     {
-        uint8_t send : 1;
-        uint8_t receive : 1;
+        uint8_t send : 1, receive : 1;
     };
 
 } net_mode_t;
@@ -81,6 +80,5 @@ typedef struct net_device
     kbuffer_t *rx;
     kbuffer_t *tx;
 } net_device_t;
-
 
 #endif
