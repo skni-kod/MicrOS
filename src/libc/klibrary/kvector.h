@@ -2,7 +2,6 @@
 #define KVECTOR_H
 
 #include <string.h>
-#include "memory/heap/heap.h"
 
 typedef struct kvector
 {

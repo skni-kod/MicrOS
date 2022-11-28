@@ -17,7 +17,7 @@
 #include <memory/heap/heap.h>
 #include <micros/socket.h>
 #include <micros/sys/micros_socket.h>
-#include <network/network_device.h>
+#include <micros/network_device.h>
 
 struct socket;
 
@@ -135,7 +135,7 @@ int k_connect(int s, struct sockaddr *addr, int *addrlen);
 
 // kernel specific:
 
-klist_t* socket_add_entry(klist_t *buffer, ipv4_packet_t *packet);
+klist_t *socket_add_entry(klist_t *buffer, ipv4_packet_t *packet);
 
 void socket_not_implemented();
 

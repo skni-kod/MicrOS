@@ -1,37 +1,19 @@
 #include "micros_netif.h"
 #include "micros_process.h"
 
-uint32_t nic_dropped()
+uint32_t micros_nic_get(uint32_t id, net_interface_t *interface)
 {
-    return micros_interrupt_0a(SYSCALL_NETIF_DROPPED);
+    return micros_interrupt_2a(SYSCALL_NETIF_GET, id, interface);
 }
 
-ipv4_addr_t nic_ip()
+uint32_t micros_nic_set(uint32_t id, net_interface_t *interface)
 {
-    return (ipv4_addr_t){
-        .address = micros_interrupt_0a(SYSCALL_NETIF_GET_IPv4_ADDRESS),
-    };
+    return micros_interrupt_2a(SYSCALL_NETIF_SET, id, interface);
 }
 
-ipv4_addr_t nic_netmask()
+uint32_t micros_nic_count()
 {
-    return (ipv4_addr_t){
-        .address = micros_interrupt_0a(SYSCALL_NETIF_GET_IPv4_NETMASK),
-    };
-}
-
-ipv4_addr_t nic_gw()
-{
-    return (ipv4_addr_t){
-        .address = micros_interrupt_0a(SYSCALL_NETIF_GET_IPv4_GW),
-    };
-}
-
-ipv4_addr_t nic_dns()
-{
-    return (ipv4_addr_t){
-        .address = micros_interrupt_0a(SYSCALL_NETIF_GET_IPv4_DNS),
-    };
+    return micros_interrupt_0a(SYSCALL_NETIF_COUNT);
 }
 
 ipv4_addr_t dns_lookup(const char *hostname)

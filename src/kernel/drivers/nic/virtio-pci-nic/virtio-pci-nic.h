@@ -11,7 +11,7 @@
 #include <drivers/pci/pci.h>
 #include <assembly/io.h>
 #include <cpu/idt/idt.h>
-#include <network/network_device.h>
+#include <micros/network_device.h>
 #include <klibrary/kvector.h>
 #include <drivers/virtio/virtio-pci.h>
 #include <logger/logger.h>

@@ -7,8 +7,7 @@
 #include "protocols/dhcp/dhcp.h"
 
 kvector *net_devices;
-bool (*drivers[])(net_device_t *device) = {rtl8139_init, virtio_nic_init};
-uint8_t drivers_count = 2;
+nic_init drivers[] = {rtl8139_init, virtio_nic_init};
 
 bool network_manager_init()
 {
@@ -20,13 +19,13 @@ bool network_manager_init()
     ipv4_init();
 
     // Initialize all NIC drivers
-    for (uint8_t i = 0; i < drivers_count; i++)
+    for (uint8_t i = 0; i < (sizeof(drivers) / sizeof(nic_init)); i++)
     {
         net_device_t *dev = heap_kernel_alloc(sizeof(net_device_t), 0);
-        if (__network_manager_set_net_device(dev) && drivers[i](dev))
+        if (network_manager_set_net_device(dev) && drivers[i](dev))
         {
             kvector_add(net_devices, dev);
-            __network_manager_print_device_info(dev);
+            network_manager_print_device_info(dev);
         }
         else
         {
@@ -152,9 +151,14 @@ net_device_t *network_manager_get_nic_by_ipv4(ipv4_addr_t addr)
     return network_manager_get_nic();
 }
 
-void __network_manager_print_device_info(net_device_t *device)
+kvector *network_manager_get_devices()
 {
-    char logInfo[27] = "";
+    return net_devices;
+}
+
+static void network_manager_print_device_info(net_device_t *device)
+{
+    char logInfo[27];
 
     logger_log_ok(device->device_name);
 
@@ -169,7 +173,7 @@ void __network_manager_print_device_info(net_device_t *device)
     logger_log_info(logInfo);
 }
 
-static int8_t __network_manager_set_net_device(net_device_t *device)
+static int8_t network_manager_set_net_device(net_device_t *device)
 {
     if (!device)
         return 0;
@@ -190,7 +194,7 @@ static int8_t __network_manager_set_net_device(net_device_t *device)
     kvector_init(device->interface->arp_entries);
 
     // TODO: get mtu from driver
-    device->interface->mtu = 1600;
+    device->interface->mtu = 1500;
     device->interface->ttl = 64;
 
     return 1;

@@ -116,11 +116,9 @@ void syscalls_manager_init()
     syscalls_manager_attach_handler(SYSCALL_LISTEN, syscall_socket_listen);
     syscalls_manager_attach_handler(SYSCALL_ACCEPT, syscall_socket_accept);
     syscalls_manager_attach_handler(SYSCALL_CONNECT, syscall_socket_connect);
-    syscalls_manager_attach_handler(SYSCALL_NETIF_DROPPED, syscall_netif_dropped);
-    syscalls_manager_attach_handler(SYSCALL_NETIF_GET_IPv4_ADDRESS, syscall_netif_get_ipv4_address);
-    syscalls_manager_attach_handler(SYSCALL_NETIF_GET_IPv4_NETMASK, syscall_netif_get_ipv4_netmask);
-    syscalls_manager_attach_handler(SYSCALL_NETIF_GET_IPv4_GW, syscall_netif_get_ipv4_gw);
-    syscalls_manager_attach_handler(SYSCALL_NETIF_GET_IPv4_DNS, syscall_netif_get_ipv4_dns);
+    syscalls_manager_attach_handler(SYSCALL_NETIF_GET, syscall_netif_get);
+    syscalls_manager_attach_handler(SYSCALL_NETIF_SET, syscall_netif_set);
+    syscalls_manager_attach_handler(SYSCALL_NETIF_COUNT, syscall_netif_count);
     syscalls_manager_attach_handler(SYSCALL_DNS_LOOKUP, syscall_dns_lookup);
 }
 

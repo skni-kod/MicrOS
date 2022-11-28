@@ -1,5 +1,6 @@
 #include <drivers/keyboard/keyboard.h>
 #include <drivers/vga/vga.h>
+#include <cpu/dma/dma.h>
 
 unsigned char kbdus[128] =
     {
@@ -164,7 +165,7 @@ bool keyboard_handler()
 {
     unsigned char scancode;
     scancode = keyboard_get_scancode();
-    //scancode = d;
+    // scancode = d;
 
     if (scancode == 0xE0)
         kb_estate->last_E0h = 1;
@@ -274,7 +275,7 @@ bool keyboard_handler()
         kb_estate->last_E0h = 0;
         kb_estate->last_E1h = 0;
     }
-    
+
     return false;
 
     // TODO: Check if these commented lines are necessary.
@@ -296,24 +297,24 @@ bool keyboard_handler()
 
       }
     }*/
-    /*if(scancode == 0x2A)     
+    /*if(scancode == 0x2A)
      {
           shift_key = 1;//Shift key is pressed
-     }      
+     }
      else if(scancode == 0xAA)
      {
           int shift_key= 0;//Shift Key is not pressed
-     }      
-     else    
-     {          
+     }
+     else
+     {
          if (scancode == 0x80)
          {
               int shiftaltctrl = 1;//Put anything to see what special keys were pressed
          }
          else
-         {  
-              vga_printchar(kbdus[scancode]); //Prints the character which was pressed         
-         }     
+         {
+              vga_printchar(kbdus[scancode]); //Prints the character which was pressed
+         }
      }*/
 }
 
@@ -329,5 +330,5 @@ unsigned char keyboard_is_between_or_eq(unsigned char number, unsigned char l, u
 
 keyboard_state_flags *keyboard_get_state_flags()
 {
-    return (keyboard_state_flags *) kb_state;
+    return (keyboard_state_flags *)kb_state;
 }

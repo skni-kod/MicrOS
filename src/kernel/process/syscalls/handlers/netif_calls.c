@@ -1,28 +1,25 @@
 #include <process/syscalls/handlers/netif_calls.h>
 
-void syscall_netif_dropped(interrupt_state *state)
+void syscall_netif_get(interrupt_state *state)
 {
-    state->registers.eax = network_manager_get_nic()->interface->frames_dropped;
+    kvector *devices = network_manager_get_devices(devices);
+    if (state->registers.ebx > devices->count)
+    {
+        state->registers.eax = 0;
+        return;
+    }
+    if (state->registers.ecx)
+        memcpy((void *)state->registers.ecx, ((net_device_t *)devices->data[state->registers.ebx])->interface, sizeof(net_interface_t));
 }
 
-void syscall_netif_get_ipv4_address(interrupt_state *state)
+void syscall_netif_set(interrupt_state *state)
 {
-    state->registers.eax = network_manager_get_nic()->interface->ipv4_address.address;
 }
 
-void syscall_netif_get_ipv4_netmask(interrupt_state *state)
+void syscall_netif_count(interrupt_state *state)
 {
-    state->registers.eax = network_manager_get_nic()->interface->ipv4_netmask.address;
-}
-
-void syscall_netif_get_ipv4_gw(interrupt_state *state)
-{
-    state->registers.eax = network_manager_get_nic()->interface->ipv4_gateway.address;
-}
-
-void syscall_netif_get_ipv4_dns(interrupt_state *state)
-{
-    state->registers.eax = network_manager_get_nic()->interface->ipv4_dns.address;
+    kvector *devices;
+    state->registers.eax = network_manager_get_devices(devices);
 }
 
 void syscall_dns_lookup(interrupt_state *state)

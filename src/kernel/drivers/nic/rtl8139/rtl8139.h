@@ -10,7 +10,8 @@
 #include <drivers/pci/pci.h>
 #include <assembly/io.h>
 #include <cpu/idt/idt.h>
-#include <network/network_device.h>
+#include <micros/network_device.h>
+#include <cpu/dma/dma.h>
 #include <klibrary/kvector.h>
 
 #define RTL8139_DEVICE_VENDOR_ID 0x10EC
@@ -85,7 +86,7 @@ typedef struct rtl8139_dev
 
 //! rtl8139_init
 /*!
-    Initialize network card driver 
+    Initialize network card driver
     Requires initialized PCI driver
     If device not present, returns 0, if yes pointer to dev mac address
 */
@@ -117,7 +118,7 @@ void rtl8139_read_mac();
 
 //! rtl8139_get_mac
 /*!
-    Puts to buffer mac address of device 
+    Puts to buffer mac address of device
     Requires buffer with size of (6 * uint8_t)
 */
 void rtl8139_get_mac(uint8_t *buffer);

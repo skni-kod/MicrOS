@@ -1,9 +1,9 @@
 #ifndef KBUFFER_H
 #define KBUFFER_H
 
+#include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <memory/heap/heap.h>
 
 typedef struct kbuffer
 {

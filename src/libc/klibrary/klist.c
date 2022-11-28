@@ -1,9 +1,9 @@
-#include <klibrary/klist.h>
+#include "klist.h"
 
 klist_t *klist_init()
 {
     klist_t *data = 0;
-    data = heap_kernel_alloc(sizeof(klist_t), 0);
+    data = malloc(sizeof(klist_t));
     if (data)
     {
         data->value = NULL;
@@ -20,7 +20,7 @@ klist_t *klist_add(klist_t *head, void *value)
 {
     if (head == NULL)
     {
-        head = heap_kernel_alloc(sizeof(klist_t), 0);
+        head = malloc(sizeof(klist_t));
         head->prev = NULL;
         head->value = value;
         head->next = NULL;
@@ -36,7 +36,7 @@ klist_t *klist_add(klist_t *head, void *value)
     }
 
     // add to existing
-    klist_t *new = heap_kernel_alloc(sizeof(klist_t), 0);
+    klist_t *new = malloc(sizeof(klist_t));
     new->next = head;
     new->value = value;
     new->prev = NULL;
@@ -57,26 +57,26 @@ klist_t *klist_delete(klist_t *head, klist_t *ptr)
             {
                 ((klist_t *)(ptr->prev))->next = ptr->next;
                 ((klist_t *)(ptr->next))->prev = ptr->prev;
-                heap_kernel_dealloc(ptr);
+                free(ptr);
                 --head->size;
                 return head;
             }
             if (!ptr->next && !ptr->prev)
             {
-                heap_kernel_dealloc(ptr);
+                free(ptr);
                 return 0;
             }
             if (ptr->next && !ptr->prev)
             {
                 ((klist_t *)(ptr->next))->prev = NULL;
-                heap_kernel_dealloc(ptr);
+                free(ptr);
                 --ptr->next->size;
                 return ptr->next;
             }
             if (!ptr->next && ptr->prev)
             {
                 ((klist_t *)(ptr->prev))->next = NULL;
-                heap_kernel_dealloc(ptr);
+                free(ptr);
                 --head->size;
                 return head;
             }
@@ -87,11 +87,11 @@ klist_t *klist_delete(klist_t *head, klist_t *ptr)
             {
                 klist_t *tmp = (klist_t *)head->next;
                 ((klist_t *)(head->next))->prev = NULL;
-                heap_kernel_dealloc(head);
+                free(head);
                 --tmp->size;
                 return tmp;
             }
-            heap_kernel_dealloc(head);
+            free(head);
             head = 0;
             ptr = 0;
             return 0;
@@ -110,11 +110,11 @@ klist_t *klist_clear(klist_t *head)
         {
             if (tmp->next == NULL)
             {
-                heap_kernel_dealloc(tmp);
+                free(tmp);
                 return head;
             }
             tmp = tmp->next;
-            heap_kernel_dealloc(tmp->prev);
+            free(tmp->prev);
         }
     }
     return 0;

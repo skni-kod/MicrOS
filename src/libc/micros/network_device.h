@@ -11,7 +11,6 @@
 #include <inet/ipv4.h>
 #include <inet/inet.h>
 #include <klibrary/kvector.h>
-#include <klibrary/ktime.h>
 #include <klibrary/kbuffer.h>
 
 typedef struct net_device net_device_t;
@@ -80,5 +79,7 @@ typedef struct net_device
     kbuffer_t *rx;
     kbuffer_t *tx;
 } net_device_t;
+
+typedef bool (*nic_init)(net_device_t *device);
 
 #endif

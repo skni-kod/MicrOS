@@ -2,7 +2,6 @@
 #define KLIST_H
 
 #include <stdint.h>
-#include <memory/heap/heap.h>
 #include <string.h>
 
 typedef struct klist

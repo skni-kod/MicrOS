@@ -242,35 +242,34 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (!strcmp("-dropped", argv[2]))
-        printf("Dropped frames: %d\n", nic_dropped());
-
     if (!strcmp("-ip", argv[2]))
     {
-        ipv4_addr_t addr = nic_ip();
+        net_interface_t iface;
+        micros_nic_get(0, &iface);
+
         printf("IPv4: %d.%d.%d.%d\n",
-               addr.oct_a,
-               addr.oct_b,
-               addr.oct_c,
-               addr.oct_d);
-        addr = nic_netmask();
+               iface.ipv4_address.oct_a,
+               iface.ipv4_address.oct_b,
+               iface.ipv4_address.oct_c,
+               iface.ipv4_address.oct_d);
         printf("Netmask: %d.%d.%d.%d\n",
-               addr.oct_a,
-               addr.oct_b,
-               addr.oct_c,
-               addr.oct_d);
-        addr = nic_gw();
+               iface.ipv4_netmask.oct_a,
+               iface.ipv4_netmask.oct_b,
+               iface.ipv4_netmask.oct_c,
+               iface.ipv4_netmask.oct_d);
         printf("GW: %d.%d.%d.%d\n",
-               addr.oct_a,
-               addr.oct_b,
-               addr.oct_c,
-               addr.oct_d);
-        addr = nic_dns();
+               iface.ipv4_gateway.oct_a,
+               iface.ipv4_gateway.oct_b,
+               iface.ipv4_gateway.oct_c,
+               iface.ipv4_gateway.oct_d);
         printf("DNS: %d.%d.%d.%d\n",
-               addr.oct_a,
-               addr.oct_b,
-               addr.oct_c,
-               addr.oct_d);
+               iface.ipv4_dns.oct_a,
+               iface.ipv4_dns.oct_b,
+               iface.ipv4_dns.oct_c,
+               iface.ipv4_dns.oct_d);
+        printf("Dropped frames: %d\n", iface.frames_dropped);
+        printf("RX frames: %d     bytes: %d\n", iface.frames_received, iface.bytes_received);
+        printf("TX frames: %d     bytes: %d\n", iface.frames_sent, iface.bytes_sent);
     }
 
     return 0;

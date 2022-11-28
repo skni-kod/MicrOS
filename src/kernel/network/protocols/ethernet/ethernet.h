@@ -12,9 +12,8 @@
 #include <network/protocols/arp/arp.h>
 #include <network/protocols/ipv4/ipv4.h>
 #include <network/network_utils.h>
-#include <network/network_device.h>
 #include <network/network_manager.h>
-
+#include <micros/network_device.h>
 
 uint32_t ethernet_process_frame(nic_data_t *data);
 
