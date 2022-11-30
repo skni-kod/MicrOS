@@ -8,9 +8,9 @@
 #include <micros/syscalls.h>
 #include "micros_interrupts.h"
 
-uint32_t micros_nic_get(uint32_t id, net_interface_t *interface);
-uint32_t micros_nic_set(uint32_t id, net_interface_t *interface);
-uint32_t micros_nic_count();
+uint32_t micros_netif_get(uint32_t id, net_interface_t *interface);
+uint32_t micros_netif_set(uint32_t id, net_interface_t *interface);
+uint32_t micros_netif_count();
 
 ipv4_addr_t dns_lookup(const char *hostname);
 

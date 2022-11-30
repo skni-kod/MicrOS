@@ -29,8 +29,18 @@ uint32_t ethernet_send_frame(nic_data_t *data)
     {
     case htons(IPv4_PROTOCOL_TYPE):
     {
-        arp_entry_t *mac = arp_request_entry(data->device,
-                                             &((ipv4_packet_t *)(data->frame + sizeof(ethernet_frame_t)))->dst);
+        ipv4_packet_t *packet = data->frame + sizeof(ethernet_frame_t);
+        ipv4_addr_t net_addr = (ipv4_addr_t){.address =
+                                                 data->device->interface->ipv4_address.address & data->device->interface->ipv4_netmask.address};
+        ipv4_addr_t dst_net = (ipv4_addr_t){.address =
+                                                dst_net.address = packet->dst.address & data->device->interface->ipv4_netmask.address};
+        arp_entry_t *mac;
+
+        if (dst_net.address != net_addr.address)
+            mac = arp_request_entry(data->device, &data->device->interface->ipv4_gateway);
+        else
+            mac = arp_request_entry(data->device, &packet->dst);
+
         if (mac)
         {
             memcpy(&((ethernet_frame_t *)(data->frame))->dst, &mac->mac, sizeof(mac_addr_t));
@@ -41,7 +51,10 @@ uint32_t ethernet_send_frame(nic_data_t *data)
 #endif
             return network_manager_send_data(data);
         }
+        else
+            return 0;
     }
+    break;
     case htons(ARP_PROTOCOL_TYPE):
     {
 // calculate FCS

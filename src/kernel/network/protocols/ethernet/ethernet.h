@@ -17,12 +17,6 @@
 
 uint32_t ethernet_process_frame(nic_data_t *data);
 
-//! network_manager_send_ethernet_frame
-/*
-    Send ethernet frame
-*/
-bool network_manager_send_ethernet_frame(ethernet_frame_t *frame, uint32_t data_len);
-
 //! network_manager_make_frame
 /*
     Make ethernet frame, with specified data and type

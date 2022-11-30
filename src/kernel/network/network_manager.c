@@ -43,7 +43,7 @@ bool network_manager_init()
         dev->tx = kbuffer_init(dev->interface->mtu, NETWORK_MANAGER_BUFFER_SIZE);
         // finally turn on communication
         dev->interface->mode = (net_mode_t){.receive = 1, .send = 1};
-        if (!dhcp_negotiate(dev->interface))
+        if (dhcp_negotiate(dev->interface))
         {
             // set static IP
             dev->interface->ipv4_address = (ipv4_addr_t){

@@ -27,7 +27,8 @@ static arp_entry_t broadcast_entry = {
 
 uint32_t arp_process_packet(nic_data_t *data)
 {
-    arp_packet_t *packet = (arp_packet_t *)(data->frame + sizeof(ethernet_frame_t));
+    // arp_packet_t *packet = (arp_packet_t *)(data->frame + sizeof(ethernet_frame_t));
+    arp_packet_t *packet = ((ethernet_frame_t *)data->frame)->data;
 
     switch (packet->opcode)
     {
@@ -115,6 +116,13 @@ arp_entry_t *arp_request_entry(net_device_t *device, ipv4_addr_t *ip)
         return entry;
 
     arp_send_request(device, ip);
+    int i = 0xFFFF;
+    while (i)
+        --i;
+
+    entry = arp_get_entry(device, ip);
+    if (entry)
+        return entry;
 
     return 0;
 

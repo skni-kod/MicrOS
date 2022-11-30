@@ -245,7 +245,7 @@ int main(int argc, char *argv[])
     if (!strcmp("-ip", argv[2]))
     {
         net_interface_t iface;
-        micros_nic_get(0, &iface);
+        micros_netif_get(atoi(argv[3]), &iface);
 
         printf("IPv4: %d.%d.%d.%d\n",
                iface.ipv4_address.oct_a,
