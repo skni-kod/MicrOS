@@ -32,5 +32,5 @@ void syscall_netif_count(interrupt_state *state)
 
 void syscall_dns_lookup(interrupt_state *state)
 {
-    state->registers.eax = dns_lookup(state->registers.ebx).address;
+    state->registers.eax = dns_lookup(state->registers.ebx).value;
 }

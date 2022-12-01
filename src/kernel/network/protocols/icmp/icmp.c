@@ -2,14 +2,15 @@
 
 uint32_t icmp_process_packet(nic_data_t *data)
 {
-    ipv4_packet_t *packet = (ipv4_packet_t *)(data->frame + sizeof(ethernet_frame_t));
-    icmp_header_t *header = (icmp_header_t *)(data->frame + sizeof(ethernet_frame_t) + sizeof(ipv4_packet_t));
+    ipv4_packet_t *packet = ((ethernet_frame_t *)(data->frame))->data;
+    icmp_header_t *header = packet->data;
 
     switch (header->type)
     {
     case ICMP_TYPE_ECHO_REQUEST:
     {
-        icmp_header_echo_t *request = header->data;
+        // icmp_header_echo_t *request = header->data;
+        // this is not needed at this moment
         uint32_t data_size = ntohs(packet->length) - sizeof(ipv4_packet_t);
         nic_data_t *response = ipv4_create_packet(data->device, IP_PROTOCOL_ICMP, packet->src, data_size);
 

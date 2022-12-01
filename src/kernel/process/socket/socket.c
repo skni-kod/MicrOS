@@ -124,7 +124,7 @@ klist_t *socket_add_entry(klist_t *buffer, ipv4_packet_t *packet)
         struct sockaddr_in *address = &(entry->addr);
         address->sin_family = AF_INET;
         address->sin_port = ((tcp_segment_t *)(packet->data))->src_port;
-        address->sin_addr.address = packet->src.address;
+        address->sin_addr.value = packet->src.value;
         memcpy((*entry).data, (void *)TCP_DATA_PTR((*packet).data), data_size);
         return klist_add(buffer, (void *)entry);
     }
@@ -225,10 +225,10 @@ socket_t *socket_descriptor_lookup(int domain, int type, int protocol, struct so
             {
                 udp_socket_t *sk = socket->sk;
                 if (sk->local.sin_port == ((struct sockaddr_in *)addr)->sin_port &&
-                        sk->local.sin_addr.address == ((struct sockaddr_in *)addr)->sin_addr.address ||
-                    INADDR_BROADCAST == sk->local.sin_addr.address ||
-                    0x7F == sk->local.sin_addr.address >> 24 ||
-                    INADDR_ANY == sk->local.sin_addr.address)
+                        sk->local.sin_addr.value == ((struct sockaddr_in *)addr)->sin_addr.value ||
+                    INADDR_BROADCAST == sk->local.sin_addr.value ||
+                    0x7F == sk->local.sin_addr.value >> 24 ||
+                    INADDR_ANY == sk->local.sin_addr.value)
                     return socket;
             }
             break;

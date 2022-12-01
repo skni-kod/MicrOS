@@ -4,7 +4,7 @@ kvector *fragments;
 
 uint32_t ipv4_process_packet(nic_data_t *data)
 {
-    ipv4_packet_t *packet = (ipv4_packet_t *)(data->frame + sizeof(ethernet_frame_t));
+    ipv4_packet_t *packet = ((ethernet_frame_t *)(data->frame))->data;
 
     if (packet->version != IPv4_PROTOCOL_VERSION)
         return 0;

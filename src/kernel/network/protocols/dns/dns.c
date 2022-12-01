@@ -71,7 +71,7 @@ ipv4_addr_t dns_lookup(const char *domain)
 
     if (sockfd < 0)
     {
-        return (ipv4_addr_t){.address = 0};
+        return (ipv4_addr_t){.value = 0};
     }
 
     struct sockaddr_in server_addr = {
@@ -101,7 +101,7 @@ ipv4_addr_t dns_lookup(const char *domain)
     }
 
     if (recv == 0)
-        return (ipv4_addr_t){.address = 0};
+        return (ipv4_addr_t){.value = 0};
 
     dns_header_t dns_header = {0};
     memcpy(&dns_header, buf, sizeof(dns_header_t));
@@ -146,12 +146,12 @@ ipv4_addr_t dns_lookup(const char *domain)
         }
         else
         {
-            return (ipv4_addr_t){.address = 0};
+            return (ipv4_addr_t){.value = 0};
         }
     }
     else
     {
-        return (ipv4_addr_t){.address = 0};
+        return (ipv4_addr_t){.value = 0};
     }
 
     return addr;

@@ -8,7 +8,7 @@ arp_packet_t arp_packet_base = {
     .opcode = htons(ARP_OPCODE_REPLY),
 };
 
-static arp_entry_t broadcast_entry = {
+static const arp_entry_t broadcast_entry = {
     .add_time = 0,
     .ip = {
         .oct_a = 0xFF,
@@ -34,7 +34,7 @@ uint32_t arp_process_packet(nic_data_t *data)
     {
     case htons(ARP_OPCODE_REQUEST):
         // Handle ARP request
-        if (packet->dst_pr.address == data->device->interface->ipv4_address.address)
+        if (packet->dst_pr.value == data->device->interface->ipv4_address.value)
         {
             arp_add_entry(data->device, &packet->src_hw, &packet->src_pr, ARP_ENTRY_TYPE_DYNAMIC);
 
@@ -95,7 +95,7 @@ arp_entry_t *arp_get_entry(net_device_t *device, ipv4_addr_t *ip)
     for (uint32_t i = 0; i < device->interface->arp_entries->count; i++)
     {
         entry = ((arp_entry_t *)device->interface->arp_entries->data[i]);
-        if (ip->address == entry->ip.address)
+        if (ip->value == entry->ip.value)
             return entry;
     }
 
@@ -108,7 +108,7 @@ arp_entry_t *arp_request_entry(net_device_t *device, ipv4_addr_t *ip)
         return 0;
 
     // broadcast request
-    if ((ipv4_addr_t){.oct_a = 0xFF, .oct_b = 0xFF, .oct_c = 0xFF, .oct_d = 0xFF}.address == ip->address)
+    if ((ipv4_addr_t){.oct_a = 0xFF, .oct_b = 0xFF, .oct_c = 0xFF, .oct_d = 0xFF}.value == ip->value)
         return &broadcast_entry;
 
     arp_entry_t *entry = arp_get_entry(device, ip);
@@ -144,13 +144,6 @@ arp_entry_t *arp_request_entry(net_device_t *device, ipv4_addr_t *ip)
 
 void arp_send_request(net_device_t *device, ipv4_addr_t *ip)
 {
-    mac_addr_t broadcast = {.octet_a = 0xFF,
-                            .octet_b = 0xFF,
-                            .octet_c = 0xFF,
-                            .octet_d = 0xFF,
-                            .octet_e = 0xFF,
-                            .octet_f = 0xFF};
-
     nic_data_t *request = ethernet_create_frame(
         device,
         ARP_PROTOCOL_TYPE,
@@ -180,6 +173,13 @@ void arp_send_request(net_device_t *device, ipv4_addr_t *ip)
                                        .octet_f = 0};
     }
 
-    memcpy(&frame->dst, &broadcast, sizeof(mac_addr_t));
+    memcpy(&frame->dst,
+           &(const mac_addr_t){.octet_a = 0xFF,
+                               .octet_b = 0xFF,
+                               .octet_c = 0xFF,
+                               .octet_d = 0xFF,
+                               .octet_e = 0xFF,
+                               .octet_f = 0xFF},
+           sizeof(mac_addr_t));
     ethernet_send_frame(request);
 }

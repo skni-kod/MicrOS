@@ -34,7 +34,7 @@ typedef union ipv4_addr
         uint8_t oct_c;
         uint8_t oct_d;
     };
-    uint32_t address;
+    uint32_t value;
 } ipv4_addr_t;
 
 typedef enum ipv4_protocol
@@ -47,11 +47,13 @@ typedef enum ipv4_protocol
 typedef struct ipv4_packet
 {
     uint8_t ihl : 4,
-            version : 4;
-    union{
+        version : 4;
+    union
+    {
         uint8_t tos;
-        struct{
-                uint8_t  : 2,
+        struct
+        {
+            uint8_t : 2,
                 relibility : 1,
                 throughput : 1,
                 delay : 1,
@@ -60,23 +62,25 @@ typedef struct ipv4_packet
     };
     uint16_t length;
     uint16_t id;
-    union {
+    union
+    {
         uint16_t flags_offset;
-        struct {
-            uint8_t offset1 : 5,
-                            : 3;
+        struct
+        {
+            uint8_t offset1 : 5, : 3;
             uint8_t offset2;
         };
-        struct {
+        struct
+        {
             uint8_t : 5,
-                 mf : 1,
-                 df : 1,
-                    : 1;
+                mf : 1,
+                df : 1, : 1;
             uint8_t;
         };
-        struct {
+        struct
+        {
             uint8_t : 5,
-              flags : 3;
+                flags : 3;
             uint8_t;
         };
     };

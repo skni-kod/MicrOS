@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
         struct sockaddr_in myaddr = {0};
         myaddr.sin_family = AF_INET;
         myaddr.sin_port = htons(port);
-        myaddr.sin_addr.address = INADDR_ANY;
+        myaddr.sin_addr.value = INADDR_ANY;
 
         int ret = bind(sock, (struct sockaddr *)&myaddr, sizeof(myaddr));
         while (!ret)
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
         struct sockaddr_in myaddr = {0};
         myaddr.sin_family = AF_INET;
         myaddr.sin_port = htons(port);
-        myaddr.sin_addr.address = INADDR_ANY;
+        myaddr.sin_addr.value = INADDR_ANY;
 
         bind(sock, (struct sockaddr *)&myaddr, sizeof(myaddr));
 
@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
             .sin_family = AF_INET,
             .sin_zero = 0,
             .sin_port = htons(port),
-            .sin_addr.address = srv.address};
+            .sin_addr.value = srv.value};
 
         socklen_t server_addr_len = sizeof(struct sockaddr_in);
 

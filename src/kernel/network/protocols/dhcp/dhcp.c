@@ -40,7 +40,7 @@ struct sockaddr_in srv = {
 struct sockaddr_in addr = {
     .sin_family = AF_INET,
     .sin_port = htons(BOOTP_CLIENT),
-    .sin_addr.address = INADDR_ANY};
+    .sin_addr.value = INADDR_ANY};
 
 static void __dhcp_add_option_ptr(dhcp_message_t *msg, uint8_t option, uint8_t value[], uint8_t value_length)
 {
@@ -203,8 +203,8 @@ int dhcp_handle_offer(net_interface_t *interface)
         dhcp_request->hlen = 0x6;
         dhcp_request->hops = 0;
         dhcp_request->xid = htonl(xid);
-        dhcp_request->ciaddr.address = 0;
-        dhcp_request->siaddr.address = 0;
+        dhcp_request->ciaddr.value = 0;
+        dhcp_request->siaddr.value = 0;
         dhcp_request->magic_cookie = htonl(DHCP_MAGIC_COOKIE);
         dhcp_request->options[0] = 0xFF;
         __dhcp_add_option(dhcp_request, DHCP_MESSAGE_TYPE, DHCP_REQUEST);
@@ -218,13 +218,13 @@ int dhcp_handle_offer(net_interface_t *interface)
     }
     else if (type[0] == DHCP_ACK)
     {
-        memcpy(&interface->ipv4_address.address, &dhcp_offer->yiaddr.address, 4);
+        memcpy(&interface->ipv4_address.value, &dhcp_offer->yiaddr.value, 4);
 
-        dhcp_read_option(dhcp_offer, DHCP_ROUTER, &interface->ipv4_gateway.address, 4);
+        dhcp_read_option(dhcp_offer, DHCP_ROUTER, &interface->ipv4_gateway.value, 4);
 
-        dhcp_read_option(dhcp_offer, DHCP_DNS, &interface->ipv4_dns.address, 4);
+        dhcp_read_option(dhcp_offer, DHCP_DNS, &interface->ipv4_dns.value, 4);
 
-        dhcp_read_option(dhcp_offer, DHCP_NETMASK, &interface->ipv4_netmask.address, 4);
+        dhcp_read_option(dhcp_offer, DHCP_NETMASK, &interface->ipv4_netmask.value, 4);
 
         dhcp_read_option(dhcp_offer, DHCP_LEASE_TIME, &interface->ipv4_lease_time, 4);
 

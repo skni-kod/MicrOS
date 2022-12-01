@@ -30,13 +30,13 @@ uint32_t ethernet_send_frame(nic_data_t *data)
     case htons(IPv4_PROTOCOL_TYPE):
     {
         ipv4_packet_t *packet = data->frame + sizeof(ethernet_frame_t);
-        ipv4_addr_t net_addr = (ipv4_addr_t){.address =
-                                                 data->device->interface->ipv4_address.address & data->device->interface->ipv4_netmask.address};
-        ipv4_addr_t dst_net = (ipv4_addr_t){.address =
-                                                dst_net.address = packet->dst.address & data->device->interface->ipv4_netmask.address};
+        ipv4_addr_t net_addr = (ipv4_addr_t){.value =
+                                                 data->device->interface->ipv4_address.value & data->device->interface->ipv4_netmask.value};
+        ipv4_addr_t dst_net = (ipv4_addr_t){.value =
+                                                dst_net.value = packet->dst.value & data->device->interface->ipv4_netmask.value};
         arp_entry_t *mac;
 
-        if (dst_net.address != net_addr.address)
+        if (dst_net.value != net_addr.value)
             mac = arp_request_entry(data->device, &data->device->interface->ipv4_gateway);
         else
             mac = arp_request_entry(data->device, &packet->dst);

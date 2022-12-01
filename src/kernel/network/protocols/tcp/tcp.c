@@ -24,7 +24,7 @@ static struct proto_ops tcp_interface = {
 
 uint32_t tcp_process_segment(nic_data_t *data)
 {
-    ipv4_packet_t *packet = (ipv4_packet_t *)(data->frame + sizeof(ethernet_frame_t));
+    ipv4_packet_t *packet = ((ethernet_frame_t *)(data->frame))->data;
     tcp_segment_t *segment = packet->data;
 
 #ifndef TRUST_ME_BRO
@@ -36,7 +36,7 @@ uint32_t tcp_process_segment(nic_data_t *data)
 #endif
 
     struct sockaddr_in addr = {
-        .sin_addr.address = packet->dst.address,
+        .sin_addr.value = packet->dst.value,
         .sin_port = segment->dst_port};
 
     // first look for open socket, so forward there incoming data:
@@ -44,7 +44,7 @@ uint32_t tcp_process_segment(nic_data_t *data)
 
     if (socket)
     {
-        addr.sin_addr.address = packet->src.address;
+        addr.sin_addr.value = packet->src.value;
         addr.sin_port = segment->src_port;
         tcp_socket_t *sk = socket->sk;
 
@@ -71,7 +71,7 @@ uint32_t tcp_process_segment(nic_data_t *data)
                         con->state = TCP_SYN_RECV;
                         memcpy(&con->local, &sk->local, sizeof(struct sockaddr_in));
                         con->remote.sin_family = AF_INET;
-                        con->remote.sin_addr.address = packet->src.address;
+                        con->remote.sin_addr.value = packet->src.value;
                         con->remote.sin_port = segment->src_port;
                         con->rx = klist_init(con->rx);
                         con->tx = klist_init(con->tx);
@@ -171,7 +171,7 @@ uint32_t tcp_send_segment(struct socket *socket, tcp_flags_t flags, uint8_t *dat
 
     nic_data_t *data = ipv4_create_packet(sk->device,
                                           IP_PROTOCOL_TCP,
-                                          sk->remote.sin_addr.address,
+                                          sk->remote.sin_addr.value,
                                           data_size + sizeof(tcp_segment_t) /* + 20 */);
 
     ipv4_packet_t *packet = data->frame + sizeof(ethernet_frame_t);
@@ -212,12 +212,12 @@ static socket_t *__tcp_get_socket(struct sockaddr_in *addr)
             tcp_socket_t *sk = socket->sk;
             if (sk->local.sin_port == addr->sin_port)
             {
-                if (sk->local.sin_addr.address == addr->sin_addr.address)
+                if (sk->local.sin_addr.value == addr->sin_addr.value)
                     // best match -- connection socket
                     return socket;
-                else if (INADDR_BROADCAST == sk->local.sin_addr.address ||
-                         0x7F == sk->local.sin_addr.address >> 24 ||
-                         INADDR_ANY == sk->local.sin_addr.address)
+                else if (INADDR_BROADCAST == sk->local.sin_addr.value ||
+                         0x7F == sk->local.sin_addr.value >> 24 ||
+                         INADDR_ANY == sk->local.sin_addr.value)
                     // listen socket found
                     ret = socket;
             }
@@ -235,7 +235,7 @@ socket_t *tcp_socket_init(socket_t *socket)
     sk->state = TCP_CLOSE;
     sk->local.sin_family = AF_INET;
     sk->local.sin_port = htons(PORT++);
-    sk->local.sin_addr.address = INADDR_ANY;
+    sk->local.sin_addr.value = INADDR_ANY;
     socket->ops = heap_kernel_alloc(sizeof(struct proto_ops), 0);
     memcpy(socket->ops, &tcp_interface, sizeof(struct proto_ops));
 
@@ -247,7 +247,7 @@ int tcp_socket_bind(struct socket *socket, struct sockaddr *addr, int sockaddr_l
     tcp_socket_t *sk = socket->sk;
     struct sockaddr_in *_addr = (struct sockaddr_in *)addr;
     sk->local.sin_port = _addr->sin_port;
-    sk->local.sin_addr.address = _addr->sin_addr.address;
+    sk->local.sin_addr.value = _addr->sin_addr.value;
     sk->device = network_manager_get_nic();
     sk->local.sin_family = AF_INET;
     return 0;
@@ -276,7 +276,7 @@ int tcp_socket_listen(struct socket *socket, int backlog)
             sk->device = network_manager_get_nic();
             sk->local.sin_family = AF_INET;
             sk->local.sin_port = sk->local.sin_port;
-            sk->local.sin_addr.address = sk->local.sin_addr.address;
+            sk->local.sin_addr.value = sk->local.sin_addr.value;
             sk->rx = klist_init();
             sk->tx = klist_init();
             sock->ops = heap_kernel_alloc(sizeof(struct proto_ops), 0);
@@ -306,7 +306,7 @@ int tcp_socket_accept(struct socket *socket, struct sockaddr *addr, int sockaddr
                 tcp_segment_t *syn = pckt->data;
                 memcpy(&con->header, syn, sizeof(tcp_segment_t));
 
-                sk->remote.sin_addr.address = pckt->src.address;
+                sk->remote.sin_addr.value = pckt->src.value;
                 sk->remote.sin_port = syn->src_port;
                 sk->remote.sin_family = AF_INET;
 

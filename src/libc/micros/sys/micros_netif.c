@@ -19,6 +19,6 @@ uint32_t micros_netif_count()
 ipv4_addr_t dns_lookup(const char *hostname)
 {
     return (ipv4_addr_t){
-        .address = micros_interrupt_1a(SYSCALL_DNS_LOOKUP, hostname),
+        .value = micros_interrupt_1a(SYSCALL_DNS_LOOKUP, hostname),
     };
 }
