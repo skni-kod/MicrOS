@@ -2,7 +2,7 @@
 
 static uint32_t xid = 4323638;
 
-static uint8_t param_request_list[] = {
+static uint8_t parameter_request_list[] = {
     1,   // subnetmask
     28,  // broadcast addr
     2,   // time offset
@@ -71,27 +71,27 @@ uint32_t dhcp_negotiate(net_interface_t *interface)
 {
     uint64_t elapsed = 0;
 
-    sock = k_socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    k_bind(sock, &addr, sizeof(struct sockaddr_in));
+    sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    bind(sock, &addr, sizeof(struct sockaddr_in));
 
     dhcp_discover(interface);
 
     while (elapsed++ < 0xFFFFF)
     {
-        if (k_recvfrom(sock, &dhcp_offer, 1500, 0, &addr, sizeof(struct sockaddr_in)))
+        if (recvfrom(sock, &dhcp_offer, 1500, 0, &addr, sizeof(struct sockaddr_in)))
             break;
     }
 
-    dhcp_handle_offer(interface, &dhcp_offer);
+    dhcp_process_offer(interface, &dhcp_offer);
 
     elapsed = 0;
     while (elapsed++ < 0xFFFFF)
     {
-        if (k_recvfrom(sock, &dhcp_offer, 1500, 0, &addr, sizeof(struct sockaddr_in)))
+        if (recvfrom(sock, &dhcp_offer, 1500, 0, &addr, sizeof(struct sockaddr_in)))
             break;
     }
 
-    dhcp_handle_offer(interface, &dhcp_offer);
+    dhcp_process_offer(interface, &dhcp_offer);
 
     return 0;
 }
@@ -116,10 +116,10 @@ void dhcp_discover(net_interface_t *interface)
     msg.options[3] = 0xFF;
 
     memcpy(&msg.chaddr, interface->mac.addr, 6);
-    k_sendto(sock, &msg, sizeof(dhcp_message_t), 0, &srv, sizeof(struct sockaddr_in));
+    sendto(sock, &msg, sizeof(dhcp_message_t), 0, &srv, sizeof(struct sockaddr_in));
 }
 
-int dhcp_handle_offer(net_interface_t *interface, dhcp_message_t *dhcp_offer)
+int dhcp_process_offer(net_interface_t *interface, dhcp_message_t *dhcp_offer)
 {
     uint8_t type;
 
@@ -144,10 +144,10 @@ int dhcp_handle_offer(net_interface_t *interface, dhcp_message_t *dhcp_offer)
         dhcp_add_option(&dhcp_request, DHCP_MESSAGE_TYPE, (uint8_t)DHCP_REQUEST, 1);
         dhcp_add_option(&dhcp_request, DHCP_REQUESTED_IP, &dhcp_offer->yiaddr, sizeof(ipv4_addr_t));
         dhcp_add_option(&dhcp_request, 0xC, DHCP_HOSTNAME, strlen(DHCP_HOSTNAME));
-        dhcp_add_option(&dhcp_request, 0x37, param_request_list, sizeof(param_request_list));
+        dhcp_add_option(&dhcp_request, 0x37, parameter_request_list, sizeof(parameter_request_list));
 
         memcpy(&dhcp_request.chaddr, &(*interface).mac, 6);
-        k_sendto(sock, &dhcp_request, sizeof(dhcp_message_t), 0, &srv, sizeof(struct sockaddr_in));
+        sendto(sock, &dhcp_request, sizeof(dhcp_message_t), 0, &srv, sizeof(struct sockaddr_in));
     }
     else if (type == DHCP_ACK)
     {

@@ -1,6 +1,8 @@
 #ifndef MICROS_SOCKET_H
 #define MICROS_SOCKET_H
 
+#include <stdint.h>
+
 typedef uint32_t socklen_t;
 
 typedef enum socket_domain

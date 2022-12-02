@@ -4,7 +4,6 @@
     Modified: 27.06.2022
 */
 #include "network_manager.h"
-#include "protocols/dhcp/dhcp.h"
 
 kvector *net_devices;
 nic_init drivers[] = {rtl8139_init, virtio_nic_init};
@@ -43,33 +42,33 @@ bool network_manager_init()
         dev->tx = kbuffer_init(dev->interface->mtu, NETWORK_MANAGER_BUFFER_SIZE);
         // finally turn on communication
         dev->interface->mode = (net_mode_t){.receive = 1, .send = 1};
-        if (dhcp_negotiate(dev->interface))
-        {
-            // set static IP
-            dev->interface->ipv4_address = (ipv4_addr_t){
-                .oct_a = 192,
-                .oct_b = 168,
-                .oct_c = 1,
-                .oct_d = 199};
+        // if (dhcp_negotiate(dev->interface))
+        // {
+        //     // set static IP
+        //     dev->interface->ipv4_address = (ipv4_addr_t){
+        //         .oct_a = 192,
+        //         .oct_b = 168,
+        //         .oct_c = 1,
+        //         .oct_d = 199};
 
-            dev->interface->ipv4_dns = (ipv4_addr_t){
-                .oct_a = 1,
-                .oct_b = 1,
-                .oct_c = 1,
-                .oct_d = 1};
+        //     dev->interface->ipv4_dns = (ipv4_addr_t){
+        //         .oct_a = 1,
+        //         .oct_b = 1,
+        //         .oct_c = 1,
+        //         .oct_d = 1};
 
-            dev->interface->ipv4_netmask = (ipv4_addr_t){
-                .oct_a = 255,
-                .oct_b = 255,
-                .oct_c = 255,
-                .oct_d = 0};
+        //     dev->interface->ipv4_netmask = (ipv4_addr_t){
+        //         .oct_a = 255,
+        //         .oct_b = 255,
+        //         .oct_c = 255,
+        //         .oct_d = 0};
 
-            dev->interface->ipv4_gateway = (ipv4_addr_t){
-                .oct_a = 192,
-                .oct_b = 168,
-                .oct_c = 1,
-                .oct_d = 1};
-        }
+        //     dev->interface->ipv4_gateway = (ipv4_addr_t){
+        //         .oct_a = 192,
+        //         .oct_b = 168,
+        //         .oct_c = 1,
+        //         .oct_d = 1};
+        // }
     }
 
     return true;
@@ -191,6 +190,7 @@ static int8_t network_manager_set_net_device(net_device_t *device)
     device->interface->arp_entries = heap_kernel_alloc(sizeof(kvector), 0);
     if (!device->interface->arp_entries)
         return 0;
+
     kvector_init(device->interface->arp_entries);
 
     // TODO: get mtu from driver

@@ -108,7 +108,11 @@ typedef struct tcp_socket
 	net_device_t *device;
 	klist_t *tx;
 	klist_t *rx;
-	tcp_segment_t header;
+	uint32_t ack_num;
+	uint32_t seq_num;
+	uint32_t pointer;
+	uint32_t window;
+	tcp_flags_t flags;
 	socket_t *connections;
 	int backlog;
 } tcp_socket_t;

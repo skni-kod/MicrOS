@@ -59,12 +59,12 @@ typedef struct net_interface_t
     uint32_t ipv4_lease_time;
     uint16_t mtu;
     uint8_t ttl;
+    kvector *arp_entries;
     uint32_t frames_sent;
     uint32_t frames_received;
     uint32_t bytes_sent;
     uint32_t bytes_received;
     uint32_t frames_dropped;
-    kvector *arp_entries;
 } net_interface_t;
 
 //! net_device
