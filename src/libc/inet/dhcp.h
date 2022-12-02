@@ -9,8 +9,9 @@
 #include <stdint.h>
 #include "ipv4.h"
 
+#define DHCP_OPTIONS_MAX 68
+#define DHCP_HOSTNAME "MicrOS"
 #define DHCP_MAGIC_COOKIE 0x63825363
-
 #define DHCP_NETMASK 0x01
 #define DHCP_ROUTER 0x03
 #define DHCP_DNS 0x06
@@ -41,7 +42,7 @@ typedef struct dhcp_message
     uint32_t sname[16];
     uint32_t file[32];
     uint32_t magic_cookie;
-    uint8_t options[68];
+    uint8_t options[DHCP_OPTIONS_MAX];
 } __attribute__((packed)) dhcp_message_t;
 
 #endif

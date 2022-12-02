@@ -67,8 +67,8 @@ typedef struct ipv4_packet
         uint16_t flags_offset;
         struct
         {
-            uint8_t offset1 : 5, : 3;
-            uint8_t offset2;
+            uint8_t offset_high : 5, : 3;
+            uint8_t offset_low;
         };
         struct
         {

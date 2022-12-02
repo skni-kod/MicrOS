@@ -226,9 +226,7 @@ socket_t *socket_descriptor_lookup(int domain, int type, int protocol, struct so
                 udp_socket_t *sk = socket->sk;
                 if (sk->local.sin_port == ((struct sockaddr_in *)addr)->sin_port &&
                         sk->local.sin_addr.value == ((struct sockaddr_in *)addr)->sin_addr.value ||
-                    INADDR_BROADCAST == sk->local.sin_addr.value ||
-                    0x7F == sk->local.sin_addr.value >> 24 ||
-                    INADDR_ANY == sk->local.sin_addr.value)
+                    INADDR_BROADCAST == sk->local.sin_addr.value || INADDR_ANY == sk->local.sin_addr.value)
                     return socket;
             }
             break;

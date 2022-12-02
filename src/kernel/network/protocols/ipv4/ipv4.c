@@ -50,13 +50,10 @@ process:
     {
     case IP_PROTOCOL_ICMP:
         return icmp_process_packet(data);
-        break;
     case IP_PROTOCOL_UDP:
         return udp_process_datagram(data);
-        break;
     case IP_PROTOCOL_TCP:
         return tcp_process_segment(data);
-        break;
     default:
         return 0;
     }
@@ -77,15 +74,11 @@ uint16_t ipv4_checksum(ipv4_packet_t *packet)
 nic_data_t *ipv4_create_packet(net_device_t *device, uint8_t protocol, ipv4_addr_t dst, uint32_t data_size)
 {
     nic_data_t *data = ethernet_create_frame(device, IPv4_PROTOCOL_TYPE, data_size + sizeof(ipv4_packet_t));
-
-    ipv4_packet_t *packet = data->frame + sizeof(ethernet_frame_t);
-
+    ipv4_packet_t *packet = ((ethernet_frame_t *)(data->frame))->data;
     static uint16_t id = 0;
-
     uint8_t options_length = 0;
 
     packet->version = IPv4_PROTOCOL_VERSION;
-
     packet->ihl = ((sizeof(ipv4_packet_t) + options_length) / 4);
     packet->tos = 0;
     packet->flags_offset = 0;
@@ -102,7 +95,7 @@ nic_data_t *ipv4_create_packet(net_device_t *device, uint8_t protocol, ipv4_addr
 
 uint32_t ipv4_send_packet(nic_data_t *data)
 {
-    ipv4_packet_t *packet = data->frame + sizeof(ethernet_frame_t);
+    ipv4_packet_t *packet = ((ethernet_frame_t *)(data->frame))->data;
 #ifndef TRUST_ME_BRO
     ipv4_checksum(packet);
 #endif

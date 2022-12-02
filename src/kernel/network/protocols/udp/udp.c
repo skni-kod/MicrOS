@@ -51,10 +51,6 @@ uint32_t udp_process_datagram(nic_data_t *data)
 
 uint16_t udp_checksum(ipv4_packet_t *packet)
 {
-    /* Check the IP header checksum - it should be zero. */
-    // if (__ip_wrapsum(__ip_checksum((unsigned char *)packet, sizeof(ipv4_packet_t), 0)) != 0)
-    //     return -1;
-
     udp_datagram_t *datagram = (udp_datagram_t *)packet->data;
 
     uint32_t len = ntohs(datagram->length) - sizeof(udp_datagram_t);
@@ -99,9 +95,7 @@ static socket_t *__udp_get_socket(struct sockaddr_in *addr)
                 if (sk->local.sin_addr.value == addr->sin_addr.value)
                     // best match -- connection socket
                     return socket;
-                else if (INADDR_BROADCAST == sk->local.sin_addr.value ||
-                         0x7F == sk->local.sin_addr.value >> 24 ||
-                         INADDR_ANY == sk->local.sin_addr.value)
+                else if (INADDR_BROADCAST == sk->local.sin_addr.value || INADDR_ANY == sk->local.sin_addr.value)
                     // listen socket found
                     ret = socket;
             }

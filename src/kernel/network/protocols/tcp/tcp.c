@@ -89,7 +89,7 @@ uint32_t tcp_process_segment(nic_data_t *data)
             if (segment->flags.ack && htonl(segment->ack_num) == htonl(sk->header.seq_num) + 1)
             {
                 sk->state = TCP_ESTABLISHED;
-                sk->header.ack_num = htonl(htonl(sk->header.ack_num) + 1);
+                sk->header.ack_num = htonl(htonl(sk->header.ack_num));
                 sk->header.seq_num = segment->ack_num;
             }
         }
@@ -116,7 +116,6 @@ uint32_t tcp_process_segment(nic_data_t *data)
                 sk->rx = socket_add_entry(sk->rx, packet);
                 tcp_send_segment(socket, (tcp_flags_t){.ack = 1}, NULL, NULL);
                 tcp_flags_t *flags = &segment->flags;
-                int dupa = 1;
             }
             return TCP_DATA_SIZE(packet);
         case TCP_LAST_ACK:
@@ -215,9 +214,7 @@ static socket_t *__tcp_get_socket(struct sockaddr_in *addr)
                 if (sk->local.sin_addr.value == addr->sin_addr.value)
                     // best match -- connection socket
                     return socket;
-                else if (INADDR_BROADCAST == sk->local.sin_addr.value ||
-                         0x7F == sk->local.sin_addr.value >> 24 ||
-                         INADDR_ANY == sk->local.sin_addr.value)
+                else if (INADDR_BROADCAST == sk->local.sin_addr.value || INADDR_ANY == sk->local.sin_addr.value)
                     // listen socket found
                     ret = socket;
             }

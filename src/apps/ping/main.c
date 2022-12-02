@@ -246,7 +246,13 @@ int main(int argc, char *argv[])
     {
         net_interface_t iface;
         micros_netif_get(atoi(argv[3]), &iface);
-
+        printf("MAC: %02x:%02x:%02x:%02x:%02x:%02x\n",
+               iface.mac.octet_a,
+               iface.mac.octet_b,
+               iface.mac.octet_c,
+               iface.mac.octet_d,
+               iface.mac.octet_e,
+               iface.mac.octet_f);
         printf("IPv4: %d.%d.%d.%d\n",
                iface.ipv4_address.oct_a,
                iface.ipv4_address.oct_b,

@@ -13,28 +13,18 @@
 #include <network/network_manager.h>
 #include <debug_helpers/library/kernel_stdio.h>
 #include <logger/logger.h>
-/**
- * Configures a network interface using DHCP.
- *
- * DHCP operations fall into four phases: server discovery, IP lease offer, IP
- * lease request, and IP lease acknowledgement. This function implements the
- * four phases and configures the given interface once the IP lease
- * acknowledgement is received.
- *
- * @param interface the network interface to use
- * @return zero on success, non zero on fail
- */
-uint32_t dhcp_negotiate(net_interface_t *interface);
 
-/**
- * Receives a DHCP packet.
- *
- * @param interface the interface on which the DHCP packet has been received
- * @param packet the DHCP packet
- * @param header the UDP header
- */
-void dhcp_receive_packet(net_interface_t *interface,
-                         uint8_t *packet,
-                         udp_datagram_t *header);
+#define dhcp_add_option(msg, option, value, length) _Generic((value), uint8_t                         \
+                                                             : __dhcp_add_option(msg, option, value), \
+                                                               default                                \
+                                                             : __dhcp_add_option_ptr(msg, option, value, length))
+
+static void __dhcp_add_option(dhcp_message_t *msg, uint8_t option, uint8_t value);
+static void __dhcp_add_option_ptr(dhcp_message_t *msg, uint8_t option, uint8_t value[], uint8_t value_length);
+
+uint32_t dhcp_negotiate(net_interface_t *interface);
+static void dhcp_discover(net_interface_t *interface);
+static void dhcp_read_option(dhcp_message_t *msg, uint8_t code, uint8_t *buf, uint16_t len);
+static int dhcp_handle_offer(net_interface_t *interface, dhcp_message_t *dhcp_offer);
 
 #endif
