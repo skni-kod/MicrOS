@@ -41,42 +41,21 @@ typedef struct socket_entry
 
 struct proto_ops
 {
-	int (*release)(struct socket *sock);
 	int (*bind)(struct socket *sock,
 				struct sockaddr *myaddr,
 				int sockaddr_len);
 	int (*connect)(struct socket *sock,
 				   struct sockaddr *vaddr,
 				   int sockaddr_len);
-	int (*socketpair)(struct socket *sock1,
-					  struct socket *sock2);
 	int (*accept)(struct socket *sock,
 				  struct socket *newsock, int flags);
-	int (*getname)(struct socket *sock,
-				   struct sockaddr *addr,
-				   int *sockaddr_len, int peer);
-	unsigned int (*poll)(struct file *file, struct socket *sock,
-						 struct poll_table_struct *wait);
-	int (*ioctl)(struct socket *sock, unsigned int cmd,
-				 unsigned long arg);
 	int (*listen)(struct socket *sock, int backlog);
-	int (*shutdown)(struct socket *sock, int flags);
-
-	int (*sendmsg)(struct socket *sock, struct msghdr *m,
-				   size_t total_len);
-
-	int (*recvmsg)(struct socket *sock, struct msghdr *m,
-				   size_t total_len, int flags);
-
 	int (*send)(struct socket *sock, const void *buf, size_t len,
 				int flags);
-
 	int (*sendto)(struct socket *sock, const void *buf, size_t len,
 				  int flags, const struct sockaddr *to,
 				  socklen_t tolen);
-
 	int (*recv)(struct socket *sock, void *buf, size_t len, int flags);
-
 	int (*recvfrom)(struct socket *sock, void *buf, size_t len, int flags,
 					struct sockaddr *from, socklen_t *fromlen);
 };

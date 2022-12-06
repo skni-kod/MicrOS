@@ -118,12 +118,12 @@ if virtio-net device reports this feature.*/
 typedef struct
 {
     uint8_t flags;
-    uint8_t segmentation_offload;
-    uint16_t header_size;
-    uint16_t segment_size;
-    uint16_t checksum_start;
-    uint16_t checksum_offset;
-    uint16_t buffers_count;
+    uint8_t gso_type;
+    uint16_t hdr_len;
+    uint16_t gso_size;
+    uint16_t csum_start;
+    uint16_t csum_offset;
+    uint16_t num_buffers;
 } virtio_nic_net_header;
 
 typedef struct

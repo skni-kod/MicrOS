@@ -4,18 +4,10 @@ static uint32_t timestamp = 0;
 static uint16_t PORT = 1024;
 
 static struct proto_ops tcp_interface = {
-    .release = &socket_not_implemented,
     .bind = &tcp_socket_bind,
     .connect = &tcp_socket_connect,
-    .socketpair = &socket_not_implemented,
     .accept = &tcp_socket_accept,
-    .getname = &socket_not_implemented,
-    .poll = &socket_not_implemented,
-    .ioctl = &socket_not_implemented,
     .listen = &tcp_socket_listen,
-    .shutdown = &socket_not_implemented,
-    .sendmsg = &socket_not_implemented,
-    .recvmsg = &socket_not_implemented,
     .send = &tcp_socket_send,
     .sendto = &socket_not_implemented,
     .recv = &tcp_socket_recv,
@@ -55,7 +47,7 @@ uint32_t tcp_process_segment(nic_data_t *data)
         {
         case TCP_LISTEN:
             // if incoming segment has syn flag
-            if (segment->flags.syn)
+            if ((const tcp_flags_t){.syn = 1}.value == segment->flags.value)
             {
                 for (int i = 0; i < sk->backlog; i++)
                 {
@@ -89,14 +81,13 @@ uint32_t tcp_process_segment(nic_data_t *data)
             if (segment->flags.ack && htonl(segment->ack_num) == htonl(sk->seq_num) + 1)
             {
                 sk->state = TCP_ESTABLISHED;
-                sk->ack_num = htonl(htonl(sk->ack_num));
                 sk->seq_num = segment->ack_num;
             }
         }
         break;
 
         case TCP_ESTABLISHED:
-            if (segment->flags.fin && segment->flags.ack)
+            if ((const tcp_flags_t){.fin = 1, .ack = 1}.value == segment->flags.value)
             {
                 sk->ack_num = htonl(TCP_DATA_SIZE(packet) + htonl(segment->seq_num) + 1);
                 sk->seq_num = segment->ack_num;

@@ -236,7 +236,7 @@ void virtio_nic_receive()
         uint16_t ring_buffer_index = receive_queue->last_device_index % receive_queue->size;
         uint16_t descriptor_index = (uint16_t)receive_queue->device_area->ring_buffer[ring_buffer_index].index;
         uint32_t *buffer_address = (uint32_t *)((uint32_t)receive_queue->descriptor_area[descriptor_index % receive_queue->size].address + DMA_ADDRESS_OFFSET);
-        uint16_t buffers = ((virtio_nic_net_header *)buffer_address)->buffers_count;
+        uint16_t buffers = ((virtio_nic_net_header *)buffer_address)->num_buffers;
 
         if (buffers > 1)
         {

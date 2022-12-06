@@ -1,18 +1,10 @@
 #include "udp.h"
 
 static struct proto_ops udp_interface = {
-    .release = &socket_not_implemented,
     .bind = &udp_socket_bind,
     .connect = &udp_socket_connect,
-    .socketpair = &socket_not_implemented,
     .accept = &socket_not_implemented,
-    .getname = &socket_not_implemented,
-    .poll = &socket_not_implemented,
-    .ioctl = &socket_not_implemented,
     .listen = &socket_not_implemented,
-    .shutdown = &socket_not_implemented,
-    .sendmsg = &socket_not_implemented,
-    .recvmsg = &socket_not_implemented,
     .send = &udp_socket_send,
     .sendto = &udp_socket_sendto,
     .recv = &udp_socket_recv,
