@@ -4,14 +4,14 @@
 <a href="https://travis-ci.org/Tearth/MicrOS"><img src="https://travis-ci.org/Tearth/MicrOS.svg?branch=develop" alt="Build status"></img></a>
 <a href="https://github.com/Tearth/MicrOS/pulls?q=is%3Apr+is%3Aclosed"><img src="https://img.shields.io/github/issues-pr-closed-raw/Tearth/MicrOS" alt="Closed pull requests"></img></a>
 <a href="https://github.com/Tearth/MicrOS/blob/master/LICENSE"><img src="https://img.shields.io/github/license/Tearth/MicrOS" alt="License"></img></a>
-<a href="https://tearth.github.io/MicrOS/"><img src="https://img.shields.io/badge/Doxygen-gh--pages-blue" alt="Documentation"></img></a>
+<a href="https://skni-kod.github.io/MicrOS/"><img src="https://img.shields.io/badge/Doxygen-gh--pages-blue" alt="Documentation"></img></a>
 </p>
 
 This is the simple 32-bit operating system developed by the SKNI KOD (Studenckie Koło Naukowe Informatyków KOD). Our main goal is to create the OS which will have functionality similar to the famous MS-DOS and be able to run on every modern computer. Feel free to analyze and use any part of this project (but remember about GPL-3 license restrictions).
 
 Full description of how to build MicrOS (on Linux or Windows 10 WSL) can be read here: https://github.com/jaenek/MicrOS-DevTools.
 
-Documentation: https://tearth.github.io/MicrOS/
+Documentation: https://skni-kod.github.io/MicrOS/
 
 ## What is done
 * Bootloader which loads the kernel by looking for a file in a FAT12 filesystem and enters the protected mode

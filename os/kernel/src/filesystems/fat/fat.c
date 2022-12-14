@@ -359,8 +359,7 @@ bool fat_read_file_from_path(char *path, uint8_t *buffer, uint32_t start_index, 
     uint32_t read_clusters = 0;
 
     uint8_t *result = fat_read_file_from_cluster(file_info->first_sector, initial_cluster, clusters_count, &read_clusters);
-    memcpy(buffer, result + (start_index % (current_partition->header->bytes_per_sector * current_partition->header->sectors_per_cluster)), (read_clusters) * current_partition->header->bytes_per_sector * current_partition->header->sectors_per_cluster);
-
+    memcpy(buffer, result + (start_index % (current_partition->header->bytes_per_sector * current_partition->header->sectors_per_cluster)), length);
     heap_kernel_dealloc(result);
     if(file_info != 0) heap_kernel_dealloc(file_info);
 

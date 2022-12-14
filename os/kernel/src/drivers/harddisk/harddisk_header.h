@@ -4,8 +4,12 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "assembly/io.h"
+#include "cpu/timer/timer.h"
 #include "harddisk_identify_device_data.h"
 #include "harddisk_pio_mode_header.h"
+
+//! Delay after which we assume drive failed during BSY pooling
+#define HARDDISK_BSY_ERROR_DELAY_MS 10000
 
 //! Enum represent bus type.
 typedef enum HARDDISK_ATA_BUS_TYPE
@@ -53,18 +57,34 @@ typedef struct harddisk_states
     harddisk_identify_device_data secondary_slave_data;
 } harddisk_states;
 
+//! Defines configuration of harddisk driver.
+typedef struct harddisk_configuration
+{
+    //! Indicates if 400 ns delay should be made by reading port (if true) or by timer (if false)
+    bool delay_by_reading_port;
+} harddisk_configuration;
+
 //! Perform soft reset for given control_port
 /*! Soft reset should set bit SRST in Device Control Register for 5 us.
     \param control_port Control port to perform reset
+    \return 1 if success, -1 if error
 */
-void __harddisk_soft_reset_port(uint16_t control_port);
+int8_t __harddisk_soft_reset_port(uint16_t control_port);
 
 //! Makes 400ns delay.
 /*!
     Makes 400ns delay by checking drive status 15 times. User after switching type of drive in bus.
     \param port Port for do delay.
 */
-void __harddisk_400ns_delay(uint16_t port);
+void __harddisk_400ns_delay(uint16_t control_port);
+
+//! Pools BSY bit until clears.
+/*!
+    Pools BSY bit until clears, if pooling takes too long exits with error.
+    \param port Port for pooling.
+    \return 1 if success, -1 if error
+*/
+int8_t __harddisk_bsy_poll(uint16_t control_port);
 
 //! Gets pointers to hard disk data.
 /*!

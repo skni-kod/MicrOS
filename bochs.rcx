@@ -1,0 +1,6 @@
+  megs: 256
+  floppya: 1_44="./build/floppy.img", status=inserted
+  boot: floppy
+  display_library: x, options="gui_debug"
+  magic_break: enabled=1
+  reset_on_triple_fault: 0 
