@@ -33,7 +33,7 @@ int cix = 0, ciy = 0;
 
 bool snapMode = true;
 
-void runEditor()
+void runEditor(char* sceneName)
 {
     initInput();
 
@@ -68,14 +68,26 @@ void runEditor()
     //test?
     tileset* mainTS = buildTileset("/GG/TILESET.ZIM", 22, 56, 32, 32, 0x0B);
     //THIS SUCKS
-    FILE* tmp = fopen("A:/GG/SCENE1.MAP", "r");
+    char path[128];
+    char path2[128];
+    if(sceneName != NULL)
+    {
+        sprintf(path, "A:/GG/%s.MAP", sceneName);
+        sprintf(path2, "/GG/%s.MAP", sceneName);
+    }
+    else
+    {
+       sprintf(path, "A:/GG/SCENE1.MAP"); 
+       sprintf(path2, "/GG/SCENE1.MAP"); 
+    }
+    FILE* tmp = fopen(path, "r");
     if( tmp == 0)
     {
         map = createTileMap(64,64, mainTS);
     }
     else
     {
-        map = loadTilemap("/GG/SCENE1.MAP", mainTS);
+        map = loadTilemap(path2, mainTS);
         fclose(tmp);
     }
     int tsX = 0, tsY = 0, layer = 0;
@@ -84,6 +96,9 @@ void runEditor()
     char cameraInfo[64];
     char tileFlagsInfo[64];
     uint32_t lastTime = 0;
+
+    draw_fill_rect(tilePlaceholder, 0x1C, NULL);
+
     while(1)
     {
         if(micros_keyboard_get_key_state(key_esc))
@@ -98,90 +113,91 @@ void runEditor()
         memset(gpuBuffer, 0, GPU_BUFFER_SIZE);
 
         draw_fill_rect(editorbg, 0x16, NULL);
-
-        //still placeholder, but better view
-        if(getKeyDown(key_pause))
         {
-            tsX--;
-            if(tsX < 0) tsX = 0;
-        }
-
-        if(getKeyDown(key_equal))
-        { 
-            tsX++;
-            if(tsX > (mainTS->cols - 1)) tsX = mainTS->cols - 1;
-        }
-        
-        if(getKeyDown(key_left_sq_bracket))
-        {
-            tsY--;
-            if(tsY < 0) tsY = 0;
-        }
-
-        if(getKeyDown(key_right_sq_bracket))
-        { 
-            tsY++;
-            if(tsY > (mainTS->rows - 1)) tsY = mainTS->rows - 1;
-        }
-
-        //animation
-        if(getKeyDown(key_o))
-        { 
-            isAnimated ^= 1;
-        }
-
-        //play anim
-        if(getKeyDown(key_p))
-        { 
-            isPlaying ^= 1;
-        }
-
-        //choosing layer
-        if(getKeyDown(key_comma))
-        {
-            layer--;
-            if(layer < 0) layer = 0;
-        }
-        if(getKeyDown(key_dot))
-        {
-            layer++;
-            if(layer > 7) layer = 7;
-        }
-
-        if(getKeyDown(key_enter))
-        {
-            tileID id;
-            id.isAnimated = isAnimated;
-            id.isPlaying = isPlaying;
-            id.reserved = 0;
-            id.hasCollider = 0;
-            id.tileset_id = tsY*mainTS->cols + tsX;
-            placeTile(cix, ciy, layer, id, map);
-        }
-
-        if(getKeyDown(key_c))
-        {
-            insertCollider(cix, ciy, map);
-        }
-
-        if(getKeyDown(key_m)) map->mode ^= 1;
-
-        if(getKeyDown(key_backspace))
-        {
-            deleteTile(cix, ciy, layer, map);
-        }
-
-        if(getKeyDown(key_y))
-        {
-            draw_text("SAVING...", 140, 5, mainFont, 0x0F);
-            saveTilemap(map, "/GG/SCENE1.MAP");
-        }
-
-        if(getKeyDown(key_z))
-        {
-            for(int i = 0; i < 8; i++)
+            //still placeholder, but better view
+            if(getKeyDown(key_pause))
             {
-                memset(map->layers[i], 0, map->width*map->height*sizeof(uint16_t));
+                tsX--;
+                if(tsX < 0) tsX = 0;
+            }
+
+            if(getKeyDown(key_equal))
+            { 
+                tsX++;
+                if(tsX > (mainTS->cols - 1)) tsX = mainTS->cols - 1;
+            }
+            
+            if(getKeyDown(key_left_sq_bracket))
+            {
+                tsY--;
+                if(tsY < 0) tsY = 0;
+            }
+
+            if(getKeyDown(key_right_sq_bracket))
+            { 
+                tsY++;
+                if(tsY > (mainTS->rows - 1)) tsY = mainTS->rows - 1;
+            }
+
+            //animation
+            if(getKeyDown(key_o))
+            { 
+                isAnimated ^= 1;
+            }
+
+            //play anim
+            if(getKeyDown(key_p))
+            { 
+                isPlaying ^= 1;
+            }
+
+            //choosing layer
+            if(getKeyDown(key_comma))
+            {
+                layer--;
+                if(layer < 0) layer = 0;
+            }
+            if(getKeyDown(key_dot))
+            {
+                layer++;
+                if(layer > 7) layer = 7;
+            }
+
+            if(getKeyDown(key_enter))
+            {
+                tileID id;
+                id.isAnimated = isAnimated;
+                id.isPlaying = isPlaying;
+                id.reserved = 0;
+                id.hasCollider = 0;
+                id.tileset_id = tsY*mainTS->cols + tsX;
+                placeTile(cix, ciy, layer, id, map);
+            }
+
+            if(getKeyDown(key_c))
+            {
+                insertCollider(cix, ciy, map);
+            }
+
+            if(getKeyDown(key_m)) map->mode ^= 1;
+
+            if(getKeyDown(key_backspace))
+            {
+                deleteTile(cix, ciy, layer, map);
+            }
+
+            if(getKeyDown(key_y))
+            {
+                draw_text("SAVING...", 140, 5, mainFont, 0x0F);
+                saveTilemap(map, path2);
+            }
+
+            if(getKeyDown(key_z))
+            {
+                for(int i = 0; i < 8; i++)
+                {
+                    memset(map->layers[i], 0, map->width*map->height*sizeof(uint16_t));
+                }
             }
         }
 
@@ -190,7 +206,7 @@ void runEditor()
         drawMapBackground(map, camera);
         drawMapForeground(map, camera, map->mode == 1);
 
-        draw_fill_rect(tilePlaceholder, 0x1C, NULL);
+        
         drawClippedTransparent(mainTS->tilesetTex, 283, 25, mainTS->tile_clips+(tsY*mainTS->cols + tsX), mainTS->bgColor, NULL);
 
         draw_text("EDITOR", 250, 5, mainFont, 0x0F);

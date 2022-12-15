@@ -1,3 +1,4 @@
+#include "mode_06h.h"
 #include "drivers/vga/modes/registerfunctions.h"
 #include "memory/heap/heap.h"
 #include "drivers/dal/videocard/videocard.h"

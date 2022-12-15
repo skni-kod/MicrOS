@@ -195,7 +195,7 @@ tilemap* loadTilemap(char* filename, tileset* ts)
 {
     byte* tilemapData = NULL;
     //it assumes file exists
-    uint32_t loadedBytes = loadFile("/GG/SCENE1.MAP", &tilemapData, true);
+    uint32_t loadedBytes = loadFile(filename, &tilemapData, true);
     
     tilemap* tm = (tilemap*)calloc(1, sizeof(tilemap));
     tm->ts = ts;

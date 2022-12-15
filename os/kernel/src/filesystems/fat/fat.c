@@ -388,11 +388,6 @@ uint8_t *fat_read_file_from_cluster(uint16_t initial_cluster, uint16_t cluster_o
                              current_partition->header->directory_entries * 32 / current_partition->header->bytes_per_sector +
                              current_partition->header->reserved_sectors +
                              current_partition->first_sector;
-        uint32_t counter = 1;
-        while (cluster + 1 == (cluster = fat_read_cluster_value(cluster)) && counter < clusters_count){
-            counter += 1;
-        }
-        uint32_t sectors_to_read = counter*current_partition->header->sectors_per_cluster;
         
         uint32_t counter = 1;
         while (cluster + 1 == (cluster = fat_read_cluster_value(cluster)) && counter < clusters_count)
@@ -404,30 +399,6 @@ uint8_t *fat_read_file_from_cluster(uint16_t initial_cluster, uint16_t cluster_o
 
         buffer = heap_kernel_realloc(buffer, current_partition->header->bytes_per_sector * (*read_clusters + counter) * current_partition->header->sectors_per_cluster, 0);
         uint8_t *buffer_ptr = buffer + *read_clusters * current_partition->header->bytes_per_sector * current_partition->header->sectors_per_cluster;
-
-        //Now need function like:
-        //read_sectors_from_floppy(current_partition->device_number, starting_sector, sectors_to_read);
-        //Because this function comes from current partition though, we need to implement it there first
-    
-        
-        uint8_t *read_data = current_partition->read_from_device(current_partition->device_number, starting_cluster, sectors_to_read);
-        memcpy(buffer_ptr, read_data, sectors_to_read * current_partition->header->bytes_per_sector);
-   
-       // for (int i = 0; i < current_partition->header->sectors_per_cluster; i++)
-       // {
-       //     keyboard_scan_ascii_pair kb;
-       //     /*vga_newline();
-       //     vga_printstring("Loading files... Press any key to test next file");
-       //     vga_newline();
-       //     while(!keyboard_get_key_from_buffer(&kb));
-       //     
-       //     logger_log_info("[FAT] Copy to buffer");*/
-       //     uint8_t *read_data = current_partition->read_from_device(current_partition->device_number, starting_sector + i);
-       //     if(read_data == NULL) logger_log_error("[FAT] FLOPPY RETURN NULL!");
-       //     memcpy(buffer_ptr, read_data, current_partition->header->bytes_per_sector);
-       //     
-       //     buffer_ptr += current_partition->header->bytes_per_sector;
-       // }
     
         //After read_from_device dealloc is needed at pointer received.
         uint8_t *read_data = current_partition->read_from_device(current_partition->device_number, starting_cluster, sectors_to_read);

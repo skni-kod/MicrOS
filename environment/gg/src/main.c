@@ -54,6 +54,11 @@ void updateCameraGame(rect* cam, player* play)
     if(cam->y > LEVEL_HEIGHT - SCREEN_HEIGHT) cam->y = LEVEL_HEIGHT - SCREEN_HEIGHT;
 }
 
+static int fd;
+static fpos_t pos;
+
+char* sceneName = NULL;
+
 int main(int argc, char *argv[])
 {
     uint8_t editorMode = 0;
@@ -66,9 +71,14 @@ int main(int argc, char *argv[])
             {
                 editorMode = 1;
             }
+            if(!compareString(argv[i], "-p"))
+            {
+                sceneName = argv[i+1];
+                i++;
+            }
         }
     }
-    
+
     partition = argv[1][0];
     
     printf("Enter video mode\n");
@@ -90,7 +100,7 @@ int main(int argc, char *argv[])
 
     if(editorMode)
     {
-        runEditor();
+        runEditor(sceneName);
     }
     else
     {
@@ -103,7 +113,16 @@ int main(int argc, char *argv[])
         image* playerSprite = loadImage("/GG/CHARAS.ZIM", true);
         player* playerPtr = initPlayer(0, 0,playerSprite,4,3,1);
         tileset* mainTS = buildTileset("/GG/TILESET.ZIM", 22, 56, 32, 32, 0x0B);
-        tilemap* map = loadTilemap("/GG/SCENE1.MAP", mainTS);
+        char mapName[128];
+        if(sceneName == NULL)
+        {
+            sprintf(mapName, "/GG/SCENE1.MAP");
+        }
+        else
+        {
+            sprintf(mapName, "/GG/%s.MAP", sceneName);
+        }
+        tilemap* map = loadTilemap(mapName, mainTS);
 
         LEVEL_WIDTH = map->width * 32;
         LEVEL_HEIGHT = map->height * 32;
@@ -137,6 +156,7 @@ int main(int argc, char *argv[])
             if (msEnd - msStart < FRAME_MS) micros_process_current_process_sleep(FRAME_MS - (msEnd - msStart));
         }
     }
+
     micros_console_set_video_mode(0x03);
 
     return 0;

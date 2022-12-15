@@ -484,8 +484,3 @@ uint8_t* video_card_create_external_buffer(uint16_t mode){
 void video_card_destroy_external_buffer(uint8_t* buffer){
     return (*_destroy_external_buffer)(buffer);
 }
-
-void video_card_set_swap_external_buffer(int8_t (*swap_external_buffer(uint8_t*, uint16_t)))
-{
-    _swap_external_buffer = swap_external_buffer;
-}

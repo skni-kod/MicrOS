@@ -3,7 +3,7 @@
 
 #include "../tile/tilemap.h"
 
-void runEditor();
+void runEditor(char* sceneName);
 
 void tickCursor();
 
