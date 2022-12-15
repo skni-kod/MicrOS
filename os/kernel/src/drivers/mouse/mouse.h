@@ -106,5 +106,18 @@ bool ps2mouse_get_add_b4();
 bool ps2mouse_get_add_b5();
 uint16_t ps2mouse_get_scroll_h();
 uint16_t ps2mouse_get_scroll_v();
+
+//display functions
+void double_click_display();
+void right_click_display();
+void left_click_display();
+void middle_click_display();
+void add1_click_display();
+void add2_click_display();
+void scroll_vertical_display();
+void scroll_horizontal_display();
+void x_display();
+void y_display();
+
 #endif
 

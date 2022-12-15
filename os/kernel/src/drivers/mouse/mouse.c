@@ -167,6 +167,20 @@ bool ps2mouse_irq_handler()
         ps2mouse_set_scroll(mouse_z_vertical, mouse_z_horizontal);
         ps2mouse_set_additional_buttons(tmp);
 
+        /*  DISPLAY FUNCTIONS   */
+
+        x_display();
+        y_display();
+        //scroll_vertical_display();
+        //scroll_horizontal_display();
+        //middle_click_display();
+        //right_click_display();
+        left_click_display();
+        //add1_click_display();
+        //add2_click_display();
+        double_click_display();
+
+
         break;
    }
     
@@ -388,4 +402,75 @@ uint16_t ps2mouse_get_scroll_v()
 uint16_t ps2mouse_get_scroll_h()
 {
     return litte_squeaker.mouse_z_horizontal;
+}
+
+//Display functions - to check if mouse  is working correctly
+//in code are marked places where this functions should be, just delete "//" id that places 
+
+void double_click_display()
+{
+    if(litte_squeaker.double_click == 1)
+        logger_log_info("Double click");
+}
+
+void right_click_display()
+{
+    if(litte_squeaker.right_click == 1)
+        logger_log_info("Right click");
+}
+
+void left_click_display()
+{
+    if(litte_squeaker.left_click == 1)
+        logger_log_info("Left click");
+}
+
+void middle_click_display()
+{
+    if(litte_squeaker.middle_click == 1)
+        logger_log_info("Middle click");
+}
+
+void add1_click_display()
+{
+    if(litte_squeaker.additional_button_1 == 1)
+        logger_log_info("Additional button 1");
+}
+
+void add2_click_display()
+{
+    if(litte_squeaker.additional_button_2 == 1)
+        logger_log_info("Additional button 2");
+}
+
+void scroll_vertical_display()
+{
+    uint32_t z = litte_squeaker.mouse_z_vertical;
+    char str[100] = "ZV:";
+    itoa(z, str+3, 10);
+    logger_log_info(str);
+}
+
+void scroll_horizontal_display()
+{
+    uint32_t z = litte_squeaker.mouse_z_horizontal;
+    char str[100] = "ZH:";
+    itoa(z, str+3, 10);
+    logger_log_info(str);
+}
+
+void x_display()
+{
+    uint32_t x = litte_squeaker.mouse_x;
+    char str[100] = "X:";
+    itoa(x, str+2, 10);
+    logger_log_info(str);
+}
+
+void y_display()
+{
+    uint32_t y = litte_squeaker.mouse_y;
+    char str[100] = "Y:";
+    itoa(y, str+2, 10);
+    logger_log_info(str);
 }
