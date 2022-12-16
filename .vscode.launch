@@ -14,7 +14,7 @@
 			"miDebuggerArgs": "",
 			"customLaunchSetupCommands": [
 				{
-					"text": "target remote localhost:1234",
+					"text": "target remote ${input:debuggerTargetHost}",
 					"description": "Connect to QEMU remote debugger"
 				}
 			],
@@ -25,7 +25,7 @@
 					"ignoreFailures": true
 				},
 				{
-					"text": "file ${input:debuggerTarget}",
+					"text": "file ${input:debuggerTargetFile}",
 					"description": "Load binary."
 				}
 
@@ -35,11 +35,17 @@
 	],
 	"inputs": [
 		{
-			"id": "debuggerTarget",
+			"id": "debuggerTargetFile",
 			"type": "pickString",
-			"description": "Select debug target",
+			"description": "Select debug file",
 			"options":[ [DEBUG_TARGETS] ],
 			"default": [DEFUALT_DEBUG_TARGET]
+		},
+		{
+			"id": "debuggerTargetHost",
+			"type": "prompt",
+			"description": "Select debug host",
+			"default": "localhost:1234"
 		}
 	]
 }
