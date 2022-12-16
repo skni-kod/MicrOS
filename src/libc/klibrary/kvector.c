@@ -1,4 +1,5 @@
 #include <klibrary/kvector.h>
+#include <stdlib.h>
 
 void kvector_init(kvector *vector)
 {

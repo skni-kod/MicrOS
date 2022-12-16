@@ -108,7 +108,7 @@ endif
 $(include_dir)/%.h: $(src_dir)/%.h
 	$(progress) "LN" $@
 	$(MKDIR) -p $(dir $@)
-	ln -sf $(CWD)/$< $@
+	$(CP) $(CWD)/$< $@
 
 $(log_dir):
 	$(progress) "MKDIR" $@
