@@ -43,7 +43,7 @@
 		},
 		{
 			"id": "debuggerTargetHost",
-			"type": "prompt",
+			"type": "promptString",
 			"description": "Select debug host",
 			"default": "localhost:1234"
 		}
