@@ -17,20 +17,20 @@ include ./Makefile.include
 # We (more or less) follow the PFL project structure:
 # https://api.csswg.org/bikeshed/?force=1&url=https://raw.githubusercontent.com/vector-of-bool/pitchfork/develop/data/spec.bs#intro.dirs
 ifndef BUILD_DIR
-	build_dir		= build
+	build_dir		= $(CWD)/build
 else
 	build_dir		= ${BUILD_DIR}
 endif
-data_dir			= data
-external_dir		= external
+data_dir			= $(CWD)/data
+external_dir		= $(CWD)/external
 ifndef LOG_DIR
-	log_dir			= log
+	log_dir			= $(CWD)/log
 else
 	log_dir			= ${LOG_DIR}
 endif
-src_dir				= src
-tests_dir			= tests
-tools_dir			= tools
+src_dir				= $(CWD)/src
+tests_dir			= $(CWD)/tests
+tools_dir			= $(CWD)/tools
 
 # source directories
 bootloader_src_dir	= $(src_dir)/bootloader
@@ -48,10 +48,6 @@ ifndef CROSS
 else
 	cross_dir 		= ${CROSS}
 endif
-
-# qemu:
-qemu_br				= /sys/class/net/brqemu
-qemu_tap			= /sys/class/net/tapqemu
 
 
 # files
