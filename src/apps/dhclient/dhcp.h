@@ -7,10 +7,12 @@
 #define network_dhcp
 
 #include <micros/socket.h>
+#include <micros/sys/micros_process.h>
 #include <micros/sys/micros_netif.h>
 #include <micros/network_device.h>
 #include <inet/udp.h>
 #include <inet/dhcp.h>
+#include <stdio.h>
 
 #define dhcp_add_option(msg, option, value, length) _Generic((value), uint8_t                         \
                                                              : __dhcp_add_option(msg, option, value), \

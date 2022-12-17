@@ -46,7 +46,10 @@
 					"beginsPattern": "^(Starting QEMU)",
 					"endsPattern": "^(Starting QEMU)"
 				}
-			}
+			},
+			"dependsOn": [
+				"Build",
+			],
 		},
 		{
 			"label": "Run QEMU with debugger",
@@ -67,7 +70,10 @@
 					"beginsPattern": "^(Starting QEMU)",
 					"endsPattern": "^(Starting QEMU)"
 				}
-			}
+			},
+			"dependsOn": [
+				"Build",
+			],
 		}
 	]
 }

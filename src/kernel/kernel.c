@@ -366,11 +366,6 @@ int kmain()
         uint32_t terminal_number = i;
         const terminal_struct *ts = get_terminals(&terminal_number);
         attach_process_to_terminal(ts[i].terminal_id, process_manager_get_process(p));
-        if (i == 0)
-        {
-            p = process_manager_create_process("A:/ENV/DHCLIENT.ELF", "0 0", 0, false);
-            attach_process_to_terminal(ts[i].terminal_id, process_manager_get_process(p));
-        }
     }
 
     // vga_clear_screen();

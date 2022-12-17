@@ -69,24 +69,28 @@ static void __dhcp_add_option(dhcp_message_t *msg, uint8_t option, uint8_t value
 
 uint32_t dhcp_negotiate(net_interface_t *interface)
 {
-    uint64_t elapsed = 0;
+    uint64_t elapsed;
 
     sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     bind(sock, &addr, sizeof(struct sockaddr_in));
 
     dhcp_discover(interface);
-
-    while (elapsed++ < 0xFFFFF)
+    printf("Sent DHCP discover\n");
+    elapsed = 0;
+    while (elapsed++ < 25)
     {
+        micros_process_current_process_sleep(100);
         if (recvfrom(sock, &dhcp_offer, 1500, 0, &addr, sizeof(struct sockaddr_in)))
             break;
     }
 
+    printf("Received DHCP offer\n");
     dhcp_process_offer(interface, &dhcp_offer);
 
     elapsed = 0;
-    while (elapsed++ < 0xFFFFF)
+    while (elapsed++ < 25)
     {
+        micros_process_current_process_sleep(100);
         if (recvfrom(sock, &dhcp_offer, 1500, 0, &addr, sizeof(struct sockaddr_in)))
             break;
     }
