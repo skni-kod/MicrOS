@@ -6,4 +6,8 @@ WORKDIR /tmp
 RUN mkdir -p /tmp/cross && mkdir -p /tmp/build && mkdir -p /tmp/log
 RUN curl https://kod.prz.edu.pl/repository/micros_devtools_linux/cross.tar.gz | tar -xz --strip-components=1 -C /tmp/cross
 COPY ./ /tmp/
-RUN CROSS=/tmp/cross BUILD_DIR=/tmp/build LOG_DIR=/tmp/log make build -j $(nproc)
+ENV CROSS /tmp/cross 
+ENV BUILD_DIR /tmp/build
+ENV LOG_DIR /tmp/log
+RUN make build -j $(nproc) 
+RUN make floppy-image

@@ -10,7 +10,7 @@ kernel_asm_files		+= $(patsubst $(kernel_src_dir)/%, %,$(shell find $(kernel_src
 kernel_c_objects    	= $(patsubst %.c, $(kernel_objs_dir)/%.o, $(kernel_c_files))
 kernel_asm_objects  	= $(patsubst %.asm, $(kernel_objs_dir)/%.o, $(kernel_asm_files))
 
-kernel_INCLUDES	 		+= -I$(include_dir)/libk -I$(include_dir)/libc -I$(include_dir)/kernel
+kernel_INCLUDES	 		+= -I$(src_dir)/libk -I$(src_dir)/libc -I$(src_dir)/kernel
 kernel_ASM_FLAGS 		+= -f elf32
 kernel_CFLAGS	 		+= -ffreestanding -fshort-enums 
 kernel_CFLAGS	 		+= -D__kernel=1

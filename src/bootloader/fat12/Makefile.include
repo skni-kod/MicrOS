@@ -15,9 +15,9 @@ $(b_fat12_objects): $(b_fat12_objs_dir)/%.o: $(b_fat12_src_dir)/%.asm
 	$(MKDIR) -p $(@D)
 	$(ASM) $(b_fat12_ASM_FLAGS) $< -o $@
 
-bootloader: $(b_fat12_objects) $(output_image)
+bootloader-fat12: $(b_fat12_objects) $(output_image_floppy)
 	$(progress) "INSTALL BOOTLOADER" $<
-	$(DD) if=$(b_fat12_first_stage)  of=$(output_image) bs=512 conv=notrunc
+	$(DD) if=$(b_fat12_first_stage)  of=$(output_image_floppy) bs=512 conv=notrunc
 	$(progress) "MCOPY" MICROLDR.BIN 
-	$(MCOPY) -oi $(output_image) $(b_fat12_second_stage) ::MICROLDR.BIN
-.PHONY: bootloader
+	$(MCOPY) -oi $(output_image_floppy) $(b_fat12_second_stage) ::MICROLDR.BIN
+.PHONY: bootloader-fat12

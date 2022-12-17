@@ -23,7 +23,6 @@ else
 endif
 data_dir			= data
 external_dir		= external
-include_dir			= $(build_dir)/include
 ifndef LOG_DIR
 	log_dir			= log
 else
@@ -59,12 +58,13 @@ qemu_tap			= /sys/class/net/tapqemu
 src_header_files 	+= $(shell find $(kernel_src_dir) -name "*.h")
 src_header_files 	+= $(shell find $(libk_src_dir) -name "*.h")
 src_header_files 	+= $(shell find $(libc_src_dir) -name "*.h")
-header_files 		= $(addprefix $(include_dir)/, $(patsubst $(src_dir)/%,%,$(src_header_files)))
+#header_files 		= $(addprefix $(src_dir)/, $(patsubst $(src_dir)/%,%,$(src_header_files)))
+header_files 		= $(src_header_files)
 src_data_files 		+= $(shell find $(data_dir)/ -mindepth 1 -type f)
 data_files 			= $(patsubst $(data_dir)/%,%,$(src_data_files))
 apps_dirs 			= $(shell find $(apps_src_dir)/ -maxdepth 1 -mindepth 1 -type d )
 log_file 			= $(log_dir)/qemu.log
-output_image		= $(build_dir)/floppy.img
+output_image_floppy	= $(build_dir)/floppy.img
 
 CFLAGS_DEBUG		+= -std=$(C_STANDARD) -O0 -ggdb3 -DDEBUG_MODE
 # -fsanitize=undefined
@@ -104,12 +104,6 @@ ifeq ($(QEMU_NET), 1)
 	QEMU_OPTIONS			+= -net nic,model=$(QEMU_NET_DEVICE),netdev=net1,macaddr=00:11:22:33:44:55
 endif
 
-
-$(include_dir)/%.h: $(src_dir)/%.h
-	$(progress) "LN" $@
-	$(MKDIR) -p $(dir $@)
-	$(CP) $(CWD)/$< $@
-
 $(log_dir):
 	$(progress) "MKDIR" $@
 	$(MKDIR) -p $@
@@ -121,23 +115,27 @@ $(data_files):
 	$(CP) -f $(data_dir)/$@ $(output_dir)/$@
 
 $(apps_dirs): $(libc_bin)
-	$(MAKE) install -C $@ VERBOSE=$(VERBOSE) app_src_dir=$@ output_image=$(output_image)  build_dir=$(build_dir) cross_dir=$(cross_dir)
+	$(MAKE) install -C $@ VERBOSE=$(VERBOSE) app_src_dir=$@ build_dir=$(build_dir) cross_dir=$(cross_dir)
 
 build: ## build
-build: clean-image kernel $(data_files) $(apps_dirs) $(output_image) bootloader
+build: kernel $(data_files) $(apps_dirs) 
 .PHONY: build
+
+floppy-image: ## generate floppy image
+floppy-image: $(output_image_floppy) bootloader-fat12
+.PHONY: floppy-image
 
 run-qemu: ## run qemu
 run-qemu: $(log_dir) build
 	$(progress) QEMU
 	$(QEMU) $(QEMU_OPTIONS) \
-	-drive file=$(output_image),format=raw,if=floppy
+	-drive file=$(output_image_floppy),format=raw,if=floppy
 .PHONY: run-qemu
 
 run-debug: ## run qemu with debugger
 run-debug: $(log_dir) build
 	$(QEMU) $(QEMU_OPTIONS) \
-	-drive file=$(output_image),format=raw,if=floppy \
+	-drive file=$(output_image_floppy),format=raw,if=floppy \
 	-s -S
 .PHONY: run-debug
 
@@ -192,8 +190,8 @@ clean-apps:
 
 clean-image: ## clean image
 clean-image: 
-	$(progress) "CLEAN" $(output_image)
-	rm -rf $(output_image)
+	$(progress) "CLEAN" $(output_image_floppy)
+	rm -rf $(output_image_floppy)
 .PHONY: clean-image
 
 

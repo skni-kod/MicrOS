@@ -17,7 +17,7 @@
 		{
 			"label": "Build",
 			"type": "shell",
-			"command": "[ENV_VARS] make build",
+			"command": "[ENV_VARS] make build -j $(nproc) && [ENV_VARS] make clean-image && [ENV_VARS] make floppy-image",
 			"options": {
 				"cwd": "${workspaceFolder}"
 			},

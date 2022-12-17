@@ -10,7 +10,7 @@ libc_c_objects		= $(patsubst %.c, $(libc_objs_dir)/%.o, $(libc_c_files))
 libc_asm_objects	= $(patsubst %.asm, $(libc_objs_dir)/%.o, $(libc_asm_files))
 
 # libc flags
-libc_INCLUDES		+= -I$(include_dir)/libc 
+libc_INCLUDES		+= -I$(src_dir)/libc 
 libc_ASM_FLAGS		+= -f elf32 
 libc_CFLAGS			+= -ffreestanding -fshort-enums
 libc_CFLAGS			+= $(WERRORS) 
