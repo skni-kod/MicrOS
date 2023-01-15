@@ -21,7 +21,7 @@ void syscall_netif_set(interrupt_state *state)
         return;
     }
     if (state->registers.ecx)
-        memcpy(((net_device_t *)devices->data[state->registers.ebx])->interface, (void *)state->registers.ecx, sizeof(net_interface_t));
+        memcpy(((net_device_t *)devices->data[state->registers.ebx])->interface, (void *)state->registers.ecx, sizeof(net_interface_t) - (sizeof(uint32_t) * 5));
 }
 
 void syscall_netif_count(interrupt_state *state)

@@ -9,6 +9,40 @@
 
 #define BUF_LEN 1500
 
+static void __print_netif_info(net_interface_t *iface)
+{
+    printf("MAC: %02x:%02x:%02x:%02x:%02x:%02x\n",
+           iface->mac.octet_a,
+           iface->mac.octet_b,
+           iface->mac.octet_c,
+           iface->mac.octet_d,
+           iface->mac.octet_e,
+           iface->mac.octet_f);
+    printf("IPv4: %d.%d.%d.%d\n",
+           iface->ipv4_address.oct_a,
+           iface->ipv4_address.oct_b,
+           iface->ipv4_address.oct_c,
+           iface->ipv4_address.oct_d);
+    printf("Netmask: %d.%d.%d.%d\n",
+           iface->ipv4_netmask.oct_a,
+           iface->ipv4_netmask.oct_b,
+           iface->ipv4_netmask.oct_c,
+           iface->ipv4_netmask.oct_d);
+    printf("GW: %d.%d.%d.%d\n",
+           iface->ipv4_gateway.oct_a,
+           iface->ipv4_gateway.oct_b,
+           iface->ipv4_gateway.oct_c,
+           iface->ipv4_gateway.oct_d);
+    printf("DNS: %d.%d.%d.%d\n",
+           iface->ipv4_dns.oct_a,
+           iface->ipv4_dns.oct_b,
+           iface->ipv4_dns.oct_c,
+           iface->ipv4_dns.oct_d);
+    printf("Dropped frames: %d\n", iface->frames_dropped);
+    printf("RX frames: %d     bytes: %d\n", iface->frames_received, iface->bytes_received);
+    printf("TX frames: %d     bytes: %d\n", iface->frames_sent, iface->bytes_sent);
+}
+
 int main(int argc, char *argv[])
 {
     char buffer[BUF_LEN] = {0};
@@ -129,7 +163,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (!strcmp("-dns", argv[2]))
+    if (!strcmp("-lookup", argv[2]))
     {
         printf("Looking up for IP of: %s\n", argv[3]);
 
@@ -242,40 +276,59 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (!strcmp("-ip", argv[2]))
+    if (!strcmp("-show", argv[2]))
     {
         net_interface_t iface;
         micros_netif_get(atoi(argv[3]), &iface);
-        printf("MAC: %02x:%02x:%02x:%02x:%02x:%02x\n",
-               iface.mac.octet_a,
-               iface.mac.octet_b,
-               iface.mac.octet_c,
-               iface.mac.octet_d,
-               iface.mac.octet_e,
-               iface.mac.octet_f);
-        printf("IPv4: %d.%d.%d.%d\n",
-               iface.ipv4_address.oct_a,
-               iface.ipv4_address.oct_b,
-               iface.ipv4_address.oct_c,
-               iface.ipv4_address.oct_d);
-        printf("Netmask: %d.%d.%d.%d\n",
-               iface.ipv4_netmask.oct_a,
-               iface.ipv4_netmask.oct_b,
-               iface.ipv4_netmask.oct_c,
-               iface.ipv4_netmask.oct_d);
-        printf("GW: %d.%d.%d.%d\n",
-               iface.ipv4_gateway.oct_a,
-               iface.ipv4_gateway.oct_b,
-               iface.ipv4_gateway.oct_c,
-               iface.ipv4_gateway.oct_d);
-        printf("DNS: %d.%d.%d.%d\n",
-               iface.ipv4_dns.oct_a,
-               iface.ipv4_dns.oct_b,
-               iface.ipv4_dns.oct_c,
-               iface.ipv4_dns.oct_d);
-        printf("Dropped frames: %d\n", iface.frames_dropped);
-        printf("RX frames: %d     bytes: %d\n", iface.frames_received, iface.bytes_received);
-        printf("TX frames: %d     bytes: %d\n", iface.frames_sent, iface.bytes_sent);
+        __print_netif_info(&iface);
+    }
+
+    if (!strcmp("-ip", argv[2]))
+    {
+        net_interface_t iface;
+        uint32_t iface_id = atoi(argv[3]);
+        
+        micros_netif_get(iface_id, &iface);
+        iface.ipv4_address = inet_addr(argv[4]);
+        micros_netif_set(iface_id, &iface);
+        micros_netif_get(iface_id, &iface);
+        __print_netif_info(&iface);
+    }
+
+    if (!strcmp("-netmask", argv[2]))
+    {
+        net_interface_t iface;
+        uint32_t iface_id = atoi(argv[3]);
+        
+        micros_netif_get(iface_id, &iface);
+        iface.ipv4_netmask = inet_addr(argv[4]);
+        micros_netif_set(iface_id, &iface);
+        micros_netif_get(iface_id, &iface);
+        __print_netif_info(&iface);
+    }
+
+    if (!strcmp("-gateway", argv[2]))
+    {
+        net_interface_t iface;
+        uint32_t iface_id = atoi(argv[3]);
+        
+        micros_netif_get(iface_id, &iface);
+        iface.ipv4_gateway = inet_addr(argv[4]);
+        micros_netif_set(iface_id, &iface);
+        micros_netif_get(iface_id, &iface);
+        __print_netif_info(&iface);
+    }
+
+    if (!strcmp("-dns", argv[2]))
+    {
+        net_interface_t iface;
+        uint32_t iface_id = atoi(argv[3]);
+        
+        micros_netif_get(iface_id, &iface);
+        iface.ipv4_dns = inet_addr(argv[4]);
+        micros_netif_set(iface_id, &iface);
+        micros_netif_get(iface_id, &iface);
+        __print_netif_info(&iface);
     }
 
     return 0;

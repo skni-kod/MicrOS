@@ -42,13 +42,13 @@ bool network_manager_init()
         dev->tx = kbuffer_init(dev->interface->mtu, NETWORK_MANAGER_BUFFER_SIZE);
         // finally turn on communication
         dev->interface->mode = (net_mode_t){.receive = 1, .send = 1};
-        // if (dhcp_negotiate(dev->interface))
+        //if (dhcp_negotiate(dev->interface))
         // {
         //     // set static IP
         //     dev->interface->ipv4_address = (ipv4_addr_t){
         //         .oct_a = 192,
         //         .oct_b = 168,
-        //         .oct_c = 1,
+        //         .oct_c = 10,
         //         .oct_d = 199};
 
         //     dev->interface->ipv4_dns = (ipv4_addr_t){
@@ -66,7 +66,7 @@ bool network_manager_init()
         //     dev->interface->ipv4_gateway = (ipv4_addr_t){
         //         .oct_a = 192,
         //         .oct_b = 168,
-        //         .oct_c = 1,
+        //         .oct_c = 10,
         //         .oct_d = 1};
         // }
     }
