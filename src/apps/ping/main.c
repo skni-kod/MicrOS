@@ -89,6 +89,7 @@ int main(int argc, char *argv[])
                 }
             }
         }
+        return 0;
     }
 
     if (!strcmp("-tcp", argv[2]))
@@ -161,6 +162,7 @@ int main(int argc, char *argv[])
             //     }
             // }
         }
+        return 0;
     }
 
     if (!strcmp("-lookup", argv[2]))
@@ -175,17 +177,32 @@ int main(int argc, char *argv[])
                addr.oct_b,
                addr.oct_c,
                addr.oct_d);
+        return 0;
     }
 
     if (!strcmp("-client", argv[2]))
     {
-        uint16_t port = atoi(argv[4]);
+        uint32_t sock = 0;
+        enum socket_domain proto;
+        if (!strcmp("-tcp", argv[3]))
+        {
+            sock = socket(AF_INET, SOCK_STREAM, 0);
+            proto = SOCK_STREAM;
+        }
+        if (!strcmp("-udp", argv[3]))
+        {
+            sock = socket(AF_INET, SOCK_DGRAM, 0);
+            proto = SOCK_DGRAM;
+        }
 
+        if (!sock)
+            return -1;
+
+        uint16_t port = atoi(argv[5]);
         ipv4_addr_t srv;
-        // srv = dns_lookup(argv[3]);
-        srv = inet_addr(argv[3]);
 
-        uint32_t sock = socket(AF_INET, SOCK_STREAM, 0);
+        srv = inet_addr(argv[4]);
+
         struct sockaddr_in server_addr = {
             .sin_family = AF_INET,
             .sin_zero = 0,
@@ -194,7 +211,7 @@ int main(int argc, char *argv[])
 
         socklen_t server_addr_len = sizeof(struct sockaddr_in);
 
-        if (connect(sock, &server_addr, server_addr_len))
+        if (proto == SOCK_STREAM && connect(sock, &server_addr, server_addr_len))
         {
             printf("Unable to connect");
             return -1;
@@ -235,11 +252,21 @@ int main(int argc, char *argv[])
                     micros_console_print_char(' ');
                     micros_console_set_cursor_position(&pos);
                     break;
-                case key_backslash:
-                    snd_buffer[n++] = '\0';
-                    send(sock, snd_buffer, strlen(snd_buffer), 0);
+                case key_enter:
+                    snd_buffer[n++] = '\n';
+                    snd_buffer[n++] = 0;
+                    switch (proto)
+                    {
+                    case SOCK_DGRAM:
+                        sendto(sock, snd_buffer, strlen(snd_buffer), 0, (struct sockaddr *)&server_addr, sizeof(struct sockaddr_in));
+                        break;
+                    case SOCK_STREAM:
+                        send(sock, snd_buffer, strlen(snd_buffer), 0);
+                        break;
+                    }
+
                     micros_rtc_read_time(&time);
-                    printf("%02d:%02d:%02d [127.0.0.1]> %s",
+                    printf("\n%02d:%02d:%02d [MicrOS]> %s",
                            time.hour,
                            time.minute,
                            time.second,
@@ -258,7 +285,19 @@ int main(int argc, char *argv[])
                 }
             }
 
-            uint32_t bytes = recv(sock, buffer, 512, 0);
+            uint32_t bytes;
+            switch (proto)
+            {
+            case SOCK_DGRAM:
+                bytes = recvfrom(sock, buffer, sizeof(buffer), 0, (struct sockaddr *)&server_addr,
+                                 &server_addr_len);
+                break;
+
+            case SOCK_STREAM:
+                bytes = recv(sock, buffer, sizeof(buffer), 0);
+                break;
+            }
+
             if (bytes)
             {
                 micros_rtc_read_time(&time);
@@ -274,6 +313,7 @@ int main(int argc, char *argv[])
                 memset(buffer, 0, 512);
             }
         }
+        return 0;
     }
 
     if (!strcmp("-show", argv[2]))
@@ -281,54 +321,59 @@ int main(int argc, char *argv[])
         net_interface_t iface;
         micros_netif_get(atoi(argv[3]), &iface);
         __print_netif_info(&iface);
+        return 0;
     }
 
     if (!strcmp("-ip", argv[2]))
     {
         net_interface_t iface;
         uint32_t iface_id = atoi(argv[3]);
-        
+
         micros_netif_get(iface_id, &iface);
         iface.ipv4_address = inet_addr(argv[4]);
         micros_netif_set(iface_id, &iface);
         micros_netif_get(iface_id, &iface);
         __print_netif_info(&iface);
+        return 0;
     }
 
     if (!strcmp("-netmask", argv[2]))
     {
         net_interface_t iface;
         uint32_t iface_id = atoi(argv[3]);
-        
+
         micros_netif_get(iface_id, &iface);
         iface.ipv4_netmask = inet_addr(argv[4]);
         micros_netif_set(iface_id, &iface);
         micros_netif_get(iface_id, &iface);
         __print_netif_info(&iface);
+        return 0;
     }
 
     if (!strcmp("-gateway", argv[2]))
     {
         net_interface_t iface;
         uint32_t iface_id = atoi(argv[3]);
-        
+
         micros_netif_get(iface_id, &iface);
         iface.ipv4_gateway = inet_addr(argv[4]);
         micros_netif_set(iface_id, &iface);
         micros_netif_get(iface_id, &iface);
         __print_netif_info(&iface);
+        return 0;
     }
 
     if (!strcmp("-dns", argv[2]))
     {
         net_interface_t iface;
         uint32_t iface_id = atoi(argv[3]);
-        
+
         micros_netif_get(iface_id, &iface);
         iface.ipv4_dns = inet_addr(argv[4]);
         micros_netif_set(iface_id, &iface);
         micros_netif_get(iface_id, &iface);
         __print_netif_info(&iface);
+        return 0;
     }
 
     return 0;

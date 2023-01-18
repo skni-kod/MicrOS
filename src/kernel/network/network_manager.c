@@ -46,10 +46,10 @@ bool network_manager_init()
         // {
         //     // set static IP
         //     dev->interface->ipv4_address = (ipv4_addr_t){
-        //         .oct_a = 192,
-        //         .oct_b = 168,
+        //         .oct_a = 10,
+        //         .oct_b = 0,
         //         .oct_c = 10,
-        //         .oct_d = 199};
+        //         .oct_d = 90};
 
         //     dev->interface->ipv4_dns = (ipv4_addr_t){
         //         .oct_a = 1,
@@ -64,8 +64,8 @@ bool network_manager_init()
         //         .oct_d = 0};
 
         //     dev->interface->ipv4_gateway = (ipv4_addr_t){
-        //         .oct_a = 192,
-        //         .oct_b = 168,
+        //         .oct_a = 10,
+        //         .oct_b = 0,
         //         .oct_c = 10,
         //         .oct_d = 1};
         // }
