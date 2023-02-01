@@ -1,38 +1,36 @@
-ENTRY(_start)
+OUTPUT_FORMAT(binary)
 
-SECTIONS {
-    . = 0x500;
-    _stack_start = .;
-    . = 0x7c00;
-    _stack_end = .;
+SECTIONS
+{
+	. = 0x7C00;
 
-    _bootloader_start = .;
-    .boot :
-    {
-        *(.boot)
-    }
-    .text :
-    {
-        *(.text .text.*)
-    }
-    .data :
-    {
-        *(.rodata .rodata.*)
-        *(.data .data.*)
-        *(.got)
-    }
+	.boot :
+	{
+		/mnt/ramdisk/build/obj/bootloader/pxe/boot.o
+	}
 
-    . = 0x7c00 + 510;
-    .magic_number :
-    {
-        SHORT(0xaa55)       /* magic number for bootable disk */
-    }
+	. = 0x7E00;
+	.text ALIGN(4K) : AT(ADDR(.text))
+	{
+		*(.text)
+	}
 
-    _second_stage_start = .;
-    .second_stage :
-    {
-        *(.second_stage)
-    }
-    . = ALIGN(512);
-    _second_stage_end = .;
+	.rodata ALIGN(4K) : AT(ADDR(.rodata))
+	{
+		*(.rodata)
+	}
+
+	.data ALIGN(4K) : AT(ADDR(.data))
+	{
+		*(.data)
+	}
+
+	BSS_SECTION_START = .;
+
+	.bss ALIGN(4K) : AT(ADDR(.bss))
+	{
+		*(.bss)
+	}
+
+	BSS_SECTION_END = .;
 }

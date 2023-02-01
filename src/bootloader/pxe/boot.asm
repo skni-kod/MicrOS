@@ -8,35 +8,8 @@
 ; |------------|---------|------------|------------|----------------|--------------|--------------|------------|---------|---------|------------|------------|------------|------------|
 
 [BITS 16]
-[ORG 0x7C00]
 
-jmp Main
-
-Main:
-    
-    ; Disable interrupts (will be enabled again during kernel initialization sequence)
-    cli
-    ; Clear DF flag in EFLAGS register
-    cld
-    ; Clear segment registers
-    xor ax, ax
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
-
-    ; Set stack pointer to be directly under bootloader
-    ; About 30 KiB of memory is free here
-    ; https://wiki.osdev.org/Memory_Map_(x86)
-    mov esp, 0x7C00
-    mov ebp, esp
-    
-    ; Initialize data segment register
-    mov ax, cs
-    mov ds, ax
-
-    jmp loaderMain
+jmp loader
 
 ;GDT
 gdt_begin:
@@ -170,13 +143,22 @@ micros_loading db 'MicrOS is loading...',0
 a20_error db 'A20 Gate is not available. Critical ERROR...',0
 before_prot db 'This is exactly before turning on protection!',0
 protected_in db 'We are in protected mode now! Second stage worked!',0
+_test db 'MicrOS in protected mode',0
 
 r_bios db 'BIOS',0
 r_keyb db 'KEYBOARD',0
 r_gate db 'GATE',0
 
+LoadKernel.StackPointer     dw 0
+LoadKernel.KernelSize       dd 0
+LoadKernel.BufferSize       dd 0
+LoadKernel.CurrentSector    dw 0
+LoadKernel.LastSector       dw 0
+LoadKernel.SectorsToCopy    dw 0
+LoadKernel.TargetPointer    dd 0x100000
 
-loaderMain:
+
+loader:
     cli
 
     xor ax, ax
@@ -238,12 +220,8 @@ A20Ready:
     or eax, 1
     mov cr0, eax
 
-    jmp 0x08:test_func
-
+    jmp 0x08:jump_to_loader
     hlt
-
-    ;jmp dword 0x08:0x100000
-    ;jmp $
 
 print_line_16:
 	mov ah, 0Eh
@@ -442,37 +420,83 @@ load_memory_map_loop:
     
     ret
 
+[BITS 16]
+
+LoadKernel_Prep32Bit:
+    cli
+
+    mov eax, cr0
+    or eax, 1
+    mov cr0, eax
+
+    jmp 0x08:LoadKernel_SwitchToProtected32
+
+LoadKernel_SwitchToProtected16:
+    
+    mov ax, 0x20
+    mov ds, ax
+    mov es, ax
+    mov ss, ax
+
+LoadKernel_PrepRealMode:
+    mov eax, cr0
+    and eax, ~(1 << 0)
+    mov cr0, eax
+
+    jmp 0x0000:LoadKernel_SwitchToRealMode
+
+LoadKernel_SwitchToRealMode:
+
+    xor ax, ax
+    mov ds, ax
+    mov es, ax
+    mov ss, ax
+
+    xor esp, esp
+    mov sp, [LoadKernel.StackPointer]
+
+    sti
+    clc
+    ; clean memory
+    mov ax, 0x1000
+    mov es, ax
+    xor ax, ax
+    xor di, di
+    mov cx, 0xFFFF
+    rep stosb
+    inc cx
+    stosb
+
+    xor eax, eax
+    xor ebx, ebx
+    xor ecx, ecx
+    xor edx, edx
+
+    popa
+    pop es
+
+    ret
+
 [BITS 32]
 
-test_func:
-    mov si, a20_error
-    call protstr
-    hlt
-; temporarily it is going to print at the beginning!
-protstr:
-    mov dx,0x3D4       ; Tell the control I/O port to get the lower byte of
-    mov al,0x0F        ; the cursor offset
-    out dx,al
-    mov dx,0x3D5       ; Switch to data I/O port
-    in  al,dx          ; Get the cursor offset's lower byte
+LoadKernel_SwitchToProtected32:
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov ss, ax
 
-    mov dx,0x3D5       ; Tell the control I/O port to get the higher byte of
-    mov al,0x0E        ; the cursor offset
-    out dx,al
-    mov dx,0x3D5       ; Switch to data I/O port
-    in  al,dx          ; Get the higher byte
+    mov esp, 0x10000
 
-    imul ax,2
+LoadKernel_Prep16Bit:
+    jmp 0x18:LoadKernel_SwitchToProtected16
 
-    mov ah, 0x0F
-    mov ebx, 0xb8000
-protstr_loop:
-;For legacy mode, Load byte at address DS:(E)SI into AL. For 64-bit mode load byte at address (R)SI into AL.
-	lodsb
-    test al, al
-    je protstr_done
-    mov [ebx], ax
-    add ebx, 2
-    jmp protstr_loop
-protstr_done:
-    ret
+
+jump_to_loader:
+    extern loader_main
+    call loader_main
+
+[BITS 32]
+global _pxecall
+_pxecall:
+	pushad
+    
