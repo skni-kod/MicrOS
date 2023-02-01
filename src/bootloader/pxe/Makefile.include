@@ -2,49 +2,21 @@ b_pxe_src_dir			= $(bootloader_src_dir)/pxe
 b_pxe_objs_dir			= $(build_dir)/obj/bootloader/pxe
 b_pxe_bin				= $(build_dir)/pxe.0
 
-b_pxe_ld_script			= $(b_pxe_src_dir)/linker.ld
-
-b_pxe_c_files			+= $(patsubst $(b_pxe_src_dir)/%, %,$(shell find $(b_pxe_src_dir) -name "*.c"))
 b_pxe_asm_files			+= $(patsubst $(b_pxe_src_dir)/%, %,$(shell find $(b_pxe_src_dir) -name "*.asm"))
 
-b_pxe_c_objects    	= $(patsubst %.c, $(b_pxe_objs_dir)/%.o, $(b_pxe_c_files))
 b_pxe_asm_objects  	= $(patsubst %.asm, $(b_pxe_objs_dir)/%.o, $(b_pxe_asm_files))
-
-b_pxe_ASM_FLAGS 		+= 
-
-b_pxe_deps				= $(b_pxe_c_objects:%.o=%.d)
--include $(b_pxe_deps)
 
 $(b_pxe_asm_objects): $(b_pxe_objs_dir)/%.o: $(b_pxe_src_dir)/%.asm
 	$(progress) "ASM" $<
 	$(MKDIR) -p $(@D)
-	$(ASM) -f elf  $< -o $@
+	$(ASM) -f bin -Dentry_point=entry  $< -o $@
 
-$(b_pxe_c_objects): $(b_pxe_objs_dir)/%.o:  $(b_pxe_src_dir)/%.c
-	$(progress) "CC" $<
+
+$(b_pxe_bin): $(b_pxe_asm_objects)
+	$(progress) "CP" $@
 	$(MKDIR) -p $(@D)
-	$(CC) -ffreestanding -c $< -o $@ 
-
-$(b_pxe_bin): $(b_pxe_asm_objects) $(b_pxe_c_objects) 
-	$(progress) "LD" $@
-	$(MKDIR) -p $(@D)
-	$(LD) -T $(b_pxe_ld_script) $(b_pxe_asm_objects) $(b_pxe_c_objects) --oformat binary -o $@ 
-
-
-# $(b_pxe_asm_objects): $(b_pxe_objs_dir)/%.o: $(b_pxe_src_dir)/%.asm
-# 	$(progress) "ASM" $<
-# 	$(MKDIR) -p $(@D)
-# 	$(ASM) -f bin  $< -o $@
-
-# $(b_pxe_c_objects): $(b_pxe_objs_dir)/%.o:  $(b_pxe_src_dir)/%.c
-# 	$(progress) "CC" $<
-# 	$(MKDIR) -p $(@D)
-# 	$(CC) -ffreestanding  -c $< -o $@ 
-
-# $(b_pxe_bin): $(b_pxe_objs_dir)/boot.o
-# 	$(progress) "LD" $@
-# 	$(MKDIR) -p $(@D)
-# 	$(CP) $< $@
+#$(LD) -T $(b_pxe_asm_objects) --oformat binary -o $@ 
+	$(CP) $< $@
 
 bootloaderpxe: $(b_pxe_bin)
 .PHONY: bootloaderpxe

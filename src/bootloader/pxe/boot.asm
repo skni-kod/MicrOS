@@ -1,46 +1,42 @@
-; [BITS 16]
-; mov ax, 5650h
-; int 1ah
-
-; cmp ax, 564Eh
-; jne bad
-
-; mov ah, 13h
-; mov al, 01h
-; mov cx, 6h
-; mov bp,bx
-; mov bl, 0xc
-; mov bh, 0x0
-; mov dx, 0x0
-
-; int 0x10
-
-; mov bx, bp
-; mov ax, [es:bx+0x6]
-; cmp ax, 0x0201
-; jge pxe
-
-; jmp end
-
-; pxe:
-; mov ah, 0xa
-; mov al, 'P'
-; mov bh, 0
-; mov cx, 10
-; int 0x10
-; jmp end
-
-; bad:
-; mov ah, 0xa
-; mov al, 'b'
-; mov bh, 0
-; mov cx, 10
-; int 0x10
-
-; end:
+;
+; |------------|---------|------------|------------|----------------|--------------|--------------|------------|---------|---------|------------|------------|------------|------------|
+; |   1 KiB    |  256 B  |   21 KiB   |   1 KiB    |     4 KiB      |    3 KiB     |    512 B     |   28 KiB   | 578 KiB |  1 KiB  |  383 KiB   |   15 MiB   |   1 MiB    |   4 MiB    |
+; | Interrupts |   BDA   | Floppy DMA | Memory map | Page Directory | BootloaderS2 | BootloaderS1 | FAT32 data |  DataS2 |  EBDA   | Video, ROM |   Kernel   |   Stack    | Page Table |
+; |            |         |            |            |                |              |              |            |         |         |            |            |            |            |
+; |  0x00000   | 0x00400 |  0x00500   |  0x05C00   |    0x06000     |    0x07000   |   0x07C00    |  0x07E00   | 0x0F000 | 0x9FC00 |  0xA0000   | 0x00100000 | 0x01000000 | 0x01100000 |
+; |  0x003FF   | 0x004FF |  0x05BFF   |  0x05FFF   |    0x06FFF     |    0x07BFF   |   0x07DFF    |  0x0EFFF   | 0x9FBDD | 0x9FFFF |  0xFFFFF   | 0x00FFFFFF | 0x010FFFFF | 0x014FFFFF |
+; |------------|---------|------------|------------|----------------|--------------|--------------|------------|---------|---------|------------|------------|------------|------------|
 
 [BITS 16]
-jmp loaderMain
+[ORG 0x7C00]
+
+jmp Main
+
+Main:
+    
+    ; Disable interrupts (will be enabled again during kernel initialization sequence)
+    cli
+    ; Clear DF flag in EFLAGS register
+    cld
+    ; Clear segment registers
+    xor ax, ax
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+
+    ; Set stack pointer to be directly under bootloader
+    ; About 30 KiB of memory is free here
+    ; https://wiki.osdev.org/Memory_Map_(x86)
+    mov esp, 0x7C00
+    mov ebp, esp
+    
+    ; Initialize data segment register
+    mov ax, cs
+    mov ds, ax
+
+    jmp loaderMain
 
 ;GDT
 gdt_begin:
@@ -173,10 +169,16 @@ gdt_description:
 micros_loading db 'MicrOS is loading...',0
 a20_error db 'A20 Gate is not available. Critical ERROR...',0
 before_prot db 'This is exactly before turning on protection!',0
+protected_in db 'We are in protected mode now! Second stage worked!',0
+
+r_bios db 'BIOS',0
+r_keyb db 'KEYBOARD',0
+r_gate db 'GATE',0
+
 
 loaderMain:
     cli
-    
+
     xor ax, ax
     mov ds, ax
     mov es, ax
@@ -185,9 +187,9 @@ loaderMain:
     mov ss, ax
 
     ; Hide cursor
-    ; mov ah, 0x01
-    ; mov cx, 0x2607
-    ; int 0x10
+    mov ah, 0x01
+    mov cx, 0x2607
+    int 0x10
 
     ; Move cursor at top left position
     mov ah, 0x02
@@ -205,26 +207,35 @@ loaderMain:
     mov dl, 79
     int 0x10
 
+    ; Print "Micros is loading..."
+    ; mov si, micros_loading
+    ; call print_line_16
+
     ; Check If Line A20 Enabled
     call check_a20
     or ax, ax
+
     jnz A20Ready
+
     call enable_A20_BIOS
 
 A20Ready:
+    ;mov si, micros_loading
+    ;call print_line_16
+
     sti
     ; Load GDT table
-    lgdt [dword gdt_description]
+    ;lgdt [dword gdt_description]
 
     cli
 
-    mov bx, 0x0000
-    mov es, bx
+    ;mov bx, 0x0000
+    ;mov es, bx
     ; Buffer offset
-    mov bx, 0x5C00
-    mov di, bx
+    ;mov bx, 0x5C00
+    ;mov di, bx
 
-    call load_memory_map
+    ;call load_memory_map
 
     ;enter protected mode (32 bit)
     mov eax, cr0
@@ -232,14 +243,15 @@ A20Ready:
     mov cr0, eax
 
     mov si, protected_in
-    jmp protstr
+    call protstr
+
     hlt
+
     jmp dword 0x08:0x100000
     jmp $
 
 print_line_16:
 	mov ah, 0Eh
-    mov bx, 0h
 print_line_16_repeat:
 	lodsb
     test al, al
@@ -312,6 +324,9 @@ halt_a20:
     hlt
 
 enable_A20_BIOS:
+    mov si, micros_loading
+    call print_line_16
+
     mov     ax,2403h                ;--- A20-Gate Support ---
     int     15h
     cmp     ah,0
@@ -399,7 +414,7 @@ load_memory_map:
     mov eax, 0
     push eax
 
-    load_memory_map_loop:
+load_memory_map_loop:
     ; Increment pointer in buffer
     add di, 24
 
@@ -434,7 +449,6 @@ load_memory_map:
 
 [BITS 32]
 ; temporarily it is going to print at the beginning!
-; Function for displaying debug text in protected mode
 protstr:
     mov dx,0x3D4       ; Tell the control I/O port to get the lower byte of
     mov al,0x0F        ; the cursor offset
@@ -449,10 +463,11 @@ protstr:
     in  al,dx          ; Get the higher byte
 
     imul ax,2
-    ;discard for now
-    mov ah, 09
+
+    mov ah, 0x0F
     mov ebx, 0xb8000
 protstr_loop:
+;For legacy mode, Load byte at address DS:(E)SI into AL. For 64-bit mode load byte at address (R)SI into AL.
 	lodsb
     test al, al
     je protstr_done
@@ -461,6 +476,3 @@ protstr_loop:
     jmp protstr_loop
 protstr_done:
     ret
-
-; 32bit globals
-protected_in db 'We are in protected mode now! Second stage worked!',0

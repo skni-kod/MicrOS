@@ -44,5 +44,6 @@ int main(int argc, char *argv[])
     micros_netif_get(id, &iface);
     dhcp_negotiate(&iface);
     micros_netif_set(id, &iface);
+    micros_netif_get(id, &iface);
     __print_netif_info(&iface);
 }

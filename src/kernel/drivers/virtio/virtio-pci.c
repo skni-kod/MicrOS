@@ -6,15 +6,6 @@ uint8_t virtio_setup_queue(virtq *virtqueue, uint16_t queueSize)
     // Zero virtqueue structure
     memset(virtqueue, 0, sizeof(virtq));
 
-    // determine size of virtqueue in bytes (see 2.4 Virtqueues in virtio spec)
-
-    // virtqueues consist of:
-    // Descriptor table
-    // Available Ring
-    // Used Ring
-
-    // descriptor table must be aligned on a 16-byte boundary. Since the virtqueue itself must be aligned on a 4096-byte boundary,
-    // this alignment will be guaranteed.
     uint32_t descriptorTableSize = 16 * queueSize;
 
     // driver area (AKA available ring) must be aligned on a 2-byte boundary, which it always will be because descriptorSize will be aligned to
