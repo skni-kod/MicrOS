@@ -226,12 +226,11 @@ A20Ready:
     lgdt [dword gdt_description]
     cli
 
-    ;mov bx, 0x0000
-    ;mov es, bx
-    ; Buffer offset
-    ;mov bx, 0x5C00
-    ;mov di, bx
-
+    mov bx, 0x0000
+    mov es, bx
+    ;Buffer offset
+    mov bx, 0x5C00
+    mov di, bx 
     call load_memory_map
 
     ;enter protected mode (32 bit)
@@ -239,13 +238,12 @@ A20Ready:
     or eax, 1
     mov cr0, eax
 
-    mov si, micros_loading
-    call protstr
+    jmp 0x08:test_func
 
     hlt
 
-    jmp dword 0x08:0x100000
-    jmp $
+    ;jmp dword 0x08:0x100000
+    ;jmp $
 
 print_line_16:
 	mov ah, 0Eh
@@ -445,6 +443,11 @@ load_memory_map_loop:
     ret
 
 [BITS 32]
+
+test_func:
+    mov si, a20_error
+    call protstr
+    hlt
 ; temporarily it is going to print at the beginning!
 protstr:
     mov dx,0x3D4       ; Tell the control I/O port to get the lower byte of
