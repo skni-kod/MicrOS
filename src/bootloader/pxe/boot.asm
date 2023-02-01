@@ -208,8 +208,8 @@ loaderMain:
     int 0x10
 
     ; Print "Micros is loading..."
-    ; mov si, micros_loading
-    ; call print_line_16
+    mov si, micros_loading
+    call print_line_16
 
     ; Check If Line A20 Enabled
     call check_a20
@@ -220,13 +220,10 @@ loaderMain:
     call enable_A20_BIOS
 
 A20Ready:
-    ;mov si, micros_loading
-    ;call print_line_16
 
     sti
     ; Load GDT table
-    ;lgdt [dword gdt_description]
-
+    lgdt [dword gdt_description]
     cli
 
     ;mov bx, 0x0000
@@ -235,14 +232,14 @@ A20Ready:
     ;mov bx, 0x5C00
     ;mov di, bx
 
-    ;call load_memory_map
+    call load_memory_map
 
     ;enter protected mode (32 bit)
     mov eax, cr0
     or eax, 1
     mov cr0, eax
 
-    mov si, protected_in
+    mov si, micros_loading
     call protstr
 
     hlt

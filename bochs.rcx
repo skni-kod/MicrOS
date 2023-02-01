@@ -1,6 +1,6 @@
   megs: 256
-  floppya: 1_44="./build/floppy.img", status=inserted
-  boot: floppy
+  boot: network
+  pci: enabled=1, chipset=i440fx, slot1=ne2k
+  ne2k: enabled=1, ioaddr=0x300, irq=10, mac=52:54:00:12:34:56, ethmod=slirp, ethdev=".", script="PXE.BIOS.conf", bootrom="/mnt/ramdisk/build/pxe.0"
   display_library: x, options="gui_debug"
   magic_break: enabled=1
-  reset_on_triple_fault: 0 
