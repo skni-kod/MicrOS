@@ -9,7 +9,7 @@ SECTIONS
 		/mnt/ramdisk/build/obj/bootloader/pxe/boot.o
 	}
 
-	. = 0x7E00;
+	. = 0x8F00;
 	.text ALIGN(4K) : AT(ADDR(.text))
 	{
 		*(.text)

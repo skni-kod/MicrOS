@@ -55,12 +55,13 @@ void terminal_putentryat(char c, uint8_t color, size_t x, size_t y)
 
 void terminal_putchar(char c)
 {
-	if(c == '\n'){
+	if (c == '\n')
+	{
 		++terminal_row;
 		terminal_column = 0;
 		return;
 	}
-	
+
 	terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
 	if (++terminal_column == VGA_WIDTH)
 	{
@@ -81,14 +82,112 @@ void terminal_writestring(const char *data)
 	terminal_write(data, strlen(data));
 }
 
+uint8_t chksum8(const unsigned char *buff, size_t len)
+{
+	unsigned int sum; // nothing gained in using smaller types!
+	for (sum = 0; len != 0; len--)
+		sum += *(buff++); // parenthesis not required!
+	return (uint8_t)sum;
+}
+
+char *scan(char *mem_begin, char *mem_end)
+{
+	for (char *i = mem_begin; i < mem_end; i++)
+	{
+		if (*i != '!')
+			continue;
+		if (*(i + 1) != 'P')
+			continue;
+		if (*(i + 2) != 'X')
+			continue;
+		if (*(i + 3) != 'E')
+			continue;
+		return i;
+	}
+	return 0;
+}
+
+char* itoa(int value, char* result, int base) 
+{
+    // check that the base if valid
+    if (base < 2 || base > 36) { *result = '\0'; return result; }
+
+    char* ptr = result, *ptr1 = result, tmp_char;
+    int tmp_value;
+
+    do {
+      tmp_value = value;
+      value /= base;
+      *ptr++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz" [35 + (tmp_value - value * base)];
+    } while ( value );
+
+    // Apply negative sign
+    if (tmp_value < 0) *ptr++ = '-';
+    *ptr-- = '\0';
+    while(ptr1 < ptr) {
+      tmp_char = *ptr;
+      *ptr--= *ptr1;
+      *ptr1++ = tmp_char;
+    }
+    return result;
+}
+
+
+void print_ip(ipv4_addr_t *addr, char* buf)
+{
+	char *ptr = itoa(addr->oct_a,buf,10);
+	*(ptr++) = '.';
+	ptr = itoa(addr->oct_b,ptr,10);
+	*(ptr++) = '.';
+	ptr = itoa(addr->oct_c,ptr,10);
+	*(ptr++) = '.';
+	ptr = itoa(addr->oct_d,ptr,10);
+	*(ptr++) = '\r';
+	*(ptr++) = '\0';
+}
+
+extern void _pxecall(uint16_t seg,
+		 			uint16_t off,
+		 			uint16_t opcode,
+					uint16_t param_seg,
+					uint16_t param_off);
 
 void loader_main(void)
 {
+
 	terminal_initialize();
-	terminal_writestring("HelloWorld!\n");
-	terminal_writestring("Dupa\n");
 
+	pxe_t *pxe_struct = scan(0x10000, 0xA0000);
+	uint8_t checksum = chksum8(pxe_struct, 0x58);
+	//void (*api_call)(uint16_t, void*) = pxe_strcut->EntryPointESP;
 
+	if (pxe_struct->length != 0x58)
+	{
+		terminal_writestring("Not good\n");
+	}
+
+	if (checksum != 0)
+	{
+		terminal_writestring("Bad checksum\n");
+	}
+
+	//Print signature
+	terminal_write(pxe_struct->signature, 4);
+	get_cached_info_t info = (get_cached_info_t){.packet_type = PXENV_PACKET_TYPE_DHCP_ACK};
+
+	_pxecall(pxe_struct->EntryPointSP.segment,
+				pxe_struct->EntryPointSP.offset,
+				PXE_OPCODE_GET_CACHED_INFO,
+				0,
+				&info);
+
+	ipv4_addr_t *addr = (info.buffer_seg << 4) + info.buffer_off + 0x14;
+	
+	char buffer[120] = "TFTP SERVER:";
+	//12
+	
+	print_ip(addr->value,&buffer+12);
+	terminal_writestring(buffer);
 	while (1)
 		;
 }

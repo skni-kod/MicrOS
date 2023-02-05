@@ -66,7 +66,7 @@ gdt_data_32:
 
     ; Segment base address (8 bits)
     db 0x00
-    ; code segment 16 bit (0x18)
+; code segment 16 bit (0x18)
 gdt_code_16:
     ; Segment limit (4 GiB)
     dw 0xFFFF
@@ -94,7 +94,7 @@ gdt_code_16:
 
     ; Segment base address (8 bits)
     db 0x00
-    ; data segment 16 bit (0x20)
+; data segment 16 bit (0x20)
 gdt_data_16:
     ; Segment limit (4 GiB)
     dw 0xFFFF

@@ -8,17 +8,16 @@
 ; |------------|---------|------------|------------|----------------|--------------|--------------|------------|---------|---------|------------|------------|------------|------------|
 
 [BITS 16]
-
 jmp loader
 
 ;GDT
 gdt_begin:
-; Null segment, reserved by CPU
+; null segment, reserved by CPU
 gdt_null:
     dd 0x00000000
     dd 0x00000000
 
-; Code segment 32 bit (0x08)
+; code segment 32 bit (0x08)
 gdt_code_32:
     ; Segment limit (4 GiB)
     dw 0xFFFF
@@ -47,7 +46,7 @@ gdt_code_32:
     ; Segment base address (8 bits)
     db 0x00
 
-; Data segment 32 bit (0x10)
+; data segment 32 bit (0x10)
 gdt_data_32:
     ; Segment limit (4 GiB)
     dw 0xFFFF
@@ -75,7 +74,7 @@ gdt_data_32:
 
     ; Segment base address (8 bits)
     db 0x00
-    ; code segment 16 bit (0x18)
+; code segment 16 bit (0x18)
 gdt_code_16:
     ; Segment limit (4 GiB)
     dw 0xFFFF
@@ -103,7 +102,7 @@ gdt_code_16:
 
     ; Segment base address (8 bits)
     db 0x00
-    ; data segment 16 bit (0x20)
+; data segment 16 bit (0x20)
 gdt_data_16:
     ; Segment limit (4 GiB)
     dw 0xFFFF
@@ -143,19 +142,31 @@ micros_loading db 'MicrOS is loading...',0
 a20_error db 'A20 Gate is not available. Critical ERROR...',0
 before_prot db 'This is exactly before turning on protection!',0
 protected_in db 'We are in protected mode now! Second stage worked!',0
-_test db 'MicrOS in protected mode',0
 
 r_bios db 'BIOS',0
 r_keyb db 'KEYBOARD',0
 r_gate db 'GATE',0
 
-LoadKernel.StackPointer     dw 0
-LoadKernel.KernelSize       dd 0
-LoadKernel.BufferSize       dd 0
-LoadKernel.CurrentSector    dw 0
-LoadKernel.LastSector       dw 0
-LoadKernel.SectorsToCopy    dw 0
-LoadKernel.TargetPointer    dd 0x100000
+RealMode.StackPointer     dw 0
+RealMode.IntNumber        dw 0
+
+struc register_state
+	.eax: resd 1
+	.ecx: resd 1
+	.edx: resd 1
+	.ebx: resd 1
+	.esp: resd 1
+	.ebp: resd 1
+	.esi: resd 1
+	.edi: resd 1
+	.efl: resd 1
+
+	.es: resw 1
+	.ds: resw 1
+	.fs: resw 1
+	.gs: resw 1
+	.ss: resw 1
+endstruc
 
 
 loader:
@@ -167,11 +178,6 @@ loader:
     mov fs, ax
     mov gs, ax
     mov ss, ax
-
-    ; Hide cursor
-    mov ah, 0x01
-    mov cx, 0x2607
-    int 0x10
 
     ; Move cursor at top left position
     mov ah, 0x02
@@ -221,7 +227,6 @@ A20Ready:
     mov cr0, eax
 
     jmp 0x08:jump_to_loader
-    hlt
 
 print_line_16:
 	mov ah, 0Eh
@@ -297,9 +302,6 @@ halt_a20:
     hlt
 
 enable_A20_BIOS:
-    mov si, micros_loading
-    call print_line_16
-
     mov     ax,2403h                ;--- A20-Gate Support ---
     int     15h
     cmp     ah,0
@@ -421,7 +423,6 @@ load_memory_map_loop:
     ret
 
 [BITS 16]
-
 LoadKernel_Prep32Bit:
     cli
 
@@ -432,7 +433,6 @@ LoadKernel_Prep32Bit:
     jmp 0x08:LoadKernel_SwitchToProtected32
 
 LoadKernel_SwitchToProtected16:
-    
     mov ax, 0x20
     mov ds, ax
     mov es, ax
@@ -453,7 +453,7 @@ LoadKernel_SwitchToRealMode:
     mov ss, ax
 
     xor esp, esp
-    mov sp, [LoadKernel.StackPointer]
+    mov sp, [RealMode.StackPointer]
 
     sti
     clc
@@ -472,10 +472,16 @@ LoadKernel_SwitchToRealMode:
     xor ecx, ecx
     xor edx, edx
 
-    popa
-    pop es
+    ;Write character and attribute at cursor position 	AH=09h 	AL = Character, BH = Page Number, BL = Color, CX = Number of times to print character 	
+    mov ah, 09h
+    mov al, 'a'
+    mov bh, 0
+    mov bl, 0xA
+    mov cx, 10h
 
-    ret
+    int 10h
+
+    jmp 0x0000:LoadKernel_Prep32Bit
 
 [BITS 32]
 
@@ -487,16 +493,97 @@ LoadKernel_SwitchToProtected32:
 
     mov esp, 0x10000
 
-LoadKernel_Prep16Bit:
-    jmp 0x18:LoadKernel_SwitchToProtected16
-
-
 jump_to_loader:
     extern loader_main
     call loader_main
 
-[BITS 32]
+[bits 32]
 global _pxecall
 _pxecall:
 	pushad
-    
+
+	; Set all selectors to data segments
+	mov ax, 0x20
+	mov es, ax
+	mov ds, ax
+	mov fs, ax
+	mov gs, ax
+	mov ss, ax
+    jmp 0x018:.foop
+
+[bits 16]
+.foop:
+	; Disable protected mode
+	mov eax, cr0
+	and eax, ~1
+	mov cr0, eax
+
+	; Clear all segments
+	xor ax, ax
+	mov es, ax
+	mov ds, ax
+	mov fs, ax
+	mov gs, ax
+	mov ss, ax
+
+	; Perform a long jump to real-mode
+	pushfd                                ; eflags
+	push dword 0x0        ; cs
+	push dword .new_func ; eip
+	iretd
+
+.new_func:
+	;   pxecall(seg: u16, off: u16, pxe_call: u16, param_seg: u16, param_off: u16);
+	movzx eax, word [esp + (4*0x9)] ; arg1, seg
+	movzx ebx, word [esp + (4*0xa)] ; arg2, offset
+	movzx ecx, word [esp + (4*0xb)] ; arg3, pxe_call
+	movzx edx, word [esp + (4*0xc)] ; arg4, param_seg
+	movzx esi, word [esp + (4*0xd)] ; arg5, param_off
+
+	; Set up PXE call parameters (opcode, offset, seg)
+	push dx
+	push si
+	push cx
+
+	; Set up our return address from the far call
+	mov ebp, .retpoint
+	push cs
+	push bp
+
+	; Set up a far call via iretw
+	pushfw
+	push ax
+	push bx
+
+	iretw
+.retpoint:
+	; Hyper-V has been observed to set the interrupt flag in PXE routines. We
+	; clear it ASAP.
+	cli
+
+	; Clean up the stack from the 3 word parameters we passed to PXE
+	add sp, 6
+
+	; Enable protected mode
+	mov eax, cr0
+	or  eax, 1
+	mov cr0, eax
+
+	; Set all segments to data segments
+	mov ax, 0x10
+	mov es, ax
+	mov ds, ax
+	mov fs, ax
+	mov gs, ax
+	mov ss, ax
+
+	; Jump back to protected mode
+	pushfd             ; eflags
+	push dword 0x08  ; cs
+	push dword backout ; eip
+	iretd
+
+[bits 32]
+backout:
+	popad
+	ret
