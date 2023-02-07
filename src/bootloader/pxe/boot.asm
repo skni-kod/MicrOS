@@ -195,6 +195,8 @@ loader:
     mov dl, 79
     int 0x10
 
+    mov esp, 0x7c00
+    
     ; Print "Micros is loading..."
     mov si, micros_loading
     call print_line_16
@@ -501,22 +503,21 @@ jump_to_loader:
 global _pxecall
 _pxecall:
 	pushad
+    jmp 0x018:.foop
 
-	; Set all selectors to data segments
-	mov ax, 0x20
+[bits 16]
+.foop:
+    mov ax, 0x20
 	mov es, ax
 	mov ds, ax
 	mov fs, ax
 	mov gs, ax
 	mov ss, ax
-    jmp 0x018:.foop
-
-[bits 16]
-.foop:
+    
 	; Disable protected mode
-	mov eax, cr0
-	and eax, ~1
-	mov cr0, eax
+    mov eax, cr0
+    and eax, ~(1 << 0)
+    mov cr0, eax
 
 	; Clear all segments
 	xor ax, ax
@@ -525,11 +526,11 @@ _pxecall:
 	mov fs, ax
 	mov gs, ax
 	mov ss, ax
-
+       
 	; Perform a long jump to real-mode
-	pushfd                                ; eflags
-	push dword 0x0        ; cs
-	push dword .new_func ; eip
+	pushfd                 ; eflags
+	push dword 0x0         ; cs
+	push dword .new_func   ; eip
 	iretd
 
 .new_func:
@@ -546,7 +547,7 @@ _pxecall:
 	push cx
 
 	; Set up our return address from the far call
-	mov ebp, .retpoint
+	mov bp, .retpoint
 	push cs
 	push bp
 
@@ -557,33 +558,34 @@ _pxecall:
 
 	iretw
 .retpoint:
-	; Hyper-V has been observed to set the interrupt flag in PXE routines. We
-	; clear it ASAP.
+	; Hyper-V has been observed to set the interrupt flag in PXE routines. We clear it ASAP.
 	cli
 
-	; Clean up the stack from the 3 word parameters we passed to PXE
-	add sp, 6
+    mov bx, ax
 
-	; Enable protected mode
-	mov eax, cr0
-	or  eax, 1
-	mov cr0, eax
+    add sp, 6
 
-	; Set all segments to data segments
-	mov ax, 0x10
+    mov eax, cr0
+    or eax, 1
+    mov cr0, eax
+
+	; Jump back to protected mode
+	pushfd             ; eflags
+	push dword 0x08    ; cs
+	push dword backout ; eip
+	iretd
+
+[bits 32]
+backout:
+    mov ax, 0x10
 	mov es, ax
 	mov ds, ax
 	mov fs, ax
 	mov gs, ax
 	mov ss, ax
 
-	; Jump back to protected mode
-	pushfd             ; eflags
-	push dword 0x08  ; cs
-	push dword backout ; eip
-	iretd
-
-[bits 32]
-backout:
 	popad
+
+    xor eax, eax
+    mov ax, bx
 	ret

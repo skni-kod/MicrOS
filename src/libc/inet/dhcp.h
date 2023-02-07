@@ -38,9 +38,9 @@ typedef struct dhcp_message
     ipv4_addr_t yiaddr;
     ipv4_addr_t siaddr;
     ipv4_addr_t giaddr;
-    uint32_t chaddr[4];
-    uint32_t sname[16];
-    uint32_t file[32];
+	uint32_t chaddr[4];
+	uint8_t sname[64];
+	uint8_t file[128];
     uint32_t magic_cookie;
     uint8_t options[DHCP_OPTIONS_MAX];
 } __attribute__((packed)) dhcp_message_t;

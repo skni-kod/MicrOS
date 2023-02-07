@@ -137,12 +137,17 @@ run-debug: $(log_dir) build
 
 run-pxe: ## run pxe
 run-pxe:
-	make bootloaderpxe && qemu-system-i386 -netdev user,id=net0,tftp=/mnt/ramdisk/build/,bootfile=/pxe.0 -boot n -net nic,model=virtio,netdev=net0,macaddr=00:11:22:33:44:55
+	make bootloaderpxe && G_MESSAGES_DEBUG=all qemu-system-i386 -netdev user,id=net0,tftp=/mnt/ramdisk/build,bootfile=/pxe.0 -boot n -net nic,model=virtio,netdev=net0,macaddr=00:11:22:33:44:55
 .PHONY: run-pxe
 
 run-pxe-debug: ## run pxe-debug
 run-pxe-debug:
-	make bootloaderpxe && make build && qemu-system-i386 -s -S -netdev user,id=net0,tftp=/mnt/ramdisk/build/,bootfile=/pxe.0 -boot n -net nic,model=virtio,netdev=net0,macaddr=00:11:22:33:44:55
+	make bootloaderpxe && make build && G_MESSAGES_DEBUG=all qemu-system-i386 -s -S \
+	-boot n \
+	-netdev user,id=net0,tftp=/mnt/ramdisk/build,bootfile=/pxe.0 \
+	-device rtl8139,netdev=net0,bootindex=1,romfile="$(CWD)/rtl8139.rom"
+#	-net nic,model=virtio,netdev=net0,macaddr=00:11:22:33:44:55 
+# -device rtl8139,netdev=net0,bootindex=1,romfile="$(CWD)/rtl8139.rom"
 .PHONY: run-pxe-debug
 
 

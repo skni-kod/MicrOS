@@ -6,7 +6,10 @@
 #include <stdint.h>
 
 #define PXE_OPCODE_GET_CACHED_INFO ((uint16_t)0x71u)
-#define PXENV_PACKET_TYPE_DHCP_ACK ((uint16_t)2u)
+#define PXENV_PACKET_TYPE_DHCP_ACK ((uint16_t)0x2u)
+#define PXE_OPCODE_TFTP_GET_FILE_SIZE ((uint16_t)0x25u)
+
+#define HTONS(n) ((((n)&0xFF) << 8) | (((n)&0xFF00) >> 8))
 
 typedef struct cpu_regs
 {
@@ -119,18 +122,56 @@ typedef struct GetCachedInfo
 
 typedef union ipv4_addr
 {
-    struct
-    {
-        uint8_t oct_a;
-        uint8_t oct_b;
-        uint8_t oct_c;
-        uint8_t oct_d;
-    };
-    uint32_t value;
+	struct
+	{
+		uint8_t oct_a;
+		uint8_t oct_b;
+		uint8_t oct_c;
+		uint8_t oct_d;
+	};
+	uint32_t value;
 } ipv4_addr_t;
 
-enum vga_color
+typedef struct dhcp_message
 {
+	uint8_t opcode;
+	uint8_t htype;
+	uint8_t hlen;
+	uint8_t hops;
+	uint32_t xid;
+	uint16_t secs;
+	uint16_t : 7, broadcast : 1, : 8;
+	ipv4_addr_t ciaddr;
+	ipv4_addr_t yiaddr;
+	ipv4_addr_t siaddr;
+	ipv4_addr_t giaddr;
+	uint32_t chaddr[4];
+	uint8_t sname[64];
+	uint8_t file[128];
+	uint32_t magic_cookie;
+	uint8_t options[];
+} __attribute__((packed)) dhcp_message_t;
+
+typedef struct get_file_size
+{
+	uint16_t status;
+	ipv4_addr_t server_addr;
+	ipv4_addr_t gateway_addr;
+	uint8_t file[128];
+	uint32_t file_size;
+} __attribute__((packed)) get_file_size_t;
+
+typedef struct tftp_open
+{
+	uint16_t status;
+	ipv4_addr_t server_addr;
+	ipv4_addr_t gateway_addr;
+	uint8_t file[128];
+	uint16_t tftp_port;
+	uint16_t packet_size;
+} tftp_open_t;
+
+enum vga_color {
 	VGA_COLOR_BLACK = 0,
 	VGA_COLOR_BLUE = 1,
 	VGA_COLOR_GREEN = 2,

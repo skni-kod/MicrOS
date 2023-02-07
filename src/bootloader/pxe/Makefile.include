@@ -23,7 +23,7 @@ $(b_pxe_asm_objects): $(b_pxe_objs_dir)/%.o: $(b_pxe_src_dir)/%.asm
 $(b_pxe_c_objects): $(b_pxe_objs_dir)/%.o:  $(b_pxe_src_dir)/%.c
 	$(progress) "CC" $<
 	$(MKDIR) -p $(@D)
-	$(CC) -ffreestanding -g -c $< -o $@ 
+	$(CC) -ffreestanding -g -ggdb -c $< -o $@ 
 
 $(b_pxe_bin): $(b_pxe_asm_objects) $(b_pxe_c_objects) 
 	$(progress) "LD" $@

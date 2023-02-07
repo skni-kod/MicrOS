@@ -107,87 +107,119 @@ char *scan(char *mem_begin, char *mem_end)
 	return 0;
 }
 
-char* itoa(int value, char* result, int base) 
+char *itoa(int value, char *result, int base)
 {
-    // check that the base if valid
-    if (base < 2 || base > 36) { *result = '\0'; return result; }
+	// check that the base if valid
+	if (base < 2 || base > 36)
+	{
+		*result = '\0';
+		return result;
+	}
 
-    char* ptr = result, *ptr1 = result, tmp_char;
-    int tmp_value;
+	char *ptr = result, *ptr1 = result, tmp_char;
+	int tmp_value;
 
-    do {
-      tmp_value = value;
-      value /= base;
-      *ptr++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz" [35 + (tmp_value - value * base)];
-    } while ( value );
+	do
+	{
+		tmp_value = value;
+		value /= base;
+		*ptr++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"[35 + (tmp_value - value * base)];
+	} while (value);
 
-    // Apply negative sign
-    if (tmp_value < 0) *ptr++ = '-';
-    *ptr-- = '\0';
-    while(ptr1 < ptr) {
-      tmp_char = *ptr;
-      *ptr--= *ptr1;
-      *ptr1++ = tmp_char;
-    }
-    return result;
+	// Apply negative sign
+	if (tmp_value < 0)
+		*ptr++ = '-';
+	*ptr-- = '\0';
+	while (ptr1 < ptr)
+	{
+		tmp_char = *ptr;
+		*ptr-- = *ptr1;
+		*ptr1++ = tmp_char;
+	}
+	return result;
 }
 
-
-void print_ip(ipv4_addr_t *addr, char* buf)
+void print_ip(ipv4_addr_t *addr, char *buf)
 {
-	char *ptr = itoa(addr->oct_a,buf,10);
+	char *ptr = itoa(addr->oct_a, buf, 10);
 	*(ptr++) = '.';
-	ptr = itoa(addr->oct_b,ptr,10);
+	ptr = itoa(addr->oct_b, ptr, 10);
 	*(ptr++) = '.';
-	ptr = itoa(addr->oct_c,ptr,10);
+	ptr = itoa(addr->oct_c, ptr, 10);
 	*(ptr++) = '.';
-	ptr = itoa(addr->oct_d,ptr,10);
+	ptr = itoa(addr->oct_d, ptr, 10);
 	*(ptr++) = '\r';
 	*(ptr++) = '\0';
 }
 
-extern void _pxecall(uint16_t seg,
-		 			uint16_t off,
-		 			uint16_t opcode,
-					uint16_t param_seg,
-					uint16_t param_off);
+extern uint16_t _pxecall(uint16_t seg,
+						 uint16_t off,
+						 uint16_t opcode,
+						 uint16_t param_seg,
+						 uint16_t param_off);
 
 void loader_main(void)
 {
-
 	terminal_initialize();
 
 	pxe_t *pxe_struct = scan(0x10000, 0xA0000);
-	uint8_t checksum = chksum8(pxe_struct, 0x58);
-	//void (*api_call)(uint16_t, void*) = pxe_strcut->EntryPointESP;
 
 	if (pxe_struct->length != 0x58)
 	{
 		terminal_writestring("Not good\n");
 	}
 
-	if (checksum != 0)
+	if (chksum8(pxe_struct, 0x58) != 0)
 	{
 		terminal_writestring("Bad checksum\n");
 	}
 
-	//Print signature
-	terminal_write(pxe_struct->signature, 4);
 	get_cached_info_t info = (get_cached_info_t){.packet_type = PXENV_PACKET_TYPE_DHCP_ACK};
 
-	_pxecall(pxe_struct->EntryPointSP.segment,
-				pxe_struct->EntryPointSP.offset,
-				PXE_OPCODE_GET_CACHED_INFO,
-				0,
-				&info);
+	// This service cannot be used with a 32-bit stack segment.
+	uint16_t rv = _pxecall(pxe_struct->EntryPointSP.segment,
+						   pxe_struct->EntryPointSP.offset,
+						   PXE_OPCODE_GET_CACHED_INFO,
+						   0,
+						   &info);
 
-	ipv4_addr_t *addr = (info.buffer_seg << 4) + info.buffer_off + 0x14;
+	dhcp_message_t *dhcp_ack = (info.buffer_seg << 4) + info.buffer_off;
+	ipv4_addr_t *addr = &dhcp_ack->siaddr;
+	/*
+	Service cannot be used if a MTFTP or UDP connection is active.
+	Service cannot be used in protected mode if the StatusCallout field in the !PXE structure is set to
+	zero.
+	Service cannot be used with a 32-bit stack segment.
+	*/
+	get_file_size_t file = (get_file_size_t){
+	.status = 0,
+	.server_addr = *addr,
+	.gateway_addr = *addr,
+	.file_size = 0,
+	.file = "/output/KERNEL.BIN"};
 	
-	char buffer[120] = "TFTP SERVER:";
-	//12
-	
-	print_ip(addr->value,&buffer+12);
-	terminal_writestring(buffer);
+	rv = _pxecall(pxe_struct->EntryPointSP.segment,
+				  pxe_struct->EntryPointSP.offset,
+				  PXE_OPCODE_TFTP_GET_FILE_SIZE,
+				  0,
+				  &file);
+
+	tftp_open_t open = (tftp_open_t){
+		.status = 0,
+		.file = "/KERNEL.BIN",
+		.server_addr = *addr,
+		.gateway_addr = 0,
+		.packet_size = 512,
+		.tftp_port = HTONS(69)};
+
+	rv = _pxecall(pxe_struct->EntryPointSP.segment,
+				  pxe_struct->EntryPointSP.offset,
+				  0x20,
+				  0,
+				  &open);
+
+	terminal_writestring("DUPA");
+
 	while (1)
 		;
 }
