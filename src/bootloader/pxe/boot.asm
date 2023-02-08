@@ -427,13 +427,13 @@ load_memory_map_loop:
 jump_to_loader:
     extern loader_main
     call loader_main
-    global _pxecall
-_pxecall:
+    global pxecall
+pxecall:
 	pushad
-    jmp 0x018:.foop
+    jmp 0x018:.switch_to_real_mode
 
 [bits 16]
-.foop:
+.switch_to_real_mode:
     mov ax, 0x20
 	mov es, ax
 	mov ds, ax
@@ -457,11 +457,11 @@ _pxecall:
 	; Perform a long jump to real-mode
 	pushfd                 ; eflags
 	push dword 0x0         ; cs
-	push dword .new_func   ; eip
+	push dword .real_mode_exec   ; eip
 	iretd
 
-.new_func:
-	;   pxecall(seg: u16, off: u16, pxe_call: u16, param_seg: u16, param_off: u16);
+.real_mode_exec:
+    ;pxecall (uint16_t seg, uint16_t off, uint16_t opcode, uint16_t param_seg, uint16_t param_off);
 	movzx eax, word [esp + (4*0x9)] ; arg1, seg
 	movzx ebx, word [esp + (4*0xa)] ; arg2, offset
 	movzx ecx, word [esp + (4*0xb)] ; arg3, pxe_call
@@ -474,7 +474,7 @@ _pxecall:
 	push cx
 
 	; Set up our return address from the far call
-	mov bp, .retpoint
+	mov bp, .return_to_protected
 	push cs
 	push bp
 
@@ -484,8 +484,7 @@ _pxecall:
 	push bx
 
 	iretw
-.retpoint:
-	; Hyper-V has been observed to set the interrupt flag in PXE routines. We clear it ASAP.
+.return_to_protected:
 	cli
 
     mov bx, ax
@@ -499,11 +498,11 @@ _pxecall:
 	; Jump back to protected mode
 	pushfd             ; eflags
 	push dword 0x08    ; cs
-	push dword backout ; eip
+	push dword back_to_loader ; eip
 	iretd
 
 [bits 32]
-backout:
+back_to_loader:
     mov ax, 0x10
 	mov es, ax
 	mov ds, ax
@@ -516,6 +515,7 @@ backout:
     xor eax, eax
     mov ax, bx
 	ret
+
     global enter_kernel:
 enter_kernel:
     jmp dword 0x08:0x100000

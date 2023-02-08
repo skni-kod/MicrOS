@@ -1,5 +1,16 @@
 #include "loader.h"
 
+static const void *kernel_addr = KERNEL_ADDRESS;
+static const void (*kernel_entry)() = KERNEL_ADDRESS;
+
+static const size_t VGA_WIDTH = 80;
+static const size_t VGA_HEIGHT = 25;
+
+size_t terminal_row;
+size_t terminal_column;
+uint8_t terminal_color;
+uint16_t *terminal_buffer;
+
 static inline uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg)
 {
 	return fg | bg << 4;
@@ -17,14 +28,6 @@ size_t strlen(const char *str)
 		len++;
 	return len;
 }
-
-static const size_t VGA_WIDTH = 80;
-static const size_t VGA_HEIGHT = 25;
-
-size_t terminal_row;
-size_t terminal_column;
-uint8_t terminal_color;
-uint16_t *terminal_buffer;
 
 void terminal_initialize(void)
 {
@@ -90,9 +93,36 @@ uint8_t chksum8(const unsigned char *buff, size_t len)
 	return (uint8_t)sum;
 }
 
-char *scan(char *mem_begin, char *mem_end)
+/*
+	Scan for PXENV+ structure
+*/
+uint8_t *scan_old_pxe(uint8_t *mem_begin, uint8_t *mem_end)
 {
-	for (char *i = mem_begin; i < mem_end; i++)
+	for (uint8_t *i = mem_begin; i < mem_end; i++)
+	{
+		if (*i != 'P')
+			continue;
+		if (*(i + 1) != 'X')
+			continue;
+		if (*(i + 2) != 'E')
+			continue;
+		if (*(i + 3) != 'N')
+			continue;
+		if (*(i + 4) != 'V')
+			continue;
+		if (*(i + 5) != '+')
+			continue;
+		return i;
+	}
+	return 0;
+}
+
+/*
+	Scan for !PXE structure
+*/
+uint8_t *scan_new_pxe(uint8_t *mem_begin, uint8_t *mem_end)
+{
+	for (uint8_t *i = mem_begin; i < mem_end; i++)
 	{
 		if (*i != '!')
 			continue;
@@ -181,41 +211,45 @@ void *memcpy(void *destination, const void *source, size_t size)
 	return destination;
 }
 
-extern uint16_t _pxecall(uint16_t seg,
-						 uint16_t off,
-						 uint16_t opcode,
-						 uint16_t param_seg,
-						 uint16_t param_off);
-
-extern void enter_kernel();
-
-void *kernel_addr = 0x100000;
-void (*kernel_entry)() = 0x100000;
-
 void loader_main(void)
 {
 	terminal_initialize();
 
-	pxe_t *pxe_struct = scan(0x10000, 0xA0000);
+	pxe_t *pxe_struct = scan_new_pxe(BASE_MEMORY_LOW, BASE_MEMORY_HIGH);
+	old_pxe_t *old_pxe_struct;
+	seg_off_t pxe_entrypoint;
 
-	if (pxe_struct->length != 0x58)
+	if (!pxe_struct)
 	{
-		terminal_writestring("Not good\n");
+		// scan for older version of pxe structure
+		old_pxe_struct = scan_old_pxe(BASE_MEMORY_LOW, BASE_MEMORY_HIGH);
 	}
 
-	if (chksum8(pxe_struct, 0x58) != 0)
-	{
-		terminal_writestring("Bad checksum\n");
-	}
+	if (pxe_struct)
+		pxe_entrypoint = pxe_struct->EntryPointSP;
+	else
+		pxe_entrypoint = old_pxe_struct->rm_entry;
+
+	// if (pxe_struct->length != 0x58)
+	// {
+	// 	terminal_writestring("Not good\n");
+	// }
+
+	// if (chksum8(pxe_struct, 0x58) != 0)
+	// {
+	// 	terminal_writestring("Bad checksum\n");
+	// }
 
 	get_cached_info_t info = (get_cached_info_t){.packet_type = PXENV_PACKET_TYPE_DHCP_ACK};
 
 	// get tftp server addr
-	uint16_t rv = _pxecall(pxe_struct->EntryPointSP.segment,
-						   pxe_struct->EntryPointSP.offset,
-						   PXE_OPCODE_GET_CACHED_INFO,
-						   0,
-						   &info);
+	uint16_t rv;
+
+	rv = pxecall(pxe_entrypoint.segment,
+				 pxe_entrypoint.offset,
+				 PXE_OPCODE_GET_CACHED_INFO,
+				 0,
+				 &info);
 
 	dhcp_message_t *dhcp_ack = (info.buffer_seg << 4) + info.buffer_off;
 	ipv4_addr_t *addr = &dhcp_ack->siaddr;
@@ -224,33 +258,33 @@ void loader_main(void)
 	get_file_size_t file = (get_file_size_t){
 		.status = 0,
 		.server_addr = *addr,
-		.gateway_addr = *addr,
+		.gateway_addr = 0,
 		.file_size = 0,
-		.file = "/output/KERNEL.BIN"};
+		.file = KERNEL_FILENAME};
 
-	rv = _pxecall(pxe_struct->EntryPointSP.segment,
-				  pxe_struct->EntryPointSP.offset,
-				  PXE_OPCODE_TFTP_GET_FILE_SIZE,
-				  0,
-				  &file);
+	rv = pxecall(pxe_entrypoint.segment,
+				 pxe_entrypoint.offset,
+				 PXE_OPCODE_TFTP_GET_FILE_SIZE,
+				 0,
+				 &file);
 
 	// open connection
 	tftp_open_t open = (tftp_open_t){
 		.status = 0,
 		.server_addr = *addr,
-		.gateway_addr = *addr,
-		.packet_size = 512,
+		.gateway_addr = 0, 
+		.packet_size = BUFFER_SIZE,
 		.tftp_port = HTONS(69),
-		.file = "/output/KERNEL.BIN"};
+		.file = KERNEL_FILENAME};
 
-	rv = _pxecall(pxe_struct->EntryPointSP.segment,
-				  pxe_struct->EntryPointSP.offset,
-				  0x20,
-				  0,
-				  &open);
+	rv = pxecall(pxe_entrypoint.segment,
+				 pxe_entrypoint.offset,
+				 0x20,
+				 0,
+				 &open);
 
 	// read file
-	uint8_t buf[512];
+	uint8_t buf[BUFFER_SIZE];
 
 	tftp_read_t read = (tftp_read_t){
 		.status = 0,
@@ -264,20 +298,34 @@ void loader_main(void)
 	while (1)
 	{
 
-		rv = _pxecall(pxe_struct->EntryPointSP.segment,
-					  pxe_struct->EntryPointSP.offset,
-					  0x22,
-					  0,
-					  &read);
-		
-		memcpy(kernel_addr + offset,&buf,512);
+		rv = pxecall(pxe_entrypoint.segment,
+					 pxe_entrypoint.offset,
+					 0x22,
+					 0,
+					 &read);
 
-		if (read.bytes_read < 512)
+		memcpy(kernel_addr + offset, &buf, BUFFER_SIZE);
+
+		if (read.status)
+		{
+			terminal_writestring("Please restart, unable to download kernel\n");
+			while (1)
+				;
+		}
+
+		if (read.bytes_read < BUFFER_SIZE)
 			break;
-		offset += 512;
+		offset += BUFFER_SIZE;
 	}
 
-	// close connection
+	// close file
+	tftp_close_t close = (tftp_close_t){.status = 0};
+
+	rv = pxecall(pxe_entrypoint.segment,
+				 pxe_entrypoint.offset,
+				 0x21,
+				 0,
+				 &close);
 
 	// jump into kernel!
 	enter_kernel();
