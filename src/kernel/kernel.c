@@ -265,25 +265,26 @@ void startup()
     dma_init(0xc0000500);
     logger_log_ok("DMA");
 
-    // TODO:
-    //  NOTE: it doesn't work well, so assume for now that floppy controller is always present
-    // if (fdc_is_present())
-    {
-        fdc_init();
-        logger_log_ok("Floppy Disc Controller");
-    }
+    // // TODO:
+    // //  NOTE: it doesn't work well, so assume for now that floppy controller is always present
+    // // if (fdc_is_present())
+    // {
+    //     fdc_init();
+    //     logger_log_ok("Floppy Disc Controller");
+    // }
 
-    harddisk_configuration harddisk_conf;
-    harddisk_conf.delay_by_reading_port = false;
-    // harddisk_init();
-    // logger_log_ok("Hard Disks");
-    // print_harddisks_status();
+    // harddisk_configuration harddisk_conf;
+    // harddisk_conf.delay_by_reading_port = false;
+    // // harddisk_init();
+    // // logger_log_ok("Hard Disks");
+    // // print_harddisks_status();
+
+    // partitions_init();
+    // logger_log_ok("Partitions");
+
 
     keyboard_init();
     logger_log_ok("Keyboard");
-
-    partitions_init();
-    logger_log_ok("Partitions");
 
     tss_init();
     logger_log_ok("TSS");
@@ -353,20 +354,22 @@ int kmain()
     logger_log_ok("Loading shells...");
 
     // serial_init(COM1_PORT, 115200, 8, 1, PARITY_NONE);
+    logger_log_warning("For now, we are stuck in kernel without shell");
+    
+    while(1);
+    // uint32_t d = 0;
+    // for (int i = 0; i < 4; i++)
+    // {
+    //     char args[16];
+    //     itoa(i, args, 10);
 
-    uint32_t d = 0;
-    for (int i = 0; i < 4; i++)
-    {
-        char args[16];
-        itoa(i, args, 10);
+    //     uint32_t p = process_manager_create_process("A:/ENV/SHELL.ELF", args, 0, false);
+    //     create_terminal(&d);
 
-        uint32_t p = process_manager_create_process("A:/ENV/SHELL.ELF", args, 0, false);
-        create_terminal(&d);
-
-        uint32_t terminal_number = i;
-        const terminal_struct *ts = get_terminals(&terminal_number);
-        attach_process_to_terminal(ts[i].terminal_id, process_manager_get_process(p));
-    }
+    //     uint32_t terminal_number = i;
+    //     const terminal_struct *ts = get_terminals(&terminal_number);
+    //     attach_process_to_terminal(ts[i].terminal_id, process_manager_get_process(p));
+    // }
 
     // vga_clear_screen();
 

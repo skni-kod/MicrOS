@@ -152,11 +152,45 @@ void print_ip(ipv4_addr_t *addr, char *buf)
 	*(ptr++) = '\0';
 }
 
+void *memcpy(void *destination, const void *source, size_t size)
+{
+	uint64_t *destination_64ptr = (uint64_t *)destination;
+	uint64_t *source_64ptr = (uint64_t *)source;
+	while (size >= 8)
+	{
+		*destination_64ptr++ = *source_64ptr++;
+		size -= 8;
+	}
+
+	uint32_t *destination_32ptr = (uint32_t *)destination_64ptr;
+	uint32_t *source_32ptr = (uint32_t *)source_64ptr;
+	while (size >= 4)
+	{
+		*destination_32ptr++ = *source_32ptr++;
+		size -= 4;
+	}
+
+	uint8_t *destination_ptr = (uint8_t *)destination_32ptr;
+	uint8_t *source_ptr = (uint8_t *)source_32ptr;
+	while (size >= 1)
+	{
+		*destination_ptr++ = *source_ptr++;
+		size--;
+	}
+
+	return destination;
+}
+
 extern uint16_t _pxecall(uint16_t seg,
 						 uint16_t off,
 						 uint16_t opcode,
 						 uint16_t param_seg,
 						 uint16_t param_off);
+
+extern void enter_kernel();
+
+void *kernel_addr = 0x100000;
+void (*kernel_entry)() = 0x100000;
 
 void loader_main(void)
 {
@@ -176,7 +210,7 @@ void loader_main(void)
 
 	get_cached_info_t info = (get_cached_info_t){.packet_type = PXENV_PACKET_TYPE_DHCP_ACK};
 
-	// This service cannot be used with a 32-bit stack segment.
+	// get tftp server addr
 	uint16_t rv = _pxecall(pxe_struct->EntryPointSP.segment,
 						   pxe_struct->EntryPointSP.offset,
 						   PXE_OPCODE_GET_CACHED_INFO,
@@ -185,32 +219,29 @@ void loader_main(void)
 
 	dhcp_message_t *dhcp_ack = (info.buffer_seg << 4) + info.buffer_off;
 	ipv4_addr_t *addr = &dhcp_ack->siaddr;
-	/*
-	Service cannot be used if a MTFTP or UDP connection is active.
-	Service cannot be used in protected mode if the StatusCallout field in the !PXE structure is set to
-	zero.
-	Service cannot be used with a 32-bit stack segment.
-	*/
+
+	// get file size
 	get_file_size_t file = (get_file_size_t){
-	.status = 0,
-	.server_addr = *addr,
-	.gateway_addr = *addr,
-	.file_size = 0,
-	.file = "/output/KERNEL.BIN"};
-	
+		.status = 0,
+		.server_addr = *addr,
+		.gateway_addr = *addr,
+		.file_size = 0,
+		.file = "/output/KERNEL.BIN"};
+
 	rv = _pxecall(pxe_struct->EntryPointSP.segment,
 				  pxe_struct->EntryPointSP.offset,
 				  PXE_OPCODE_TFTP_GET_FILE_SIZE,
 				  0,
 				  &file);
 
+	// open connection
 	tftp_open_t open = (tftp_open_t){
 		.status = 0,
-		.file = "/KERNEL.BIN",
 		.server_addr = *addr,
-		.gateway_addr = 0,
+		.gateway_addr = *addr,
 		.packet_size = 512,
-		.tftp_port = HTONS(69)};
+		.tftp_port = HTONS(69),
+		.file = "/output/KERNEL.BIN"};
 
 	rv = _pxecall(pxe_struct->EntryPointSP.segment,
 				  pxe_struct->EntryPointSP.offset,
@@ -218,8 +249,36 @@ void loader_main(void)
 				  0,
 				  &open);
 
-	terminal_writestring("DUPA");
+	// read file
+	uint8_t buf[512];
 
+	tftp_read_t read = (tftp_read_t){
+		.status = 0,
+		.packet_number = 0,
+		.bytes_read = 0,
+		.buffer.offset = &buf,
+		.buffer.segment = 0,
+	};
+
+	uint32_t offset = 0;
 	while (1)
-		;
+	{
+
+		rv = _pxecall(pxe_struct->EntryPointSP.segment,
+					  pxe_struct->EntryPointSP.offset,
+					  0x22,
+					  0,
+					  &read);
+		
+		memcpy(kernel_addr + offset,&buf,512);
+
+		if (read.bytes_read < 512)
+			break;
+		offset += 512;
+	}
+
+	// close connection
+
+	// jump into kernel!
+	enter_kernel();
 }

@@ -11,6 +11,8 @@
 
 #define HTONS(n) ((((n)&0xFF) << 8) | (((n)&0xFF00) >> 8))
 
+#define KERNEL_FILE "/output/KERNEL.BIN"
+
 typedef struct cpu_regs
 {
 	// eax
@@ -110,16 +112,6 @@ typedef struct pxe
 	seg_desc_t BC_CodeWrite;
 } pxe_t;
 
-typedef struct GetCachedInfo
-{
-	uint16_t status;
-	uint16_t packet_type;
-	uint16_t buffer_size;
-	uint16_t buffer_off;
-	uint16_t buffer_seg;
-	uint16_t buffer_limit;
-} get_cached_info_t;
-
 typedef union ipv4_addr
 {
 	struct
@@ -152,6 +144,16 @@ typedef struct dhcp_message
 	uint8_t options[];
 } __attribute__((packed)) dhcp_message_t;
 
+typedef struct GetCachedInfo
+{
+	uint16_t status;
+	uint16_t packet_type;
+	uint16_t buffer_size;
+	uint16_t buffer_off;
+	uint16_t buffer_seg;
+	uint16_t buffer_limit;
+} __attribute__((packed)) get_cached_info_t;
+
 typedef struct get_file_size
 {
 	uint16_t status;
@@ -169,9 +171,23 @@ typedef struct tftp_open
 	uint8_t file[128];
 	uint16_t tftp_port;
 	uint16_t packet_size;
-} tftp_open_t;
+} __attribute__((packed)) tftp_open_t;
 
-enum vga_color {
+typedef struct tftp_read
+{
+	uint16_t status;
+	uint16_t packet_number;
+	uint16_t bytes_read;
+	seg_off_t buffer;
+} __attribute__((packed)) tftp_read_t;
+
+typedef struct tftp_close
+{
+	uint16_t Status;
+} __attribute__((packed)) tftp_close_t;
+
+enum vga_color
+{
 	VGA_COLOR_BLACK = 0,
 	VGA_COLOR_BLUE = 1,
 	VGA_COLOR_GREEN = 2,

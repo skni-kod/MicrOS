@@ -423,84 +423,11 @@ load_memory_map_loop:
     mov [di], eax
     
     ret
-
-[BITS 16]
-LoadKernel_Prep32Bit:
-    cli
-
-    mov eax, cr0
-    or eax, 1
-    mov cr0, eax
-
-    jmp 0x08:LoadKernel_SwitchToProtected32
-
-LoadKernel_SwitchToProtected16:
-    mov ax, 0x20
-    mov ds, ax
-    mov es, ax
-    mov ss, ax
-
-LoadKernel_PrepRealMode:
-    mov eax, cr0
-    and eax, ~(1 << 0)
-    mov cr0, eax
-
-    jmp 0x0000:LoadKernel_SwitchToRealMode
-
-LoadKernel_SwitchToRealMode:
-
-    xor ax, ax
-    mov ds, ax
-    mov es, ax
-    mov ss, ax
-
-    xor esp, esp
-    mov sp, [RealMode.StackPointer]
-
-    sti
-    clc
-    ; clean memory
-    mov ax, 0x1000
-    mov es, ax
-    xor ax, ax
-    xor di, di
-    mov cx, 0xFFFF
-    rep stosb
-    inc cx
-    stosb
-
-    xor eax, eax
-    xor ebx, ebx
-    xor ecx, ecx
-    xor edx, edx
-
-    ;Write character and attribute at cursor position 	AH=09h 	AL = Character, BH = Page Number, BL = Color, CX = Number of times to print character 	
-    mov ah, 09h
-    mov al, 'a'
-    mov bh, 0
-    mov bl, 0xA
-    mov cx, 10h
-
-    int 10h
-
-    jmp 0x0000:LoadKernel_Prep32Bit
-
 [BITS 32]
-
-LoadKernel_SwitchToProtected32:
-    mov ax, 0x10
-    mov ds, ax
-    mov es, ax
-    mov ss, ax
-
-    mov esp, 0x10000
-
 jump_to_loader:
     extern loader_main
     call loader_main
-
-[bits 32]
-global _pxecall
+    global _pxecall
 _pxecall:
 	pushad
     jmp 0x018:.foop
@@ -589,3 +516,7 @@ backout:
     xor eax, eax
     mov ax, bx
 	ret
+    global enter_kernel:
+enter_kernel:
+    jmp dword 0x08:0x100000
+    jmp $
