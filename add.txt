@@ -1,0 +1,6 @@
+entry seg: 0x6801
+entry offset: 0x6000
+opcode: 0x0071
+param seg: 0x0000
+param offset: 0xf7bb3
+

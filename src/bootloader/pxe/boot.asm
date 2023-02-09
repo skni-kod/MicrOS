@@ -194,10 +194,10 @@ loader:
     mov dl, 79
     int 0x10
 
-    ;setup stack
-    mov ax, STACK_ADDRESS
-    mov bp, ax
-    mov sp, ax
+    ; ;setup stack
+    ; mov ax, STACK_ADDRESS
+    ; mov bp, ax
+    ; mov sp, ax
 
     ; Check If Line A20 Enabled
     call check_a20
@@ -225,20 +225,13 @@ A20Ready:
     mov ax, 5650h
     int 1ah
     ;push address on stack for loader main
-    push es
-    push bx
+    ; push es
+    ; push bx
 
     ;enter protected mode (32 bit)
     mov eax, cr0
     or eax, 1
     mov cr0, eax
-
-    mov ax, 0x10
-	mov es, ax
-	mov ds, ax
-	mov fs, ax
-	mov gs, ax
-	mov ss, ax
 
     jmp 0x08:jump_to_loader
 
@@ -438,10 +431,7 @@ load_memory_map_loop:
 [BITS 32]
 jump_to_loader:
     extern loader_main
-
-    mov eax, jump_to_loader
-    push eax
-    jmp dword 0x8:loader_main
+    call loader_main
 
     global pxecall
 pxecall:
@@ -453,8 +443,6 @@ pxecall:
 	mov fs, ax
 	mov gs, ax
 	mov ss, ax
-
-
     jmp 0x18:.switch_to_real_mode
 
 [bits 16]
@@ -503,15 +491,30 @@ pxecall:
 
 	iretw
 .return_to_protected:
+	; Hyper-V has been observed to set the interrupt flag in PXE routines. We
+	; clear it ASAP.
 	cli
 
     mov bx, ax
-
+	; Clean up the stack from the 3 word parameters we passed to PXE
     add sp, 6
 
-    mov eax, cr0
-    or eax, 1
-    mov cr0, eax
+    mov si, micros_loading
+    call print_line_16
+    hlt
+
+	; Enable protected mode
+	mov eax, cr0
+	or  eax, 1
+	mov cr0, eax
+
+	; Set all segments to data segments
+	mov ax, 0x10
+	mov es, ax
+	mov ds, ax
+	mov fs, ax
+	mov gs, ax
+	mov ss, ax
 
 	; Jump back to protected mode
 	pushfd             ; eflags
@@ -521,13 +524,6 @@ pxecall:
 
 [bits 32]
 back_to_loader:
-    mov ax, 0x10
-	mov es, ax
-	mov ds, ax
-	mov fs, ax
-	mov gs, ax
-	mov ss, ax
-
 	popad
 
     xor eax, eax

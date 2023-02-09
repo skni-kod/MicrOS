@@ -11,10 +11,7 @@
 
 #define HTONS(n) ((((n)&0xFF) << 8) | (((n)&0xFF00) >> 8))
 
-
-#define BASE_MEMORY_HIGH 0xA0000
-#define BASE_MEMORY_LOW 0x10000
-
+#define HIGH_BASE_MEM 0xA0000
 #define KERNEL_FILENAME "/output/KERNEL.BIN"
 #define KERNEL_ADDRESS 0x100000
 
@@ -183,5 +180,7 @@ extern uint16_t pxecall(uint16_t segment,
 						uint16_t param_offset);
 
 extern void enter_kernel();
+
+extern char LOADER_END;
 
 #endif

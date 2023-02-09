@@ -213,12 +213,11 @@ uint8_t *scan_new_pxe(uint8_t *mem_begin, uint8_t *mem_end)
 	return 0;
 }
 
-extern char LOADER_END;
 
-void loader_main(seg_off_t pxe)
+void loader_main(/*seg_off_t pxe*/)
 {
 	terminal_initialize();
-	old_pxe_t *old_pxe_struct = (pxe.segment << 4) + pxe.offset;
+	old_pxe_t *old_pxe_struct = 0;//= (pxe.segment << 4) + pxe.offset;
 	pxe_t *pxe_struct = scan_new_pxe(&LOADER_END,0xA0000);
 
 	seg_off_t pxe_entrypoint;
