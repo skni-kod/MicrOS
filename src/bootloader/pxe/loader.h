@@ -5,18 +5,16 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define PXE_OPCODE_GET_CACHED_INFO (0x71u)
-#define PXENV_PACKET_TYPE_DHCP_ACK (0x2u)
-#define PXE_OPCODE_TFTP_GET_FILE_SIZE (0x25u)
+#define PXE_OPCODE_GET_CACHED_INFO ((uint16_t)0x71u)
+#define PXENV_PACKET_TYPE_DHCP_ACK ((uint16_t)0x2u)
+#define PXE_OPCODE_TFTP_GET_FILE_SIZE ((uint16_t)0x25u)
 
 #define HTONS(n) ((((n)&0xFF) << 8) | (((n)&0xFF00) >> 8))
 
 #define HIGH_BASE_MEM 0xA0000
 #define KERNEL_FILENAME "/output/KERNEL.BIN"
 #define KERNEL_ADDRESS 0x100000
-
 #define BUFFER_SIZE 1024
-
 
 enum vga_color
 {
@@ -75,21 +73,20 @@ typedef struct seg_desc
 	uint16_t segment_address;
 	uint16_t physical_address;
 	uint16_t segment_Size;
-} __attribute__((packed)) seg_desc_t;
+} seg_desc_t;
 
 typedef struct seg_off
 {
 	uint16_t offset;
 	uint16_t segment;
-} __attribute__((packed)) seg_off_t;
+} seg_off_t;
 
-typedef struct old_pxe
+typedef struct pxe_env
 {
 	uint8_t signature[6];
 	uint16_t version;
 	uint8_t length;
 	uint8_t checksum;
-	uint8_t;
 	seg_off_t rm_entry;
 	uint32_t pm_offset;
 	uint16_t pm_selector;
@@ -104,7 +101,7 @@ typedef struct old_pxe
 	uint16_t undi_code_seg;
 	uint16_t undi_code_size;
 	seg_off_t pxe_ptr;
-} old_pxe_t;
+} __attribute__((packed)) pxenv_t;
 
 typedef struct pxe
 {
@@ -112,13 +109,13 @@ typedef struct pxe
 	uint8_t length;
 	uint8_t checksum;
 	uint8_t revision;
-	uint8_t;
+	uint8_t _pad1;
 	seg_off_t UNDIROMID;
 	seg_off_t BaseROMID;
 	seg_off_t EntryPointSP;
 	seg_off_t EntryPointESP;
 	seg_off_t StatusCallout;
-	uint8_t;
+	uint8_t _pad2;
 	uint8_t SegDescCnt;
 	uint16_t FirstSelector;
 	seg_desc_t stack;
@@ -128,7 +125,7 @@ typedef struct pxe
 	seg_desc_t BC_Data;
 	seg_desc_t BC_Code;
 	seg_desc_t BC_CodeWrite;
-} pxe_t;
+} __attribute__((packed)) pxe_t;
 
 typedef struct GetCachedInfo
 {
@@ -171,7 +168,6 @@ typedef struct tftp_close
 {
 	uint16_t status;
 } __attribute__((packed)) tftp_close_t;
-
 
 extern uint16_t pxecall(uint16_t segment,
 						uint16_t offset,

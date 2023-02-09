@@ -12,7 +12,7 @@ b_pxe_c_objects    		= $(patsubst %.c, $(b_pxe_objs_dir)/%.o, $(b_pxe_c_files))
 b_pxe_asm_objects  		= $(patsubst %.asm, $(b_pxe_objs_dir)/%.o, $(b_pxe_asm_files))
 
 b_pxe_ASM_FLAGS 		+= -F dwarf -g -f elf32
-b_pxe_C_FLAGS 			+= -ffreestanding -ggdb
+b_pxe_C_FLAGS 			+= -ffreestanding -ggdb -g -O0
 
 b_pxe_deps				= $(b_pxe_c_objects:%.o=%.d)
 -include $(b_pxe_deps)
@@ -35,7 +35,7 @@ $(b_pxe_bin): $(b_pxe_elf)
 $(b_pxe_elf): $(b_pxe_asm_objects) $(b_pxe_c_objects) 
 	$(progress) "LD" $@
 	$(MKDIR) -p $(@D)
-	$(LD) -T $(b_pxe_ld_script) $(b_pxe_asm_objects) $(b_pxe_c_objects) --oformat elf32-i386 -o $@ 
+	$(LD) -T $(b_pxe_ld_script) $(b_pxe_asm_objects) $(b_pxe_c_objects) -o $@ 
 
 bootloaderpxe: $(b_pxe_bin)
 .PHONY: bootloaderpxe 

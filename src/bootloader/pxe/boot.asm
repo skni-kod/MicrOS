@@ -143,30 +143,11 @@ a20_error db 'A20 Gate is not available. Critical ERROR...',0
 before_prot db 'This is exactly before turning on protection!',0
 protected_in db 'We are in protected mode now! Second stage worked!',0
 
-extern STACK_ADDRESS
-
 r_bios db 'BIOS',0
 r_keyb db 'KEYBOARD',0
 r_gate db 'GATE',0
 
-struc register_state
-	.eax: resd 1
-	.ecx: resd 1
-	.edx: resd 1
-	.ebx: resd 1
-	.esp: resd 1
-	.ebp: resd 1
-	.esi: resd 1
-	.edi: resd 1
-	.efl: resd 1
-
-	.es: resw 1
-	.ds: resw 1
-	.fs: resw 1
-	.gs: resw 1
-	.ss: resw 1
-endstruc
-
+extern STACK_ADDRESS
 
 loader:
     cli
@@ -194,10 +175,17 @@ loader:
     mov dl, 79
     int 0x10
 
-    ; ;setup stack
-    ; mov ax, STACK_ADDRESS
-    ; mov bp, ax
-    ; mov sp, ax
+    ;setup stack
+    mov ax, STACK_ADDRESS
+    mov bp, ax
+    mov sp, ax
+
+    ;get pxe struct addr
+    mov ax, 5650h
+    int 1ah
+    ;push address on stack for loader main
+    push es
+    push bx
 
     ; Check If Line A20 Enabled
     call check_a20
@@ -220,13 +208,6 @@ A20Ready:
     mov bx, 0x5C00
     mov di, bx 
     call load_memory_map
-
-    ;get pxe struct addr
-    mov ax, 5650h
-    int 1ah
-    ;push address on stack for loader main
-    ; push es
-    ; push bx
 
     ;enter protected mode (32 bit)
     mov eax, cr0
@@ -428,29 +409,36 @@ load_memory_map_loop:
     mov [di], eax
     
     ret
+
 [BITS 32]
 jump_to_loader:
+    mov ax, 0x10
+	mov es, ax
+	mov ds, ax
+	mov fs, ax
+	mov gs, ax
+	mov ss, ax
+
     extern loader_main
     call loader_main
 
-    global pxecall
+[bits 32]
+global pxecall
 pxecall:
 	pushad
-    
     mov ax, 0x20
 	mov es, ax
 	mov ds, ax
 	mov fs, ax
 	mov gs, ax
 	mov ss, ax
-    jmp 0x18:.switch_to_real_mode
-
+    jmp 0x018:.foop
 [bits 16]
-.switch_to_real_mode:
+.foop:
 	; Disable protected mode
-    mov eax, cr0
-    and eax, ~(1 << 0)
-    mov cr0, eax
+	mov eax, cr0
+	and eax, ~1
+	mov cr0, eax
 
 	; Clear all segments
 	xor ax, ax
@@ -459,15 +447,15 @@ pxecall:
 	mov fs, ax
 	mov gs, ax
 	mov ss, ax
-       
+
 	; Perform a long jump to real-mode
-	pushfd                 ; eflags
-	push dword 0x0         ; cs
-	push dword .real_mode_exec   ; eip
+	pushfd                  ; eflags
+	push dword 0x0          ; cs
+	push dword .new_func    ; eip
 	iretd
 
-.real_mode_exec:
-    ;pxecall (uint16_t seg, uint16_t off, uint16_t opcode, uint16_t param_seg, uint16_t param_off);
+.new_func:
+	;   pxecall(seg: u16, off: u16, pxe_call: u16, param_seg: u16, param_off: u16);
 	movzx eax, word [esp + (4*0x9)] ; arg1, seg
 	movzx ebx, word [esp + (4*0xa)] ; arg2, offset
 	movzx ecx, word [esp + (4*0xb)] ; arg3, pxe_call
@@ -480,7 +468,7 @@ pxecall:
 	push cx
 
 	; Set up our return address from the far call
-	mov bp, .return_to_protected
+	mov ebp, .retpoint
 	push cs
 	push bp
 
@@ -490,18 +478,13 @@ pxecall:
 	push bx
 
 	iretw
-.return_to_protected:
+.retpoint:
 	; Hyper-V has been observed to set the interrupt flag in PXE routines. We
 	; clear it ASAP.
 	cli
 
-    mov bx, ax
 	; Clean up the stack from the 3 word parameters we passed to PXE
-    add sp, 6
-
-    mov si, micros_loading
-    call print_line_16
-    hlt
+	add sp, 6
 
 	; Enable protected mode
 	mov eax, cr0
@@ -518,16 +501,13 @@ pxecall:
 
 	; Jump back to protected mode
 	pushfd             ; eflags
-	push dword 0x08    ; cs
-	push dword back_to_loader ; eip
+	push dword 0x08  ; cs
+	push dword backout ; eip
 	iretd
 
 [bits 32]
-back_to_loader:
+backout:
 	popad
-
-    xor eax, eax
-    mov ax, bx
 	ret
 
     global enter_kernel:

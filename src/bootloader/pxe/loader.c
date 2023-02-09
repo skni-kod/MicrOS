@@ -110,13 +110,14 @@ char *itoa(int value, char *result, int base)
 	if (tmp_value < 0)
 		*ptr++ = '-';
 	*ptr-- = '\0';
+	char *rv = ptr;
 	while (ptr1 < ptr)
 	{
 		tmp_char = *ptr;
 		*ptr-- = *ptr1;
 		*ptr1++ = tmp_char;
 	}
-	return ptr1;
+	return rv;
 }
 
 void print_ip(ipv4_addr_t *addr, char *buf)
@@ -169,78 +170,142 @@ uint8_t chksum8(const unsigned char *buff, size_t len)
 	return (uint8_t)sum;
 }
 
-/*
-	Scan for PXENV+ structure
-*/
-uint8_t *scan_old_pxe(uint8_t *mem_begin, uint8_t *mem_end)
+int memcmp(const void *s1, const void *s2, size_t n)
 {
-	for (uint8_t *i = mem_begin; i < mem_end; i++)
+	const unsigned char *c1 = s1, *c2 = s2;
+	int d = 0;
+
+	while (n--)
 	{
-		if (*i != 'P')
-			continue;
-		if (*(i + 1) != 'X')
-			continue;
-		if (*(i + 2) != 'E')
-			continue;
-		if (*(i + 3) != 'N')
-			continue;
-		if (*(i + 4) != 'V')
-			continue;
-		if (*(i + 5) != '+')
-			continue;
-		return i;
+		d = (int)*c1++ - (int)*c2++;
+		if (d)
+			break;
 	}
-	return 0;
+
+	return d;
+}
+
+static int is_pxe(const void *buf)
+{
+	const pxe_t *pxe = buf;
+	const uint8_t *p = buf;
+	int i = pxe->length;
+	uint8_t sum = 0;
+
+	if (i < sizeof(pxe_t) ||
+		memcmp(pxe->signature, "!PXE", 4))
+		return 0;
+
+	while (i--)
+		sum += *p++;
+
+	return sum == 0;
 }
 
 /*
-	Scan for !PXE structure
-*/
-uint8_t *scan_new_pxe(uint8_t *mem_begin, uint8_t *mem_end)
+ * Just like is_pxe, it checks PXENV+ structure
+ *
+ */
+static int is_pxenv(const void *buf)
 {
-	for (uint8_t *i = mem_begin; i < mem_end; i++)
-	{
-		if (*i != '!')
-			continue;
-		if (*(i + 1) != 'P')
-			continue;
-		if (*(i + 2) != 'X')
-			continue;
-		if (*(i + 3) != 'E')
-			continue;
-		return i;
-	}
-	return 0;
+	const pxenv_t *pxenv = buf;
+	const uint8_t *p = buf;
+	int i = pxenv->length;
+	uint8_t sum = 0;
+
+	/* The pxeptr field isn't present in old versions */
+	if (i < offsetof(pxenv_t, pxe_ptr) ||
+		memcmp(pxenv->signature, "PXENV+", 6))
+		return 0;
+
+	while (i--)
+		sum += *p++;
+
+	return sum == 0;
 }
 
-
-void loader_main(/*seg_off_t pxe*/)
+static const void *memory_scan(uintptr_t start, int (*func)(const void *))
 {
-	terminal_initialize();
-	old_pxe_t *old_pxe_struct = 0;//= (pxe.segment << 4) + pxe.offset;
-	pxe_t *pxe_struct = scan_new_pxe(&LOADER_END,0xA0000);
+	const char *ptr;
 
+	/* Scan each 16 bytes of conventional memory before the VGA region */
+	for (ptr = (const char *)start; ptr < (const char *)HIGH_BASE_MEM; ptr += 16)
+	{
+		if (func(ptr))
+			return ptr; /* found it! */
+		ptr += 16;
+	}
+	return NULL;
+}
+
+static inline void *MK_PTR(uint16_t __seg, uint16_t __offs)
+{
+	return (void *)((__seg << 4) + __offs);
+}
+
+static inline void *GET_PTR(seg_off_t __fptr)
+{
+	return MK_PTR(__fptr.segment, __fptr.offset);
+}
+
+static const struct pxe_t *memory_scan_for_pxe_struct(void)
+{
+	return memory_scan((int)(&LOADER_END), is_pxe);
+}
+
+static const struct pxenv_t *memory_scan_for_pxenv_struct(void)
+{
+	return memory_scan(0x10000, is_pxenv);
+}
+
+void loader_main(seg_off_t in_addr)
+{
 	seg_off_t pxe_entrypoint;
+	char tmp[64];
+	pxenv_t *pxenv;
+	pxe_t *pxe;
 
-	if (old_pxe_struct->version < 0x0201)
-	{
-		// use old
-		terminal_writestring("Booting using PXENV+\n");
-		pxe_entrypoint = old_pxe_struct->rm_entry;
-	}
-	else
-	{
-		terminal_writestring("Booting using !PXE\n");
-		pxe_entrypoint.segment = pxe_struct->EntryPointSP.segment;
-		pxe_entrypoint.offset = pxe_struct->EntryPointSP.offset;
+	terminal_initialize();
 
-		if (pxe_struct->length != 0x58 || chksum8(pxe_struct, 0x58) != 0)
+	pxenv = GET_PTR(in_addr);
+	if (is_pxenv(pxenv))
+		goto have_pxenv;
+
+	if ((pxe = memory_scan_for_pxe_struct()))
+		goto have_pxe;
+
+	if ((pxenv = memory_scan_for_pxenv_struct()))
+		goto have_pxenv;
+
+	terminal_writestring("No i dupa\n");
+	while (1)
+		;
+
+have_pxenv:
+	/* if the API version number is 0x0201 or higher, use the !PXE structure */
+	if (pxenv->version >= 0x201)
+	{
+		if (pxenv->length >= sizeof(pxenv_t))
 		{
-			terminal_writestring("This is bad!\n");
-			while (1)
-				;
+			pxe = GET_PTR(pxenv->pxe_ptr);
+			if (is_pxe(pxe))
+				goto have_pxe;
+			/*
+			 * Nope, !PXE structure missing despite API 2.1+, or at least
+			 * the pointer is missing. Do a last-ditch attempt to find it
+			 */
+			if ((pxe = memory_scan_for_pxe_struct()))
+				goto have_pxe;
 		}
 	}
+	pxe_entrypoint = pxenv->rm_entry;
+	terminal_writestring("Loading via PXENV+\n");
+	goto load;
+have_pxe:
+	pxe_entrypoint = pxe->EntryPointSP;
+	terminal_writestring("Loading via !PXE\n");
+load:
+	terminal_writestring("Hello!\n");
 
 	get_cached_info_t info = (get_cached_info_t){.packet_type = PXENV_PACKET_TYPE_DHCP_ACK};
 
@@ -255,6 +320,18 @@ void loader_main(/*seg_off_t pxe*/)
 
 	dhcp_message_t *dhcp_ack = (info.buffer_seg << 4) + info.buffer_off;
 	ipv4_addr_t *addr = &dhcp_ack->siaddr;
+
+	print_ip(addr, tmp);
+	terminal_writestring(tmp);
+
+	print_ip(&dhcp_ack->yiaddr, tmp);
+	terminal_writestring(tmp);
+
+	print_ip(&dhcp_ack->ciaddr, tmp);
+	terminal_writestring(tmp);
+
+	print_ip(&dhcp_ack->giaddr, tmp);
+	terminal_writestring(tmp);
 
 	// get file size
 	get_file_size_t file = (get_file_size_t){
@@ -281,7 +358,7 @@ void loader_main(/*seg_off_t pxe*/)
 
 	rv = pxecall(pxe_entrypoint.segment,
 				 pxe_entrypoint.offset,
-				 0x20,
+				 (uint16_t)0x20,
 				 0,
 				 &open);
 
@@ -302,7 +379,7 @@ void loader_main(/*seg_off_t pxe*/)
 
 		rv = pxecall(pxe_entrypoint.segment,
 					 pxe_entrypoint.offset,
-					 0x22,
+					 (uint16_t)0x22,
 					 0,
 					 &read);
 
@@ -325,7 +402,7 @@ void loader_main(/*seg_off_t pxe*/)
 
 	rv = pxecall(pxe_entrypoint.segment,
 				 pxe_entrypoint.offset,
-				 0x21,
+				 (uint16_t)0x21,
 				 0,
 				 &close);
 
