@@ -6,7 +6,7 @@
 ; |  0x00000   | 0x00400 |  0x00500   |  0x05C00   |    0x06000     |    0x07000   |   0x07C00    |  0x07E00   | 0x0F000 | 0x9FC00 |  0xA0000   | 0x00100000 | 0x01000000 | 0x01100000 |
 ; |  0x003FF   | 0x004FF |  0x05BFF   |  0x05FFF   |    0x06FFF     |    0x07BFF   |   0x07DFF    |  0x0EFFF   | 0x9FBDD | 0x9FFFF |  0xFFFFF   | 0x00FFFFFF | 0x010FFFFF | 0x014FFFFF |
 ; |------------|---------|------------|------------|----------------|--------------|--------------|------------|---------|---------|------------|------------|------------|------------|
-
+section .boot
 [BITS 16]
 jmp loader
 
@@ -143,12 +143,11 @@ a20_error db 'A20 Gate is not available. Critical ERROR...',0
 before_prot db 'This is exactly before turning on protection!',0
 protected_in db 'We are in protected mode now! Second stage worked!',0
 
+extern STACK_ADDRESS
+
 r_bios db 'BIOS',0
 r_keyb db 'KEYBOARD',0
 r_gate db 'GATE',0
-
-RealMode.StackPointer     dw 0
-RealMode.IntNumber        dw 0
 
 struc register_state
 	.eax: resd 1
@@ -195,11 +194,10 @@ loader:
     mov dl, 79
     int 0x10
 
-    mov esp, 0x7c00
-    
-    ; Print "Micros is loading..."
-    mov si, micros_loading
-    call print_line_16
+    ;setup stack
+    mov ax, STACK_ADDRESS
+    mov bp, ax
+    mov sp, ax
 
     ; Check If Line A20 Enabled
     call check_a20
@@ -223,10 +221,24 @@ A20Ready:
     mov di, bx 
     call load_memory_map
 
+    ;get pxe struct addr
+    mov ax, 5650h
+    int 1ah
+    ;push address on stack for loader main
+    push es
+    push bx
+
     ;enter protected mode (32 bit)
     mov eax, cr0
     or eax, 1
     mov cr0, eax
+
+    mov ax, 0x10
+	mov es, ax
+	mov ds, ax
+	mov fs, ax
+	mov gs, ax
+	mov ss, ax
 
     jmp 0x08:jump_to_loader
 
@@ -426,21 +438,27 @@ load_memory_map_loop:
 [BITS 32]
 jump_to_loader:
     extern loader_main
-    call loader_main
+
+    mov eax, jump_to_loader
+    push eax
+    jmp dword 0x8:loader_main
+
     global pxecall
 pxecall:
 	pushad
-    jmp 0x018:.switch_to_real_mode
-
-[bits 16]
-.switch_to_real_mode:
+    
     mov ax, 0x20
 	mov es, ax
 	mov ds, ax
 	mov fs, ax
 	mov gs, ax
 	mov ss, ax
-    
+
+
+    jmp 0x18:.switch_to_real_mode
+
+[bits 16]
+.switch_to_real_mode:
 	; Disable protected mode
     mov eax, cr0
     and eax, ~(1 << 0)

@@ -78,13 +78,13 @@ typedef struct seg_desc
 	uint16_t segment_address;
 	uint16_t physical_address;
 	uint16_t segment_Size;
-} seg_desc_t;
+} __attribute__((packed)) seg_desc_t;
 
 typedef struct seg_off
 {
 	uint16_t offset;
 	uint16_t segment;
-} seg_off_t;
+} __attribute__((packed)) seg_off_t;
 
 typedef struct old_pxe
 {

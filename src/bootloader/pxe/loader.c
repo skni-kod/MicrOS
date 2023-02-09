@@ -61,6 +61,8 @@ void terminal_putchar(char c)
 	if (c == '\n')
 	{
 		++terminal_row;
+		if (terminal_row == VGA_HEIGHT)
+			terminal_row = 0;
 		terminal_column = 0;
 		return;
 	}
@@ -83,6 +85,80 @@ void terminal_write(const char *data, size_t size)
 void terminal_writestring(const char *data)
 {
 	terminal_write(data, strlen(data));
+}
+
+char *itoa(int value, char *result, int base)
+{
+	// check that the base if valid
+	if (base < 2 || base > 36)
+	{
+		*result = '\0';
+		return result;
+	}
+
+	char *ptr = result, *ptr1 = result, tmp_char;
+	int tmp_value;
+
+	do
+	{
+		tmp_value = value;
+		value /= base;
+		*ptr++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"[35 + (tmp_value - value * base)];
+	} while (value);
+
+	// Apply negative sign
+	if (tmp_value < 0)
+		*ptr++ = '-';
+	*ptr-- = '\0';
+	while (ptr1 < ptr)
+	{
+		tmp_char = *ptr;
+		*ptr-- = *ptr1;
+		*ptr1++ = tmp_char;
+	}
+	return ptr1;
+}
+
+void print_ip(ipv4_addr_t *addr, char *buf)
+{
+	char *ptr = itoa(addr->oct_a, buf, 10);
+	*(++ptr) = '.';
+	ptr = itoa(addr->oct_b, ++ptr, 10);
+	*(++ptr) = '.';
+	ptr = itoa(addr->oct_c, ++ptr, 10);
+	*(++ptr) = '.';
+	ptr = itoa(addr->oct_d, ++ptr, 10);
+	*(++ptr) = '\n';
+	*(++ptr) = '\0';
+}
+
+void *memcpy(void *destination, const void *source, size_t size)
+{
+	uint64_t *destination_64ptr = (uint64_t *)destination;
+	uint64_t *source_64ptr = (uint64_t *)source;
+	while (size >= 8)
+	{
+		*destination_64ptr++ = *source_64ptr++;
+		size -= 8;
+	}
+
+	uint32_t *destination_32ptr = (uint32_t *)destination_64ptr;
+	uint32_t *source_32ptr = (uint32_t *)source_64ptr;
+	while (size >= 4)
+	{
+		*destination_32ptr++ = *source_32ptr++;
+		size -= 4;
+	}
+
+	uint8_t *destination_ptr = (uint8_t *)destination_32ptr;
+	uint8_t *source_ptr = (uint8_t *)source_32ptr;
+	while (size >= 1)
+	{
+		*destination_ptr++ = *source_ptr++;
+		size--;
+	}
+
+	return destination;
 }
 
 uint8_t chksum8(const unsigned char *buff, size_t len)
@@ -137,108 +213,35 @@ uint8_t *scan_new_pxe(uint8_t *mem_begin, uint8_t *mem_end)
 	return 0;
 }
 
-char *itoa(int value, char *result, int base)
-{
-	// check that the base if valid
-	if (base < 2 || base > 36)
-	{
-		*result = '\0';
-		return result;
-	}
+extern char LOADER_END;
 
-	char *ptr = result, *ptr1 = result, tmp_char;
-	int tmp_value;
-
-	do
-	{
-		tmp_value = value;
-		value /= base;
-		*ptr++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"[35 + (tmp_value - value * base)];
-	} while (value);
-
-	// Apply negative sign
-	if (tmp_value < 0)
-		*ptr++ = '-';
-	*ptr-- = '\0';
-	while (ptr1 < ptr)
-	{
-		tmp_char = *ptr;
-		*ptr-- = *ptr1;
-		*ptr1++ = tmp_char;
-	}
-	return result;
-}
-
-void print_ip(ipv4_addr_t *addr, char *buf)
-{
-	char *ptr = itoa(addr->oct_a, buf, 10);
-	*(ptr++) = '.';
-	ptr = itoa(addr->oct_b, ptr, 10);
-	*(ptr++) = '.';
-	ptr = itoa(addr->oct_c, ptr, 10);
-	*(ptr++) = '.';
-	ptr = itoa(addr->oct_d, ptr, 10);
-	*(ptr++) = '\r';
-	*(ptr++) = '\0';
-}
-
-void *memcpy(void *destination, const void *source, size_t size)
-{
-	uint64_t *destination_64ptr = (uint64_t *)destination;
-	uint64_t *source_64ptr = (uint64_t *)source;
-	while (size >= 8)
-	{
-		*destination_64ptr++ = *source_64ptr++;
-		size -= 8;
-	}
-
-	uint32_t *destination_32ptr = (uint32_t *)destination_64ptr;
-	uint32_t *source_32ptr = (uint32_t *)source_64ptr;
-	while (size >= 4)
-	{
-		*destination_32ptr++ = *source_32ptr++;
-		size -= 4;
-	}
-
-	uint8_t *destination_ptr = (uint8_t *)destination_32ptr;
-	uint8_t *source_ptr = (uint8_t *)source_32ptr;
-	while (size >= 1)
-	{
-		*destination_ptr++ = *source_ptr++;
-		size--;
-	}
-
-	return destination;
-}
-
-void loader_main(void)
+void loader_main(seg_off_t pxe)
 {
 	terminal_initialize();
+	old_pxe_t *old_pxe_struct = (pxe.segment << 4) + pxe.offset;
+	pxe_t *pxe_struct = scan_new_pxe(&LOADER_END,0xA0000);
 
-	pxe_t *pxe_struct = scan_new_pxe(BASE_MEMORY_LOW, BASE_MEMORY_HIGH);
-	old_pxe_t *old_pxe_struct;
 	seg_off_t pxe_entrypoint;
 
-	if (!pxe_struct)
+	if (old_pxe_struct->version < 0x0201)
 	{
-		// scan for older version of pxe structure
-		old_pxe_struct = scan_old_pxe(BASE_MEMORY_LOW, BASE_MEMORY_HIGH);
-	}
-
-	if (pxe_struct)
-		pxe_entrypoint = pxe_struct->EntryPointSP;
-	else
+		// use old
+		terminal_writestring("Booting using PXENV+\n");
 		pxe_entrypoint = old_pxe_struct->rm_entry;
+	}
+	else
+	{
+		terminal_writestring("Booting using !PXE\n");
+		pxe_entrypoint.segment = pxe_struct->EntryPointSP.segment;
+		pxe_entrypoint.offset = pxe_struct->EntryPointSP.offset;
 
-	// if (pxe_struct->length != 0x58)
-	// {
-	// 	terminal_writestring("Not good\n");
-	// }
-
-	// if (chksum8(pxe_struct, 0x58) != 0)
-	// {
-	// 	terminal_writestring("Bad checksum\n");
-	// }
+		if (pxe_struct->length != 0x58 || chksum8(pxe_struct, 0x58) != 0)
+		{
+			terminal_writestring("This is bad!\n");
+			while (1)
+				;
+		}
+	}
 
 	get_cached_info_t info = (get_cached_info_t){.packet_type = PXENV_PACKET_TYPE_DHCP_ACK};
 
@@ -272,7 +275,7 @@ void loader_main(void)
 	tftp_open_t open = (tftp_open_t){
 		.status = 0,
 		.server_addr = *addr,
-		.gateway_addr = 0, 
+		.gateway_addr = 0,
 		.packet_size = BUFFER_SIZE,
 		.tftp_port = HTONS(69),
 		.file = KERNEL_FILENAME};

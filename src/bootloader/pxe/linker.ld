@@ -1,15 +1,15 @@
-OUTPUT_FORMAT(binary)
+STARTUP_ADDRESS = 0x7C00;
+STACK_ADDRESS = 0x7BFF;
 
 SECTIONS
 {
-	. = 0x7C00;
-
+	
+	. = STARTUP_ADDRESS;
 	.boot :
 	{
-		/mnt/ramdisk/build/obj/bootloader/pxe/boot.o
+		*(.boot)
 	}
 
-	. = 0x8F00;
 	.text ALIGN(4K) : AT(ADDR(.text))
 	{
 		*(.text)
@@ -33,4 +33,5 @@ SECTIONS
 	}
 
 	BSS_SECTION_END = .;
+	LOADER_END = .;
 }
