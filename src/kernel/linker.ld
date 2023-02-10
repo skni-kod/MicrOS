@@ -8,9 +8,18 @@ SECTIONS
 {
 	. = STARTUP_PHYSICAL_ADDRESS;
 
+/*
+Multiboot header:
+	.boot ALIGN(4) : AT(STARTUP_PHYSICAL_ADDRESS)
+	{
+		LONG(0x1BADB002)
+		LONG(0x00000003)
+		LONG(0xE4524FFB)
+	}
+*/
 	.boot :
 	{
-		[BASE_PATH]/init/startup.o
+		*(.boot)
 	}
 
 	. = KERNEL_PHYSICAL_ADDRESS;

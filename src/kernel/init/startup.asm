@@ -9,7 +9,7 @@
 ; {     Page 0       }{1}{2}{3}{        Page 4       }{     Page 5     }{       Page 6 - n       }
 
 [BITS 32]
-
+section .boot
 %define PAGE_DIRECTORY_BASE 0x00006000
 %define PAGE_TABLES_BASE    0x01100000
 %define PAGES_COUNT         6
