@@ -87,6 +87,18 @@ void terminal_writestring(const char *data)
 	terminal_write(data, strlen(data));
 }
 
+void *memset(void *buffer, int value, size_t size)
+{
+	uint8_t *ptr = (uint8_t *)buffer;
+	for (size_t i = 0; i < size; i++)
+	{
+		*ptr = value;
+		ptr++;
+	}
+
+	return buffer;
+}
+
 char *itoa(int value, char *result, int base)
 {
 	// check that the base if valid
@@ -258,12 +270,92 @@ static const struct pxenv_t *memory_scan_for_pxenv_struct(void)
 	return memory_scan(0x10000, is_pxenv);
 }
 
+void dhcp_read_option(dhcp_message_t *msg, uint8_t code, uint8_t *buf, uint16_t len)
+{
+    uint32_t i = 0;
+    while (1)
+    {
+        uint8_t type = msg->options[i];
+
+        if (0xFF == type)
+            return;
+
+        if (type == code)
+        {
+            memcpy(buf, (*msg).options + i + 2, len);
+            return;
+        }
+        int skip = msg->options[i + 1] + 2;
+        i += skip;
+    }
+}
+
+int get_ip_config(seg_off_t entry, ipv4_addr_t *server, ipv4_addr_t *gateway)
+{
+	get_cached_info_t info = (get_cached_info_t){.packet_type = PXENV_PACKET_TYPE_DHCP_ACK};
+	char tmp[64] = "";
+
+	server->value = gateway->value = 0;
+
+	pxecall(entry.segment,
+			entry.offset,
+			PXE_OPCODE_GET_CACHED_INFO,
+			0,
+			&info);
+
+	dhcp_message_t *dhcp_ack = (info.buffer_seg << 4) + info.buffer_off;
+	ipv4_addr_t *addr = &dhcp_ack->siaddr;
+
+ 	if (dhcp_ack->siaddr.value)
+		*server = dhcp_ack->siaddr;
+
+	if (dhcp_ack->giaddr.value)
+		*gateway = dhcp_ack->giaddr;
+
+	memcpy(tmp, "Your IP: ", 10);
+	print_ip(&dhcp_ack->yiaddr, tmp + 9);
+	terminal_writestring(tmp);
+	memset(tmp, 0, 64);
+
+	dhcp_read_option(dhcp_ack, 3, gateway, sizeof(ipv4_addr_t));
+	
+	memcpy(tmp, "Gateway: ", 10);
+	print_ip(gateway, tmp + 9);
+	terminal_writestring(tmp);
+	memset(tmp, 0, 64);
+
+
+	info.packet_type = 3;
+	info.status = 0;
+	pxecall(entry.segment,
+			entry.offset,
+			PXE_OPCODE_GET_CACHED_INFO,
+			0,
+			&info);
+
+	dhcp_ack = (info.buffer_seg << 4) + info.buffer_off;
+
+	dhcp_read_option(dhcp_ack, 54, server, sizeof(ipv4_addr_t));
+	memcpy(tmp, "Server: ", 9);
+	print_ip(server, tmp + 8);
+	terminal_writestring(tmp);
+	memset(tmp, 0, 64);
+	
+	if (server->value != 0)
+		return 0;
+
+	return -1;
+}
+
 void loader_main(seg_off_t in_addr)
 {
 	seg_off_t pxe_entrypoint;
 	char tmp[64];
 	pxenv_t *pxenv;
 	pxe_t *pxe;
+
+	ipv4_addr_t server;
+	ipv4_addr_t gateway;
 
 	terminal_initialize();
 
@@ -277,9 +369,7 @@ void loader_main(seg_off_t in_addr)
 	if ((pxenv = memory_scan_for_pxenv_struct()))
 		goto have_pxenv;
 
-	terminal_writestring("No i dupa\n");
-	while (1)
-		;
+	goto dupa;
 
 have_pxenv:
 	/* if the API version number is 0x0201 or higher, use the !PXE structure */
@@ -307,37 +397,16 @@ have_pxe:
 load:
 	terminal_writestring("Hello!\n");
 
-	get_cached_info_t info = (get_cached_info_t){.packet_type = PXENV_PACKET_TYPE_DHCP_ACK};
+	uint16_t rv = (uint16_t)get_ip_config(pxe_entrypoint, &server, &gateway);
 
-	// get tftp server addr
-	uint16_t rv;
-
-	rv = pxecall(pxe_entrypoint.segment,
-				 pxe_entrypoint.offset,
-				 PXE_OPCODE_GET_CACHED_INFO,
-				 0,
-				 &info);
-
-	dhcp_message_t *dhcp_ack = (info.buffer_seg << 4) + info.buffer_off;
-	ipv4_addr_t *addr = &dhcp_ack->siaddr;
-
-	print_ip(addr, tmp);
-	terminal_writestring(tmp);
-
-	print_ip(&dhcp_ack->yiaddr, tmp);
-	terminal_writestring(tmp);
-
-	print_ip(&dhcp_ack->ciaddr, tmp);
-	terminal_writestring(tmp);
-
-	print_ip(&dhcp_ack->giaddr, tmp);
-	terminal_writestring(tmp);
+	if (rv)
+		goto dupa;
 
 	// get file size
 	get_file_size_t file = (get_file_size_t){
 		.status = 0,
-		.server_addr = *addr,
-		.gateway_addr = 0,
+		.server_addr = server,
+		.gateway_addr = gateway,
 		.file_size = 0,
 		.file = KERNEL_FILENAME};
 
@@ -350,8 +419,8 @@ load:
 	// open connection
 	tftp_open_t open = (tftp_open_t){
 		.status = 0,
-		.server_addr = *addr,
-		.gateway_addr = 0,
+		.server_addr = server,
+		.gateway_addr = gateway,
 		.packet_size = BUFFER_SIZE,
 		.tftp_port = HTONS(69),
 		.file = KERNEL_FILENAME};
@@ -408,4 +477,9 @@ load:
 
 	// jump into kernel!
 	enter_kernel();
+
+dupa:
+	terminal_writestring("No i dupa\n");
+	while (1)
+		;
 }
