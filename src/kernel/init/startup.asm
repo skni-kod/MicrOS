@@ -14,10 +14,6 @@ section .boot
 %define PAGE_TABLES_BASE    0x01100000
 %define PAGES_COUNT         6
 
-; %define PAGE_DIRECTORY_BASE 0x09000000
-; %define PAGE_TABLES_BASE    0x0A000000
-; %define PAGES_COUNT         6
-
 jmp main_protected_area
 
 main_protected_area:

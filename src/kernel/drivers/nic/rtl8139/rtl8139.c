@@ -85,7 +85,7 @@ bool rtl8139_init(net_device_t *net_dev)
     // AM - multicast
     // APM - physical match
     // AAP - all packets
-    io_out_long(rtl8139_device.io_base + RXCONFIG, 0xF | (1 << 7));
+    io_out_long(rtl8139_device.io_base + RXCONFIG, 0xfbf);
 
     rtl8139_read_mac();
 
