@@ -299,57 +299,11 @@ void startup()
     signals_manager_init();
     logger_log_ok("Signals manager");
 
-    /*pci_init();
+    pci_init();
     logger_log_ok("PCI");
     logger_log_info("Number of devices: ");
     uint8_t nd = pci_get_number_of_devices();
-    logger_log_info(itoa(nd, buff, 10));
-    logger_log_info("Devices: ");
-    vga_color col;
-    col.color_without_blink.background = VGA_COLOR_BLACK;
-    col.color_without_blink.letter = VGA_COLOR_BLUE;
-    vga_printstring_color("vendor_id ", &col);
-    col.color_without_blink.letter = VGA_COLOR_GREEN;
-    vga_printstring_color("device_id ", &col);
-    col.color_without_blink.letter = VGA_COLOR_LIGHT_BLUE;
-    vga_printstring_color("header_type ", &col);
-    col.color_without_blink.letter = VGA_COLOR_LIGHT_RED;
-    vga_printstring_color("class_code ", &col);
-    col.color_without_blink.letter = VGA_COLOR_YELLOW;
-    vga_printstring_color("subclass ", &col);
-    col.color_without_blink.letter = VGA_COLOR_MAGENTA;
-    vga_printstring_color("prog_if\n", &col);
-    for (int i = 0; i < pci_get_number_of_devices(); i++)
-    {
-        pci_device *dev = pci_get_device(i);
-        col.color_without_blink.letter = VGA_COLOR_BLUE;
-        vga_printstring_color(itoa(dev->vendor_id, buff, 16), &col);
-        vga_printchar(' ');
-        col.color_without_blink.letter = VGA_COLOR_GREEN;
-        vga_printstring_color(itoa(dev->device_id, buff, 16), &col);
-        vga_printchar(' ');
-        col.color_without_blink.letter = VGA_COLOR_LIGHT_BLUE;
-        vga_printstring_color(itoa(dev->header_type, buff, 16), &col);
-        vga_printchar(' ');
-        col.color_without_blink.letter = VGA_COLOR_LIGHT_RED;
-        vga_printstring_color(itoa(dev->class_code, buff, 16), &col);
-        vga_printchar(' ');
-        col.color_without_blink.letter = VGA_COLOR_YELLOW;
-        vga_printstring_color(itoa(dev->subclass, buff, 16), &col);
-        vga_printchar(' ');
-        col.color_without_blink.letter = VGA_COLOR_MAGENTA;
-        vga_printstring_color(itoa(dev->prog_if, buff, 16), &col);
-        vga_printchar('\n');
-    }
-    pci_dev* dev = get_device(0);
-    log_info(itoa(dev->vendor_id, buff, 16));
-    log_info(itoa(dev->header_type, buff, 16));
-    log_info(itoa(dev->class_code, buff, 16));
-    log_info(itoa(dev->subclass, buff, 16));
-    log_info(itoa(dev->prog_if, buff, 16));*/
-    //fat_init();
-    //logger_log_ok("FAT12");
-    
+
     init_terminal_manager();
     logger_log_ok("Terminal manager");
 
