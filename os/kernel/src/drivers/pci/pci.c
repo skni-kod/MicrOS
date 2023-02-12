@@ -2,7 +2,6 @@
 #include "assembly/io.h"
 #include "logger/logger.h"
 #include <stdlib.h>
-#include <ktime.h>
 
 //maybe change this to dynamic realloc if we have more devices.
 static pci_device devices[PCI_DEVICE_COUNT];
@@ -221,7 +220,8 @@ void pci_busmaster_set(pci_device *device, bool value)
     pci_config_out_dword(device, PCI_COMMAND_REGISTER, device->config.dwords[1]);
 }
 
-void pci_print_devices(uint32_t delay){
+void pci_print_devices()
+{
     char buff[50];
 
     logger_log_info("Number of devices: ");
@@ -272,9 +272,4 @@ void pci_print_devices(uint32_t delay){
         vga_printstring_color(itoa(dev->config.prog_if, buff, 16), &col);
         vga_printchar('\n');
     }
-
-    if(!delay)
-        while(1);
-    else
-        sleep(delay);
 }

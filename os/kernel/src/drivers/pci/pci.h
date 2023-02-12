@@ -127,8 +127,7 @@ uint32_t pci_config_in_dword(pci_device *dev, uint8_t offset);
 
 /**
  * @brief Prints all PCI devices from system table
- * @param delay if 0 function will enter infinite loop. Otherwise it will make delay of specified miliseconds.
 */
-void pci_print_devices(uint32_t delay);
+void pci_print_devices();
 
 #endif

@@ -301,8 +301,6 @@ void startup()
 
     pci_init();
     logger_log_ok("PCI");
-    logger_log_info("Number of devices: ");
-    uint8_t nd = pci_get_number_of_devices();
 
     init_terminal_manager();
     logger_log_ok("Terminal manager");
