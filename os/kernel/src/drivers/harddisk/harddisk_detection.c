@@ -1,4 +1,5 @@
 #include "harddisk_detection.h"
+#include "logger/logger.h"
 
 int8_t __harddisk_check_presence(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, harddisk_states *states)
 {

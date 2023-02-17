@@ -113,6 +113,26 @@ int8_t harddisk_read_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYP
     \param buffer Buffer of 256 16-bits values for store data.
     \return 1 = success, -1 = disk error, -2 = parameter error.
 */
+
+int8_t harddisk_read_sectors(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t count, uint16_t *buffer);
+
+//! Write hard disk sector.
+/*!
+    \param type Type of harddisk.
+    \param bus Type of bus.
+    \param high_lba Higher bits of lba (24 bits are used).
+    \param low_lba Lower bits of lba (24 bits are used).
+    \param count Amount of sectors to be read.
+    \param buffer Buffer of 256 16-bits values for store data.
+    \return 1 = success, -1 = disk error, -2 = parameter error.
+*/
 int8_t harddisk_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t *buffer);
+
+/**
+ * @brief Handler for hard disk interrupts.
+ * @param irq_state status of interrupt
+ * @return status of handling
+ */
+bool harddisk_irq_handle(interrupt_state* irq_state);
 
 #endif

@@ -31,17 +31,14 @@ uint8_t *hdd_wrapper_read_sector(int device_number, int sector, int count)
     HARDDISK_ATA_MASTER_SLAVE type = hdd_wrapper_get_type_by_device_number(device_number);
     HARDDISK_ATA_BUS_TYPE bus = hdd_wrapper_get_bus_by_device_number(device_number);
 
-    for(uint32_t i = 0; i < count; i++)
+    int8_t result = harddisk_read_sectors(type, bus, 0, sector, count, (uint16_t *)data);
+    switch (result)
     {
-        int8_t result = harddisk_read_sector(type, bus, 0, sector+i, (uint16_t *)read_content);
-        switch (result)
-        {
-            case 0: logger_log_error("harddisk_read_sector returned 0 - non-present HDD"); break;
-            case -1: logger_log_error("harddisk_read_sector returned -1 - disk error"); break;
-            case -2: logger_log_error("harddisk_read_sector returned -2 - parameters error"); break;
-        }
-        memcpy(data+(i*512), read_content, 512);
+        case 0: logger_log_error("harddisk_read_sector returned 0 - non-present HDD"); break;
+        case -1: logger_log_error("harddisk_read_sector returned -1 - disk error"); break;
+        case -2: logger_log_error("harddisk_read_sector returned -2 - parameters error"); break;
     }
+    //memcpy(data, read_content, count*512);
     return data;
 }
 

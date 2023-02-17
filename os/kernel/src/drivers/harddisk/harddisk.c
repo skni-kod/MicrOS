@@ -1,4 +1,5 @@
 #include "harddisk.h"
+#include "logger/logger.h"
 
 //! Current states of all hard drives.
 extern harddisk_states harddisk_current_states;
@@ -12,6 +13,9 @@ void harddisk_init(harddisk_configuration configuration)
     harddisk_current_states.primary_slave = (HARDDISK_STATE) __harddisk_check_presence(HARDDISK_ATA_SLAVE, HARDDISK_ATA_PRIMARY_BUS, &harddisk_current_states);
     harddisk_current_states.secondary_master = (HARDDISK_STATE) __harddisk_check_presence(HARDDISK_ATA_MASTER, HARDDISK_ATA_SECONDARY_BUS, &harddisk_current_states);
     harddisk_current_states.secondary_slave = (HARDDISK_STATE) __harddisk_check_presence(HARDDISK_ATA_SLAVE, HARDDISK_ATA_SECONDARY_BUS, &harddisk_current_states);
+
+    pic_enable_irq(14);
+    idt_attach_interrupt_handler(14, harddisk_irq_handle);
 }
 
 harddisk_states harddisk_get_states()
@@ -164,6 +168,21 @@ int8_t harddisk_read_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYP
     }
 }
 
+int8_t harddisk_read_sectors(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t count, uint16_t *buffer)
+{
+    const HARDDISK_STATE *state;
+    const harddisk_identify_device_data *data;
+    __harddisk_get_pointers(type, bus, &state, &data);
+    switch(*state)
+    {
+        case HARDDISK_ATA_PRESENT:
+            return __harddisk_ata_read_sectors(type, bus, high_lba, low_lba, count, buffer);
+            break;
+        default:
+            return 0;
+    }
+}
+
 int8_t harddisk_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t *buffer)
 {
     const HARDDISK_STATE *state;
@@ -177,4 +196,28 @@ int8_t harddisk_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TY
         default:
             return 0;
     }
+}
+
+bool harddisk_irq_handle(interrupt_state* irq_state)
+{
+    //All things below are just leftovers from initial test with faster PIO mode.
+
+
+    // uint8_t device_status = io_in_byte(0x3F6);
+    // io_in_byte(0x1F7);
+    //logger_log_info("HDD IRQ RECV!");
+    //yeah yeah, I know, this is bad and all that stuff, but for now I need to figure this out.
+    //For now just check primary master device, since we have no others mapped
+    //uint8_t device_status = io_in_byte(0x3F6);
+    
+    //check if we have pending data transfer.
+    // if(!(device_status & 0x80) && (device_status & 0x8))
+    // {
+    //     //logger_log_info("we got some data to read!");
+    //     __harddisk_ata_interrupt_callback();
+    //     //io_out_byte(0x3F6, 0);
+
+    // }
+    
+    return true;
 }
