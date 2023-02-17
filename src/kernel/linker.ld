@@ -7,9 +7,12 @@ KERNEL_VIRTUAL_ADDRESS   = 0xC0000000;
 SECTIONS
 {
 	. = STARTUP_PHYSICAL_ADDRESS;
+	.boot :
+	{
+		*(.boot)
+	}
 
 /*
-Multiboot header:
 	.boot ALIGN(4) : AT(STARTUP_PHYSICAL_ADDRESS)
 	{
 		LONG(0x1BADB002)
@@ -17,10 +20,6 @@ Multiboot header:
 		LONG(0xE4524FFB)
 	}
 */
-	.boot :
-	{
-		*(.boot)
-	}
 
 	. = KERNEL_PHYSICAL_ADDRESS;
 	. += KERNEL_VIRTUAL_ADDRESS;

@@ -92,7 +92,7 @@ ifeq ($(QEMU_NET), 1)
 	endif
 
 	ifneq ($(QEMU_TAP),1)
-		QEMU_OPTIONS		+= -netdev user,id=net1,ipv6=off,dhcpstart=10.0.2.20
+		QEMU_OPTIONS		+= -netdev user,id=net1,ipv6=off,dhcpstart=10.0.2.20,hostfwd=tcp::5555-:22
 	else
 		QEMU_OPTIONS		+= -netdev tap,id=net1,ifname=tap0,script=no,downscript=no
 	endif
@@ -137,7 +137,7 @@ run-debug: $(log_dir) build
 
 run-pxe: ## run pxe
 run-pxe:
-	make bootloaderpxe && G_MESSAGES_DEBUG=all qemu-system-i386 -netdev user,id=net0,tftp=/mnt/ramdisk/build,bootfile=/pxe.0 -boot n -net nic,model=virtio,netdev=net0,macaddr=00:11:22:33:44:55
+	make bootloaderpxe && G_MESSAGES_DEBUG=all qemu-system-i386 -netdev user,id=net0,tftp=/mnt/ramdisk/build,bootfile=/pxe.0 -boot n -net nic,model=rtl8139,netdev=net0,macaddr=00:11:22:33:44:55
 .PHONY: run-pxe
 
 run-pxe-debug: ## run pxe-debug
@@ -146,8 +146,6 @@ run-pxe-debug:
 	-boot n \
 	-netdev user,id=net0,hostfwd=tcp::5555-:22,tftp=/mnt/ramdisk/build,bootfile=/pxe.0 \
 	-device rtl8139,netdev=net0,bootindex=1,romfile="$(CWD)/rtl8139.rom"
-#	-net nic,model=virtio,netdev=net0,macaddr=00:11:22:33:44:55 
-# -device rtl8139,netdev=net0,bootindex=1,romfile="$(CWD)/rtl8139.rom"
 .PHONY: run-pxe-debug
 
 

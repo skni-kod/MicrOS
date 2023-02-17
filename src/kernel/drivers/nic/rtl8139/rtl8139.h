@@ -15,74 +15,76 @@
 #include <klibrary/kvector.h>
 
 #define RTL8139_DEVICE_VENDOR_ID 0x10EC
-#define RTL8139_DEVICE_ID_PRIMARY 0x8139
+#define RTL8139_DEVICE_ID 0x8139
+#define RTL8139_DEVICE_ID_2 0x8136
 #define RTL8139_DEVICE_ID_SECONDARY 0x8119
 #define RTL8139_DEVICE_NAME "RTL8139 NIC"
+
+#define R8139DN_RX_PAD 16
+#define R8139DN_RX_HEADER_SIZE 4
+#define R8139DN_RX_ALIGN_ADD 3
+#define R8139DN_RX_ALIGN_MASK (~R8139DN_RX_ALIGN_ADD)
+#define R8139DN_RX_ALIGN(val) (((val) + R8139DN_RX_ALIGN_ADD) & R8139DN_RX_ALIGN_MASK)
+
+#define ETH_FRAME_LEN 1514
+#define ETH_ALEN 6
+#define ETH_ZLEN 60
+
+/* PCI Tuning Parameters
+   Threshold is bytes transferred to chip before transmission starts. */
+#define TX_FIFO_THRESH 256        /* In bytes, rounded down to 32 byte units. */
+#define RX_FIFO_THRESH 4          /* Rx buffer level before first PCI xfer.  */
+#define RX_DMA_BURST 4            /* Maximum PCI burst, '4' is 256 bytes */
+#define TX_DMA_BURST 4            /* Calculate as 16<<val. */
+#define NUM_TX_DESC 4             /* Number of Tx descriptor registers. */
+#define TX_BUF_SIZE ETH_FRAME_LEN /* FCS is added by the chip */
+#define RX_BUF_LEN_IDX 0          /* 0, 1, 2 is allowed - 8,16,32K rx buffer */
+#define RX_BUF_LEN (8192 << RX_BUF_LEN_IDX)
 
 #define RTL8139_RX_BUFFER_BASE 8192
 #define RTL8139_RX_BUFFER_SIZE (RTL8139_RX_BUFFER_BASE + 16 + 1500)
 
-#define CAPR 0x38
-#define RX_READ_POINTER_MASK (~3)
-#define ROK (1 << 0)
-#define RER (1 << 1)
-#define TOK (1 << 2)
-#define TER (1 << 3)
-#define RXOVW (1 << 4)
-#define FOVW (1 << 6)
-#define TX_TOK (1 << 15)
-
-enum RTL8139_registers
-{
-    MAG0 = 0x00,      // Ethernet hardware address MAC
-    MAR0 = 0x08,      // Multicast
-    TXSTATUS0 = 0x10, // TX status (4x32bit)
-    TXADDR0 = 0x20,   // TX descriptors (4x32bit)
-    RXBUF = 0x30,
-    RXEARLYCOUNT = 0x34,
-    RXEARLYSTATUS = 0x36,
-    CHIPCMD = 0x37,
-    RXBUFPTR = 0x38,
-    RXBUFADDR = 0x3A,
-    INTRMASK = 0x3C,
-    INTRSTATUS = 0x3E,
-    TXCONFIG = 0x40,
-    RXCONFIG = 0x44,
-    TIMER = 0x48,    // A general-purpose counter
-    RXMISSED = 0x4C, // 24 bits valid, write clears
-    CFG9346 = 0x50,
-    CONFIG0 = 0x51,
-    CONFIG1 = 0x52,
-    FLASHREG = 0x54,
-    GPPINDATA = 0x58,
-    GPPINDIR = 0x59,
-    MII_SMI = 0x5A,
-    HLTCLK = 0x5B,
-    MULTIINTR = 0x5C,
-    TXSUMMARY = 0x60,
-    MII_BMCR = 0x62,
-    MII_BMSR = 0x64,
-    NWAYADVERT = 0x66,
-    NWAYLPAR = 0x68,
-    NWAYEXPANSION = 0x6A,
-
-    // Undocumented registers, but required for proper operation
-    FIFOTMS = 0x70, // FIFO Control and test
-    CSCR = 0x74,    // Chip Status and Configuration Register
-    PARA78 = 0x78,
-    PARA7C = 0x7C, // Magic transceiver parameter register
-};
+typedef struct buffer{
+    uint32_t size;
+    uint32_t cur;
+    uint32_t dma_address;
+    uint8_t data[];
+} buffer_t;
 
 typedef struct rtl8139_dev
 {
     uint8_t bar_type;
-    uint16_t io_base;
-    uint32_t mem_base;
-    int eeprom_exist;
-    uint8_t mac_addr[6];
-    char *rx_buffer;
-    int tx_cur;
+    union
+    {
+        uint16_t io_base;
+        uint32_t mem_base;
+    };
+    mac_addr_t mac;
+    buffer_t *tx;
+    buffer_t *rx;
+    uint32_t tx_config;
+    uint32_t tx_flags;
+    uint32_t interrupt;
+    uint32_t interrupt_vector;
 } rtl8139_dev_t;
+
+struct rx_header
+{
+    uint16_t status;
+    uint16_t size;
+};
+
+void rtl_write_byte(uint32_t address, uint8_t value);
+
+uint8_t rtl_read_byte(uint32_t address);
+
+void rtl_write_word(uint32_t address, uint16_t value);
+
+uint16_t rtl_read_word(uint32_t address);
+
+void rtl_write_long(uint32_t address, uint32_t value);
+
+uint32_t rtl_read_long(uint32_t address);
 
 //! rtl8139_init
 /*!

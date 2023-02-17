@@ -14,7 +14,6 @@ virtq *transmit_queue;
 
 bool virtio_nic_init(net_device_t *net_dev)
 {
-
     // Prevent for re-init
     if (pci_virtio_nic_device.vendor_id != 0)
         return false;
@@ -29,10 +28,12 @@ bool virtio_nic_init(net_device_t *net_dev)
             dev->subsystem_id == VIRTIO_NET_DEVICE_SUBSYSTEM_ID)
         {
             pci_virtio_nic_device = *dev;
-            break;
+            goto device_found;
         }
     }
+    return false;
 
+device_found:
     // Device not present in PCI bus
     if (pci_virtio_nic_device.vendor_id == 0)
         return false;

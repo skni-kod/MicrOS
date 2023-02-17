@@ -39,7 +39,6 @@ QEMU_NET_LOG			?= 1
 QEMU_OPTIONS 			+= -m $(QEMU_MEMORY)
 QEMU_OPTIONS 			+= -serial file:$(log_file)
 
-
 ###############################################################################
 # Tools
 ###############################################################################
@@ -63,5 +62,5 @@ MKDIR					= mkdir
 CURL					= curl
 RM		 				= rm
 SED						= sed
-QEMU					= qemu-system-$(QEMU_ARCH)
+QEMU					= /home/jp/Pobrane/qemu-7.2.0/build/qemu-system-$(QEMU_ARCH)
 GDB						= gdb

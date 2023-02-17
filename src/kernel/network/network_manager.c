@@ -21,7 +21,8 @@ bool network_manager_init()
     for (uint8_t i = 0; i < (sizeof(drivers) / sizeof(nic_init)); i++)
     {
         net_device_t *dev = heap_kernel_alloc(sizeof(net_device_t), 0);
-        if (network_manager_set_net_device(dev) && drivers[i](dev))
+        if (network_manager_set_net_device(dev) && 
+            (drivers[i])(dev) == true)
         {
             kvector_add(net_devices, dev);
             network_manager_print_device_info(dev);
@@ -43,32 +44,32 @@ bool network_manager_init()
         // finally turn on communication
         dev->interface->mode = (net_mode_t){.receive = 1, .send = 1};
         //if (dhcp_negotiate(dev->interface))
-        // {
-        //     // set static IP
-        //     dev->interface->ipv4_address = (ipv4_addr_t){
-        //         .oct_a = 10,
-        //         .oct_b = 0,
-        //         .oct_c = 10,
-        //         .oct_d = 90};
+        {
+            // set static IP
+            // dev->interface->ipv4_address = (ipv4_addr_t){
+            //     .oct_a = 10,
+            //     .oct_b = 0,
+            //     .oct_c = 0,
+            //     .oct_d = 90};
 
-        //     dev->interface->ipv4_dns = (ipv4_addr_t){
-        //         .oct_a = 1,
-        //         .oct_b = 1,
-        //         .oct_c = 1,
-        //         .oct_d = 1};
+            // dev->interface->ipv4_dns = (ipv4_addr_t){
+            //     .oct_a = 1,
+            //     .oct_b = 1,
+            //     .oct_c = 1,
+            //     .oct_d = 1};
 
-        //     dev->interface->ipv4_netmask = (ipv4_addr_t){
-        //         .oct_a = 255,
-        //         .oct_b = 255,
-        //         .oct_c = 255,
-        //         .oct_d = 0};
+            // dev->interface->ipv4_netmask = (ipv4_addr_t){
+            //     .oct_a = 255,
+            //     .oct_b = 255,
+            //     .oct_c = 255,
+            //     .oct_d = 0};
 
-        //     dev->interface->ipv4_gateway = (ipv4_addr_t){
-        //         .oct_a = 10,
-        //         .oct_b = 0,
-        //         .oct_c = 10,
-        //         .oct_d = 1};
-        // }
+            // dev->interface->ipv4_gateway = (ipv4_addr_t){
+            //     .oct_a = 10,
+            //     .oct_b = 0,
+            //     .oct_c = 0,
+            //     .oct_d = 1};
+        }
     }
 
     return true;
@@ -122,6 +123,8 @@ uint32_t network_manager_send_data(nic_data_t *data)
 
 void network_manager_receive_data(nic_data_t *data)
 {
+    logger_log_info("PACKET!");
+    
     if (data->device->interface->mode.receive)
     {
         if (!ethernet_process_frame(data))

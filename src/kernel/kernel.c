@@ -282,7 +282,6 @@ void startup()
     // partitions_init();
     // logger_log_ok("Partitions");
 
-
     keyboard_init();
     logger_log_ok("Keyboard");
 
@@ -296,8 +295,9 @@ void startup()
     logger_log_ok("Signals manager");
 
     pci_init();
-    // pci_print_devices(1);
-
+    logger_log_ok("PCI");
+    // pci_print_devices();    
+    
     logger_log_info("Initializing network interfaces");
     if (network_manager_init())
         logger_log_ok("Network manager");
@@ -309,9 +309,9 @@ void startup()
 
     process_manager_init();
     logger_log_ok("Process manager");
-    
+
     print_processor_status();
-    
+
     logger_log_info("MicrOS ready");
     logger_log_info("Created by Application Section of SKNI KOD");
     logger_log_info("Development version");
@@ -355,9 +355,9 @@ int kmain()
 
     logger_log_ok("Loading shells...");
 
-    // serial_init(COM1_PORT, 115200, 8, 1, PARITY_NONE);
+    serial_init(COM1_PORT, 115200, 8, 1, PARITY_NONE);
     logger_log_warning("For now, we are stuck in kernel without shell");
-    
+
     while(1);
     // uint32_t d = 0;
     // for (int i = 0; i < 4; i++)
