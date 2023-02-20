@@ -17,7 +17,10 @@
 #define PCI_CONFIG_ADDRESS 0xCF8
 #define PCI_CONFIG_DATA 0xCFC
 
-#define PCI_COMMAND_REGISTER 0x1
+//REMEMBER!
+//These offsets are not register numbers, but byte offsets in whole PCI configuration space.
+//If Command register is indeed 0x1 register then it's byte offset will be 0x4 according to PCI Specification.
+#define PCI_COMMAND_REGISTER 0x4
 #define PCI_COMMAND_BUSMASTER_FLAG (1 << 2)
 
 /**

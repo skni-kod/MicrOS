@@ -19,14 +19,14 @@ void pci_init()
 
 void pci_get_device_info(pci_cmd_address_reg *data, pci_device *dev)
 {
-    for (int i = 0; i <= 0x4; i++)
+    for (int i = 0; i < 0x4; i++)
     {
         data->register_num = i;
         io_out_long(PCI_CONFIG_ADDRESS, data->bits);
         (*dev).config.dwords[i] = io_in_long(PCI_CONFIG_DATA);
     }
     //read changing part (Devices implement 256 byte space, but bridges do not)
-    for (int i = 0; i <= (dev->config.header_type == 0 ? 0x3C : 0xC); i++)
+    for (int i = 4; i < 4 + (dev->config.header_type == 0 ? 0x3C : 0xC); i++)
     {
         data->register_num = i;
         io_out_long(PCI_CONFIG_ADDRESS, data->bits);
@@ -125,15 +125,22 @@ void pci_check_all_buses()
     }
 }
 
-void pci_config_out_byte(pci_device *dev, uint8_t offset, uint8_t value)
+static inline pci_cmd_address_reg pci_setup_cmd_address_reg(pci_device* dev, uint8_t offset)
 {
     pci_cmd_address_reg regData;
-    regData.enable = 1;
-    regData.bus_num = dev->bus_id;
-    regData.device_num = dev->dev_id;
+    regData.always_zero = 0;
     regData.register_num = (offset >> 2) & 0x3F;
-    regData.reserved = 0;
+    regData.device_num = dev->dev_id;
+    regData.bus_num = dev->bus_id;
     regData.function_num = dev->func_id;
+    regData.reserved = 0;
+    regData.enable = 1;
+    return regData;
+}
+
+void pci_config_out_byte(pci_device *dev, uint8_t offset, uint8_t value)
+{
+    pci_cmd_address_reg regData = pci_setup_cmd_address_reg(dev, offset);
     *(dev->config.bytes + offset) = value;
     io_out_long(PCI_CONFIG_ADDRESS, regData.bits);
     io_out_long(PCI_CONFIG_DATA, dev->config.dwords[regData.register_num]);
@@ -141,13 +148,7 @@ void pci_config_out_byte(pci_device *dev, uint8_t offset, uint8_t value)
 
 void pci_config_out_word(pci_device *dev, uint8_t offset, uint16_t value)
 {
-    pci_cmd_address_reg regData;
-    regData.enable = 1;
-    regData.bus_num = dev->bus_id;
-    regData.device_num = dev->dev_id;
-    regData.register_num = (offset >> 2) & 0x3F;
-    regData.reserved = 0;
-    regData.function_num = dev->func_id;
+    pci_cmd_address_reg regData = pci_setup_cmd_address_reg(dev, offset);
     *((uint16_t*)(dev->config.bytes + offset)) = value;
     io_out_long(PCI_CONFIG_ADDRESS, regData.bits);
     io_out_long(PCI_CONFIG_DATA, dev->config.dwords[regData.register_num]);
@@ -155,56 +156,28 @@ void pci_config_out_word(pci_device *dev, uint8_t offset, uint16_t value)
 
 void pci_config_out_dword(pci_device *dev, uint8_t offset, uint32_t value)
 {
-    pci_cmd_address_reg regData;
-    regData.enable = 1;
-    regData.bus_num = dev->bus_id;
-    regData.device_num = dev->dev_id;
-    regData.register_num = (offset >> 2) & 0x3F;
-    regData.reserved = 0;
-    regData.function_num = dev->func_id;
-    dev->config.dwords[regData.register_num] = value;
+    pci_cmd_address_reg regData = pci_setup_cmd_address_reg(dev, offset);
     io_out_long(PCI_CONFIG_ADDRESS, regData.bits);
     io_out_long(PCI_CONFIG_DATA, dev->config.dwords[regData.register_num]);
 }
 
 uint8_t pci_config_in_byte(pci_device *dev, uint8_t offset)
 {
-    pci_cmd_address_reg regData;
-    regData.enable = 1;
-    regData.always_zero = 0;
-    regData.bus_num = dev->bus_id;
-    regData.device_num = dev->dev_id;
-    regData.register_num = (offset >> 2) & 0x3F;
-    regData.reserved = 0;
-    regData.function_num = dev->func_id;
+    pci_cmd_address_reg regData = pci_setup_cmd_address_reg(dev, offset);
     io_out_long(PCI_CONFIG_ADDRESS, regData.bits);
     return (uint8_t)((io_in_long(PCI_CONFIG_DATA) >> ((offset & 3) * 8)) & 0xFF);
 }
 
 uint16_t pci_config_in_word(pci_device *dev, uint8_t offset)
 {
-    pci_cmd_address_reg regData;
-    regData.enable = 1;
-    regData.always_zero = 0;
-    regData.bus_num = dev->bus_id;
-    regData.device_num = dev->dev_id;
-    regData.register_num = (offset >> 2) & 0x3F;
-    regData.reserved = 0;
-    regData.function_num = dev->func_id;
+    pci_cmd_address_reg regData = pci_setup_cmd_address_reg(dev, offset);  
     io_out_long(PCI_CONFIG_ADDRESS, regData.bits);
     return (uint16_t)((io_in_long(PCI_CONFIG_DATA) >> ((offset & 2) * 8)) & 0xFFFF);
 }
 
 uint32_t pci_config_in_dword(pci_device *dev, uint8_t offset)
 {
-    pci_cmd_address_reg regData;
-    regData.enable = 1;
-    regData.always_zero = 0;
-    regData.bus_num = dev->bus_id;
-    regData.device_num = dev->dev_id;
-    regData.register_num = (offset >> 2) & 0x3F;
-    regData.reserved = 0;
-    regData.function_num = dev->func_id;
+    pci_cmd_address_reg regData = pci_setup_cmd_address_reg(dev, offset);
     io_out_long(PCI_CONFIG_ADDRESS, regData.bits);
     return io_in_long(PCI_CONFIG_DATA);
 }

@@ -49,7 +49,7 @@ typedef union pci_config
             uint8_t bytes[192];
             uint16_t words[96];
             uint32_t dwords[48];
-        };
+        } device_dependent;
     };
 } __attribute__((packed)) pci_config;
 
