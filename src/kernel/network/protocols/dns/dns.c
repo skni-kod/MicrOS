@@ -77,7 +77,7 @@ ipv4_addr_t dns_lookup(const char *domain)
     struct sockaddr_in server_addr = {
         .sin_family = AF_INET,
         .sin_port = htons(DNS),
-        .sin_addr = network_manager_get_nic()->interface->ipv4_dns};
+        .sin_addr = network_manager_get_nic()->interface.ipv4_dns};
     // ;
     socklen_t server_addr_len = sizeof(struct sockaddr_in);
 

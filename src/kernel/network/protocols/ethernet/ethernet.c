@@ -17,7 +17,7 @@ nic_data_t *ethernet_create_frame(net_device_t *device, uint16_t type, uint32_t 
 {
     nic_data_t *data = network_manager_get_transmitt_buffer(device);
     data->length = data_size + sizeof(ethernet_frame_t);
-    memcpy(&((ethernet_frame_t *)(data->frame))->src, &device->interface->mac, sizeof(mac_addr_t));
+    memcpy(&((ethernet_frame_t *)(data->frame))->src, &device->interface.mac, sizeof(mac_addr_t));
     ((ethernet_frame_t *)(data->frame))->type = htons(type);
     data->device = device;
     return data;
@@ -31,13 +31,13 @@ uint32_t ethernet_send_frame(nic_data_t *data)
     {
         ipv4_packet_t *packet = data->frame + sizeof(ethernet_frame_t);
         ipv4_addr_t net_addr = (ipv4_addr_t){.value =
-                                                 data->device->interface->ipv4_address.value & data->device->interface->ipv4_netmask.value};
+                                                 data->device->interface.ipv4_address.value & data->device->interface.ipv4_netmask.value};
         ipv4_addr_t dst_net = (ipv4_addr_t){.value =
-                                                dst_net.value = packet->dst.value & data->device->interface->ipv4_netmask.value};
+                                                dst_net.value = packet->dst.value & data->device->interface.ipv4_netmask.value};
         arp_entry_t *mac;
 
         if (dst_net.value != net_addr.value)
-            mac = arp_request_entry(data->device, &data->device->interface->ipv4_gateway);
+            mac = arp_request_entry(data->device, &data->device->interface.ipv4_gateway);
         else
             mac = arp_request_entry(data->device, &packet->dst);
 

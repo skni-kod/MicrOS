@@ -93,11 +93,11 @@ nic_data_t *ipv4_create_packet(net_device_t *device, uint8_t protocol, ipv4_addr
     packet->tos = 0;
     packet->flags_offset = 0;
     packet->df = 1;
-    packet->ttl = device->interface->ttl;
+    packet->ttl = device->interface.ttl;
     packet->protocol = protocol;
     packet->length = htons((sizeof(ipv4_packet_t) + options_length) + data_size);
     packet->id = htons(id++);
-    packet->src = device->interface->ipv4_address;
+    packet->src = device->interface.ipv4_address;
     packet->dst = dst;
 
     return data;

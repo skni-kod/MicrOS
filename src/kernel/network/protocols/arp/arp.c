@@ -30,11 +30,20 @@ uint32_t arp_process_packet(nic_data_t *data)
     // arp_packet_t *packet = (arp_packet_t *)(data->frame + sizeof(ethernet_frame_t));
     arp_packet_t *packet = ((ethernet_frame_t *)data->frame)->data;
 
+    char tmp[64];
+    kernel_sprintf(tmp, "IP SRC: %d.%d.%d.%d",
+                   packet->src_pr.oct_a,
+                   packet->src_pr.oct_b,
+                   packet->src_pr.oct_c,
+                   packet->src_pr.oct_d);
+
+    logger_log_ok(tmp);
+
     switch (packet->opcode)
     {
     case htons(ARP_OPCODE_REQUEST):
         // Handle ARP request
-        if (packet->dst_pr.value == data->device->interface->ipv4_address.value)
+        if (packet->dst_pr.value == data->device->interface.ipv4_address.value)
         {
             arp_add_entry(data->device, &packet->src_hw, &packet->src_pr, ARP_ENTRY_TYPE_DYNAMIC);
 
@@ -47,7 +56,7 @@ uint32_t arp_process_packet(nic_data_t *data)
             arp_packet_t *response = (arp_packet_t *)(frame->data);
             memcpy(response, &arp_packet_base, sizeof(arp_packet_t));
 
-            memcpy(&response->src_hw, &data->device->interface->mac, sizeof(mac_addr_t));
+            memcpy(&response->src_hw, &data->device->interface.mac, sizeof(mac_addr_t));
             memcpy(&response->src_pr, &packet->dst_pr, sizeof(ipv4_addr_t));
 
             memcpy(&response->dst_hw, &packet->src_hw, sizeof(mac_addr_t));
@@ -82,19 +91,19 @@ void arp_add_entry(net_device_t *device, mac_addr_t *mac, ipv4_addr_t *ip, arp_e
     memcpy(&entry->mac, mac, sizeof(mac_addr_t));
     memcpy(&entry->ip, ip, sizeof(ipv4_addr_t));
 
-    kvector_add(device->interface->arp_entries, entry);
+    kvector_add(device->interface.arp_entries, entry);
 }
 
 arp_entry_t *arp_get_entry(net_device_t *device, ipv4_addr_t *ip)
 {
-    if (!ip || !device->interface->arp_entries->count)
+    if (!ip || !device->interface.arp_entries->count)
         return 0;
 
     arp_entry_t *entry;
 
-    for (uint32_t i = 0; i < device->interface->arp_entries->count; i++)
+    for (uint32_t i = 0; i < device->interface.arp_entries->count; i++)
     {
-        entry = ((arp_entry_t *)device->interface->arp_entries->data[i]);
+        entry = ((arp_entry_t *)device->interface.arp_entries->data[i]);
         if (ip->value == entry->ip.value)
             return entry;
     }
@@ -160,10 +169,10 @@ void arp_send_request(net_device_t *device, ipv4_addr_t *ip)
         request->hardware_length = sizeof(mac_addr_t);
         request->protocol_length = sizeof(ipv4_addr_t);
 
-        memcpy(&request->src_hw, &device->interface->mac, sizeof(mac_addr_t));
+        memcpy(&request->src_hw, &device->interface.mac, sizeof(mac_addr_t));
         memcpy(&request->dst_pr, ip, sizeof(ipv4_addr_t));
 
-        memcpy(&request->src_pr, &device->interface->ipv4_address, sizeof(ipv4_addr_t));
+        memcpy(&request->src_pr, &device->interface.ipv4_address, sizeof(ipv4_addr_t));
 
         request->dst_hw = (mac_addr_t){.octet_a = 0,
                                        .octet_b = 0,

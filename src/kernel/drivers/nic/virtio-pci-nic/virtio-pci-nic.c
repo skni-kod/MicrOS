@@ -15,17 +15,17 @@ virtq *transmit_queue;
 bool virtio_nic_init(net_device_t *net_dev)
 {
     // Prevent for re-init
-    if (pci_virtio_nic_device.vendor_id != 0)
+    if (pci_virtio_nic_device.config.vendor_id != 0)
         return false;
 
     for (uint8_t i = 0; i < pci_get_number_of_devices(); i++)
     {
         pci_device *dev = pci_get_device(i);
 
-        if (dev->vendor_id == VIRTIO_NET_DEVICE_VENDOR_ID &&
-            dev->device_id >= VIRTIO_NET_DEVICE_ID_BEGIN &&
-            dev->device_id <= VIRTIO_NET_DEVICE_ID_END &&
-            dev->subsystem_id == VIRTIO_NET_DEVICE_SUBSYSTEM_ID)
+        if (dev->config.vendor_id == VIRTIO_NET_DEVICE_VENDOR_ID &&
+            dev->config.device_id >= VIRTIO_NET_DEVICE_ID_BEGIN &&
+            dev->config.device_id <= VIRTIO_NET_DEVICE_ID_END &&
+            dev->config.subsystem_id == VIRTIO_NET_DEVICE_SUBSYSTEM_ID)
         {
             pci_virtio_nic_device = *dev;
             goto device_found;
@@ -35,17 +35,17 @@ bool virtio_nic_init(net_device_t *net_dev)
 
 device_found:
     // Device not present in PCI bus
-    if (pci_virtio_nic_device.vendor_id == 0)
+    if (pci_virtio_nic_device.config.vendor_id == 0)
         return false;
 
     // Get device configuration address
-    virtio_nic.bar_type = pci_virtio_nic_device.base_addres_0 & (0x1);
+    virtio_nic.bar_type = pci_virtio_nic_device.config.base_addres_0 & (0x1);
 
     if (!virtio_nic.bar_type)
         // Driver can only configure device via IO ports.
         return false;
 
-    virtio_nic.io_base = pci_virtio_nic_device.base_addres_0 & (~0x3);
+    virtio_nic.io_base = pci_virtio_nic_device.config.base_addres_0 & (~0x3);
 
     // Reset the virtio-network device
     virtio_nic_reg_write(REG_DEVICE_STATUS, STATUS_RESET_DEVICE);
@@ -90,9 +90,9 @@ device_found:
     for (uint8_t i = 0; i < 6; i++)
         virtio_nic.mac_addr[i] = io_in_byte(virtio_nic.io_base + 0x14 + i);
 
-    net_dev->device_name = heap_kernel_alloc((uint32_t)strlen(VIRTIO_NET_DEVICE_NAME) + 1, 0);
-    strcpy(net_dev->device_name, VIRTIO_NET_DEVICE_NAME);
-    memcpy(&net_dev->interface->mac, virtio_nic.mac_addr, sizeof(mac_addr_t));
+    net_dev->interface.name = heap_kernel_alloc((uint32_t)strlen(VIRTIO_NET_DEVICE_NAME) + 1, 0);
+    strcpy(net_dev->interface.name, VIRTIO_NET_DEVICE_NAME);
+    memcpy(&net_dev->interface.mac, virtio_nic.mac_addr, sizeof(mac_addr_t));
     net_dev->dpi.send = &virtio_nic_send;
     virtio_nic_net_device = net_dev;
 
@@ -101,7 +101,7 @@ device_found:
     virtio_nic_reg_write(REG_QUEUE_NOTIFY, VIRTIO_NET_RECEIVE_QUEUE_INDEX);
 
     // Enable IRQ
-    uint32_t irq_num = pci_virtio_nic_device.interrupt_line;
+    uint32_t irq_num = pci_virtio_nic_device.config.interrupt_line;
     idt_attach_interrupt_handler(irq_num, virtio_nic_irq_handler);
     pic_enable_irq(irq_num);
 
@@ -136,7 +136,7 @@ bool virtio_nic_irq_handler()
 
         // Receive packet
         if (receive_queue->device_area->index != receive_queue->last_device_index &&
-            virtio_nic_net_device->interface->mode.receive)
+            virtio_nic_net_device->interface.mode.receive)
             virtio_nic_receive();
     }
 

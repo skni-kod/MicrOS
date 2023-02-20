@@ -4,293 +4,326 @@
     Last modified: 17.03.2022
 */
 #include "rtl8139.h"
-#include "rtl8139_hw_regs.h"
+#include <inet/inet.h>
 
-static pci_device pci_rtl8139_device;
-static rtl8139_dev_t rtl8139_device;
-static net_device_t *rtl8139_net_device;
+// static uint32_t current_packet_ptr = 0;
 
-static char device_name[] = RTL8139_DEVICE_NAME;
+/*
+RTL8139     110000
+RTL8139A    111000
+RTL8139A-G  111001
+RTL8139B    111100
+RTL8130     111110
+RTL8139C    111010
+RTL8139C+   111011
+ */
+static const rtl8139_hw_ver_t const rtl8139_hw_versions[] = {
+    (rtl8139_hw_ver_t){.value = 0b110000, .string = "RTL8139"},
+    (rtl8139_hw_ver_t){.value = 0b111000, .string = "RTL8139A"},
+    (rtl8139_hw_ver_t){.value = 0b111001, .string = "RTL8139A-G"},
+    (rtl8139_hw_ver_t){.value = 0b111100, .string = "RTL8139B"},
+    (rtl8139_hw_ver_t){.value = 0b111110, .string = "RTL8130"},
+    (rtl8139_hw_ver_t){.value = 0b111010, .string = "RTL8139C"},
+    (rtl8139_hw_ver_t){.value = 0b111011, .string = "RTL8139C+"},
+    (rtl8139_hw_ver_t){.value = 0b111111, .string = "RTL NONAME"}};
 
-// FIXME: add this to macro
-uint32_t TX_MAX_DESC = 4;
-uint32_t R8139DN_TX_DESC_SIZE = 1792;
+static uint8_t devices_count = 0;
+static rtl8139_dev_t *devices;
 
-uint8_t rx_data[10 * 1600];
+static const uint8_t const TSAD_array[] = {0x20, 0x24, 0x28, 0x2C};
+static const uint8_t const TSD_array[] = {0x10, 0x14, 0x18, 0x1C};
 
-int rtl8139_reset(rtl8139_dev_t *dev)
+bool rtl8139_probe(net_device_t *(*get_net_device)())
 {
-    int i = 1000;
-
-    // Ask the chip to reset
-    rtl_write_byte(CR, CR_RST);
-
-    // Wait until the reset is complete or timeout
-    // The chip notify us by clearing the bit
-    while (--i)
-    {
-        if (!(rtl_read_byte(CR) & CR_RST))
-        {
-            // Reset is complete!
-            break;
-        }
-        timer_sleep(1);
-    }
-
-    if (!i)
-        return -1;
-
-    // Resetting the chip also resets hardware TX pointer to TSAD0
-    // So we need to keep track of this, and we also reset our own position
-    dev->rx->cur = 0;
-    dev->tx->cur = 0;
-
-    return 0;
-}
-
-void rtl8139_setup_tx(rtl8139_dev_t *dev)
-{
-    int i;
-    uint8_t cr = rtl_read_byte(CR);
-
-    // Turn the transmitter on
-    rtl_write_byte(CR, cr | CR_TE);
-
-    // Set up the TX settings
-    rtl_write_long(TCR, dev->tx_config);
-
-    // We want 8 + (3 x 32) bytes = 104 bytes of early TX threshold
-    // It means we put data on the wire only once FIFO has reached this threshold
-    dev->tx_flags = (3 << TSD_ERTXTH_SHIFT);
-
-    // Inform the hardware about the DMA location of the TX descriptors
-    // That way, later it can read the frames we want to send
-    for (i = 0; i < TX_MAX_DESC; ++i)
-        rtl_write_long(TSAD0 + i * TSAD_GAP, dev->tx->dma_address + i * R8139DN_TX_DESC_SIZE);
-}
-
-void rtl8139_setup_rx(rtl8139_dev_t *dev)
-{
-    uint8_t cr = rtl_read_byte(CR);
-
-    // Disable Multiple Interrupt (we're going to disable early RX mode in RCR)
-    rtl_write_word(MULINT, 0);
-
-    // Tell the hardware where to DMA (location of the RX buffer)
-    // We do this before enabling RX to avoid the NIC starting DMA before it knows the address
-//    rtl_write_long(RBSTART, dev->rx->dma_address);
-    rtl_write_long(RBSTART, ((uint32_t)&rx_data - DMA_ADDRESS_OFFSET));
-
-
-    // Turn the receiver on
-    rtl_write_byte(CR, cr | CR_RE);
-
-    // Set up the RX settings
-    // We want to receive broadcast frames as well as frames for our own MAC
-    rtl_write_long(RCR,  RCR_MXDMA_1024 | RCR_AAP | RCR_AM | RCR_APM | RCR_AB | RCR_RBLEN_16K | RCR_WRAP);
-}
-
-void rtl8139_disable_transceiver(rtl8139_dev_t *dev)
-{
-    rtl_write_byte(CR, 0);
-}
-
-// Ask the device to enable interrupts
-void rtl8139_enable_irq(rtl8139_dev_t *dev)
-{
-    rtl_write_word(IMR, dev->interrupt);
-}
-
-// Ask the device to disable interrupts
-void rtl8139_disable_irq(rtl8139_dev_t *dev)
-{
-    rtl_write_word(IMR, 0);
-}
-
-buffer_t *rtl8139_init_buffer(uint32_t size)
-{
-    buffer_t *buffer = heap_kernel_alloc(size + sizeof(buffer_t), 4);
-    buffer->cur = 0;
-    buffer->size = size;
-    buffer->dma_address = buffer->data - DMA_ADDRESS_OFFSET;
-    return buffer;
-}
-
-bool rtl8139_init(net_device_t *net_dev)
-{
-    // Prevent for re-init
-    if (pci_rtl8139_device.vendor_id != 0)
-        return false;
-
     // First get the network device using PCI
-    // PCI must be initialized!
-
-    for (int i = 0; i < pci_get_number_of_devices(); i++)
+    for (uint8_t i = 0; i < pci_get_number_of_devices(); i++)
     {
-        pci_device *dev = pci_get_device(i);
-        if (dev->vendor_id == RTL8139_DEVICE_VENDOR_ID)
+        pci_device *pci_dev = pci_get_device(i);
+        if (pci_dev->config.vendor_id == RTL8139_VENDOR_ID)
         {
-            if (dev->device_id == RTL8139_DEVICE_ID ||
-                dev->device_id == RTL8139_DEVICE_ID_2 ||
-                dev->device_id == RTL8139_DEVICE_ID_SECONDARY)
+            switch (pci_dev->config.device_id)
             {
-                pci_rtl8139_device = *dev;
-                goto device_found;
+            case 0x8139:
+                break;
+            };
+
+            // Here we have to init all NICs
+            devices = heap_kernel_realloc(devices, sizeof(rtl8139_dev_t) * ++devices_count, 0);
+            rtl8139_dev_t *dev = &devices[devices_count - 1];
+            memset(dev, 0x0, sizeof(rtl8139_dev_t));
+
+            dev->pci = pci_dev;
+            dev->net_dev = get_net_device();
+            dev->net_dev->priv = dev;
+
+            // Now setup registers, and memory
+            dev->io_type = dev->pci->config.base_addres_0 & (0x1);
+            switch (dev->io_type)
+            {
+            case IO:
+                dev->io_base = dev->pci->config.base_addres_0 & (~0x3);
+                break;
+            case MMAP:
+                dev->mem_base = dev->pci->config.base_addres_0 & (~0xf);
+                break;
             }
+
+            // Bus mastering
+            pci_busmaster_set(dev->pci, true);
+
+            // Enable IRQ
+            dev->irq_vector = dev->pci->config.interrupt_line;
+            idt_attach_interrupt_handler(dev->irq_vector, rtl8139_irq_handler);
+            pic_enable_irq(dev->irq_vector);
+
+            // Setup net device
+            rtl8139_read_mac(dev);
+            dev->net_dev->interface.name = rtl8139_get_name(dev);
+            dev->net_dev->dpi.send = &rtl8139_send;
+            dev->rx = rtl8139_init_buffer(1520 * 9);
+            dev->tsad = 0;
+
+            // Software reset
+            rtl8139_write_byte(dev, CHIPCMD, 0x10);
+            while ((rtl8139_read_byte(dev, CHIPCMD) & 0x10))
+                ;
+
+            rtl8139_write_long(dev, RXBUF, dev->rx->dma_address);
+
+            rtl8139_write_long(dev, RXCONFIG, 0xF | (1 << 7));
+
+            rtl8139_write_word(dev, MULTIINTR, 0x0);
+            rtl8139_write_word(dev, INTRMASK, (rtl8139_imr_t){
+                                                  .TOK = 1,
+                                                  .ROK = 1,
+                                              }
+                                                  .value);
+
+            rtl8139_write_byte(dev, CHIPCMD, 0x0C);
+
+            // nic_data_t *data = heap_kernel_alloc(512, 0);
+            // ethernet_frame_t *frame = &data->frame;
+            // data->device = dev->net_dev;
+            // data->length = 64;
+            // memcpy(&frame->src.addr, &dev->net_dev->interface.mac, sizeof(mac_addr_t));
+            // frame->type = htons(0x0800);
+            // frame->dst.octet_a = 0xFF;
+            // frame->dst.octet_b = 0xFF;
+            // frame->dst.octet_c = 0xFF;
+            // frame->dst.octet_d = 0xFF;
+            // frame->dst.octet_e = 0xFF;
+            // frame->dst.octet_f = 0xFF;
+
+            // memcpy(&frame->data, "HelloWorld!", sizeof("HelloWorld") + 1);
+
+            // rtl8139_send(data);
         }
+    }
+    if (devices_count)
+        return true;
+    return false;
+}
+
+bool rtl8139_irq_handler(void)
+{
+    // Get status of device
+    for (uint32_t dev_id = 0; dev_id < devices_count; dev_id++)
+    {
+        rtl8139_dev_t *dev = &devices[dev_id];
+        rtl8139_isr_t status = (rtl8139_isr_t)rtl8139_read_word(dev, INTRSTATUS);
+
+        if (!status.value)
+            continue;
+        rtl8139_write_word(dev, INTRSTATUS, status.value);
+
+        if (status.TOK)
+        {
+            ;
+        }
+
+        if (status.ROK)
+        {
+            rtl8139_receive(dev);
+        }
+
+        return true;
     }
 
     return false;
-
-device_found:
-    // Now setup registers, and memory
-    rtl8139_device.bar_type = pci_rtl8139_device.base_addres_0 & (0x1);
-    rtl8139_device.io_base = pci_rtl8139_device.base_addres_0 & (~0x3);
-    rtl8139_device.mem_base = pci_rtl8139_device.base_addres_0 & (~0xf);
-
-    // PCI bus mastering
-    pci_busmaster_set(&pci_rtl8139_device, true);
-
-    rtl8139_read_mac();
-    net_dev->device_name = device_name;
-    memcpy(&net_dev->interface->mac, &rtl8139_device.mac, sizeof(mac_addr_t));
-    net_dev->dpi.send = &rtl8139_send;
-    rtl8139_net_device = net_dev;
-    rtl8139_device.rx = rtl8139_init_buffer(1024 * 1024);
-    rtl8139_device.tx = rtl8139_init_buffer(1024 * 1024);
-
-    // Enable IRQ
-    rtl8139_device.interrupt_vector = pci_rtl8139_device.interrupt_line;
-    idt_attach_interrupt_handler(rtl8139_device.interrupt_vector, rtl8139_irq_handler);
-    pic_enable_irq(rtl8139_device.interrupt_vector);
-
-    // Power on device
-    rtl_write_byte(CONFIG1, 0x0);
-
-    rtl8139_reset(&rtl8139_device);
-
-    rtl8139_device.interrupt = INT_TX | INT_RX;
-    rtl8139_device.tx_config = TCR_IFG_DEFAULT | TCR_MXDMA_1024 | TCR_LBK_DISABLE;
-
-    rtl8139_setup_tx(&rtl8139_device);
-    rtl8139_setup_rx(&rtl8139_device);
-
-    rtl8139_enable_irq(&rtl8139_device);
-
-    return true;
 }
 
-bool rtl8139_irq_handler()
+uint32_t rtl8139_receive(rtl8139_dev_t *dev)
 {
-    bool rv = 0;
-    rtl8139_disable_irq(&rtl8139_device);
-
-    // Get status of device
-    uint16_t isr = rtl_read_word(ISR);
-
-    rtl_write_word(ISR, isr);
-
-    if (isr & INT_RX)
-        rtl8139_receive();
-
-out:
-    rtl8139_enable_irq(&rtl8139_device);
-    return rv;
-}
-
-void rtl8139_read_mac()
-{
-    for (uint8_t i = 0; i < 6; i++)
-        rtl8139_device.mac.addr[i] = io_in_byte(rtl8139_device.io_base + i);
-}
-
-void rtl8139_get_mac(uint8_t *buffer)
-{
-    if (!buffer)
-        return;
-
-    memcpy(buffer, rtl8139_device.mac.addr, sizeof(mac_addr_t));
-}
-
-uint32_t rtl8139_receive()
-{
-    uint32_t *data_ptr = (uint32_t *)(rx_data + rtl8139_device.rx->cur);
+    uint32_t *data_ptr = (uint32_t *)(dev->rx->data + dev->rx->pointer);
 
     // Get incoming data length by skipping packet header - 16 LSB bits of header
-    uint16_t size = *data_ptr >> 16;
+    int16_t size = *data_ptr >> 16;
 
-    char tmp[32];
-    kernel_sprintf(tmp, "S: %d", size);
-    logger_log_info(tmp);
+    // char tmp[64];
 
-    // Copy received data to buffer, data is right after the header with length
-    nic_data_t *out = rtl8139_net_device->dpi.get_receive_buffer(rtl8139_net_device);
-    /*
-        7 - dword alignment
-        RX_READ_POINTER_MASK - avoid overflow
-    */
-    rtl8139_device.rx->cur = (rtl8139_device.rx->cur + size + 7) & (~3);
-    rtl8139_device.rx->cur %= RTL8139_RX_BUFFER_BASE;
+    // kernel_sprintf(tmp, "%d bytes on: %02x:%02x:%02x:%02x:%02x:%02x",
+    //                 size,
+    //                 dev->net_dev->interface.mac.octet_a,
+    //                 dev->net_dev->interface.mac.octet_b,
+    //                 dev->net_dev->interface.mac.octet_c,
+    //                 dev->net_dev->interface.mac.octet_d,
+    //                 dev->net_dev->interface.mac.octet_e,
+    //                 dev->net_dev->interface.mac.octet_f);
+    // logger_log_info(tmp);
 
-    rtl_write_word(CAPR, rtl8139_device.rx->cur);
+    nic_data_t *out = dev->net_dev->dpi.get_receive_buffer(dev->net_dev);
+    memcpy((void *)out->frame, &data_ptr[1], size);
+
+    dev->rx->pointer = (dev->rx->pointer + size + 8);
+    dev->rx->pointer %= 8 * 1520;
+
+    rtl8139_write_word(dev, 0x38, dev->rx->pointer - 0x10);
 
     // Notify network manager about incoming data
-    (*rtl8139_net_device->dpi.receive)(out);
+    (*dev->net_dev->dpi.receive)(out);
 }
 
 uint32_t rtl8139_send(nic_data_t *data)
 {
+    rtl8139_dev_t *dev = data->device->priv;
 
-    // uint32_t phys_addr = GET_PHYSICAL_ADDRESS(data->frame);
+    rtl8139_write_long(dev, TSAD_array[dev->tsad], GET_PHYSICAL_ADDRESS(&data->frame));
+    rtl8139_write_long(dev, TSD_array[dev->tsad], (rtl8139_tsd_t){.SIZE = data->length, .OWN = 0}.value);
 
-    // io_out_long(rtl8139_device.io_base + TSAD[rtl8139_device.tx_cur], phys_addr);
-
-    // uint32_t status = 0;
-    // status |= data->length & 0x1FFF; // 0-12: Length
-    // status |= 0 << 13;               // 13: OWN bit
-
-    // io_out_long(rtl8139_device.io_base + TSD[rtl8139_device.tx_cur], status);
+    // char tmp[128];
 
     // while (1)
     // {
-    //     // Wait for TOK flag
-    //     if (io_in_long(rtl8139_device.io_base + TSD[rtl8139_device.tx_cur]) & TX_TOK)
+    //     tsd.value = rtl8139_read_long(dev, TSD_array[dev->tsad]);
+
+    //     kernel_sprintf(tmp, "SIZE: %d\nOWN:%d\nTUN:%d\nTOK:%d\nERTX:%d\nNCC:%d\nCDH:%d\nOWC:%d\nTABT:%d\nCRS:%d",
+    //                    tsd.SIZE,
+    //                    tsd.OWN,
+    //                    tsd.TUN,
+    //                    tsd.TOK,
+    //                    tsd.ERTXTH,
+    //                    tsd.NCC,
+    //                    tsd.CDH,
+    //                    tsd.OWC,
+    //                    tsd.TABT,
+    //                    tsd.CRS);
+    //     logger_log_info(tmp);
+    //     sleep(1000);
+    //     if (tsd.TOK)
     //         break;
     // }
 
-    // // Switch buffer
-    // rtl8139_device.tx_cur = (rtl8139_device.tx_cur + 1) % 4;
+    // Switch buffer
+    dev->tsad = (dev->tsad + 1) % 4;
 }
 
-void rtl_write_byte(uint32_t address, uint8_t value)
+void rtl8139_read_mac(rtl8139_dev_t *device)
 {
-    io_out_byte(rtl8139_device.io_base + address, value);
-    return 0;
+    for (uint8_t octet = 0; octet < sizeof(mac_addr_t); octet++)
+        device->net_dev->interface.mac.addr[octet] = rtl8139_read_byte(device, IDR0 + octet);
 }
 
-uint8_t rtl_read_byte(uint32_t address)
+const char *rtl8139_get_name(rtl8139_dev_t *device)
 {
-    return io_in_byte(rtl8139_device.io_base + address);
+    rtl8139_txcfg_t cfg = (rtl8139_txcfg_t)rtl8139_read_long(device, TXCONFIG);
+    rtl8139_hw_ver_t hw_ver = (rtl8139_hw_ver_t){.hw_ver_a = cfg.HWVERID_A, .hw_ver_b = cfg.HWVERID_B};
+    uint8_t hw;
+
+    for (hw = 0; hw < sizeof(rtl8139_hw_versions) / sizeof(rtl8139_hw_ver_t); hw++)
+    {
+        if (rtl8139_hw_versions[hw].value == hw_ver.value)
+            return rtl8139_hw_versions[hw].string;
+    }
+
+    return rtl8139_hw_versions[hw].string;
 }
 
-void rtl_write_word(uint32_t address, uint16_t value)
+void rtl8139_write_byte(rtl8139_dev_t *device, uint32_t address, uint8_t value)
 {
-    io_out_word(rtl8139_device.io_base + address, value);
-    return 0;
+    switch (device->io_type)
+    {
+    case IO:
+        io_out_byte(device->io_base + address, value);
+        break;
+    case MMAP:
+        // TODO:
+        break;
+    }
 }
 
-uint16_t rtl_read_word(uint32_t address)
+uint8_t rtl8139_read_byte(rtl8139_dev_t *device, uint32_t address)
 {
-    return io_in_word(rtl8139_device.io_base + address);
+    switch (device->io_type)
+    {
+    case IO:
+        return io_in_byte(device->io_base + address);
+    case MMAP:
+        // TODO:
+        break;
+    }
 }
 
-void rtl_write_long(uint32_t address, uint32_t value)
+void rtl8139_write_word(rtl8139_dev_t *device, uint32_t address, uint16_t value)
 {
-    io_out_long(rtl8139_device.io_base + address, value);
-    return 0;
+    switch (device->io_type)
+    {
+    case IO:
+        io_out_word(device->io_base + address, value);
+        break;
+    case MMAP:
+        // TODO:
+        break;
+    }
 }
 
-uint32_t rtl_read_long(uint32_t address)
+uint16_t rtl8139_read_word(rtl8139_dev_t *device, uint32_t address)
 {
-    return io_in_byte(rtl8139_device.io_base + address);
+    switch (device->io_type)
+    {
+    case IO:
+        return io_in_word(device->io_base + address);
+    case MMAP:
+        // TODO:
+        break;
+    }
+}
+
+void rtl8139_write_long(rtl8139_dev_t *device, uint32_t address, uint32_t value)
+{
+    switch (device->io_type)
+    {
+    case IO:
+        io_out_long(device->io_base + address, value);
+        break;
+    case MMAP:
+        // TODO:
+        break;
+    }
+}
+
+uint32_t rtl8139_read_long(rtl8139_dev_t *device, uint32_t address)
+{
+    switch (device->io_type)
+    {
+    case IO:
+        return io_in_long(device->io_base + address);
+    case MMAP:
+        // TODO:
+        break;
+    }
+}
+
+rtl8139_buffer_t *rtl8139_init_buffer(uint32_t size)
+{
+    rtl8139_buffer_t *buffer = 0;
+    buffer = heap_kernel_alloc(sizeof(rtl8139_buffer_t) + size, 0);
+    if (buffer)
+    {
+        buffer->size = size;
+        buffer->pointer = 0;
+        buffer->dma_address = (uint32_t)buffer->data - (uint32_t)DMA_ADDRESS_OFFSET;
+        return buffer;
+    }
+    else
+        return 0;
 }

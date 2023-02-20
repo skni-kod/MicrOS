@@ -5,7 +5,7 @@ QEMU_ARCH	 			= $(ARCH)
 GCC_OPTIMIZATION		= O1
 C_STANDARD				= c11
 QEMU_MEMORY				= 512M
-QEMU_NET_DEVICE			= virtio
+QEMU_NET_DEVICE			= rtl8139
 
 # tools remote repo
 TOOLS_REPO				= https://kod.prz.edu.pl/repository/micros_devtools_linux

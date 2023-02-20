@@ -7,13 +7,14 @@
 
 #define NETWORK_MANAGER_BUFFER_SIZE 64
 
-// TODO: This sould not be here:
 #include <drivers/nic/rtl8139/rtl8139.h>
 #include <drivers/nic/virtio-pci-nic/virtio-pci-nic.h>
 #include <logger/logger.h>
 #include <micros/network_device.h>
 #include <klibrary/kvector.h>
 #include "network_utils.h"
+
+typedef bool (*nic_driver_init)(net_device_t*);
 
 //! network_manager_init
 /*
@@ -38,6 +39,12 @@ void network_manager_receive_data(nic_data_t *data);
     Process incoming data
 */
 void network_manager_process_data(nic_data_t *data);
+
+//! network_manager_
+/*
+
+*/
+net_device_t* network_manager_get_device(void);
 
 //! network_manager_get_nic_by_ipv4
 /*

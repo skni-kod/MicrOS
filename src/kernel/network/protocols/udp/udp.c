@@ -116,7 +116,7 @@ socket_t *udp_socket_init(socket_t *socket)
     sk->device = network_manager_get_nic();
     sk->local.sin_family = AF_INET;
     sk->local.sin_port = SOCKET_BASE_PORT + port++;
-    sk->local.sin_addr.value = sk->device->interface->ipv4_address.value;
+    sk->local.sin_addr.value = sk->device->interface.ipv4_address.value;
 
     socket->ops = heap_kernel_alloc(sizeof(struct proto_ops), 0);
     memcpy(socket->ops, &udp_interface, sizeof(struct proto_ops));

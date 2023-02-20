@@ -293,9 +293,8 @@ void idt_global_int_handler(interrupt_state *state)
         for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
         {
             if (interrupt_handlers[i].interrupt_number == state->interrupt_number && interrupt_handlers[i].handler != 0)
-            {
-                interrupt_handlers[i].handler(state);
-            }
+                if(interrupt_handlers[i].handler(state))
+                    break;
         }
 
         io_disable_interrupts();

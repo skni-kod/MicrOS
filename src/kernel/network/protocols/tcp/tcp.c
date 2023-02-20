@@ -19,6 +19,10 @@ uint32_t tcp_process_segment(nic_data_t *data)
     ipv4_packet_t *packet = ((ethernet_frame_t *)(data->frame))->data;
     tcp_segment_t *segment = packet->data;
 
+    char str[1024];
+    kernel_sprintf(str,"%s",segment->options_data);
+    logger_log_info(str);
+
 #ifndef TRUST_ME_BRO
     // verify checksum
     uint16_t checksum = segment->checksum;
