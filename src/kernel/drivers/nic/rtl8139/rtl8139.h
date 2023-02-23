@@ -25,44 +25,57 @@
 
 typedef enum rtl8139_registers
 {
-    IDR0 = 0x00,      // Ethernet hardware address MAC
-    MAR0 = 0x08,      // Multicast
-    TXSTATUS0 = 0x10, // TX status (4x32bit)
-    TXADDR0 = 0x20,   // TX descriptors (4x32bit)
-    RXBUF = 0x30,
-    RXEARLYCOUNT = 0x34,
-    RXEARLYSTATUS = 0x36,
-    CHIPCMD = 0x37,
-    RXBUFPTR = 0x38,
-    RXBUFADDR = 0x3A,
-    INTRMASK = 0x3C,
-    INTRSTATUS = 0x3E,
-    TXCONFIG = 0x40,
-    RXCONFIG = 0x44,
-    TIMER = 0x48,    // A general-purpose counter
-    RXMISSED = 0x4C, // 24 bits valid, write clears
-    CFG9346 = 0x50,
+    IDR0 = 0x00,
+    MAR0 = 0x08,
+    TSD0 = 0x10,
+    TSAD0 = 0x20,
+    RBSTART = 0x30,
+    ERBCR = 0x34,
+    ERSR = 0x36,
+    CR = 0x37,
+    CAPR = 0x38,
+    CBR = 0x3A,
+    IMR = 0x3C,
+    ISR = 0x3E,
+    TCR = 0x40,
+    RCR = 0x44,
+    TCTR = 0x48,
+    MPC = 0x4C,
+    CR9346 = 0x50,
     CONFIG0 = 0x51,
     CONFIG1 = 0x52,
-    FLASHREG = 0x54,
-    GPPINDATA = 0x58,
-    GPPINDIR = 0x59,
-    MII_SMI = 0x5A,
-    HLTCLK = 0x5B,
-    MULTIINTR = 0x5C,
-    TXSUMMARY = 0x60,
-    MII_BMCR = 0x62,
-    MII_BMSR = 0x64,
-    NWAYADVERT = 0x66,
-    NWAYLPAR = 0x68,
-    NWAYEXPANSION = 0x6A,
-
-    // Undocumented registers, but required for proper operation
-    FIFOTMS = 0x70, // FIFO Control and test
-    CSCR = 0x74,    // Chip Status and Configuration Register
-    PARA78 = 0x78,
-    PARA7C = 0x7C, // Magic transceiver parameter register
+    TimerInt = 0x54,
+    MSR = 0x58,
+    CONFIG3 = 0x59,
+    CONFIG4 = 0x5A,
+    MULTINT = 0x5C,
+    RERID = 0x5E,
+    TSAD = 0x60,
+    CONFIG5 = 0xD8
 } rtl8139_registers_t;
+
+typedef struct rtl8139_rx_header
+{
+    union
+    {
+        uint32_t header;
+        struct
+        {
+            uint16_t
+                ROK : 1,
+                FAE : 1,
+                CRC : 1,
+                LONG : 1,
+                RUNT : 1,
+                ISE : 1, : 7,
+                BAR : 1,
+                PAM : 1,
+                MAR : 1;
+            uint16_t size;
+        };
+    };
+    uint32_t data[];
+} rtl8139_rx_header;
 
 typedef union rtl8139_txcfg
 {
@@ -82,6 +95,42 @@ typedef union rtl8139_txcfg
             HWVERID_A : 5, : 1;
     };
 } rtl8139_txcfg_t;
+
+typedef union rtl8139_rxcfg
+{
+    uint32_t value;
+    struct
+    {
+        uint32_t
+            AAP : 1,
+            APM : 1,
+            AM : 1,
+            AB : 1,
+            AR : 1,
+            AER : 1, : 1,
+            WRAP : 1,
+            MXDMA : 3,
+            RBLEN : 2,
+            RXFTH : 3,
+            RER8 : 1,
+            MulERINT : 1, : 6,
+            ERTH : 4, : 4;
+    };
+} rtl8139_rxcfg_t;
+
+typedef union rtl8139_cr
+{
+    uint8_t value;
+    struct
+    {
+        uint8_t
+            BUFE : 1,
+            : 1,
+            TE : 1,
+            RE : 1,
+            RST : 1, : 3;
+    };
+} rtl8139_cr_t;
 
 typedef union rtl8139_imr
 {
@@ -123,16 +172,85 @@ typedef union rtl8139_tsd
     };
 } rtl8139_tsd_t;
 
+typedef union rtl8139_config1
+{
+    uint8_t value;
+    struct
+    {
+        uint8_t
+            PMEn : 1,
+            VPD : 1,
+            IOMAP : 1,
+            MEMMAP : 1,
+            LWACT : 1,
+            DVRLOAD : 1,
+            LEDS : 2;
+    };
+} rtl8139_config1_t;
+
+typedef union rtl8139_config4
+{
+    uint8_t value;
+    struct
+    {
+        uint8_t
+            PBWakeup : 1,
+            : 1,
+            LWPTN : 1, : 1,
+            LWPME : 1,
+            LongWF : 1,
+            AnaOFF : 1,
+            RxFIFOAutoClr : 1;
+    };
+} rtl8139_config4_t;
+
+typedef union rtl8139_media_status_reg
+{
+    uint8_t value;
+    struct
+    {
+        uint8_t
+            RXPF : 1,
+            TXPF : 1,
+            LNKB : 1,
+            SPEED_10 : 1,
+            Aux_Status : 1, : 1,
+            RXFCE : 1,
+            TXFCE : 1;
+    };
+} rtl8139_media_status_reg_t;
+
+typedef union rtl8139_9346cr
+{
+    uint8_t value;
+    struct
+    {
+        uint8_t
+            EEDO : 1,
+            EEDI : 1,
+            EESK : 1,
+            EECS : 1, : 2,
+            EEM : 2
+    };
+} rtl8139_9346cr_t;
+
+typedef enum rtl8139_operating_mode
+{
+    RTL8139_NORMAL = 0b00,
+    RTL8139_AUTO_LOAD = 0b01,
+    RTL8139_PROGRAMMING = 0b10,
+    RTL8139_CONFIG = 0b11,
+} rtl8139_operating_mode_t;
+
 typedef struct rtl8139_hw_ver
 {
     union
     {
         struct
         {
-            uint8_t 
-                hw_ver_b : 1,   
-                hw_ver_a : 5,
-                : 2;
+            uint8_t
+                hw_ver_b : 1,
+                hw_ver_a : 5, : 2;
         };
         uint8_t value;
     };
@@ -216,6 +334,6 @@ void rtl8139_write_long(rtl8139_dev_t *device, uint32_t address, uint32_t value)
 
 uint32_t rtl8139_read_long(rtl8139_dev_t *device, uint32_t address);
 
-rtl8139_buffer_t* rtl8139_init_buffer(uint32_t size);
+rtl8139_buffer_t *rtl8139_init_buffer(uint32_t size);
 
 #endif

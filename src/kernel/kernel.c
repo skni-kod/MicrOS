@@ -352,7 +352,7 @@ int kmain()
 
     logger_log_ok("Loading shells...");
 
-    serial_init(COM1_PORT, 115200, 8, 1, PARITY_NONE);
+    //serial_init(COM1_PORT, 115200, 8, 1, PARITY_NONE);
     logger_log_warning("For now, we are stuck in kernel without shell");
 
     while(1);
