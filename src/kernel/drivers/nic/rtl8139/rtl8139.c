@@ -87,6 +87,7 @@ bool rtl8139_probe(net_device_t *(*get_net_device)())
                                              .APM = 1,
                                              .AM = 1,
                                              .AB = 1,
+                                             .AAP = 1,
                                              .WRAP = 1,
                                              .MXDMA = 0b110,
                                              .RBLEN = 0b00,
