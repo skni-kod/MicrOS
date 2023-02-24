@@ -6,15 +6,6 @@
 #include "rtl8169.h"
 
 static const char RTL8169_NAME[] = "RTL8169";
-// static const rtl8169_hw_ver_t const rtl8169_hw_versions[] = {
-//     (rtl8169_hw_ver_t){.value = 0b110000, .string = "RTL8169"},
-//     (rtl8169_hw_ver_t){.value = 0b111000, .string = "RTL8169A"},
-//     (rtl8169_hw_ver_t){.value = 0b111001, .string = "RTL8169A-G"},
-//     (rtl8169_hw_ver_t){.value = 0b111100, .string = "RTL8169B"},
-//     (rtl8169_hw_ver_t){.value = 0b111110, .string = "RTL8130"},
-//     (rtl8169_hw_ver_t){.value = 0b111010, .string = "RTL8169C"},
-//     (rtl8169_hw_ver_t){.value = 0b111011, .string = "RTL8169C+"},
-//     (rtl8169_hw_ver_t){.value = 0b111111, .string = "RTL NONAME"}};
 
 static uint8_t devices_count = 0;
 static rtl8169_dev_t *devices;
@@ -34,7 +25,7 @@ uint32_t rtl8169_probe(net_dpi_t *dpi)
             memset(dev, 0x0, sizeof(rtl8169_dev_t));
 
             dev->pci = pci_dev;
-            dev->dev = get_net_device();
+            dev->dev = dpi->get_net_device();
             dev->dev->priv = dev;
 
             // Enable IRQ
@@ -66,59 +57,70 @@ uint32_t rtl8169_probe(net_dpi_t *dpi)
             rtl8169_write_byte(dev, CR, (rtl8169_cr_t){.RST = 1}.value);
             while (((rtl8169_cr_t)rtl8169_read_byte(dev, CR)).RST)
                 ;
+            logger_log_info("SW RESET");
+
+            // Set device into config mode:
+            // rtl8169_write_byte(dev, CR9346, (rtl8169_9346cr_t){.EEM = RTL8169_CONFIG}.value);
+            rtl8169_write_byte(dev, CR9346, 0xC0);
+            logger_log_info("CFG MODE");
+
+            rtl8169_write_byte(dev, CR, (rtl8169_cr_t){.RE = 1, .TE = 1}.value);
+            logger_log_info("RX TX EN");
+
+            // rtl8169_write_word(dev, IMR, (rtl8169_imr_t){
+            //                                  .TOK = 1,
+            //                                  .ROK = 1,
+            //                              }
+            //                                  .value);
+            rtl8169_write_word(dev, IMR, 0xFFFF);
+            logger_log_info("IMR");
+
+            rtl8169_write_byte(dev, ETThR, (rtl8169_etthr_t){.ETTh = 0b11000}.value);
+            rtl8169_write_byte(dev, RMS, (rtl8169_rms_t){.RMS = 1520}.value);
 
             // Setup receive descriptors:
             dev->rx_ptr = 0;
-            dev->rx = heap_kernel_alloc(sizeof(rtl8169_rx_descriptor_t) * DESC_COUNT, 256);
+            dev->rx = heap_kernel_alloc(sizeof(rtl8169_rx_descriptor_t) * DESC_COUNT, 0);
             for (uint32_t i = 0; i < DESC_COUNT; i++)
             {
                 rtl8169_rx_descriptor_t *desc = dev->rx + i;
-                desc->OWN = 1;
+                desc->command = (0x80000000 | (1520 & 0x3FFF));
+                desc->vlan = 0;
                 desc->high_address = 0x0;
                 desc->low_address = heap_kernel_alloc(1520, 0) - DMA_ADDRESS_OFFSET;
-                if ((i + 1) == DESC_COUNT)
-                    desc->EOR = 1;
+                if ((i + 2) >= DESC_COUNT)
+                    desc->command = (0x80000000 | 0x40000000 | (1520 & 0x3FFF));
             }
             rtl8169_write_long(dev, RDSA_HIGH, 0x0);
             rtl8169_write_long(dev, RDSA_LOW, dev->rx - DMA_ADDRESS_OFFSET);
 
             // Setup transmitt descriptors
             dev->tx_ptr = 0;
-            dev->tx = heap_kernel_alloc(sizeof(rtl8169_tx_descriptor_t) * DESC_COUNT, 256);
+            dev->tx = heap_kernel_alloc(sizeof(rtl8169_tx_descriptor_t) * DESC_COUNT, 0);
             for (uint32_t i = 0; i < DESC_COUNT; i++)
             {
-                rtl8169_rx_descriptor_t *desc = dev->tx + i;
+                rtl8169_tx_descriptor_t *desc = dev->tx + i;
                 desc->OWN = 0;
                 desc->high_address = 0x0;
+                desc->length = 1520;
                 desc->low_address = heap_kernel_alloc(1520, 0) - DMA_ADDRESS_OFFSET;
-                if ((i + 1) == DESC_COUNT)
+                if ((i + 2) >= DESC_COUNT)
                     desc->EOR = 1;
             }
             rtl8169_write_long(dev, TNPDS_HIGH, 0x0);
             rtl8169_write_long(dev, TNPDS_LOW, dev->tx - DMA_ADDRESS_OFFSET);
 
-            // Set device into config mode:
-            rtl8169_write_byte(dev, CR9346, (rtl8169_9346cr_t){.EEM = RTL8169_CONFIG}.value);
+            logger_log_info("DESCRIPTORS INIT DONE");
 
-            rtl8169_write_long(dev, RCR, (rtl8169_rxcfg_t){.APM = 1, .AM = 1, .AB = 1, .AAP = 1, .MXDMA = 0b111, .RXFTH = 0b111}.value);
-
-            rtl8169_write_word(dev, MULINT, 0x0);
-            rtl8169_write_word(dev, IMR, (rtl8169_imr_t){
-                                             .TOK = 1,
-                                             .ROK = 1,
-                                         }
-                                             .value);
-
-            rtl8169_write_byte(dev, CR, (rtl8169_cr_t){.RE = 1, .TE = 1}.value);
+            rtl8169_write_long(dev, RCR, (rtl8169_rxcfg_t){.APM = 1, .AM = 1, .AB = 1, .MXDMA = 0b111, .RXFTH = 0b111}.value);
+            logger_log_info("RECEIVE CFG");
 
             // Set driver load
             rtl8169_config1_t config1 = (rtl8169_config1_t)rtl8169_read_byte(dev, CONFIG1);
             config1.DVRLOAD = 1;
             rtl8169_write_byte(dev, CONFIG1, config1.value);
-
-            rtl8169_write_byte(dev, ETThR, (rtl8169_etthr_t){.ETTh = 0b110000}.value);
-
             rtl8169_write_byte(dev, CR9346, (rtl8169_9346cr_t){.EEM = RTL8169_NORMAL}.value);
+            logger_log_info("DRIVER INIT DONE");
         }
     }
     if (devices_count)
@@ -134,18 +136,20 @@ bool rtl8169_irq_handler(void)
         rtl8169_dev_t *dev = &devices[dev_id];
         dev->isr = (rtl8169_isr_t)rtl8169_read_word(dev, ISR);
 
-        if (!dev->isr.value)
+        if (dev->isr.value == 0)
             continue;
 
-        rtl8169_write_word(dev, ISR, dev->isr.value);
+        char tmp[64];
+        kernel_sprintf(tmp, "ISR: 0x%x", dev->isr);
+        logger_log_warning(tmp);
 
         if (dev->isr.TOK)
-        {
             ;
-        }
 
         if (dev->isr.ROK)
             rtl8169_receive(dev);
+
+        rtl8169_write_word(dev, ISR, dev->isr.value);
 
         return true;
     }
@@ -153,29 +157,41 @@ bool rtl8169_irq_handler(void)
     return false;
 }
 
+static uint32_t cnt = 0;
 uint32_t rtl8169_receive(rtl8169_dev_t *dev)
 {
-    rtl8169_rx_descriptor_t *desc = dev->rx + dev->rx_ptr;
 
-    if (desc->OWN == 0 && dev->dev->interface.mode.receive)
+    for (uint32_t i = 0; i < DESC_COUNT; i++)
     {
-        char tmp[128];
-        kernel_sprintf(tmp, "%d bytes on: %02x:%02x:%02x:%02x:%02x:%02x",
-                       desc->length,
-                       dev->dev->interface.mac.octet_a,
-                       dev->dev->interface.mac.octet_b,
-                       dev->dev->interface.mac.octet_c,
-                       dev->dev->interface.mac.octet_d,
-                       dev->dev->interface.mac.octet_e,
-                       dev->dev->interface.mac.octet_f);
-        logger_log_info(tmp);
-
-        desc->OWN = 1;
-        
-        if(desc->EOR)
-            dev->rx_ptr = 0;
-        //(*dev->net_dev->dpi.receive)(out);
+        rtl8169_tx_descriptor_t *desc = dev->tx + i;
+        if (!desc->OWN)
+        {
+            char tmp[128];
+            kernel_sprintf(tmp, "%d %d %d bytes on: %02x:%02x:%02x:%02x:%02x:%02x",
+                           i,
+                           cnt++,
+                           desc->length,
+                           dev->dev->interface.mac.octet_a,
+                           dev->dev->interface.mac.octet_b,
+                           dev->dev->interface.mac.octet_c,
+                           dev->dev->interface.mac.octet_d,
+                           dev->dev->interface.mac.octet_e,
+                           dev->dev->interface.mac.octet_f);
+            logger_log_info(tmp);
+            desc->OWN = 1;
+            // nic_data_t *data = dev->dev->dpi.get_receive_buffer(dev->dev);
+            // memcpy(&data->frame, desc->low_address + DMA_ADDRESS_OFFSET, desc->length);
+            // data->keep = 0;
+            // data->length = desc->length;
+            // desc->OWN = 1;
+            // (*dev->dev->dpi.receive)(&data);
+        }
     }
+
+    // if (!desc->OWN)
+    // {
+
+    // }
 }
 
 uint32_t rtl8169_send(nic_data_t *data)

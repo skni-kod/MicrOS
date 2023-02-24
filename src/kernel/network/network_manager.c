@@ -17,10 +17,16 @@ bool network_manager_init()
     __crc32_build();
     ipv4_init();
 
+    net_dpi_t dpi = (net_dpi_t){.get_net_device = &network_manager_get_device};
+
     // Initialize all NIC drivers
     for (uint8_t i = 0; i < (sizeof(drivers) / sizeof(nic_driver_probe)); i++)
-        (drivers[i])(&network_manager_get_device);
-    
+        (drivers[i])(&dpi);
+
+    char tmp[128];
+    kernel_sprintf(tmp, "COUNT %d",net_devices->count);
+    logger_log_info(tmp);
+
     // when all devices are up, lets initalize them!
     for (uint32_t devices = 0; devices < net_devices->count; devices++)
     {
@@ -30,38 +36,35 @@ bool network_manager_init()
         dev->tx = kbuffer_init(dev->interface.mtu, NETWORK_MANAGER_BUFFER_SIZE);
         // finally turn on communication
         dev->interface.mode = (net_mode_t){.receive = 1, .send = 1};
-        network_manager_print_device_info(dev);
+        //network_manager_print_device_info(dev);
         //if (dhcp_negotiate(dev->interface))
         {
             // set static IP
-            // dev->interface.ipv4_address = (ipv4_addr_t){
-            //     .oct_a = 10,
-            //     .oct_b = 0,
-            //     .oct_c = 2,
-            //     .oct_d = 90};
+            dev->interface.ipv4_address = (ipv4_addr_t){
+                .oct_a = 192,
+                .oct_b = 168,
+                .oct_c = 65,
+                .oct_d = 99};
 
-            // dev->interface.ipv4_dns = (ipv4_addr_t){
-            //     .oct_a = 1,
-            //     .oct_b = 1,
-            //     .oct_c = 1,
-            //     .oct_d = 1};
+            dev->interface.ipv4_dns = (ipv4_addr_t){
+                .oct_a = 1,
+                .oct_b = 1,
+                .oct_c = 1,
+                .oct_d = 1};
 
-            // dev->interface.ipv4_netmask = (ipv4_addr_t){
-            //     .oct_a = 255,
-            //     .oct_b = 255,
-            //     .oct_c = 255,
-            //     .oct_d = 0};
+            dev->interface.ipv4_netmask = (ipv4_addr_t){
+                .oct_a = 255,
+                .oct_b = 255,
+                .oct_c = 255,
+                .oct_d = 0};
 
-            // dev->interface.ipv4_gateway = (ipv4_addr_t){
-            //     .oct_a = 10,
-            //     .oct_b = 0,
-            //     .oct_c = 2,
-            //     .oct_d = 1};
+            dev->interface.ipv4_gateway = (ipv4_addr_t){
+                .oct_a = 192,
+                .oct_b = 168,
+                .oct_c = 65,
+                .oct_d = 1};
         }
     }
-
-    while(1);
-
     return true;
 }
 

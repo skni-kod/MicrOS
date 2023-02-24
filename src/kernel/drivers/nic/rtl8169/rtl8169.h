@@ -58,7 +58,8 @@ typedef enum rtl8169_registers
     TBI_LPAR = 0x6A,
     RDSA_LOW = 0xE4,
     RDSA_HIGH = 0xE8,
-    ETThR = 0xEC
+    ETThR = 0xEC,
+    RMS = 0xDA,
 } rtl8169_registers_t;
 
 typedef union rtl8169_cr
@@ -176,31 +177,41 @@ typedef union rtl8169_etthr
     {
         uint8_t
             ETTh : 6,
-             : 2;
+            : 2;
     };
 } rtl8169_etthr_t;
+
+typedef union rtl8169_rms
+{
+    uint16_t value;
+    struct
+    {
+        uint16_t
+            RMS : 14,
+            : 2;
+    };
+} rtl8169_rms_t;
 
 typedef struct rtl8169_rx_descriptor
 {
     union
     {
-        uint32_t;
+        uint32_t command;
         struct
         {
             uint32_t
-                length : 14,
-                : 16,
-                EOR : 1,
-                OWN : 1;
+                OWN : 1,
+                EOR : 1, : 16,
+                length : 14;
         };
     };
     union
     {
-        uint32_t;
+        uint32_t vlan;
         struct
         {
             uint32_t
-                vlan : 16,
+                 : 16,
                 tava : 1, : 15;
         };
     };
@@ -216,13 +227,13 @@ typedef struct rtl8169_tx_descriptor
         struct
         {
             uint32_t
-                length : 16,
-                MSS : 11,
-                LGSEN : 1,
-                LS : 1,
-                FS : 1,
+                OWN : 1,
                 EOR : 1,
-                OWN : 1;
+                FS : 1,
+                LS : 1,
+                LGSEN : 1,
+                MSS : 11,
+                length : 16;
         };
     };
     union
