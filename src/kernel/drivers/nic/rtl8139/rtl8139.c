@@ -157,6 +157,17 @@ uint32_t rtl8139_receive(rtl8139_dev_t *dev)
 
         rtl8139_write_word(dev, 0x38, dev->rx->pointer - 0x10);
 
+        char tmp[128];
+        kernel_sprintf(tmp, "%d bytes on: %02x:%02x:%02x:%02x:%02x:%02x",
+                       frame->size,
+                       dev->net_dev->interface.mac.octet_a,
+                       dev->net_dev->interface.mac.octet_b,
+                       dev->net_dev->interface.mac.octet_c,
+                       dev->net_dev->interface.mac.octet_d,
+                       dev->net_dev->interface.mac.octet_e,
+                       dev->net_dev->interface.mac.octet_f);
+        logger_log_info(tmp);
+
         (*dev->net_dev->dpi.receive)(out);
     }
 }
