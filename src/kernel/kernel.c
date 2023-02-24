@@ -296,7 +296,7 @@ void startup()
 
     pci_init();
     logger_log_ok("PCI");
-    
+
     logger_log_info("Initializing network interfaces");
     if (network_manager_init())
         logger_log_ok("Network manager");
