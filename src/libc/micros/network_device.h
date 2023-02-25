@@ -43,7 +43,6 @@ typedef struct net_dpi
     uint32_t (*receive)(nic_data_t *data);
     uint32_t (*set_mode)(net_mode_t mode);
     nic_data_t *(*get_receive_buffer)(net_device_t *device);
-    net_device_t *(*get_net_device)();
 } net_dpi_t;
 
 //! Device configuration structure

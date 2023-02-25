@@ -279,7 +279,7 @@ typedef struct rtl8169_dev
     Initialize network card driver
     Requires initialized PCI driver
 */
-uint32_t rtl8169_probe(net_dpi_t *dpi);
+uint32_t rtl8169_init(net_device_t *(*get_net_device)());
 
 //! rtl8169_send
 /*

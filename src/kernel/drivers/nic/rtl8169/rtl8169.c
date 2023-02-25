@@ -12,7 +12,7 @@ static rtl8169_dev_t *devices;
 
 static uint32_t DESC_COUNT = 32;
 
-uint32_t rtl8169_probe(net_dpi_t *dpi)
+uint32_t rtl8169_init(net_device_t *(*get_net_device)())
 {
     // First get the network device using PCI
     for (uint8_t i = 0; i < pci_get_number_of_devices(); i++)
@@ -25,8 +25,8 @@ uint32_t rtl8169_probe(net_dpi_t *dpi)
             memset(dev, 0x0, sizeof(rtl8169_dev_t));
 
             dev->pci = pci_dev;
-            dev->dev = dpi->get_net_device();
             dev->dev->priv = dev;
+            dev->dev = get_net_device();
 
             // Enable IRQ
             dev->irq_vector = dev->pci->config.interrupt_line;

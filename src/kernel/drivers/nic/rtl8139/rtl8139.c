@@ -28,15 +28,8 @@ bool rtl8139_probe(net_device_t *(*get_net_device)())
     for (uint8_t i = 0; i < pci_get_number_of_devices(); i++)
     {
         pci_device *pci_dev = pci_get_device(i);
-        if (pci_dev->config.vendor_id == RTL8139_VENDOR_ID &&
-            pci_dev->config.device_id >= 0x8129 && pci_dev->config.device_id <= 0x8139)
+        if (pci_dev->config.vendor_id == RTL8139_VENDOR_ID && pci_dev->config.device_id == 0x8139)
         {
-            switch (pci_dev->config.device_id)
-            {
-            case 0x8139:
-                break;
-            };
-
             // Here we have to init all NICs
             devices = heap_kernel_realloc(devices, sizeof(rtl8139_dev_t) * ++devices_count, 0);
             rtl8139_dev_t *dev = &devices[devices_count - 1];

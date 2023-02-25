@@ -7,14 +7,14 @@
 
 #define NETWORK_MANAGER_BUFFER_SIZE 64
 
-#include <drivers/nic/rtl81xx/rtl8169.h>
+#include <drivers/nic/rtl8139/rtl8139.h>
 #include <drivers/nic/virtio-pci-nic/virtio-pci-nic.h>
 #include <logger/logger.h>
 #include <micros/network_device.h>
 #include <klibrary/kvector.h>
 #include "network_utils.h"
 
-typedef uint32_t (*nic_driver_probe)(net_dpi_t*);
+typedef bool (*nic_driver_init)(net_device_t*);
 
 //! network_manager_init
 /*
