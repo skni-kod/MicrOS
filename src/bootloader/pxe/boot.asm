@@ -6,8 +6,8 @@
 ; |  0x00000   | 0x00400 |  0x00500   |  0x05C00   |    0x06000     |    0x07000   |   0x07C00    |  0x07E00   | 0x0F000 | 0x9FC00 |  0xA0000   | 0x00100000 | 0x01000000 | 0x01100000 |
 ; |  0x003FF   | 0x004FF |  0x05BFF   |  0x05FFF   |    0x06FFF     |    0x07BFF   |   0x07DFF    |  0x0EFFF   | 0x9FBDD | 0x9FFFF |  0xFFFFF   | 0x00FFFFFF | 0x010FFFFF | 0x014FFFFF |
 ; |------------|---------|------------|------------|----------------|--------------|--------------|------------|---------|---------|------------|------------|------------|------------|
-section .boot
 [BITS 16]
+section .boot
 jmp loader
 
 ;GDT
@@ -147,10 +147,28 @@ r_bios db 'BIOS',0
 r_keyb db 'KEYBOARD',0
 r_gate db 'GATE',0
 
+pxe_addr_seg dw 0
+pxe_addr_off dw 0
+global pxe_addr_seg
+global pxe_addr_off
+
+pxe_status dw 0
+
 extern STACK_ADDRESS
 
 loader:
     cli
+
+    ;get pxenv addr
+    mov ax,0xffff
+    mov [pxe_addr_seg], ax
+    mov [pxe_addr_off], ax
+
+    ;get !pxe addr
+    ; pop ax
+    ; mov WORD [pxe_addr + address.segment],0xeeee
+    ; pop ax
+    ; mov WORD [pxe_addr + address.offset],0xeeee
 
     xor ax, ax
     mov ds, ax
@@ -486,6 +504,8 @@ pxecall:
 	; Clean up the stack from the 3 word parameters we passed to PXE
 	add sp, 6
 
+    mov [pxe_status],eax
+
 	; Enable protected mode
 	mov eax, cr0
 	or  eax, 1
@@ -508,6 +528,9 @@ pxecall:
 [bits 32]
 backout:
 	popad
+
+    mov eax, [pxe_status]
+
 	ret
 
     global enter_kernel:

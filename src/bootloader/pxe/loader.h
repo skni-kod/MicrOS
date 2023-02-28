@@ -127,7 +127,7 @@ typedef struct pxe
 	seg_desc_t BC_CodeWrite;
 } __attribute__((packed)) pxe_t;
 
-typedef struct GetCachedInfo
+typedef struct get_cached_info
 {
 	uint16_t status;
 	uint16_t packet_type;
@@ -177,6 +177,6 @@ extern uint16_t pxecall(uint16_t segment,
 
 extern void enter_kernel();
 
-extern char LOADER_END;
+extern uint32_t LOADER_END[];
 
 #endif

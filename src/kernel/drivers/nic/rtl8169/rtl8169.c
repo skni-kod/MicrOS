@@ -50,7 +50,8 @@ uint32_t rtl8169_init(net_device_t *(*get_net_device)())
 
             // Setup net device
             rtl8169_read_mac(dev);
-            dev->dev->interface.name = rtl8169_get_name(dev);
+            const char *name = rtl8169_get_name(dev);
+            memcpy(&dev->dev->interface.name, name,strlen(name));
             dev->dev->dpi.send = &rtl8169_send;
 
             // Software reset

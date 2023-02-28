@@ -90,7 +90,8 @@ device_found:
     for (uint8_t i = 0; i < 6; i++)
         virtio_nic.mac_addr[i] = io_in_byte(virtio_nic.io_base + 0x14 + i);
 
-    net_dev->interface.name = heap_kernel_alloc((uint32_t)strlen(VIRTIO_NET_DEVICE_NAME) + 1, 0);
+    //net_dev->interface.name = heap_kernel_alloc((uint32_t)strlen(VIRTIO_NET_DEVICE_NAME) + 1, 0);
+
     strcpy(net_dev->interface.name, VIRTIO_NET_DEVICE_NAME);
     memcpy(&net_dev->interface.mac, virtio_nic.mac_addr, sizeof(mac_addr_t));
     net_dev->dpi.send = &virtio_nic_send;

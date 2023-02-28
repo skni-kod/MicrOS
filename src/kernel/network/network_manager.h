@@ -66,5 +66,5 @@ kvector *network_manager_get_devices();
 
 static void network_manager_print_device_info(net_device_t *device);
 
-static int8_t network_manager_set_net_device(net_device_t *device);
+static uint32_t network_manager_set_net_device(net_device_t *device);
 #endif

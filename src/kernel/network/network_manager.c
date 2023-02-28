@@ -24,40 +24,40 @@ bool network_manager_init()
     // when all devices are up, lets initalize them!
     for (uint32_t devices = 0; devices < net_devices->count; devices++)
     {
-        net_device_t *dev = (net_device_t *)net_devices->data[devices];
+        net_device_t *dev = (net_device_t*)*(net_devices->data + devices);
         // setup receive and transmitt buffers
         dev->rx = kbuffer_init(dev->interface.mtu, NETWORK_MANAGER_BUFFER_SIZE);
         dev->tx = kbuffer_init(dev->interface.mtu, NETWORK_MANAGER_BUFFER_SIZE);
         // finally turn on communication
         dev->interface.mode = (net_mode_t){.receive = 1, .send = 1};
         network_manager_print_device_info(dev);
-        //if (dhcp_negotiate(dev->interface))
-        {
-            // set static IP
-            dev->interface.ipv4_address = (ipv4_addr_t){
-                .oct_a = 10,
-                .oct_b = 0,
-                .oct_c = 2,
-                .oct_d = 90};
+        // if (dhcp_negotiate(dev->interface))
+        // {
+        //     // set static IP
+        //     dev->interface.ipv4_address = (ipv4_addr_t){
+        //         .oct_a = 10,
+        //         .oct_b = 0,
+        //         .oct_c = 2,
+        //         .oct_d = 90};
 
-            dev->interface.ipv4_dns = (ipv4_addr_t){
-                .oct_a = 1,
-                .oct_b = 1,
-                .oct_c = 1,
-                .oct_d = 1};
+        //     dev->interface.ipv4_dns = (ipv4_addr_t){
+        //         .oct_a = 1,
+        //         .oct_b = 1,
+        //         .oct_c = 1,
+        //         .oct_d = 1};
 
-            dev->interface.ipv4_netmask = (ipv4_addr_t){
-                .oct_a = 255,
-                .oct_b = 255,
-                .oct_c = 255,
-                .oct_d = 0};
+        //     dev->interface.ipv4_netmask = (ipv4_addr_t){
+        //         .oct_a = 255,
+        //         .oct_b = 255,
+        //         .oct_c = 255,
+        //         .oct_d = 0};
 
-            dev->interface.ipv4_gateway = (ipv4_addr_t){
-                .oct_a = 10,
-                .oct_b = 0,
-                .oct_c = 2,
-                .oct_d = 1};
-        }
+        //     dev->interface.ipv4_gateway = (ipv4_addr_t){
+        //         .oct_a = 10,
+        //         .oct_b = 0,
+        //         .oct_c = 2,
+        //         .oct_d = 1};
+        // }
     }
 
     return true;
@@ -136,11 +136,13 @@ net_device_t *network_manager_get_nic()
 net_device_t* network_manager_get_device(void)
 {
     net_device_t *dev = heap_kernel_alloc(sizeof(net_device_t), 0);
-    if (network_manager_set_net_device(dev))
+    if (network_manager_set_net_device(dev)){
         kvector_add(net_devices, dev);
-    else 
+    }
+    else{
         return 0;
-    return dev;    
+    } 
+    return dev;
 }
 
 net_device_t *network_manager_get_nic_by_ipv4(ipv4_addr_t addr)
@@ -169,7 +171,7 @@ static void network_manager_print_device_info(net_device_t *device)
     logger_log_info(logInfo);
 }
 
-static int8_t network_manager_set_net_device(net_device_t *device)
+static uint32_t network_manager_set_net_device(net_device_t *device)
 {
     if (!device)
         return 0;

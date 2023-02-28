@@ -16,6 +16,7 @@ section .boot
 
 jmp main_protected_area
 
+extern main_protected_area
 main_protected_area:
     cli
     ; Set data and stack segments to the third GDI descriptor

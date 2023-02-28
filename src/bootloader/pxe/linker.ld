@@ -7,7 +7,7 @@ SECTIONS
 {
 	
 	. = STARTUP_ADDRESS;
-	.boot :
+	.boot : AT(ADDR(.boot))
 	{
 		*(.boot)
 	}

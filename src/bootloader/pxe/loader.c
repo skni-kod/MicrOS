@@ -1,5 +1,8 @@
 #include "loader.h"
 
+extern uint16_t pxe_addr_seg;
+extern uint16_t pxe_addr_off;
+
 static const void *kernel_addr = KERNEL_ADDRESS;
 static const void (*kernel_entry)() = KERNEL_ADDRESS;
 
@@ -250,14 +253,9 @@ static const void *memory_scan(uintptr_t start, int (*func)(const void *))
 	return NULL;
 }
 
-static inline void *MK_PTR(uint16_t __seg, uint16_t __offs)
+static inline void *get_ptr(const seg_off_t ptr)
 {
-	return (void *)((__seg << 4) + __offs);
-}
-
-static inline void *GET_PTR(seg_off_t __fptr)
-{
-	return MK_PTR(__fptr.segment, __fptr.offset);
+	return (void *)((ptr.segment << 4) + ptr.offset);
 }
 
 static const struct pxe_t *memory_scan_for_pxe_struct(void)
@@ -272,22 +270,22 @@ static const struct pxenv_t *memory_scan_for_pxenv_struct(void)
 
 void dhcp_read_option(dhcp_message_t *msg, uint8_t code, uint8_t *buf, uint16_t len)
 {
-    uint32_t i = 0;
-    while (1)
-    {
-        uint8_t type = msg->options[i];
+	uint32_t i = 0;
+	while (1)
+	{
+		uint8_t type = msg->options[i];
 
-        if (0xFF == type)
-            return;
+		if (0xFF == type)
+			return;
 
-        if (type == code)
-        {
-            memcpy(buf, (*msg).options + i + 2, len);
-            return;
-        }
-        int skip = msg->options[i + 1] + 2;
-        i += skip;
-    }
+		if (type == code)
+		{
+			memcpy(buf, (*msg).options + i + 2, len);
+			return;
+		}
+		int skip = msg->options[i + 1] + 2;
+		i += skip;
+	}
 }
 
 int get_ip_config(seg_off_t entry, ipv4_addr_t *server, ipv4_addr_t *gateway)
@@ -306,7 +304,7 @@ int get_ip_config(seg_off_t entry, ipv4_addr_t *server, ipv4_addr_t *gateway)
 	dhcp_message_t *dhcp_ack = (info.buffer_seg << 4) + info.buffer_off;
 	ipv4_addr_t *addr = &dhcp_ack->siaddr;
 
- 	if (dhcp_ack->siaddr.value)
+	if (dhcp_ack->siaddr.value)
 		*server = dhcp_ack->siaddr;
 
 	if (dhcp_ack->giaddr.value)
@@ -318,12 +316,11 @@ int get_ip_config(seg_off_t entry, ipv4_addr_t *server, ipv4_addr_t *gateway)
 	memset(tmp, 0, 64);
 
 	dhcp_read_option(dhcp_ack, 3, gateway, sizeof(ipv4_addr_t));
-	
+
 	memcpy(tmp, "Gateway: ", 10);
 	print_ip(gateway, tmp + 9);
 	terminal_writestring(tmp);
 	memset(tmp, 0, 64);
-
 
 	info.packet_type = 3;
 	info.status = 0;
@@ -340,7 +337,7 @@ int get_ip_config(seg_off_t entry, ipv4_addr_t *server, ipv4_addr_t *gateway)
 	print_ip(server, tmp + 8);
 	terminal_writestring(tmp);
 	memset(tmp, 0, 64);
-	
+
 	if (server->value != 0)
 		return 0;
 
@@ -350,7 +347,6 @@ int get_ip_config(seg_off_t entry, ipv4_addr_t *server, ipv4_addr_t *gateway)
 void loader_main(seg_off_t in_addr)
 {
 	seg_off_t pxe_entrypoint;
-	char tmp[64];
 	pxenv_t *pxenv;
 	pxe_t *pxe;
 
@@ -359,7 +355,7 @@ void loader_main(seg_off_t in_addr)
 
 	terminal_initialize();
 
-	pxenv = GET_PTR(in_addr);
+	pxenv = get_ptr(in_addr);
 	if (is_pxenv(pxenv))
 		goto have_pxenv;
 
@@ -377,7 +373,7 @@ have_pxenv:
 	{
 		if (pxenv->length >= sizeof(pxenv_t))
 		{
-			pxe = GET_PTR(pxenv->pxe_ptr);
+			pxe = get_ptr(pxenv->pxe_ptr);
 			if (is_pxe(pxe))
 				goto have_pxe;
 			/*
@@ -416,6 +412,9 @@ load:
 				 0,
 				 &file);
 
+	if (rv)
+		goto file_load_fail;
+
 	// open connection
 	tftp_open_t open = (tftp_open_t){
 		.status = 0,
@@ -430,6 +429,9 @@ load:
 				 (uint16_t)0x20,
 				 0,
 				 &open);
+
+	if (rv)
+		goto file_load_fail;
 
 	// read file
 	uint8_t buf[BUFFER_SIZE];
@@ -452,14 +454,10 @@ load:
 					 0,
 					 &read);
 
-		memcpy(kernel_addr + offset, &buf, BUFFER_SIZE);
+		if (rv)
+			goto file_load_fail;
 
-		if (read.status)
-		{
-			terminal_writestring("Please restart, unable to download kernel\n");
-			while (1)
-				;
-		}
+		memcpy(kernel_addr + offset, &buf, BUFFER_SIZE);
 
 		if (read.bytes_read < BUFFER_SIZE)
 			break;
@@ -477,6 +475,11 @@ load:
 
 	// jump into kernel!
 	enter_kernel();
+
+file_load_fail:
+	terminal_writestring("Unable to get file:");
+	terminal_writestring(KERNEL_FILENAME);
+	terminal_writestring(" using TFTP\n");
 
 dupa:
 	terminal_writestring("No i dupa\n");

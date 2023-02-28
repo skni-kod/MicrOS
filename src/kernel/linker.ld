@@ -4,22 +4,23 @@ STARTUP_PHYSICAL_ADDRESS = 0x00100000;
 KERNEL_PHYSICAL_ADDRESS  = 0x00101000;
 KERNEL_VIRTUAL_ADDRESS   = 0xC0000000;
 
+ENTRY(main_protected_area)
+
 SECTIONS
 {
 	. = STARTUP_PHYSICAL_ADDRESS;
 	.boot :
 	{
 		*(.boot)
+		boot_section_end = .;
 	}
-
-/*
-	.boot ALIGN(4) : AT(STARTUP_PHYSICAL_ADDRESS)
+	
+	.multiboot ALIGN(4) : AT(boot_section_end)
 	{
 		LONG(0x1BADB002)
 		LONG(0x00000003)
 		LONG(0xE4524FFB)
 	}
-*/
 
 	. = KERNEL_PHYSICAL_ADDRESS;
 	. += KERNEL_VIRTUAL_ADDRESS;

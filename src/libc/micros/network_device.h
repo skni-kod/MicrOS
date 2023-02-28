@@ -51,7 +51,7 @@ typedef struct net_dpi
 */
 typedef struct net_interface_t
 {
-    char *name;
+    char name[64];
     net_mode_t mode;
     mac_addr_t mac;
     ipv4_addr_t ipv4_address;
@@ -75,9 +75,9 @@ typedef struct net_interface_t
 */
 typedef struct net_device
 {
-    void *priv;
     net_interface_t interface;
     net_dpi_t dpi;
+    void *priv;
     kbuffer_t *rx;
     kbuffer_t *tx;
 } net_device_t;

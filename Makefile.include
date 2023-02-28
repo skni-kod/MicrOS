@@ -4,7 +4,7 @@ ARCH					= i386
 QEMU_ARCH	 			= $(ARCH)
 GCC_OPTIMIZATION		= O1
 C_STANDARD				= c11
-QEMU_MEMORY				= 512M
+QEMU_MEMORY				= 1024M
 QEMU_NET_DEVICE			= rtl8139
 
 # tools remote repo
@@ -62,5 +62,6 @@ MKDIR					= mkdir
 CURL					= curl
 RM		 				= rm
 SED						= sed
-QEMU					= /home/jp/Pobrane/qemu-7.2.0/build/qemu-system-$(QEMU_ARCH)
+QEMU					= qemu-system-$(QEMU_ARCH)
+#QEMU					= $HOME/qemu-7.2.0/build/qemu-system-$(QEMU_ARCH)
 GDB						= gdb

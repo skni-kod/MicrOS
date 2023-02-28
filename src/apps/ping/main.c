@@ -11,6 +11,7 @@
 
 static void __print_netif_info(net_interface_t *iface)
 {
+    printf("NAME: %s\n",iface->name);
     printf("MAC: %02x:%02x:%02x:%02x:%02x:%02x\n",
            iface->mac.octet_a,
            iface->mac.octet_b,

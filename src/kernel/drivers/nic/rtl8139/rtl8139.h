@@ -277,12 +277,11 @@ typedef struct rtl8139_dev
         uint16_t io_base;
         uint32_t mem_base;
     };
-    net_device_t *dev;
     uint32_t tsad;
     rtl8139_buffer_t *rx;
     uint32_t irq_status;
     uint32_t irq_vector;
-    net_device_t *net_dev;
+    net_device_t *net;
     pci_device *pci;
 } rtl8139_dev_t;
 
