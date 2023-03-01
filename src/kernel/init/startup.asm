@@ -27,11 +27,15 @@ main_protected_area:
     mov gs, ax
     mov ss, ax
 
+    ; call protstr
+    ; cli
+    ; hlt
     call clear_page_directory
-    ;call protstr
-    ;cli
-    ;hlt
+    ; call protstr
+    ; cli
+    ; hlt
     
+
     call clear_page_tables
 
     ;call protstr

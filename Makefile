@@ -99,7 +99,7 @@ ifeq ($(QEMU_NET), 1)
 	endif
 
 	QEMU_OPTIONS			+= -net nic,model=$(QEMU_NET_DEVICE),netdev=net1,macaddr=00:11:22:33:44:55
-#QEMU_OPTIONS			+= -net nic,model=$(QEMU_NET_DEVICE),netdev=net2,macaddr=aa:bb:cc:dd:ee:ff
+	QEMU_OPTIONS			+= -net nic,model=$(QEMU_NET_DEVICE),netdev=net2,macaddr=aa:bb:cc:dd:ee:ff
 endif
 
 $(log_dir):

@@ -135,7 +135,8 @@ net_device_t *network_manager_get_nic()
 
 net_device_t* network_manager_get_device(void)
 {
-    net_device_t *dev = heap_kernel_alloc(sizeof(net_device_t), 0);
+    net_device_t *dev = 0;
+    dev = heap_kernel_alloc(sizeof(net_device_t), 0);
     if (network_manager_set_net_device(dev)){
         kvector_add(net_devices, dev);
     }
@@ -173,12 +174,17 @@ static void network_manager_print_device_info(net_device_t *device)
 
 static uint32_t network_manager_set_net_device(net_device_t *device)
 {
+    uint32_t test = heap_verify_integrity(true);
+
     if (!device)
         return 0;
     memset(device, 0, sizeof(net_device_t));
 
     device->dpi.receive = &network_manager_receive_data;
     device->dpi.get_receive_buffer = &network_manager_get_receive_buffer;
+    
+    //TODO:
+    device->dpi.set_mode = 0xDEADDEAD;
 
     device->interface.arp_entries = heap_kernel_alloc(sizeof(kvector), 0);
     kvector_init(device->interface.arp_entries);

@@ -17,7 +17,7 @@ static const rtl8139_hw_ver_t const rtl8139_hw_versions[] = {
     (rtl8139_hw_ver_t){.value = 0b111111, .string = "RTL NONAME"}};
 
 static uint8_t devices_count = 0;
-static rtl8139_dev_t *devices;
+static void **devices;
 
 static const uint8_t const TSAD_array[] = {0x20, 0x24, 0x28, 0x2C};
 static const uint8_t const TSD_array[] = {0x10, 0x14, 0x18, 0x1C};
@@ -30,14 +30,14 @@ bool rtl8139_probe(net_device_t *(*get_net_device)())
         pci_device *pci_dev = pci_get_device(i);
         if (pci_dev->config.vendor_id == RTL8139_VENDOR_ID && pci_dev->config.device_id == 0x8139)
         {
-            // Here we have to init all NICs
-            devices = heap_kernel_realloc(devices, sizeof(rtl8139_dev_t) * ++devices_count, 0);
-            rtl8139_dev_t *dev = &devices[devices_count - 1];
+            rtl8139_dev_t *dev = heap_kernel_alloc(sizeof(rtl8139_dev_t), 0);
+            devices = heap_kernel_realloc(devices, sizeof(rtl8139_dev_t *) * ++devices_count, 0);
+            devices[devices_count - 1] = dev;
             memset(dev, 0x0, sizeof(rtl8139_dev_t));
 
             dev->pci = pci_dev;
             dev->net = get_net_device();
-            dev->net->priv = &devices[devices_count - 1];
+            dev->net->priv = dev;
 
             // Now setup registers, and memory
             dev->io_type = dev->pci->config.base_addres_0 & (0x1);
@@ -62,13 +62,13 @@ bool rtl8139_probe(net_device_t *(*get_net_device)())
             // Setup net device
             rtl8139_read_mac(dev);
             const char *name = rtl8139_get_name(dev);
-            memcpy(dev->net->interface.name, name, strlen(name));
+            memcpy(dev->net->interface.name, name, strlen(name) + 1);
+
             dev->net->dpi.send = &rtl8139_send;
             dev->rx = rtl8139_init_buffer(RTL8139_RX_BUFFER_BASE);
             if (!dev->rx)
-            {
                 return false;
-            }
+
             rtl8139_write_word(dev, CAPR, dev->rx->pointer);
             dev->tsad = 0;
 
@@ -121,7 +121,7 @@ bool rtl8139_irq_handler(void)
     // Get status of device
     for (uint32_t dev_id = 0; dev_id < devices_count; dev_id++)
     {
-        rtl8139_dev_t *dev = &devices[dev_id];
+        rtl8139_dev_t *dev = devices[dev_id];
         rtl8139_isr_t status = (rtl8139_isr_t)rtl8139_read_word(dev, ISR);
         rtl8139_write_word(dev, ISR, status.value);
 
@@ -142,7 +142,7 @@ bool rtl8139_irq_handler(void)
 
 uint32_t rtl8139_receive(rtl8139_dev_t *dev)
 {
-    rtl8139_rx_header *frame = ((uint8_t*)(dev->rx->data) + dev->rx->pointer);
+    rtl8139_rx_header *frame = ((uint8_t *)(dev->rx->data) + dev->rx->pointer);
     if (frame->ROK)
     {
         nic_data_t *out = dev->net->dpi.get_receive_buffer(dev->net);
@@ -155,13 +155,13 @@ uint32_t rtl8139_receive(rtl8139_dev_t *dev)
 
         char tmp[128];
         kernel_sprintf(tmp, "%d bytes on: %02x:%02x:%02x:%02x:%02x:%02x",
-                             frame->size,
-                             dev->net->interface.mac.octet_a,
-                             dev->net->interface.mac.octet_b,
-                             dev->net->interface.mac.octet_c,
-                             dev->net->interface.mac.octet_d,
-                             dev->net->interface.mac.octet_e,
-                             dev->net->interface.mac.octet_f);
+                       frame->size,
+                       dev->net->interface.mac.octet_a,
+                       dev->net->interface.mac.octet_b,
+                       dev->net->interface.mac.octet_c,
+                       dev->net->interface.mac.octet_d,
+                       dev->net->interface.mac.octet_e,
+                       dev->net->interface.mac.octet_f);
         logger_log_info(tmp);
 
         (*dev->net->dpi.receive)(out);

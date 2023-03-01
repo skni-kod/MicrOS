@@ -265,8 +265,7 @@ void startup()
     dma_init(0xc0000500);
     logger_log_ok("DMA");
 
-    // TODO:
-    //  NOTE: it doesn't work well, so assume for now that floppy controller is always present
+    // NOTE: it doesn't work well, so assume for now that floppy controller is always present
     // if (fdc_is_present())
     {
         fdc_init();
@@ -275,9 +274,9 @@ void startup()
 
     // harddisk_configuration harddisk_conf;
     // harddisk_conf.delay_by_reading_port = false;
-    harddisk_init();
-    logger_log_ok("Hard Disks");
-    print_harddisks_status();
+    // harddisk_init();
+    // logger_log_ok("Hard Disks");
+    // print_harddisks_status();
 
     partitions_init();
     logger_log_ok("Partitions");
