@@ -64,11 +64,12 @@ bool rtl8139_probe(net_device_t *(*get_net_device)())
             const char *name = rtl8139_get_name(dev);
             memcpy(dev->net->interface.name, name, strlen(name));
             dev->net->dpi.send = &rtl8139_send;
-            dev->rx = rtl8139_init_buffer(1520 * 9);
+            dev->rx = rtl8139_init_buffer(RTL8139_RX_BUFFER_BASE);
             if (!dev->rx)
             {
                 return false;
             }
+            rtl8139_write_word(dev, CAPR, dev->rx->pointer);
             dev->tsad = 0;
 
             // Software reset
@@ -122,20 +123,16 @@ bool rtl8139_irq_handler(void)
     {
         rtl8139_dev_t *dev = &devices[dev_id];
         rtl8139_isr_t status = (rtl8139_isr_t)rtl8139_read_word(dev, ISR);
+        rtl8139_write_word(dev, ISR, status.value);
 
         if (!status.value)
             continue;
-        rtl8139_write_word(dev, ISR, status.value);
 
         if (status.TOK)
-        {
             ;
-        }
 
         if (status.ROK)
-        {
             rtl8139_receive(dev);
-        }
 
         return true;
     }
@@ -145,26 +142,26 @@ bool rtl8139_irq_handler(void)
 
 uint32_t rtl8139_receive(rtl8139_dev_t *dev)
 {
-    rtl8139_rx_header *frame = (dev->rx->data + dev->rx->pointer);
+    rtl8139_rx_header *frame = ((uint8_t*)(dev->rx->data) + dev->rx->pointer);
     if (frame->ROK)
     {
         nic_data_t *out = dev->net->dpi.get_receive_buffer(dev->net);
         memcpy(out->frame, frame->data, (uint32_t)frame->size);
 
-        dev->rx->pointer = (dev->rx->pointer + (uint32_t)frame->size + 1);
-        dev->rx->pointer %= 8 * 1520;
+        dev->rx->pointer = ((dev->rx->pointer + (uint32_t)frame->size + 4 + 3)) & (~3);
+        dev->rx->pointer = dev->rx->pointer % RTL8139_RX_BUFFER_BASE;
 
-        rtl8139_write_word(dev, 0x38, dev->rx->pointer - 0x10);
+        rtl8139_write_word(dev, CAPR, dev->rx->pointer - 0x10);
 
         char tmp[128];
         kernel_sprintf(tmp, "%d bytes on: %02x:%02x:%02x:%02x:%02x:%02x",
-                       frame->size,
-                       dev->net->interface.mac.octet_a,
-                       dev->net->interface.mac.octet_b,
-                       dev->net->interface.mac.octet_c,
-                       dev->net->interface.mac.octet_d,
-                       dev->net->interface.mac.octet_e,
-                       dev->net->interface.mac.octet_f);
+                             frame->size,
+                             dev->net->interface.mac.octet_a,
+                             dev->net->interface.mac.octet_b,
+                             dev->net->interface.mac.octet_c,
+                             dev->net->interface.mac.octet_d,
+                             dev->net->interface.mac.octet_e,
+                             dev->net->interface.mac.octet_f);
         logger_log_info(tmp);
 
         (*dev->net->dpi.receive)(out);

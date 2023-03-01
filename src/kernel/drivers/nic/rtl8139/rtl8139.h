@@ -16,9 +16,7 @@
 #include <memory/heap/heap.h>
 
 #define RTL8139_VENDOR_ID 0x10EC
-#define RTL8139_DEVICE_ID_A 0x8139
-#define RTL8139_DEVICE_ID_B 0x8136
-#define RTL8139_DEVICE_ID_C 0x0139
+#define RTL8139_DEVICE_ID 0x8139
 
 #define RTL8139_RX_BUFFER_BASE 8192
 #define RTL8139_RX_BUFFER_SIZE (RTL8139_RX_BUFFER_BASE + 16 + 1500)
@@ -291,8 +289,6 @@ typedef struct rtl8139_dev
     Requires initialized PCI driver
     If device not present, returns 0, if yes pointer to dev mac address
 */
-bool rtl8139_init(net_device_t *(*get_net_device)());
-
 bool rtl8139_probe(net_device_t *(*get_net_device)());
 
 //! rtl8139_send

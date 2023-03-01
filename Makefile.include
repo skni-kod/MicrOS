@@ -63,5 +63,5 @@ CURL					= curl
 RM		 				= rm
 SED						= sed
 QEMU					= qemu-system-$(QEMU_ARCH)
-#QEMU					= $HOME/qemu-7.2.0/build/qemu-system-$(QEMU_ARCH)
+#QEMU					= /opt/qemu/qemu-system-$(QEMU_ARCH)
 GDB						= gdb

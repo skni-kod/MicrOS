@@ -70,20 +70,23 @@ static void __dhcp_add_option(dhcp_message_t *msg, uint8_t option, uint8_t value
 uint32_t dhcp_negotiate(net_interface_t *interface)
 {
     uint64_t elapsed;
+    uint32_t size;
 
     sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     bind(sock, &addr, sizeof(struct sockaddr_in));
 
-    printf("SND DHCP DISCOVER\n");
     dhcp_discover(interface);
 
     elapsed = 0;
     while (elapsed++ < 25)
     {
         micros_process_current_process_sleep(100);
-        if (recvfrom(sock, &dhcp_offer, 1500, 0, &addr, sizeof(struct sockaddr_in)))
+        if (size = recvfrom(sock, &dhcp_offer, 1500, 0, &addr, sizeof(struct sockaddr_in)))
             break;
     }
+
+    if (!size)
+        return -1;
 
     dhcp_process_offer(interface, &dhcp_offer);
 
@@ -91,9 +94,12 @@ uint32_t dhcp_negotiate(net_interface_t *interface)
     while (elapsed++ < 25)
     {
         micros_process_current_process_sleep(100);
-        if (recvfrom(sock, &dhcp_offer, 1500, 0, &addr, sizeof(struct sockaddr_in)))
+        if (size = recvfrom(sock, &dhcp_offer, 1500, 0, &addr, sizeof(struct sockaddr_in)))
             break;
     }
+
+    if (!size)
+        return -1;
 
     dhcp_process_offer(interface, &dhcp_offer);
 
@@ -102,6 +108,8 @@ uint32_t dhcp_negotiate(net_interface_t *interface)
 
 void dhcp_discover(net_interface_t *interface)
 {
+    printf("SND DHCP DISCOVER\n");
+
     xid++;
     dhcp_message_t msg;
     memset(&msg, 0, sizeof(dhcp_message_t));
@@ -128,9 +136,9 @@ int dhcp_process_offer(net_interface_t *interface, dhcp_message_t *dhcp_offer)
     uint8_t type;
 
     dhcp_read_option(dhcp_offer, DHCP_MESSAGE_TYPE, &type, 1);
-
-    if (type == DHCP_OFFER)
+    switch (type)
     {
+    case DHCP_OFFER:
         printf("RCV DHCP OFFER\n");
         dhcp_message_t dhcp_request;
         memset(&dhcp_request, 0, sizeof(dhcp_message_t));
@@ -154,9 +162,8 @@ int dhcp_process_offer(net_interface_t *interface, dhcp_message_t *dhcp_offer)
         memcpy(&dhcp_request.chaddr, &(*interface).mac, 6);
         printf("SND DHCP REQUEST\n");
         sendto(sock, &dhcp_request, sizeof(dhcp_message_t), 0, &srv, sizeof(struct sockaddr_in));
-    }
-    else if (type == DHCP_ACK)
-    {
+        return 0;
+    case DHCP_ACK:
         printf("RCV DHCP ACK\n");
         memcpy(&interface->ipv4_address.value, &dhcp_offer->yiaddr.value, 4);
         dhcp_read_option(dhcp_offer, DHCP_ROUTER, &interface->ipv4_gateway.value, 4);
@@ -165,14 +172,15 @@ int dhcp_process_offer(net_interface_t *interface, dhcp_message_t *dhcp_offer)
         dhcp_read_option(dhcp_offer, DHCP_LEASE_TIME, &interface->ipv4_lease_time, 4);
         interface->ipv4_lease_time = ntohl(interface->ipv4_lease_time);
         return 0;
+    default:
+        return -1;
     }
-
-    return -1;
 }
 
 void dhcp_read_option(dhcp_message_t *msg, uint8_t code, uint8_t *buf, uint16_t len)
 {
     uint32_t i = 0;
+    memset(buf, 0, len);
     while (1)
     {
         uint8_t type = msg->options[i];
