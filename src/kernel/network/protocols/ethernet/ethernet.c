@@ -17,6 +17,9 @@ nic_data_t *ethernet_create_frame(net_device_t *device, uint16_t type, uint32_t 
 {
     nic_data_t *data = network_manager_get_transmitt_buffer(device);
     data->length = data_size + sizeof(ethernet_frame_t);
+    //Some NIC are strict, and does not allow to send frames below 64 bytes
+    if(data->length < 64)
+        data->length = 64;
     memcpy(&((ethernet_frame_t *)(data->frame))->src, &device->interface.mac, sizeof(mac_addr_t));
     ((ethernet_frame_t *)(data->frame))->type = htons(type);
     data->device = device;
@@ -44,11 +47,6 @@ uint32_t ethernet_send_frame(nic_data_t *data)
         if (mac)
         {
             memcpy(&((ethernet_frame_t *)(data->frame))->dst, &mac->mac, sizeof(mac_addr_t));
-// calculate FCS
-#ifndef TRUST_ME_BRO
-            *(uint32_t *)(data->frame + data->length) = __crc32(data->frame, data->length);
-            data->length++;
-#endif
             return network_manager_send_data(data);
         }
         else
@@ -56,14 +54,7 @@ uint32_t ethernet_send_frame(nic_data_t *data)
     }
     break;
     case htons(ARP_PROTOCOL_TYPE):
-    {
-// calculate FCS
-#ifndef TRUST_ME_BRO
-        *(uint32_t *)(data->frame + data->length) = __crc32(data->frame, data->length);
-        data->length++;
-#endif
         return network_manager_send_data(data);
-    }
     break;
     };
 }

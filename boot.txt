@@ -1,0 +1,3 @@
+#!ipxe
+
+boot /pxe.0

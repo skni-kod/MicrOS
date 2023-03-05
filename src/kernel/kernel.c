@@ -267,10 +267,10 @@ void startup()
 
     // NOTE: it doesn't work well, so assume for now that floppy controller is always present
     // if (fdc_is_present())
-    {
-        fdc_init();
-        logger_log_ok("Floppy Disc Controller");
-    }
+    // {
+    //     fdc_init();
+    //     logger_log_ok("Floppy Disc Controller");
+    // }
 
     // harddisk_configuration harddisk_conf;
     // harddisk_conf.delay_by_reading_port = false;
@@ -278,8 +278,8 @@ void startup()
     // logger_log_ok("Hard Disks");
     // print_harddisks_status();
 
-    partitions_init();
-    logger_log_ok("Partitions");
+    // partitions_init();
+    // logger_log_ok("Partitions");
 
     keyboard_init();
     logger_log_ok("Keyboard");
@@ -352,7 +352,20 @@ int kmain()
     logger_log_ok("Loading shells...");
 
     // serial_init(COM1_PORT, 115200, 8, 1, PARITY_NONE);
-    // logger_log_warning("For now, we are stuck in kernel without shell");
+    logger_log_warning("For now, we are stuck in kernel without shell");
+
+    // tftp_connect();
+
+    // while (1)
+    // {
+    //     uint32_t test = tftp_get_file_size("/output/KERNEL.BIN");
+
+    //     char tmp[128];
+    //     kernel_sprintf(tmp, "SIZE:%d", test);
+    //     logger_log_ok(tmp);
+    // }
+
+    while(1);
 
     uint32_t d = 0;
     for (int i = 0; i < 4; i++)

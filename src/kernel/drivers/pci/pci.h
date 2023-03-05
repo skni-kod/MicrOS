@@ -17,11 +17,17 @@
 #define PCI_CONFIG_ADDRESS 0xCF8
 #define PCI_CONFIG_DATA 0xCFC
 
-//REMEMBER!
-//These offsets are not register numbers, but byte offsets in whole PCI configuration space.
-//If Command register is indeed 0x1 register then it's byte offset will be 0x4 according to PCI Specification.
+// REMEMBER!
+// These offsets are not register numbers, but byte offsets in whole PCI configuration space.
+// If Command register is indeed 0x1 register then it's byte offset will be 0x4 according to PCI Specification.
 #define PCI_COMMAND_REGISTER 0x4
 #define PCI_COMMAND_BUSMASTER_FLAG (1 << 2)
+
+typedef enum io_type
+{
+    MMAP,
+    IO
+} io_type_t;
 
 /**
  * @brief Inits PCI driver and detect all PCI devices.
@@ -42,11 +48,10 @@ void pci_get_device_info(pci_cmd_address_reg *data, pci_device *info);
  */
 pci_device *pci_get_device(uint8_t index);
 
-
 /**
  * @brief Get number of detected PCI devices
  * @return Number of detected PCI devices
-*/
+ */
 uint8_t pci_get_number_of_devices();
 
 /**
@@ -130,7 +135,7 @@ uint32_t pci_config_in_dword(pci_device *dev, uint8_t offset);
 
 /**
  * @brief Prints all PCI devices from system table
-*/
+ */
 void pci_print_devices();
 
 #endif

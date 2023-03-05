@@ -4,7 +4,7 @@
     Last modified: 20.02.2023
 */
 #include "rtl8139.h"
-#include <inet/inet.h>
+#include "rtl8139_regs.h"
 
 static const rtl8139_hw_ver_t const rtl8139_hw_versions[] = {
     (rtl8139_hw_ver_t){.value = 0b110000, .string = "RTL8139"},
@@ -28,7 +28,7 @@ bool rtl8139_probe(net_device_t *(*get_net_device)())
     for (uint8_t i = 0; i < pci_get_number_of_devices(); i++)
     {
         pci_device *pci_dev = pci_get_device(i);
-        if (pci_dev->config.vendor_id == RTL8139_VENDOR_ID && pci_dev->config.device_id == 0x8139)
+        if (pci_dev->config.vendor_id == RTL8139_VENDOR_ID && pci_dev->config.device_id == RTL8139_DEVICE_ID)
         {
             rtl8139_dev_t *dev = heap_kernel_alloc(sizeof(rtl8139_dev_t), 0);
             devices = heap_kernel_realloc(devices, sizeof(rtl8139_dev_t *) * ++devices_count, 0);
@@ -59,6 +59,9 @@ bool rtl8139_probe(net_device_t *(*get_net_device)())
             idt_attach_interrupt_handler(dev->irq_vector, rtl8139_irq_handler);
             pic_enable_irq(dev->irq_vector);
 
+            rtl8139_write_word(dev, MULTINT, 0x0);
+            rtl8139_write_word(dev, IMR, 0xFFFF);
+
             // Setup net device
             rtl8139_read_mac(dev);
             const char *name = rtl8139_get_name(dev);
@@ -77,38 +80,19 @@ bool rtl8139_probe(net_device_t *(*get_net_device)())
             while (((rtl8139_cr_t)rtl8139_read_byte(dev, CR)).RST)
                 ;
 
-            // Set device into config mode:
-            rtl8139_write_byte(dev, CR9346, (rtl8139_9346cr_t){.EEM = RTL8139_CONFIG}.value);
+            rtl8139_write_byte(dev, CR, (rtl8139_cr_t){.RE = 1, .TE = 1}.value);
 
             rtl8139_write_long(dev, RBSTART, dev->rx->dma_address);
 
-            rtl8139_write_long(dev, RCR, (rtl8139_rxcfg_t){
-                                             .APM = 1,
-                                             .AM = 1,
-                                             .AB = 1,
-                                             .AAP = 1,
-                                             .WRAP = 1,
-                                             .MXDMA = 0b110,
-                                             .RBLEN = 0b00,
-                                             .RXFTH = 0,
-                                         }
-                                             .value);
+            rtl8139_write_long(dev, RCR, 0xf | (1 << 7));
 
-            rtl8139_write_word(dev, MULTINT, 0x0);
-            rtl8139_write_word(dev, IMR, (rtl8139_imr_t){
-                                             .TOK = 1,
-                                             .ROK = 1,
-                                         }
-                                             .value);
-
-            rtl8139_write_byte(dev, CR, (rtl8139_cr_t){.RE = 1, .TE = 1}.value);
-
+            // Set device into config mode:
+            rtl8139_write_byte(dev, CR9346, 0b11);
             // Set driver load
             rtl8139_config1_t config1 = (rtl8139_config1_t)rtl8139_read_byte(dev, CONFIG1);
             config1.DVRLOAD = 1;
             rtl8139_write_byte(dev, CONFIG1, config1.value);
-
-            rtl8139_write_byte(dev, CR9346, (rtl8139_9346cr_t){.EEM = RTL8139_NORMAL}.value);
+            rtl8139_write_byte(dev, CR9346, 0);
         }
     }
     if (devices_count)
@@ -118,21 +102,25 @@ bool rtl8139_probe(net_device_t *(*get_net_device)())
 
 bool rtl8139_irq_handler(void)
 {
+    logger_log_info("RTL ISR HANDLER");
+
     // Get status of device
     for (uint32_t dev_id = 0; dev_id < devices_count; dev_id++)
     {
-        rtl8139_dev_t *dev = devices[dev_id];
+        rtl8139_dev_t *dev = devices[0];
         rtl8139_isr_t status = (rtl8139_isr_t)rtl8139_read_word(dev, ISR);
-        rtl8139_write_word(dev, ISR, status.value);
 
         if (!status.value)
             continue;
 
-        if (status.TOK)
-            ;
+        char tmp[128];
+        kernel_sprintf(tmp, "ISR STATUS: 0x%x", status.value);
+        logger_log_info(tmp);
 
-        if (status.ROK)
-            rtl8139_receive(dev);
+        rtl8139_write_word(dev, ISR, status.value);
+
+        // if (status.ROK)
+        //     return rtl8139_receive(dev);
 
         return true;
     }
@@ -152,18 +140,6 @@ uint32_t rtl8139_receive(rtl8139_dev_t *dev)
         dev->rx->pointer = dev->rx->pointer % RTL8139_RX_BUFFER_BASE;
 
         rtl8139_write_word(dev, CAPR, dev->rx->pointer - 0x10);
-
-        char tmp[128];
-        kernel_sprintf(tmp, "%d bytes on: %02x:%02x:%02x:%02x:%02x:%02x",
-                       frame->size,
-                       dev->net->interface.mac.octet_a,
-                       dev->net->interface.mac.octet_b,
-                       dev->net->interface.mac.octet_c,
-                       dev->net->interface.mac.octet_d,
-                       dev->net->interface.mac.octet_e,
-                       dev->net->interface.mac.octet_f);
-        logger_log_info(tmp);
-
         (*dev->net->dpi.receive)(out);
     }
 }
@@ -172,7 +148,10 @@ uint32_t rtl8139_send(nic_data_t *data)
 {
     rtl8139_dev_t *dev = data->device->priv;
 
-    rtl8139_write_long(dev, TSAD_array[dev->tsad], GET_PHYSICAL_ADDRESS(&data->frame));
+    uint32_t *snd_data = heap_kernel_alloc(data->length, 4);
+    memcpy(snd_data, &data->frame, data->length);
+
+    rtl8139_write_long(dev, TSAD_array[dev->tsad], GET_PHYSICAL_ADDRESS(snd_data));
     rtl8139_write_long(dev, TSD_array[dev->tsad], (rtl8139_tsd_t){.SIZE = data->length, .OWN = 0}.value);
 
     // Switch buffer
@@ -278,7 +257,7 @@ uint32_t rtl8139_read_long(rtl8139_dev_t *device, uint32_t address)
 rtl8139_buffer_t *rtl8139_init_buffer(uint32_t size)
 {
     rtl8139_buffer_t *buffer = 0;
-    buffer = heap_kernel_alloc(sizeof(rtl8139_buffer_t) + size, 0);
+    buffer = heap_kernel_alloc(sizeof(rtl8139_buffer_t) + size, 4);
     memset(buffer, 0, sizeof(rtl8139_buffer_t) + size);
     if (buffer)
     {

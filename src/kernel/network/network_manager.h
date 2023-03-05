@@ -8,6 +8,7 @@
 #define NETWORK_MANAGER_BUFFER_SIZE 64
 
 #include <drivers/nic/rtl8139/rtl8139.h>
+#include <drivers/nic/rtl8169/rtl8169.h>
 #include <drivers/nic/virtio-pci-nic/virtio-pci-nic.h>
 #include <logger/logger.h>
 #include <micros/network_device.h>

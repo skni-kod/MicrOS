@@ -1,6 +1,5 @@
 #include "heap.h"
-
-#include <logger/logger.h>
+/// THIS IS FROM HDD_PCI
 
 heap_entry *kernel_heap;
 heap_entry *user_heap;
@@ -28,7 +27,10 @@ void *heap_alloc(uint32_t size, uint32_t align, bool supervisor)
             align_fix = align - (((uint32_t)current_entry) % align);
             if (align_fix < ENTRY_HEADER_SIZE * 2)
             {
-                align_fix += align;
+                do
+                {
+                    align_fix += align;
+                } while (align_fix < ENTRY_HEADER_SIZE * 2);
             }
         }
 
