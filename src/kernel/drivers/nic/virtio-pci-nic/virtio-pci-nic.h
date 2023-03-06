@@ -112,10 +112,10 @@ if virtio-net device reports this feature.*/
 #define VIRTIO_NET_HDR_GSO_TCPV6 4
 #define VIRTIO_NET_HDR_GSO_ECN 0x80
 
-#define VIRTIO_NET_HEADER_SIZE sizeof(virtio_nic_net_header)
+#define VIRTIO_NET_HEADER_SIZE sizeof(virtio_nic_net_header_t)
 
 /* 5.1.6 Device Operation */
-typedef struct
+typedef struct virtio_nic_net_header
 {
     uint8_t flags;
     uint8_t gso_type;
@@ -124,32 +124,39 @@ typedef struct
     uint16_t csum_start;
     uint16_t csum_offset;
     uint16_t num_buffers;
-} virtio_nic_net_header;
+} virtio_nic_net_header_t;
 
-typedef struct
+typedef struct virtio_nic_dev_t
 {
-    uint8_t bar_type;
-    uint16_t io_base;
-    uint8_t mac_addr[6];
+    io_type_t io_type;
+    union
+    {
+        uint16_t io_base;
+        uint32_t mem_base;
+    };
+    mac_addr_t mac;
+    virtq *rx;
+    virtq *tx;
     uint8_t status;
-} virtio_nic_dev;
+    uint32_t irq_vector;
+    net_device_t *net;
+    pci_device *pci;
+} virtio_nic_dev_t;
 
-bool virtio_nic_init(net_device_t *net_dev);
+bool virtio_nic_probe(net_device_t *(*get_net_device)());
 
-bool virtio_nic_irq_handler();
+bool virtio_nic_irq_handler(interrupt_state *state);
 
-void virtio_nic_send(nic_data_t *data);
+virtq *virtio_nic_init_queue(virtio_nic_dev_t *dev, uint16_t queueIndex);
 
-virtq *virtio_nic_init_queue(uint16_t queueIndex);
+void virtio_nic_receive(virtio_nic_dev_t *dev);
 
-void virtio_nic_receive();
+void virtio_nic_send(virtio_nic_dev_t *dev, nic_data_t *data);
 
-void virtio_nic_setup_buffers(uint16_t buffers_count);
+void virtio_nic_setup_buffers(virtio_nic_dev_t *dev, uint16_t buffers_count);
 
-void virtio_nic_get_mac(uint8_t *buffer);
+uint32_t virtio_nic_reg_read(virtio_nic_dev_t *dev, uint16_t reg);
 
-uint32_t virtio_nic_reg_read(uint16_t reg);
-
-void virtio_nic_reg_write(uint16_t reg, uint32_t data);
+void virtio_nic_reg_write(virtio_nic_dev_t *dev, uint16_t reg, uint32_t data);
 
 #endif

@@ -9,7 +9,7 @@
 static const char RTL8169_NAME[] = "RTL8169";
 
 static uint8_t devices_count = 0;
-static rtl8169_dev_t *devices;
+static void **devices;
 
 #define DESCRIPTOR_COUNT 32
 #define BUFFER_SIZE 1520

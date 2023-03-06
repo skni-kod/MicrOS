@@ -89,7 +89,6 @@ typedef struct rtl8169_dev
         uint16_t io_base;
         uint32_t mem_base;
     };
-    //rtl8169_isr_t isr;
     uint32_t irq_vector;
     rtl8169_rx_descriptor_t *rx;
     rtl8169_tx_descriptor_t *tx;
