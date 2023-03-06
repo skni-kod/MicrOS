@@ -7,7 +7,7 @@
 
 kvector *net_devices;
 
-nic_driver_init drivers[] = {rtl8139_probe /*,rtl8169_probe*/};
+nic_driver_init drivers[] = {rtl8139_probe, rtl8169_probe};
 
 bool network_manager_init()
 {
