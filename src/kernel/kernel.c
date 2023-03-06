@@ -311,6 +311,8 @@ void startup()
     logger_log_info("MicrOS ready");
     logger_log_info("Created by Application Section of SKNI KOD");
     logger_log_info("Development version");
+
+    //ps2mouse_init();
 }
 
 void clear_bss()

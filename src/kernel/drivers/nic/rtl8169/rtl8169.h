@@ -121,7 +121,7 @@ uint32_t rtl8169_receive(rtl8169_dev_t *device);
 /*!
     Manages interruptions of device
 */
-bool rtl8169_irq_handler(void);
+bool rtl8169_irq_handler(interrupt_state *state);
 
 //! rtl_read_mac
 /*!

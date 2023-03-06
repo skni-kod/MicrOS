@@ -69,20 +69,19 @@ static void __dhcp_add_option(dhcp_message_t *msg, uint8_t option, uint8_t value
 
 uint32_t dhcp_negotiate(net_interface_t *interface)
 {
-    uint64_t elapsed=0;
-    uint32_t size=0;
+    uint64_t elapsed = 0;
+    uint32_t size = 0;
 
-    sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    bind(sock, &addr, sizeof(struct sockaddr_in));
-
+    sock = k_socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    k_bind(sock, &addr, sizeof(struct sockaddr_in));
 
     if (!sock)
         return -1;
 
     dhcp_discover(interface);
 
-    elapsed = 0;
-    while (elapsed++ < 0xFFFFFFFF)
+    elapsed = timer_get_system_clock();
+    while (timer_get_system_clock() < (elapsed + 500))
     {
         if (size = k_recvfrom(sock, &dhcp_offer, 1500, 0, &addr, sizeof(struct sockaddr_in)))
             break;
@@ -93,8 +92,8 @@ uint32_t dhcp_negotiate(net_interface_t *interface)
 
     dhcp_process_offer(interface, &dhcp_offer);
 
-    elapsed = 0;
-    while (elapsed++ < 0xFFFFFFFF)
+    elapsed = timer_get_system_clock();
+    while (timer_get_system_clock() < (elapsed + 500))
     {
         if (size = k_recvfrom(sock, &dhcp_offer, 1500, 0, &addr, sizeof(struct sockaddr_in)))
             break;

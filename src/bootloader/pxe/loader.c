@@ -474,6 +474,7 @@ load:
 				 &close);
 
 	// jump into kernel!
+	terminal_writestring("Jumping into kernel...");
 	enter_kernel();
 
 file_load_fail:

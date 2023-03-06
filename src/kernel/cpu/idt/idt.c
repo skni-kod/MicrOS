@@ -287,15 +287,7 @@ void idt_attach_syscalls_manager(void (*handler)(interrupt_state *state))
 
 void idt_global_int_handler(interrupt_state *state)
 {
-    state->interrupt_number - 32 < 8 ? pic_confirm_master() : pic_confirm_master_and_slave();
 
-    if (state->interrupt_number - 32 > 7)
-    {
-        char tmp[64];
-        kernel_sprintf(tmp, "IRQ: %d", state->interrupt_number - 32);
-        logger_log_warning(tmp);
-    }
-    
     for (int i = 0; i < IDT_MAX_INTERRUPT_HANDLERS; i++)
     {
         if (interrupt_handlers[i].interrupt_number == state->interrupt_number && interrupt_handlers[i].handler != 0)
@@ -312,6 +304,8 @@ void idt_global_int_handler(interrupt_state *state)
     {
         process_manager_handler(state);
     }
+
+    state->interrupt_number - 32 < 8 ? pic_confirm_master() : pic_confirm_master_and_slave();
 }
 
 void idt_global_exc_handler(exception_state *state)

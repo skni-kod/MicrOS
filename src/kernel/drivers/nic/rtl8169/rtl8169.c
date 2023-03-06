@@ -46,6 +46,11 @@ bool rtl8169_probe(net_device_t *(*get_net_device)())
             // Bus mastering
             pci_busmaster_set(dev->pci, true);
 
+            // Enable interrupts in CPU
+            dev->irq_vector = dev->pci->config.interrupt_line;
+            idt_attach_interrupt_handler(dev->irq_vector, rtl8169_irq_handler);
+            pic_enable_irq(dev->irq_vector);
+
             // Now setup registers, and memory
             dev->io_type = (io_type_t)(dev->pci->config.base_addres_0 & (0x1));
             switch (dev->io_type)
@@ -69,19 +74,14 @@ bool rtl8169_probe(net_device_t *(*get_net_device)())
             while (((rtl8169_cr_t)rtl8169_read_byte(dev, CR)).RST)
                 ;
 
-            // Set device into config mode:
-            // rtl8169_write_byte(dev, CR9346, (rtl8169_9346cr_t){.EEM = RTL8169_CONFIG}.value);
-            rtl8169_write_byte(dev, CR9346, 0xC0);
-
-            // First enable TX-RX
+            // First enable TX and RX
             rtl8169_write_byte(dev, CR, (rtl8169_cr_t){.RE = 1, .TE = 1}.value);
 
-            // rtl8169_write_word(dev, IMR, (rtl8169_imr_t){
-            //                                  .TOK = 1,
-            //                                  .ROK = 1,
-            //                              }
-            //                                  .value);
-            rtl8169_write_word(dev, IMR, 0xFFFF);
+            rtl8169_write_word(dev, IMR, (rtl8169_imr_t){
+                                             .TOK = 1,
+                                             .ROK = 1,
+                                         }
+                                             .value);
 
             rtl8169_write_byte(dev, ETThR, (rtl8169_etthr_t){.ETTh = 0b11000}.value);
             rtl8169_write_byte(dev, RMS, (rtl8169_rms_t){.RMS = 1520}.value);
@@ -120,18 +120,21 @@ bool rtl8169_probe(net_device_t *(*get_net_device)())
 
             rtl8169_write_long(dev, RCR, (rtl8169_rxcfg_t){.APM = 1, .AM = 1, .AB = 1, .MXDMA = 0b111, .RXFTH = 0b111}.value);
 
+
+            // Set device into config mode:
+            rtl8169_write_byte(dev, CR9346, (rtl8169_9346cr_t){.EEM = RTL8169_CONFIG}.value);
             // Set driver load
             rtl8169_config1_t config1 = (rtl8169_config1_t)rtl8169_read_byte(dev, CONFIG1);
             config1.DVRLOAD = 1;
             rtl8169_write_byte(dev, CONFIG1, config1.value);
 
-            // Enable interrupts in CPU
-            dev->irq_vector = dev->pci->config.interrupt_line;
-            idt_attach_interrupt_handler(dev->irq_vector, rtl8169_irq_handler);
-            pic_enable_irq(dev->irq_vector);
-
             // Back to normal operation 
             rtl8169_write_byte(dev, CR9346, (rtl8169_9346cr_t){.EEM = RTL8169_NORMAL}.value);
+
+            char tmp[128];
+            kernel_sprintf(tmp,"IRQ LINE: %d IRQ PIN: %d",dev->pci->config.interrupt_line,dev->pci->config.interrupt_pin);
+            logger_log_info(tmp);
+
         }
     }
 
@@ -140,7 +143,7 @@ bool rtl8169_probe(net_device_t *(*get_net_device)())
     return false;
 }
 
-bool rtl8169_irq_handler(void)
+bool rtl8169_irq_handler(interrupt_state *state)
 {
     // Get status of device
     for (uint32_t dev_id = 0; dev_id < devices_count; dev_id++)

@@ -71,7 +71,7 @@ uint32_t rtl8139_receive(rtl8139_dev_t *device);
 /*!
     Manages interruptions of device
 */
-bool rtl8139_irq_handler(void);
+bool rtl8139_irq_handler(interrupt_state *state);
 
 //! rtl_read_mac
 /*!

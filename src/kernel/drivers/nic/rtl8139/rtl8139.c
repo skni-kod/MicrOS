@@ -59,9 +59,6 @@ bool rtl8139_probe(net_device_t *(*get_net_device)())
             idt_attach_interrupt_handler(dev->irq_vector, rtl8139_irq_handler);
             pic_enable_irq(dev->irq_vector);
 
-            rtl8139_write_word(dev, MULTINT, 0x0);
-            rtl8139_write_word(dev, IMR, 0xFFFF);
-
             // Setup net device
             rtl8139_read_mac(dev);
             const char *name = rtl8139_get_name(dev);
@@ -84,15 +81,38 @@ bool rtl8139_probe(net_device_t *(*get_net_device)())
 
             rtl8139_write_long(dev, RBSTART, dev->rx->dma_address);
 
-            rtl8139_write_long(dev, RCR, 0xf | (1 << 7));
+            rtl8139_write_long(dev, RCR, (rtl8139_rxcfg_t){
+                                             .AAP = 1,
+                                             .APM = 1,
+                                             .AB = 1,
+                                             .AER = 0,
+                                             .AM = 1,
+                                             .AR = 1,
+                                             .MXDMA = 0b111,
+                                             .RXFTH = 0b111,
+                                             .MulERINT = 0,
+                                             .WRAP = 1,
+                                             .ERTH = 0,
+                                         }
+                                             .value);
+
+            rtl8139_write_word(dev, MULTINT, 0x0);
+            rtl8139_write_word(dev, IMR, (rtl8139_imr_t){.TOK = 1, .ROK = 1}.value);
 
             // Set device into config mode:
-            rtl8139_write_byte(dev, CR9346, 0b11);
-            // Set driver load
-            rtl8139_config1_t config1 = (rtl8139_config1_t)rtl8139_read_byte(dev, CONFIG1);
-            config1.DVRLOAD = 1;
-            rtl8139_write_byte(dev, CONFIG1, config1.value);
-            rtl8139_write_byte(dev, CR9346, 0);
+            {
+                rtl8139_9346cr_t reg = (rtl8139_9346cr_t)rtl8139_read_byte(dev, CR9346);
+                reg.EEM = RTL8139_CONFIG;
+                rtl8139_write_byte(dev, CR9346, reg.value);
+                
+                // Set driver load
+                rtl8139_config1_t config1 = (rtl8139_config1_t)rtl8139_read_byte(dev, CONFIG1);
+                config1.DVRLOAD = 1;
+                rtl8139_write_byte(dev, CONFIG1, config1.value);
+
+                reg.EEM = RTL8139_NORMAL;
+                rtl8139_write_byte(dev, CR9346, reg.value);
+            }
         }
     }
     if (devices_count)
@@ -100,9 +120,8 @@ bool rtl8139_probe(net_device_t *(*get_net_device)())
     return false;
 }
 
-bool rtl8139_irq_handler(void)
+bool rtl8139_irq_handler(interrupt_state *state)
 {
-    logger_log_info("RTL ISR HANDLER");
 
     // Get status of device
     for (uint32_t dev_id = 0; dev_id < devices_count; dev_id++)
@@ -113,14 +132,10 @@ bool rtl8139_irq_handler(void)
         if (!status.value)
             continue;
 
-        char tmp[128];
-        kernel_sprintf(tmp, "ISR STATUS: 0x%x", status.value);
-        logger_log_info(tmp);
-
         rtl8139_write_word(dev, ISR, status.value);
 
-        // if (status.ROK)
-        //     return rtl8139_receive(dev);
+        if (status.ROK)
+            return rtl8139_receive(dev);
 
         return true;
     }

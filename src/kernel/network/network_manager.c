@@ -7,7 +7,7 @@
 
 kvector *net_devices;
 
-nic_driver_init drivers[] = {rtl8139_probe};
+nic_driver_init drivers[] = {rtl8139_probe /*,rtl8169_probe*/};
 
 bool network_manager_init()
 {
@@ -30,35 +30,37 @@ bool network_manager_init()
         dev->tx = kbuffer_init(dev->interface.mtu, NETWORK_MANAGER_BUFFER_SIZE);
         // finally turn on communication
         dev->interface.mode = (net_mode_t){.receive = 1, .send = 1};
+
+        dhcp_negotiate(&dev->interface);
+
         network_manager_print_device_info(dev);
 
-        //dhcp_negotiate(&dev->interface);
         // if (dhcp_negotiate(dev->interface))
         //{
         // set static IP
-        dev->interface.ipv4_address = (ipv4_addr_t){
-            .oct_a = 192,
-            .oct_b = 168,
-            .oct_c = 99,
-            .oct_d = 20};
+        // dev->interface.ipv4_address = (ipv4_addr_t){
+        //     .oct_a = 192,
+        //     .oct_b = 168,
+        //     .oct_c = 78,
+        //     .oct_d = 20};
 
-        dev->interface.ipv4_dns = (ipv4_addr_t){
-            .oct_a = 1,
-            .oct_b = 1,
-            .oct_c = 1,
-            .oct_d = 1};
+        // dev->interface.ipv4_dns = (ipv4_addr_t){
+        //     .oct_a = 1,
+        //     .oct_b = 1,
+        //     .oct_c = 1,
+        //     .oct_d = 1};
 
-        dev->interface.ipv4_netmask = (ipv4_addr_t){
-            .oct_a = 255,
-            .oct_b = 255,
-            .oct_c = 255,
-            .oct_d = 0};
+        // dev->interface.ipv4_netmask = (ipv4_addr_t){
+        //     .oct_a = 255,
+        //     .oct_b = 255,
+        //     .oct_c = 255,
+        //     .oct_d = 0};
 
-        dev->interface.ipv4_gateway = (ipv4_addr_t){
-            .oct_a = 192,
-            .oct_b = 168,
-            .oct_c = 99,
-            .oct_d = 1};
+        // dev->interface.ipv4_gateway = (ipv4_addr_t){
+        //     .oct_a = 192,
+        //     .oct_b = 168,
+        //     .oct_c = 78,
+        //     .oct_d = 1};
         //}
     }
 
@@ -163,15 +165,19 @@ kvector *network_manager_get_devices()
 
 static void network_manager_print_device_info(net_device_t *device)
 {
-    char logInfo[128];
-    kernel_sprintf(logInfo, "%s %02x:%02x:%02x:%02x:%02x:%02x",
+    char logInfo[256];
+    kernel_sprintf(logInfo, "%s MAC: %02x:%02x:%02x:%02x:%02x:%02x IP: %01d.%01d.%01d.%01d",
                    device->interface.name,
                    device->interface.mac.octet_a,
                    device->interface.mac.octet_b,
                    device->interface.mac.octet_c,
                    device->interface.mac.octet_d,
                    device->interface.mac.octet_e,
-                   device->interface.mac.octet_f);
+                   device->interface.mac.octet_f,
+                   device->interface.ipv4_address.oct_a,
+                   device->interface.ipv4_address.oct_b,
+                   device->interface.ipv4_address.oct_c,
+                   device->interface.ipv4_address.oct_d);
 
     logger_log_info(logInfo);
 }

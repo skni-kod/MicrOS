@@ -208,7 +208,7 @@ loader:
     ; Check If Line A20 Enabled
     call check_a20
     or ax, ax
-
+    
     jnz A20Ready
 
     call enable_A20_BIOS
@@ -437,10 +437,9 @@ jump_to_loader:
 	mov gs, ax
 	mov ss, ax
 
-    extern loader_main
+extern loader_main
     call loader_main
 
-[bits 32]
 global pxecall
 pxecall:
 	pushad
@@ -473,14 +472,18 @@ pxecall:
 	iretd
 
 .new_func:
-	;   pxecall(seg: u16, off: u16, pxe_call: u16, param_seg: u16, param_off: u16);
-	movzx eax, word [esp + (4*0x9)] ; arg1, seg
+	; uint16_t pxecall(uint16_t segment,
+						; uint16_t offset,
+						; uint16_t opcode,
+						; uint16_t param_segment,
+						; uint16_t param_offset);
+	movzx eax, word [esp + (4*0x9)] ; arg1, segment
 	movzx ebx, word [esp + (4*0xa)] ; arg2, offset
-	movzx ecx, word [esp + (4*0xb)] ; arg3, pxe_call
-	movzx edx, word [esp + (4*0xc)] ; arg4, param_seg
-	movzx esi, word [esp + (4*0xd)] ; arg5, param_off
+	movzx ecx, word [esp + (4*0xb)] ; arg3, opcode
+	movzx edx, word [esp + (4*0xc)] ; arg4, param_segment
+	movzx esi, word [esp + (4*0xd)] ; arg5, param_offset
 
-	; Set up PXE call parameters (opcode, offset, seg)
+	; Set up PXE call parameters (opcode, offset, segment)
 	push dx
 	push si
 	push cx
@@ -491,9 +494,9 @@ pxecall:
 	push bp
 
 	; Set up a far call via iretw
-	pushfw
-	push ax
-	push bx
+	pushfw  ;eflags
+	push ax ;cs
+	push bx ;eip
 
 	iretw
 .retpoint:
@@ -519,18 +522,14 @@ pxecall:
 	mov gs, ax
 	mov ss, ax
 
-	; Jump back to protected mode
-	pushfd             ; eflags
-	push dword 0x08  ; cs
-	push dword backout ; eip
-	iretd
-
+    
+    jmp 0x08:backout
 [bits 32]
 backout:
 	popad
 
     mov eax, [pxe_status]
-
+    cli
 	ret
 
     global enter_kernel:

@@ -92,14 +92,14 @@ ifeq ($(QEMU_NET), 1)
 	endif
 
 	ifneq ($(QEMU_TAP),1)
-		QEMU_OPTIONS		+= -netdev user,id=net1,ipv6=off,dhcpstart=10.0.2.20,hostfwd=tcp::5555-:22
-#		QEMU_OPTIONS		+= -netdev user,id=net2,ipv6=off,dhcpstart=10.0.2.21
+		QEMU_OPTIONS		+= -netdev user,id=net1,ipv6=off
+		QEMU_OPTIONS		+= -netdev user,id=net2,ipv6=off
 	else
 		QEMU_OPTIONS		+= -netdev tap,id=net1,ifname=tap0,script=no,downscript=no
 	endif
 
 	QEMU_OPTIONS			+= -net nic,model=$(QEMU_NET_DEVICE),netdev=net1,macaddr=00:11:22:33:44:55
-# QEMU_OPTIONS			+= -net nic,model=$(QEMU_NET_DEVICE),netdev=net2,macaddr=aa:bb:cc:dd:ee:ff
+	QEMU_OPTIONS			+= -net nic,model=$(QEMU_NET_DEVICE),netdev=net2,macaddr=aa:bb:cc:dd:ee:ff
 endif
 
 $(log_dir):
@@ -134,6 +134,7 @@ run-debug: ## run qemu with debugger
 run-debug: $(log_dir) build
 	$(QEMU) $(QEMU_OPTIONS) \
 	-drive file=$(output_image_floppy),format=raw,if=floppy \
+	-d cpu_reset \
 	-s -S
 .PHONY: run-debug
 
