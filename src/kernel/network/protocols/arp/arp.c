@@ -30,6 +30,14 @@ uint32_t arp_process_packet(nic_data_t *data)
     // arp_packet_t *packet = (arp_packet_t *)(data->frame + sizeof(ethernet_frame_t));
     arp_packet_t *packet = ((ethernet_frame_t *)data->frame)->data;
 
+    char tmp[128];
+    kernel_sprintf(tmp, "IP %d.%d.%d.%d",
+                   packet->src_pr.oct_a,
+                   packet->src_pr.oct_b,
+                   packet->src_pr.oct_c,
+                   packet->src_pr.oct_d);
+    logger_log_info(tmp);
+
     switch (packet->opcode)
     {
     case htons(ARP_OPCODE_REQUEST):

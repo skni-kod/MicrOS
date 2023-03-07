@@ -29,8 +29,9 @@ bool virtio_nic_probe(net_device_t *(*get_net_device)())
             pci_dev->config.subsystem_id == VIRTIO_NET_DEVICE_SUBSYSTEM_ID)
         {
 
-            devices = heap_kernel_realloc(devices, sizeof(virtio_nic_dev_t) * ++devices_count, 0);
-            virtio_nic_dev_t *dev = &devices[devices_count - 1];
+            virtio_nic_dev_t *dev = heap_kernel_alloc(sizeof(virtio_nic_dev_t), 0);
+            devices = heap_kernel_realloc(devices, sizeof(virtio_nic_dev_t *) * ++devices_count, 0);
+            devices[devices_count - 1] = dev;
             memset(dev, 0x0, sizeof(virtio_nic_dev_t));
 
             dev->pci = pci_dev;
@@ -38,15 +39,26 @@ bool virtio_nic_probe(net_device_t *(*get_net_device)())
             dev->net->priv = dev;
 
             // Enable busmaster
-            pci_busmaster_set(&pci_dev, true);
+            pci_busmaster_set(dev->pci, true);
             // Enable interrupt
             dev->irq_vector = dev->pci->config.interrupt_line;
             idt_attach_interrupt_handler(dev->irq_vector, virtio_nic_irq_handler);
             pic_enable_irq(dev->irq_vector);
 
+            dev->io_type = (io_type_t)(dev->pci->config.base_addres_0 & (0x1));
+            switch (dev->io_type)
+            {
+            case IO:
+                dev->io_base = dev->pci->config.base_addres_0 & (~0x3);
+                break;
+            case MMAP:
+                dev->mem_base = dev->pci->config.base_addres_0 & (~0xf);
+                break;
+            }
+
             // Setup device, get mac address
             for (uint8_t i = 0; i < 6; i++)
-                dev->mac.addr[i] = virtio_nic_reg_read(dev, 0x14 + i);
+                dev->net->interface.mac.addr[i] = virtio_nic_reg_read(dev, 0x14 + i);
 
             memcpy(&dev->net->interface.name, virtio_name, strlen(virtio_name));
             dev->net->dpi.send = &virtio_nic_send;
@@ -103,37 +115,35 @@ bool virtio_nic_irq_handler(interrupt_state *state)
 {
     for (uint32_t dev_id = 0; dev_id < devices_count; dev_id++)
     {
-        virtio_nic_dev_t *dev = &devices[dev_id];
+        virtio_nic_dev_t *dev = devices[dev_id];
         if (virtio_nic_reg_read(dev, REG_ISR_STATUS) & VIRTIO_ISR_VIRTQ_USED)
         {
+            // Transmitt packet
+            while (dev->rx->device_area->index != dev->tx->last_device_index)
             {
-                // Transmit packet
-                while (dev->rx->device_area->index != dev->tx->last_device_index)
-                {
-                    // Free buffers after transmitting
-                    uint16_t ring_index, descriptor_index;
-                    ring_index = dev->tx->last_device_index % dev->tx->size;
-                    descriptor_index = (uint16_t)dev->tx->device_area->ring_buffer[ring_index].index;
-                    descriptor_index %= dev->tx->size;
+                // Free buffers after transmitting
+                uint16_t ring_index, descriptor_index;
+                ring_index = dev->tx->last_device_index % dev->tx->size;
+                descriptor_index = (uint16_t)dev->tx->device_area->ring_buffer[ring_index].index;
+                descriptor_index %= dev->tx->size;
 
+                dev->tx->descriptor_area[descriptor_index].address = 0xFFFFFFFFFFFFFFFF;
+                dev->tx->descriptor_area[descriptor_index].length = 0;
+
+                while (dev->tx->descriptor_area[descriptor_index].next)
+                {
+                    dev->tx->descriptor_area[descriptor_index++].next = 0;
+                    descriptor_index %= dev->tx->size;
                     dev->tx->descriptor_area[descriptor_index].address = 0xFFFFFFFFFFFFFFFF;
                     dev->tx->descriptor_area[descriptor_index].length = 0;
-
-                    while (dev->tx->descriptor_area[descriptor_index].next)
-                    {
-                        dev->tx->descriptor_area[descriptor_index++].next = 0;
-                        descriptor_index %= dev->tx->size;
-                        dev->tx->descriptor_area[descriptor_index].address = 0xFFFFFFFFFFFFFFFF;
-                        dev->tx->descriptor_area[descriptor_index].length = 0;
-                    }
-                    dev->tx->device_area++;
                 }
-
-                // Receive packet
-                if (dev->rx->device_area->index != dev->rx->last_device_index &&
-                    dev->net->interface.mode.receive)
-                    virtio_nic_receive(dev);
+                dev->tx->device_area++;
             }
+
+            // Receive packet
+            if (dev->rx->device_area->index != dev->rx->last_device_index &&
+                dev->net->interface.mode.receive)
+                virtio_nic_receive(dev);
 
             return true;
         }
@@ -187,11 +197,11 @@ void virtio_nic_setup_buffers(virtio_nic_dev_t *dev, uint16_t buffers_count)
     virtio_nic_reg_write(dev, REG_QUEUE_NOTIFY, VIRTIO_NET_RECEIVE_QUEUE_INDEX);
 }
 
-void virtio_nic_send(virtio_nic_dev_t *dev, nic_data_t *data)
+void virtio_nic_send(nic_data_t *data)
 {
     // Allocate a buffer for the header
     virtio_nic_net_header_t *net_buffer = heap_kernel_alloc(VIRTIO_NET_HEADER_SIZE, 0);
-
+    virtio_nic_dev_t *dev = data->device->priv;
     // Set parameters of net_buffer
     memset(net_buffer, 0, sizeof(virtio_nic_net_header_t));
 

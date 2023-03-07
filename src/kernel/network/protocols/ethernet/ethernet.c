@@ -2,14 +2,21 @@
 
 uint32_t ethernet_process_frame(nic_data_t *data)
 {
-    ethernet_frame_t frame = *(ethernet_frame_t *)data->frame;
+    ethernet_frame_t *frame = (ethernet_frame_t *)data->frame;
 
-    switch (frame.type)
+    char tmp[128];
+    kernel_sprintf(tmp, "TYPE: %d",
+                   frame->type);
+    logger_log_info(tmp);
+
+    switch (frame->type)
     {
     case htons(ARP_PROTOCOL_TYPE):
         return arp_process_packet(data);
     case htons(IPv4_PROTOCOL_TYPE):
         return ipv4_process_packet(data);
+    default:
+        return 0;
     };
 }
 
@@ -17,8 +24,8 @@ nic_data_t *ethernet_create_frame(net_device_t *device, uint16_t type, uint32_t 
 {
     nic_data_t *data = network_manager_get_transmitt_buffer(device);
     data->length = data_size + sizeof(ethernet_frame_t);
-    //Some NIC are strict, and does not allow to send frames below 64 bytes
-    if(data->length < 64)
+    // Some NIC are strict, and does not allow to send frames below 64 bytes
+    if (data->length < 64)
         data->length = 64;
     memcpy(&((ethernet_frame_t *)(data->frame))->src, &device->interface.mac, sizeof(mac_addr_t));
     ((ethernet_frame_t *)(data->frame))->type = htons(type);
@@ -55,6 +62,6 @@ uint32_t ethernet_send_frame(nic_data_t *data)
     break;
     case htons(ARP_PROTOCOL_TYPE):
         return network_manager_send_data(data);
-    break;
+        break;
     };
 }

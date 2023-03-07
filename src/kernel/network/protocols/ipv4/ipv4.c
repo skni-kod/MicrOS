@@ -9,6 +9,14 @@ uint32_t ipv4_process_packet(nic_data_t *data)
     if (packet->version != IPv4_PROTOCOL_VERSION)
         return 0;
 
+    char tmp[128];
+    kernel_sprintf(tmp, "IP %d.%d.%d.%d",
+                   packet->src.oct_a,
+                   packet->src.oct_b,
+                   packet->src.oct_c,
+                   packet->src.oct_d);
+    logger_log_info(tmp);
+
 #ifndef TRUST_ME_BRO
     // verify checksum
     uint16_t checksum = packet->header_checksum;

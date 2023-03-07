@@ -8,9 +8,10 @@
 kvector *net_devices;
 
 nic_driver_init drivers[] = {
-    rtl8139_probe,
+    // rtl8139_probe,
     rtl8169_probe,
-    virtio_nic_probe,
+    //  VIRTIO HAS TO BE REWRITTEN
+    //virtio_nic_probe,
 };
 
 bool network_manager_init()
@@ -35,7 +36,7 @@ bool network_manager_init()
         // finally turn on communication
         dev->interface.mode = (net_mode_t){.receive = 1, .send = 1};
 
-        dhcp_negotiate(&dev->interface);
+        //dhcp_negotiate(&dev->interface);
 
         network_manager_print_device_info(dev);
 
@@ -75,7 +76,6 @@ nic_data_t *network_manager_get_receive_buffer(net_device_t *device)
 {
     if (device && device->interface.mode.receive)
     {
-
         nic_data_t *data = (nic_data_t *)kbuffer_get(device->rx, device->interface.mtu);
         data->length = device->interface.mtu;
         data->device = device;
@@ -119,6 +119,10 @@ uint32_t network_manager_send_data(nic_data_t *data)
 
 void network_manager_receive_data(nic_data_t *data)
 {
+    // char tmp[65];
+    // kernel_sprintf(tmp,"MODE: %d",data->device->interface.mode.receive);
+    // logger_log_warning(tmp);
+
     if (data->device->interface.mode.receive)
     {
         if (!ethernet_process_frame(data))

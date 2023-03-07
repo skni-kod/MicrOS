@@ -22,32 +22,32 @@
 #define RTL8169_RX_BUFFER_BASE 8192
 #define RTL8169_RX_BUFFER_SIZE (RTL8169_RX_BUFFER_BASE + 16 + 1500)
 
-
 typedef struct rtl8169_rx_descriptor
 {
     union
     {
-        uint32_t command;
+        uint32_t;
         struct
         {
             uint32_t
-                OWN : 1,
-                EOR : 1, : 16,
-                length : 14;
+                length : 14,
+                : 16,
+                EOR : 1,
+                OWN : 1;
         };
     };
     union
     {
-        uint32_t vlan;
+        uint32_t;
         struct
         {
-            uint32_t : 16,
+            uint32_t vlan: 16,
                 tava : 1, : 15;
         };
     };
     uint32_t low_address;
     uint32_t high_address;
-} rtl8169_rx_descriptor_t;
+} __attribute__((packed)) rtl8169_rx_descriptor_t;
 
 typedef struct rtl8169_tx_descriptor
 {

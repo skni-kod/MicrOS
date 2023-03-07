@@ -134,7 +134,6 @@ typedef struct virtio_nic_dev_t
         uint16_t io_base;
         uint32_t mem_base;
     };
-    mac_addr_t mac;
     virtq *rx;
     virtq *tx;
     uint8_t status;
@@ -151,7 +150,7 @@ virtq *virtio_nic_init_queue(virtio_nic_dev_t *dev, uint16_t queueIndex);
 
 void virtio_nic_receive(virtio_nic_dev_t *dev);
 
-void virtio_nic_send(virtio_nic_dev_t *dev, nic_data_t *data);
+void virtio_nic_send(nic_data_t *data);
 
 void virtio_nic_setup_buffers(virtio_nic_dev_t *dev, uint16_t buffers_count);
 
