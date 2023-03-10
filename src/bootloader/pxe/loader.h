@@ -127,6 +127,22 @@ typedef struct pxe
 	seg_desc_t BC_CodeWrite;
 } __attribute__((packed)) pxe_t;
 
+typedef struct PXENV_UNDI_SHUTDOWN
+{
+	uint16_t status;
+} __attribute__((packed)) PXENV_UNDI_SHUTDOWN_t;
+
+typedef struct s_PXENV_UNLOAD_STACK
+{
+	uint16_t status;
+	uint8_t reserved[10];
+} __attribute__((packed)) PXENV_UNLOAD_STACK_t;
+
+typedef struct s_PXENV_STOP_UNDI
+{
+	uint16_t status;
+} __attribute__((packed)) PXENV_STOP_UNDI_t;
+
 typedef struct get_cached_info
 {
 	uint16_t status;

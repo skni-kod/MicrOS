@@ -27,7 +27,6 @@ static const arp_entry_t broadcast_entry = {
 
 uint32_t arp_process_packet(nic_data_t *data)
 {
-    // arp_packet_t *packet = (arp_packet_t *)(data->frame + sizeof(ethernet_frame_t));
     arp_packet_t *packet = ((ethernet_frame_t *)data->frame)->data;
 
     char tmp[128];

@@ -26,7 +26,7 @@ typedef struct rtl8169_rx_descriptor
 {
     union
     {
-        uint32_t;
+        uint32_t command_long;
         struct
         {
             uint32_t
@@ -38,10 +38,10 @@ typedef struct rtl8169_rx_descriptor
     };
     union
     {
-        uint32_t;
+        uint32_t vlan_long;
         struct
         {
-            uint32_t vlan: 16,
+            uint32_t vlan_tag : 16,
                 tava : 1, : 15;
         };
     };
@@ -53,7 +53,7 @@ typedef struct rtl8169_tx_descriptor
 {
     union
     {
-        uint32_t;
+        uint32_t command_long;
         struct
         {
             uint32_t
@@ -68,7 +68,7 @@ typedef struct rtl8169_tx_descriptor
     };
     union
     {
-        uint32_t;
+        uint32_t vlan_long;
         struct
         {
             uint32_t

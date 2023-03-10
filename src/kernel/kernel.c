@@ -367,7 +367,13 @@ int kmain()
     //     logger_log_ok(tmp);
     // }
 
-    while(1);
+    //uint32_t t = get_time();
+    while(1){
+        // if(get_time() > t + 1000){
+        //     t = get_time();
+        //     logger_log_info("TIK!");
+        // }
+    }
 
     uint32_t d = 0;
     for (int i = 0; i < 4; i++)

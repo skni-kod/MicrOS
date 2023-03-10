@@ -399,79 +399,127 @@ load:
 		goto dupa;
 
 	// get file size
-	get_file_size_t file = (get_file_size_t){
-		.status = 0,
-		.server_addr = server,
-		.gateway_addr = gateway,
-		.file_size = 0,
-		.file = KERNEL_FILENAME};
+	{
+		get_file_size_t file = (get_file_size_t){
+			.status = 0,
+			.server_addr = server,
+			.gateway_addr = gateway,
+			.file_size = 0,
+			.file = KERNEL_FILENAME};
 
-	rv = pxecall(pxe_entrypoint.segment,
-				 pxe_entrypoint.offset,
-				 PXE_OPCODE_TFTP_GET_FILE_SIZE,
-				 0,
-				 &file);
+		rv = pxecall(pxe_entrypoint.segment,
+					 pxe_entrypoint.offset,
+					 PXE_OPCODE_TFTP_GET_FILE_SIZE,
+					 0,
+					 &file);
+	}
 
 	if (rv)
 		goto file_load_fail;
 
 	// open connection
-	tftp_open_t open = (tftp_open_t){
-		.status = 0,
-		.server_addr = server,
-		.gateway_addr = gateway,
-		.packet_size = BUFFER_SIZE,
-		.tftp_port = HTONS(69),
-		.file = KERNEL_FILENAME};
+	{
+		tftp_open_t open = (tftp_open_t){
+			.status = 0,
+			.server_addr = server,
+			.gateway_addr = gateway,
+			.packet_size = BUFFER_SIZE,
+			.tftp_port = HTONS(69),
+			.file = KERNEL_FILENAME};
 
-	rv = pxecall(pxe_entrypoint.segment,
-				 pxe_entrypoint.offset,
-				 (uint16_t)0x20,
-				 0,
-				 &open);
+		rv = pxecall(pxe_entrypoint.segment,
+					 pxe_entrypoint.offset,
+					 (uint16_t)0x20,
+					 0,
+					 &open);
+	}
 
 	if (rv)
 		goto file_load_fail;
 
 	// read file
-	uint8_t buf[BUFFER_SIZE];
-
-	tftp_read_t read = (tftp_read_t){
-		.status = 0,
-		.packet_number = 0,
-		.bytes_read = 0,
-		.buffer.offset = &buf,
-		.buffer.segment = 0,
-	};
-
-	uint32_t offset = 0;
-	while (1)
 	{
+		uint8_t buf[BUFFER_SIZE];
 
-		rv = pxecall(pxe_entrypoint.segment,
-					 pxe_entrypoint.offset,
-					 (uint16_t)0x22,
-					 0,
-					 &read);
+		tftp_read_t read = (tftp_read_t){
+			.status = 0,
+			.packet_number = 0,
+			.bytes_read = 0,
+			.buffer.offset = &buf,
+			.buffer.segment = 0,
+		};
 
-		if (rv)
-			goto file_load_fail;
+		uint32_t offset = 0;
+		while (1)
+		{
 
-		memcpy(kernel_addr + offset, &buf, BUFFER_SIZE);
+			rv = pxecall(pxe_entrypoint.segment,
+						 pxe_entrypoint.offset,
+						 (uint16_t)0x22,
+						 0,
+						 &read);
 
-		if (read.bytes_read < BUFFER_SIZE)
-			break;
-		offset += BUFFER_SIZE;
+			if (rv)
+				goto file_load_fail;
+
+			memcpy(kernel_addr + offset, &buf, BUFFER_SIZE);
+
+			if (read.bytes_read < BUFFER_SIZE)
+				break;
+			offset += BUFFER_SIZE;
+		}
 	}
 
 	// close file
-	tftp_close_t close = (tftp_close_t){.status = 0};
+	{
+		tftp_close_t close = (tftp_close_t){.status = 0};
 
-	rv = pxecall(pxe_entrypoint.segment,
-				 pxe_entrypoint.offset,
-				 (uint16_t)0x21,
-				 0,
-				 &close);
+		rv = pxecall(pxe_entrypoint.segment,
+					 pxe_entrypoint.offset,
+					 (uint16_t)0x21,
+					 0,
+					 &close);
+	}
+
+	// Unload PXE
+	{
+		PXENV_UNDI_SHUTDOWN_t shut = (PXENV_UNDI_SHUTDOWN_t){.status = 0};
+
+		rv = pxecall(pxe_entrypoint.segment,
+					 pxe_entrypoint.offset,
+					 (uint16_t)0x5,
+					 0,
+					 &shut);
+	}
+
+	if (rv)
+		goto dupa;
+
+	{
+		PXENV_UNLOAD_STACK_t shut = (PXENV_UNLOAD_STACK_t){.status = 0};
+
+		rv = pxecall(pxe_entrypoint.segment,
+					 pxe_entrypoint.offset,
+					 (uint16_t)0x70,
+					 0,
+					 &shut);
+	}
+
+	if (rv)
+		goto dupa;
+
+	{
+		PXENV_STOP_UNDI_t shut = (PXENV_STOP_UNDI_t){.status = 0};
+
+		rv = pxecall(pxe_entrypoint.segment,
+					 pxe_entrypoint.offset,
+					 (uint16_t)0x02,
+					 0,
+					 &shut);
+	}
+
+	if (rv)
+		goto dupa;
 
 	// jump into kernel!
 	terminal_writestring("Jumping into kernel...");

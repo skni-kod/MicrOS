@@ -44,6 +44,9 @@ void panic_screen_show(exception_state *state, uint32_t code, const char *optStr
 void panic_screen_display_intro(exception_state *state, uint32_t code, const char *optString)
 {
     char buff[100];
+    vga_printstring("Robimy to z bolem serca, ale musimy Ciebie o tym poinformowac... Zjebalo sie.\n");
+    while(1);
+
     // if(vga_gmode_get_mode() != 0x3)
     //    set3Hvideo_mode();
     if(!video_card_is_text_mode())

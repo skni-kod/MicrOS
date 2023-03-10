@@ -4,11 +4,6 @@ uint32_t ethernet_process_frame(nic_data_t *data)
 {
     ethernet_frame_t *frame = (ethernet_frame_t *)data->frame;
 
-    char tmp[128];
-    kernel_sprintf(tmp, "TYPE: %d",
-                   frame->type);
-    logger_log_info(tmp);
-
     switch (frame->type)
     {
     case htons(ARP_PROTOCOL_TYPE):

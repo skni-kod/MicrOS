@@ -149,6 +149,19 @@ typedef enum rtl8169_operating_mode
     RTL8169_CONFIG = 0b11,
 } rtl8169_operating_mode_t;
 
+typedef union rtl8169_tppoll
+{
+    uint8_t value;
+    struct
+    {
+        uint8_t
+            FSWInt : 1,
+            : 5,
+            NPQ : 1,
+            HPQ : 1;
+    };
+} rtl8169_tppoll_t;
+
 typedef union rtl8169_etthr
 {
     uint8_t value;
