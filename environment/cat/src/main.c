@@ -45,6 +45,8 @@ int main(int argc, char *argv[])
                 micros_console_print_char(buffer[i]);
             }
             
+            printf("\n");
+
             return 0;
         }
     }
