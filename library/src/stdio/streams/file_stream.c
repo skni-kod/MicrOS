@@ -29,6 +29,10 @@ FILE *streams_set_stream_as_file(const char *filename, const char *mode, FILE *s
     stream->fetch = streams_file_fetch;
     stream->flush = streams_file_flush;
 
+    //Reset file stream and save to disk when opening. This way we have proper w/w+ modes support without problems with flush appending.
+    if(parsed_mode == file_mode_write || parsed_mode == file_mode_write_and_update)
+        micros_filesystem_save_to_file(stream->filename, stream->buffer, stream->size);
+
     memcpy(stream->filename, filename, strlen(filename)+1);
     return stream;
 }
@@ -52,12 +56,15 @@ int streams_file_fetch(FILE *stream)
 
 void streams_file_flush(FILE *stream)
 {
-    if (stream->mode == file_mode_write || stream->mode == file_mode_write_and_update)
-    {
-        micros_filesystem_save_to_file(stream->filename, stream->buffer, stream->size);
-    }
-    else if (stream->mode == file_mode_append || stream->mode == file_mode_append_and_update)
-    {
+    //Since we took care of file clearing after opening it we can now just append to it all the time. SHOULD FIX STREAMS!
+    if(stream->mode != file_mode_read && stream->mode != file_mode_read_and_update && stream->buffering_mode == file_buffering_mode_full)
         micros_filesystem_append_to_file(stream->filename, stream->buffer, stream->size);
-    }
+    // if (stream->mode == file_mode_write || stream->mode == file_mode_write_and_update)
+    // {
+    //     micros_filesystem_save_to_file(stream->filename, stream->buffer, stream->size);
+    // }
+    // else if (stream->mode == file_mode_append || stream->mode == file_mode_append_and_update)
+    // {
+    //     micros_filesystem_append_to_file(stream->filename, stream->buffer, stream->size);
+    // }
 }

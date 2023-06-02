@@ -65,6 +65,19 @@ int8_t __harddisk_ata_poll(uint16_t port);
 */
 int8_t __harddisk_ata_read_sectors(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t count, uint16_t *buffer);
 
+//! Write hard disk sectors.
+/*!
+    \param type Type of harddisk.
+    \param bus Type of bus.
+    \param high_lba Higher bits of lba (24 bits are used).
+    \param low_lba Lower bits of lba (24 bits are used).
+    \param count Count of sectors to be written.
+    \param buffer Buffer of 256 16-bits values for store data.
+    \return 1 = success, -1 = disk error, -2 = parameter error.
+*/
+int8_t __harddisk_ata_write_sectors(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t count, uint16_t *buffer);
+
+
 //Most likely not needed anymore, but I kept it for future reference if we want to use it.
 //int8_t __harddisk_ata_interrupt_callback();
 
