@@ -198,6 +198,21 @@ int8_t harddisk_write_sector(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TY
     }
 }
 
+int8_t harddisk_write_sectors(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_TYPE bus, uint32_t high_lba, uint32_t low_lba, uint16_t count, uint16_t *buffer)
+{
+    const HARDDISK_STATE *state;
+    const harddisk_identify_device_data *data;
+    __harddisk_get_pointers(type, bus, &state, &data);
+    switch(*state)
+    {
+        case HARDDISK_ATA_PRESENT:
+            return __harddisk_ata_write_sectors(type, bus, high_lba, low_lba, count, buffer);
+            break;
+        default:
+            return 0;
+    }
+}
+
 bool harddisk_irq_handle(interrupt_state* irq_state)
 {
     //All things below are just leftovers from initial test with faster PIO mode.

@@ -58,7 +58,7 @@ void fat_save_fat()
         uint16_t cluster_number = i + current_partition->first_sector;
         uint32_t fat_offset = ((uint32_t)current_partition->fat + (i - current_partition->header->reserved_sectors) * current_partition->header->bytes_per_sector);
         
-        current_partition->write_on_device(current_partition->device_number, cluster_number, (uint8_t *)fat_offset);
+        current_partition->write_on_device(current_partition->device_number, cluster_number, 1, (uint8_t *)fat_offset);
     }
 }
 
@@ -98,7 +98,7 @@ void fat_save_root()
         uint16_t cluster_number = i + current_partition->first_sector;
         uint32_t root_offset = (uint32_t)current_partition->root + (i - root_first_sector) * current_partition->header->bytes_per_sector;
         
-        current_partition->write_on_device(current_partition->device_number, cluster_number, (uint8_t *)root_offset);
+        current_partition->write_on_device(current_partition->device_number, cluster_number, 1, (uint8_t *)root_offset);
     }
 }
 
@@ -306,12 +306,9 @@ uint16_t fat_save_file_to_cluster(uint16_t initial_cluster, uint16_t clusters_co
                                current_partition->header->directory_entries * 32 / current_partition->header->bytes_per_sector +
                                current_partition->header->reserved_sectors +
                                current_partition->first_sector;
+        uint8_t *cluster_offset = (uint8_t *)(buffer + ((i*current_partition->header->sectors_per_cluster) * current_partition->header->bytes_per_sector));
         
-        for (uint32_t p = 0; p < current_partition->header->sectors_per_cluster; p++)
-        {
-            uint8_t *cluster_offset = (uint8_t *)(buffer + ((i + p) * current_partition->header->bytes_per_sector));
-            current_partition->write_on_device(current_partition->device_number, cluster_to_write + p, cluster_offset);
-        }
+        current_partition->write_on_device(current_partition->device_number, cluster_to_write, current_partition->header->sectors_per_cluster, cluster_offset);
         
         uint16_t next_cluster = fat_read_cluster_value(cluster);
         if(next_cluster == 0 || next_cluster >= current_partition->last_valid_cluster_mark)
@@ -653,8 +650,9 @@ bool fat_append_file_from_path(char* path, char* buffer, uint32_t size)
             uint8_t* last_cluster_buffer = fat_read_file_from_cluster(last_file_cluster, 0, 1, &last_cluster_ack);
             uint16_t last_cluster_true_size = current_file_ptr->size % current_partition->header->bytes_per_sector;
             
-            uint16_t new_clusters_count = (last_cluster_true_size + size) / current_partition->header->bytes_per_sector;
-            last_cluster_buffer = heap_kernel_realloc(last_cluster_buffer, (new_clusters_count + 1) * current_partition->header->bytes_per_sector, 0);
+            uint16_t new_clusters_count = (last_cluster_true_size + size) / current_partition->header->bytes_per_sector / current_partition->header->sectors_per_cluster;
+            last_cluster_buffer = heap_kernel_realloc(last_cluster_buffer, (new_clusters_count + 1) * current_partition->header->bytes_per_sector
+                * current_partition->header->sectors_per_cluster, 0);
             memcpy(last_cluster_buffer + last_cluster_true_size, buffer, size);
             
             fat_save_file_to_cluster(last_file_cluster, new_clusters_count + 1, (char *)last_cluster_buffer);

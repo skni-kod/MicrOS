@@ -1,24 +1,41 @@
 #include "../stdio.h"
+#include "../errno.h"
 
 size_t fwrite(const void *ptr, size_t size, size_t count, FILE *stream)
 {
+    //Before we do anything we should check if file is in writtable mode and we even have to do anything.
+    uint32_t w;
     uint32_t total_size = size * count;
+    uint32_t wlen = 0;
+    char* p;
+    if(total_size == 0) return 0;
 
-    if (stream->pos + total_size > BUFSIZ)
+    if(stream->mode == file_mode_read)
     {
-        fflush(stream);
+        stream->error = EBADF;
+        return EOF;
     }
+
+    p = ptr;
+
+#define	MIN(a, b) ((a) < (b) ? (a) : (b))
 
     switch (stream->buffering_mode)
     {
     case file_buffering_mode_none:
     {
-        memcpy(stream->buffer + (stream->pos - stream->base), ptr, total_size);
-        stream->pos += total_size;
-        stream->size += total_size;
-
-        fflush(stream);
-
+        //we shouldn't have buffer in this mode, so we should write up to BUFSIZ at once into the file, repeat as long as we have remaining data.
+        do
+        {
+            //Maybe consider some error checking here
+            w = (*stream->write)(stream, p, MIN(total_size, BUFSIZ));
+            //if(w <= 0) DoSomethingFancy
+            p += w;
+            //total_size -= w;
+            stream->pos += w;
+            stream->size += w;
+            wlen += w;
+        } while ((total_size -= w) != 0);
         break;
     }
 
@@ -37,6 +54,7 @@ size_t fwrite(const void *ptr, size_t size, size_t count, FILE *stream)
 
                 origin = i + 1;
             }
+            
         }
 
         if (origin != total_size)
@@ -47,19 +65,25 @@ size_t fwrite(const void *ptr, size_t size, size_t count, FILE *stream)
             stream->pos += bytes_to_copy;
             stream->size += bytes_to_copy;
         }
-
+        wlen = total_size;
         break;
     }
 
+    //WRONG
     case file_buffering_mode_full:
     {
+        uint32_t offset = 0;
+        
+
         memcpy(stream->buffer + (stream->pos - stream->base), ptr, total_size);
         stream->pos += total_size;
         stream->size += total_size;
 
+        wlen = total_size;
+
         break;
     }
     }
 
-    return total_size;
+    return wlen;
 }

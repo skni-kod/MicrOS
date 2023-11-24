@@ -58,3 +58,20 @@ void hdd_wrapper_write_sector(int device_number, int sector, uint8_t *content)
     //uint32_t current_time = timer_get_system_clock();
     //while(timer_get_system_clock() - current_time < 15);
 }
+
+void hdd_wrapper_write_sectors(int device_number, int sector, int count, uint8_t* data)
+{
+    HARDDISK_ATA_MASTER_SLAVE type = hdd_wrapper_get_type_by_device_number(device_number);
+    HARDDISK_ATA_BUS_TYPE bus = hdd_wrapper_get_bus_by_device_number(device_number);
+    
+    int8_t result = harddisk_write_sectors(type, bus, 0, sector, count, (uint16_t *)data);
+    switch (result)
+    {
+        case 0: logger_log_error("harddisk_read_sector returned 0 - non-present HDD"); break;
+        case -1: logger_log_error("harddisk_read_sector returned -1 - disk error"); break;
+        case -2: logger_log_error("harddisk_read_sector returned -2 - parameters error"); break;
+    }
+    
+    //uint32_t current_time = timer_get_system_clock();
+    //while(timer_get_system_clock() - current_time < 15);
+}

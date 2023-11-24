@@ -108,6 +108,9 @@ typedef struct file
 
     //! Function which gets data from the buffer and sends it to the output (and removes it from the buffer).
     void (*flush)(struct file *file);
+
+    //! Function which stores data from source and sends it to the output
+    int (*write)(struct file *file, const char* ptr, int count);
 } FILE;
 
 //! Standard input (default is keyboard).

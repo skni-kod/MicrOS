@@ -11,5 +11,6 @@ int hdd_wrapper_get_bus_by_device_number(int device);
 
 uint8_t *hdd_wrapper_read_sector(int device_number, int sector, int count);
 void hdd_wrapper_write_sector(int device_number, int sector, uint8_t *content);
+void hdd_wrapper_write_sectors(int device_number, int sector, int count, uint8_t* data);
 
 #endif

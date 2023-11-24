@@ -1,4 +1,5 @@
 #include "file_stream.h"
+#include "../../string.h"
 
 FILE *streams_set_stream_as_file(const char *filename, const char *mode, FILE *stream)
 {
@@ -22,31 +23,32 @@ FILE *streams_set_stream_as_file(const char *filename, const char *mode, FILE *s
 
     micros_filesystem_get_file_info((char *)filename, &info);
 
+    strcpy(stream->filename, filename);
     stream->pos = 0;
     stream->mode = parsed_mode;
     stream->limit = info.size;
     stream->buffering_mode = file_buffering_mode_full;
     stream->fetch = streams_file_fetch;
     stream->flush = streams_file_flush;
+    stream->write = streams_file_write;
 
     //Reset file stream and save to disk when opening. This way we have proper w/w+ modes support without problems with flush appending.
     if(parsed_mode == file_mode_write || parsed_mode == file_mode_write_and_update)
         micros_filesystem_save_to_file(stream->filename, stream->buffer, stream->size);
 
-    memcpy(stream->filename, filename, strlen(filename)+1);
     return stream;
 }
 
 int streams_file_fetch(FILE *stream)
 {
-    uint32_t bytes_to_read = stream->pos + CHUNK_SIZE > stream->limit ? stream->limit - stream->pos : CHUNK_SIZE;
+    uint32_t bytes_to_read = stream->pos + BUFSIZ > stream->limit ? stream->limit - stream->pos : BUFSIZ;
 
     if (bytes_to_read == 0)
     {
         return 0;
     }
 
-    micros_filesystem_read_file(stream->filename, (uint8_t *)stream->buffer, stream->pos, CHUNK_SIZE);
+    micros_filesystem_read_file(stream->filename, (uint8_t *)stream->buffer, stream->pos, BUFSIZ);
 
     stream->size = stream->pos + bytes_to_read;
     stream->base = stream->pos;
@@ -67,4 +69,10 @@ void streams_file_flush(FILE *stream)
     // {
     //     micros_filesystem_append_to_file(stream->filename, stream->buffer, stream->size);
     // }
+}
+
+int streams_file_write(FILE* stream, const char* ptr, int count)
+{
+    if(micros_filesystem_append_to_file(stream->filename, ptr, count)) return count;
+    else return 0;
 }

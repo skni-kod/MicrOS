@@ -16,6 +16,7 @@ uint32_t loadFile(char* filename, uint8_t** dst)
 {
     printf("START PROG!\n");
     FILE* in = fopen(filename, "r");
+    setvbuf(in, NULL, 0, 0x100000);
     if(in == NULL)
     {
         printf("ERROR: File %s couldn't be loaded.\n", filename);
@@ -87,8 +88,13 @@ int main(int argc, char** argv)
     InitCrcTable();
     int crc = Get_CRC(data, fileSize);
     printf("CRC: 0x%X\n", crc);
-    
+    int pcrc = crc;
+    printf("Start writing!\n");
     FILE* out = fopen("B:/TESTDAT.MPG", "w+");
+    setvbuf(out, NULL, 0, 0x100000);
+
+    if(out == NULL)
+        printf("Requested file was NULL!\n");
     fwrite(data, 1, fileSize, out);
     fclose(out);
     free(data);
@@ -115,7 +121,10 @@ int main(int argc, char** argv)
     InitCrcTable();
     crc = Get_CRC(data, fileSize);
     printf("CRC: 0x%X\n", crc);
-
+    if(pcrc == crc)
+        printf("TEST OK!\n");
+    else
+        printf("TEST FAILED!\n");
     return 0;
 }
 

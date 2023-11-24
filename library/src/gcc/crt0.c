@@ -8,9 +8,14 @@ void _start(char *path, char *parameters)
     __signal_init();
 
     stdin = __stdio_create_stream();
+    stdin->mode = file_mode_read;
     streams_set_stream_as_keyboard(stdin);
 
     stdout = __stdio_create_stream();
+    free(stdout->buffer);
+    stdout->buffer = NULL;
+    stdout->buffering_mode = file_buffering_mode_none;
+    stdout->mode = file_mode_write;
     streams_set_stream_as_console(stdout);
 
     stderr = __stdio_create_stream();

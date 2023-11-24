@@ -8,5 +8,6 @@
 FILE *streams_set_stream_as_console(FILE *stream);
 int streams_console_fetch(FILE *stream);
 void streams_console_flush(FILE *stream);
+void streams_console_write(FILE* stream, const char* ptr, int count);
 
 #endif

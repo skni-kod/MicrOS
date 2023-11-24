@@ -298,6 +298,18 @@ void floppy_write_sector(int device_number, int sector, uint8_t *content)
     floppy_do_operation_on_sector(head, track, true_sector, false);
 }
 
+void floppy_write_sectors(int device_number, int sector, int count, uint8_t *content)
+{
+    uint8_t head, track, true_sector;
+
+    for(int p = 0; p < count; p++)
+    {
+        floppy_lba_to_chs(sector+p, &head, &track, &true_sector);
+        memcpy((void *)dma_get_buffer(), content, 512);
+        floppy_do_operation_on_sector(head, track, true_sector, false);
+    }
+}
+
 uint8_t *floppy_do_operation_on_sector(uint8_t head, uint8_t track, uint8_t sector, bool read)
 {
     // Run floppy motor and wait some time

@@ -29,7 +29,7 @@ void partitions_init_floppy()
             floppy_partition->header = heap_kernel_alloc(512, 0);
             floppy_partition->device_type = device_type_floppy;
             floppy_partition->device_number = 0;
-            floppy_partition->write_on_device = floppy_write_sector;
+            floppy_partition->write_on_device = floppy_write_sectors;
             floppy_partition->read_from_device = floppy_read_continous;
             floppy_partition->first_sector = 0;
 
@@ -78,7 +78,7 @@ void partitions_init_harddisks(HARDDISK_ATA_MASTER_SLAVE type, HARDDISK_ATA_BUS_
                 hdd_partition->symbol = 'A' + partitions.count;
                 hdd_partition->device_type = device_type_harddisk;
                 hdd_partition->device_number = hdd_wrapper_get_device_number(type, bus);
-                hdd_partition->write_on_device = hdd_wrapper_write_sector;
+                hdd_partition->write_on_device = hdd_wrapper_write_sectors;
                 hdd_partition->read_from_device = hdd_wrapper_read_sector;
                 hdd_partition->first_sector = fat_header_sector;
                 

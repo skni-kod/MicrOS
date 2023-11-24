@@ -24,6 +24,9 @@ extern errno_t _errno;
 //! Illegal sequence.
 /*! Set when illegal byte sequence appears. */
 #define EILSEQ      3
+//! Bad file.
+//*! Set when reading from write only file or writing to read only file.*/
+#define EBADF       4
 
 #ifdef __cplusplus
 }

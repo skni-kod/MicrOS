@@ -5,7 +5,7 @@ FILE *streams_set_stream_as_console(FILE *stream)
     stream->buffering_mode = file_buffering_mode_none;
     stream->fetch = streams_console_fetch;
     stream->flush = streams_console_flush;
-
+    stream->write = streams_console_write;
     return stream;
 }
 
@@ -19,4 +19,11 @@ void streams_console_flush(FILE *stream)
 {
     stream->buffer[stream->pos] = 0;
     micros_console_print_string(stream->buffer);
+}
+
+void streams_console_write(FILE* stream, const char* ptr, int count)
+{
+    int c = 0;
+    while(c != count)
+        micros_console_print_char(*(ptr+c++));
 }

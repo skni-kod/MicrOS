@@ -1,7 +1,7 @@
 #ifndef FILE_STREAM_H
 #define FILE_STREAM_H
 
-#define CHUNK_SIZE 0x20000
+#define CHUNK_SIZE 8192
 
 #include <stdint.h>
 #include "../../stdio.h"
@@ -11,5 +11,6 @@
 FILE *streams_set_stream_as_file(const char *filename, const char *mode, FILE *stream);
 int streams_file_fetch(FILE *stream);
 void streams_file_flush(FILE *stream);
+int streams_file_write(FILE *stream, const char* ptr, int count);
 
 #endif
