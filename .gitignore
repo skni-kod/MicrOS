@@ -61,7 +61,9 @@ docs
 
 cloc.exe
 cloc.bat
-.idea/vcs.xml
-.idea/MicrOS.iml
-.idea/misc.xml
-debug.log
+
+.idea
+compile_commands.json
+build.output
+dump.dat
+configure.sh

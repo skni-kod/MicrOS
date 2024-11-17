@@ -2,7 +2,6 @@
 #include "cpu/pic/pic.h"
 #include "drivers/keyboard/keyboard.h"
 #include "cpu/idt/idt.h"
-#include "drivers/keyboard/keyboard.h"
 #include "drivers/floppy/floppy.h"
 #include "drivers/vga/vga_gmode.h"
 #include "drivers/pcspeaker/pc_speaker.h"
@@ -24,8 +23,6 @@
 #include "cpu/tss/tss.h"
 #include "drivers/dal/videocard/videocard.h"
 #include "drivers/vga/genericvga.h"
-#include "drivers/vga/modes/mode_13h/mode_13h.h"
-#include "drivers/vga/vga_gmode.h"
 #include "cpu/dma/dma.h"
 #include "drivers/harddisk/harddisk.h"
 #include "drivers/harddisk/ata/harddisk_ata.h"
@@ -36,10 +33,10 @@
 #include <time.h>
 #include "terminal/terminal_manager.h"
 #include "cpu/cpuid/cpuid.h"
+#include "drivers/mouse/mouse.h"
 #include "v8086/v8086.h"
 #include "v8086/memory_operations.h"
 #include "drivers/vbe/vbe.h"
-
 #include "debug_helpers/library/kernel_stdio.h"
 
 typedef struct _linesStruct
@@ -283,6 +280,8 @@ void startup()
     logger_log_ok("Hard Disks");
     print_harddisks_status();
     
+    logger_log_info("Squeak! Squeak! (PS2 Mouse)");
+    ps2mouse_init();
     keyboard_init();
     logger_log_ok("Keyboard");
 
@@ -343,14 +342,11 @@ int kmain()
     clear_bss();
 
     startup();
-  
     logger_log_info("Hello, World!");
-
-    //startup_music_play();
     logger_log_ok("READY.");
     
     logger_log_ok("Loading shells...");
-    
+
     uint32_t d = 0;
     for (int i = 0; i < 4; i++)
     {
@@ -366,11 +362,12 @@ int kmain()
     }
     
     vga_clear_screen();
-    
     switch_active_terminal(0);
-    
-    process_manager_run();  
+
+    process_manager_run();
+
 
     while (1);
+           
     return 0;
 }
