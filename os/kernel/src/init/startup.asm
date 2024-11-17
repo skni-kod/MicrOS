@@ -527,7 +527,7 @@ create_identity_page_table:
     inc eax
 
     ; Leave loop if we filled all entries for the first 6 megabytes
-    cmp eax, PAGES_COUNT * 0x1000
+    cmp eax, PAGES_COUNT * 0x400
     jl fill_identity_page_table_loop
 
     ret
